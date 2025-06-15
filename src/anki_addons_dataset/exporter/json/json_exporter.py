@@ -78,7 +78,7 @@ class JsonExporter(Exporter):
                                         addon.page.anki_forum_url, github, addon.page.other_links,
                                         addon.page.like_number, addon.page.dislike_number)
             json_list.append(json_obj)
-        output_file: Path = self._dataset_dir / "anki-addon-catalog.json"
+        output_file: Path = self._dataset_dir / "anki-addons-dataset.json"
         json_str: str = JsonExporter.__to_json(json_list)
         output_file.write_text(json_str)
         print(f"Write JSON to file: {output_file}")

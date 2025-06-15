@@ -8,13 +8,13 @@
 ## Create a new version
 1. Generate the dataset dir: `python addon_catalog.py`
 2. Upload the dataset dir as a new version:
-   `kaggle datasets version -p /home/aleks/anki-addon-catalog/dataset -m "Update" -r zip`
+   `kaggle datasets version -p /home/aleks/anki-addons-dataset/dataset -m "Update" -r zip`
 
 ## Dataset structure
 - dataset-metadata.json
-- anki-addon-catalog.json
-- anki-addon-catalog.md
-- anki-addon-catalog.xlsx
+- anki-addons-dataset.json
+- anki-addons-dataset.md
+- anki-addons-dataset.xlsx
 - raw
     - 1-anki-web
         - html

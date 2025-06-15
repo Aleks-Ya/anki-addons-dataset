@@ -11,7 +11,7 @@ from anki_addons_dataset.exporter.xlsx.aggregation_sheet import AggregationSheet
 class XlsxExporter(Exporter):
 
     def export_addon_infos(self, addon_infos: list[AddonInfo]):
-        output_file: Path = self._dataset_dir / "anki-addon-catalog.xlsx"
+        output_file: Path = self._dataset_dir / "anki-addons-dataset.xlsx"
         workbook: Workbook = Workbook(output_file)
         AddonInfoSheet.create_sheet(workbook, addon_infos)
         workbook.close()

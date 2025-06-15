@@ -12,7 +12,7 @@ from anki_addons_dataset.common.data_types import AddonInfo, Aggregation
 from anki_addons_dataset.exporter.exporter_facade import ExporterFacade
 
 if __name__ == "__main__":
-    working_dir: Path = Path.home() / "anki-addon-catalog"
+    working_dir: Path = Path.home() / "anki-addons-dataset"
     dataset_dir: Path = working_dir / "dataset"
     cache_dir: Path = working_dir / "cache"
     shutil.rmtree(dataset_dir, ignore_errors=True)
