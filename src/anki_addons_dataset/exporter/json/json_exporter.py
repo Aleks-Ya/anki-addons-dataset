@@ -40,7 +40,7 @@ class Version:
 @dataclass
 class Details:
     id: int
-    title: str
+    name: str
     addon_page: str
     rating: int
     update_date: str
@@ -73,7 +73,7 @@ class JsonExporter(Exporter):
                 github: Optional[GitHub] = None
             versions: list[Version] = [Version(version.min_version, version.max_version, str(version.updated))
                                        for version in addon.page.versions]
-            json_obj: Details = Details(addon.header.id, addon.header.title, addon.header.addon_page,
+            json_obj: Details = Details(addon.header.id, addon.header.name, addon.header.addon_page,
                                         addon.header.rating, addon.header.update_date, addon.header.versions, versions,
                                         addon.page.anki_forum_url, github, addon.page.other_links,
                                         addon.page.like_number, addon.page.dislike_number)

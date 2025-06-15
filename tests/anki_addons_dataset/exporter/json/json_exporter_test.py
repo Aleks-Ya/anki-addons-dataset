@@ -51,7 +51,7 @@ def test_export(note_size_addon_id: AddonId):
                          'likes': 0,
                          'links': [],
                          'rating': 4,
-                         'title': 'NoteSize',
+                         'name': 'NoteSize',
                          'update_date': '2023-03-15',
                          'versions': [],
                          'versions_str': '1.0.0'}]

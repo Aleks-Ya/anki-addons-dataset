@@ -7,7 +7,7 @@
       "id": {
         "type": "integer"
       },
-      "title": {
+      "name": {
         "type": "string"
       },
       "addon_page": {
@@ -155,7 +155,7 @@
       "likes",
       "links",
       "rating",
-      "title",
+      "name",
       "update_date",
       "versions",
       "versions_str"

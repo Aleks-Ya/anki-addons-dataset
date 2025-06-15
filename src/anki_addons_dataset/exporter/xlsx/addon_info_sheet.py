@@ -10,7 +10,7 @@ class AddonInfoSheet:
     __header_row_bottom: int = 1
 
     __id_col: int = 0
-    __title_col: int = 1
+    __name_col: int = 1
     __versions_col: int = 2
     __rating_col: int = 3
     __likes_col: int = 4
@@ -35,7 +35,7 @@ class AddonInfoSheet:
     @staticmethod
     def __set_column_width(worksheet: Worksheet) -> None:
         worksheet.set_column(AddonInfoSheet.__id_col, AddonInfoSheet.__id_col, 12)
-        worksheet.set_column(AddonInfoSheet.__title_col, AddonInfoSheet.__title_col, 80)
+        worksheet.set_column(AddonInfoSheet.__name_col, AddonInfoSheet.__name_col, 80)
         worksheet.set_column(AddonInfoSheet.__versions_col, AddonInfoSheet.__versions_col, 10)
         worksheet.set_column(AddonInfoSheet.__rating_col, AddonInfoSheet.__rating_col, 6)
         worksheet.set_column(AddonInfoSheet.__likes_col, AddonInfoSheet.__likes_col, 6)
@@ -58,7 +58,7 @@ class AddonInfoSheet:
                               first_row=AddonInfoSheet.__header_row_top, last_row=AddonInfoSheet.__header_row_top,
                               first_col=AddonInfoSheet.__id_col, last_col=AddonInfoSheet.__anki_web_url_col)
         worksheet.write_string(AddonInfoSheet.__header_row_bottom, AddonInfoSheet.__id_col, "ID", header_format)
-        worksheet.write_string(AddonInfoSheet.__header_row_bottom, AddonInfoSheet.__title_col, "Title", header_format)
+        worksheet.write_string(AddonInfoSheet.__header_row_bottom, AddonInfoSheet.__name_col, "Name", header_format)
         worksheet.write_string(AddonInfoSheet.__header_row_bottom, AddonInfoSheet.__versions_col, "Versions",
                                header_format)
         worksheet.write_string(AddonInfoSheet.__header_row_bottom, AddonInfoSheet.__rating_col, "Rating", header_format)
@@ -100,7 +100,7 @@ class AddonInfoSheet:
         for i, addon in enumerate(addon_infos):
             row: int = i + AddonInfoSheet.__header_row_bottom + 1
             worksheet.write_number(row, AddonInfoSheet.__id_col, addon.header.id)
-            worksheet.write_string(row, AddonInfoSheet.__title_col, addon.header.title)
+            worksheet.write_string(row, AddonInfoSheet.__name_col, addon.header.name)
             worksheet.write_string(row, AddonInfoSheet.__versions_col, addon.header.versions)
             worksheet.write_number(row, AddonInfoSheet.__rating_col, addon.header.rating)
             worksheet.write_number(row, AddonInfoSheet.__likes_col, addon.page.like_number)

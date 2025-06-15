@@ -12,10 +12,10 @@ class MarkdownExporter(Exporter):
         output_file: Path = self._dataset_dir / "anki-addon-catalog.md"
         md: MdUtils = MdUtils(file_name=str(output_file), title='Anki Addons Catalog for Programmers')
         md.new_line()
-        lines: list[str] = ["ID", "Title", "Rating", "Stars"]
+        lines: list[str] = ["ID", "Name", "Rating", "Stars"]
         column_number: int = len(lines)
         for addon in addon_infos:
-            line: list[str] = [addon.header.id, addon.header.title, addon.header.rating, addon.github.stars]
+            line: list[str] = [addon.header.id, addon.header.name, addon.header.rating, addon.github.stars]
             lines.extend(line)
         md.new_table(column_number, len(addon_infos) + 1, lines)
         md.create_md_file()

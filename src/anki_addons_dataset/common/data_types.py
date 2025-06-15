@@ -13,7 +13,7 @@ LanguageName = NewType("LanguageName", str)
 @dataclass
 class AddonHeader:
     id: AddonId
-    title: str
+    name: str
     addon_page: str
     rating: int
     update_date: str
