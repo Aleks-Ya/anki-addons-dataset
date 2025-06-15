@@ -12,5 +12,7 @@
 ## Unit-test
 Run: `pytest`
 
-## Create the dataset
-Run: `addon_catalog.py`
+## Create a new version
+1. Generate the dataset dir: `python addon_catalog.py`
+2. Upload the dataset dir as a new version:
+   `kaggle datasets version -p $HOME/anki-addons-dataset/dataset -m "Update" -r zip`

@@ -1,15 +1,5 @@
 # Anki Addon Catalog for Programmers
 
-## TODO
-- [ ] Use HEAD requests for checking resource updates
-- [ ] Publish the dataset
-    - [ ] Create a support page in Anki Forum
-
-## Create a new version
-1. Generate the dataset dir: `python addon_catalog.py`
-2. Upload the dataset dir as a new version:
-   `kaggle datasets version -p /home/aleks/anki-addons-dataset/dataset -m "Update" -r zip`
-
 ## Dataset structure
 - dataset-metadata.json
 - anki-addons-dataset.json

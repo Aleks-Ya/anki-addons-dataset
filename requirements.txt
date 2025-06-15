@@ -6,3 +6,4 @@ XlsxWriter
 pytest
 jsonschema
 selenium
+kaggle
