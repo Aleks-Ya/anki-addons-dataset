@@ -16,7 +16,7 @@ class TestsCounter:
 
     @staticmethod
     def __is_python_test(file: str) -> bool:
-        return file.endswith("_test.py") or re.match("^\w*/?test_\w+.py", file)
+        return file.endswith("_test.py") or re.match(r"^\w*/?test_\w+.py", file)
 
     @staticmethod
     def __is_javascript_test(file: str) -> bool:
@@ -32,4 +32,4 @@ class TestsCounter:
 
     @staticmethod
     def __is_c_test(file: str) -> bool:
-        return file.endswith("_test.c") or re.match("^\w*/?test_\w+.c", file)
+        return file.endswith("_test.c") or re.match(r"^\w*/?test_\w+.c", file)
