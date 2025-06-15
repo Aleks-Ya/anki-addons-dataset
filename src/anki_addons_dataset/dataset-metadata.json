@@ -1,9 +1,15 @@
 {
-  "title": "Anki Addons",
   "id": "alexeyya/anki-addons",
+  "title": "Anki Addons",
+  "subtitle": "Data about addons for the flashcard program Anki",
+  "description": "[Anki flashcard program](https://apps.ankiweb.net/) has about [2k addons](https://ankiweb.net/shared/addons).\nThis dataset contains information about these addons including data from the addon catalog, GitHub, and Anki Forum.",
   "licenses": [
     {
       "name": "CC0-1.0"
     }
+  ],
+  "keywords": [
+    "software",
+    "education"
   ]
 }
