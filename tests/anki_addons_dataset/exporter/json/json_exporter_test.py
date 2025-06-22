@@ -10,8 +10,8 @@ from anki_addons_dataset.exporter.json.json_exporter import JsonExporter
 
 
 def test_export(note_size_addon_id: AddonId):
-    output_dir: Path = Path(tempfile.mkdtemp())
-    exporter: JsonExporter = JsonExporter(output_dir)
+    dataset_dir: Path = Path(tempfile.mkdtemp())
+    exporter: JsonExporter = JsonExporter(dataset_dir)
     addon_infos: list[AddonInfo] = [
         AddonInfo(
             header=AddonHeader(note_size_addon_id, "NoteSize", "https://ankiweb.net/shared/info/1188705668",
@@ -34,7 +34,7 @@ def test_export(note_size_addon_id: AddonId):
             ))
     ]
     exporter.export_addon_infos(addon_infos)
-    act_json_file: Path = output_dir / "anki-addons-dataset.json"
+    act_json_file: Path = dataset_dir / "structured" / "json" / "data.json"
     act_json: dict[str, Any] = json.loads(act_json_file.read_text())
     assert act_json == [{'addon_page': 'https://ankiweb.net/shared/info/1188705668',
                          'anki_forum_url': None,

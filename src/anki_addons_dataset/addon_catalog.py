@@ -10,6 +10,7 @@ from anki_addons_dataset.collector.github.github_service import GithubService
 from anki_addons_dataset.collector.overrider.overrider import Overrider
 from anki_addons_dataset.common.data_types import AddonInfo, Aggregation
 from anki_addons_dataset.exporter.exporter_facade import ExporterFacade
+from anki_addons_dataset.metadata.metadata import Metadata
 
 if __name__ == "__main__":
     working_dir: Path = Path.home() / "anki-addons-dataset"
@@ -29,6 +30,5 @@ if __name__ == "__main__":
     exporter_facade: ExporterFacade = ExporterFacade(dataset_dir)
     exporter_facade.export_all(addon_infos, aggregation)
 
-    dataset_metadata_file: Path = Path(__file__).parent / "dataset-metadata.json"
-    dest_dataset_metadata_file: Path = dataset_dir / "dataset-metadata.json"
-    shutil.copy(dataset_metadata_file, dest_dataset_metadata_file)
+    metadata: Metadata = Metadata(dataset_dir)
+    metadata.create_dataset_metadata_file()
