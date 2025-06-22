@@ -15,13 +15,15 @@ class XlsxExporter(Exporter):
     def export_addon_infos(self, addon_infos: list[AddonInfo]):
         output_file: Path = self._dataset_dir / "data.xlsx"
         workbook: Workbook = Workbook(output_file)
-        AddonInfoSheet.create_sheet(workbook, addon_infos)
+        addon_info_sheet: AddonInfoSheet = AddonInfoSheet(workbook)
+        addon_info_sheet.create_sheet(addon_infos)
         workbook.close()
         print(f"Write XLSX to file: {output_file}")
 
     def export_aggregation(self, aggregation: Aggregation) -> None:
         output_file: Path = self._dataset_dir / "aggregation.xlsx"
         workbook: Workbook = Workbook(output_file)
-        AggregationSheet.create_sheet(workbook, aggregation)
+        aggregation_sheet: AggregationSheet = AggregationSheet(workbook)
+        aggregation_sheet.create_sheet(aggregation)
         workbook.close()
         print(f"Write XLSX to file: {output_file}")
