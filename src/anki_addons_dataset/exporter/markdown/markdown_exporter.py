@@ -7,9 +7,11 @@ from anki_addons_dataset.exporter.exporter import Exporter
 
 
 class MarkdownExporter(Exporter):
+    def __init__(self, dataset_dir: Path):
+        super().__init__(dataset_dir / "structured" / "markdown")
 
     def export_addon_infos(self, addon_infos: list[AddonInfo]):
-        output_file: Path = self._dataset_dir / "anki-addons-dataset.md"
+        output_file: Path = self._dataset_dir / "data.md"
         md: MdUtils = MdUtils(file_name=str(output_file), title='Anki Addons Catalog for Programmers')
         md.new_line()
         lines: list[str] = ["ID", "Name", "Rating", "Stars"]

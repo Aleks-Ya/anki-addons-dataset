@@ -1,0 +1,35 @@
+# Dataset structure
+
+- `dataset-metadata.json`
+- `structured`
+    - `json`
+        - `data.json`
+        - `aggregation.json`
+    - `xlsx`
+        - `data.xlsx`
+        - `aggregation.xlsx`
+    - `markdown`
+        - `data.md`
+        - `aggregation.md`
+- `raw`
+    - `1-anki-web`
+        - `1-html`
+            - `addons.html`
+            - `addon`
+                - `{addon-id}.html`
+        - `2-json`
+            - `addon`
+                - `{addon-id}.json`
+    - `2-github`
+        - `{user}`
+            - `{repo}`
+                - `{repo}_action-count.json`
+                - `{repo}_languages.json`
+                - `{repo}_last-commit.json`
+                - `{repo}_stars-count.json`
+                - `{repo}_tests-count.json`
+    - `3-enricher`
+        - `addon`
+            - `{addon-id}.json`
+    - `4-overrider`
+        - `overrides.yaml`
