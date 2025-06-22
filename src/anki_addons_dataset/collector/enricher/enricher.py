@@ -14,9 +14,13 @@ class Enricher:
         self.__github_service: GithubService = github_service
 
     def enrich_list(self, addon_infos: list[AddonInfo]) -> list[AddonInfo]:
-        return [self.enrich(addon_info) for addon_info in addon_infos]
+        enriched: list[AddonInfo] = []
+        for i, addon_info in enumerate(addon_infos):
+            print(f"Enriching {addon_info.header.id} ({i}/{len(addon_infos)})")
+            enriched.append(self.__enrich(addon_info))
+        return enriched
 
-    def enrich(self, addon_info: AddonInfo) -> AddonInfo:
+    def __enrich(self, addon_info: AddonInfo) -> AddonInfo:
         languages: list[LanguageName] = self.__get_languages(addon_info)
         stars: int = self.__github_service.get_stars_count(addon_info.github.github_repo)
         last_commit: Optional[datetime] = self.__github_service.get_last_commit(addon_info.github.github_repo)

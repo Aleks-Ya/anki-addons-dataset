@@ -43,7 +43,8 @@ class AnkiWebService:
         dataset_addon_dir: Path = self.__dataset_html_dir / "addon"
         dataset_addon_dir.mkdir(parents=True, exist_ok=True)
         addon_infos: list[AddonInfo] = []
-        for addon_header in addon_headers:
+        for i, addon_header in enumerate(addon_headers):
+            print(f"Parsing addon page: {addon_header.id} ({i}/{len(addon_headers)})")
             html: str = self.__load_addon_page(addon_header.id)
             addon_html_file: Path = dataset_addon_dir / f"{addon_header.id}.html"
             addon_html_file.write_text(html)
