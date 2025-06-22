@@ -1,3 +1,15 @@
+---
+license: cc0-1.0
+language:
+  - en
+pretty_name: Anki Addons Dataset
+size_categories:
+  - 10K<n<100K
+tags:
+  - anki
+  - addon
+---
+
 ## Introduction
 
 [Anki flashcard program](https://apps.ankiweb.net) has about [2 thousand addons](https://ankiweb.net/shared/addons).  

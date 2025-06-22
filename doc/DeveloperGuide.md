@@ -15,4 +15,4 @@ Run: `pytest`
 ## Create a new version
 1. Generate the dataset dir: `PYTHONPATH=src python -m anki_addons_dataset.addon_catalog`
 2. Upload the dataset dir as a new version:
-   `kaggle datasets version -p $HOME/anki-addons-dataset/dataset -m "Update" -r zip`
+   `huggingface-cli upload-large-folder Ya-Alex/anki-addons $HOME/anki-addons-dataset/dataset --repo-type=dataset --num-workers=4`

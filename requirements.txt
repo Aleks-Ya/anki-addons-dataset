@@ -6,4 +6,4 @@ XlsxWriter
 pytest
 jsonschema
 selenium
-kaggle
+huggingface_hub[cli]
