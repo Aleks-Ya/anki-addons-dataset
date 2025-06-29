@@ -4,6 +4,7 @@ mdutils
 pyyaml
 XlsxWriter
 pytest
+pytest-cov
 jsonschema
 selenium
 huggingface_hub[cli]
