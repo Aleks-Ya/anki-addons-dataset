@@ -11,6 +11,7 @@ from anki_addons_dataset.exporter.json.json_exporter import JsonExporter
 
 def test_export(note_size_addon_id: AddonId):
     dataset_dir: Path = Path(tempfile.mkdtemp())
+
     exporter: JsonExporter = JsonExporter(dataset_dir)
     addon_infos: list[AddonInfo] = [
         AddonInfo(
@@ -34,8 +35,9 @@ def test_export(note_size_addon_id: AddonId):
             ))
     ]
     exporter.export_addon_infos(addon_infos)
-    act_json_file: Path = dataset_dir / "structured" / "json" / "data.json"
-    act_json: dict[str, Any] = json.loads(act_json_file.read_text())
+
+    act_file: Path = dataset_dir / "structured" / "json" / "data.json"
+    act_json: dict[str, Any] = json.loads(act_file.read_text())
     assert act_json == [{'addon_page': 'https://ankiweb.net/shared/info/1188705668',
                          'anki_forum_url': None,
                          'dislikes': 0,

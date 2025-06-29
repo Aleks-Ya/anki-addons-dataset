@@ -26,9 +26,12 @@ Location: `structured/xlsx/data.xlsx`
 
 ### JSON
 The best for **programmatic analysis** by Python, etc.  
-The JSON file contains all parsed fields. The Excel and Markdown files contain part of its fields.  
+The JSON file contains all parsed fields. The Excel, CSV, and Markdown files contain part of its fields.  
 Location: `structured/json/data.json`  
 JSON schema: `structured/json/schema.json`
+
+### CSV
+Location: `structured/csv/data.csv`
 
 ### Markdown
 Location: `structured/markdown/data.md`

@@ -1,6 +1,7 @@
 from pathlib import Path
 
 from anki_addons_dataset.common.data_types import AddonInfo, Aggregation
+from anki_addons_dataset.exporter.csv.csv_exporter import CsvExporter
 from anki_addons_dataset.exporter.exporter import Exporter
 from anki_addons_dataset.exporter.json.json_exporter import JsonExporter
 from anki_addons_dataset.exporter.markdown.markdown_exporter import MarkdownExporter
@@ -12,7 +13,8 @@ class ExporterFacade:
         self.exporters: list[Exporter] = [
             JsonExporter(dataset_dir),
             MarkdownExporter(dataset_dir),
-            XlsxExporter(dataset_dir)
+            XlsxExporter(dataset_dir),
+            CsvExporter(dataset_dir)
         ]
 
     def export_all(self, addon_infos: list[AddonInfo], aggregation: Aggregation) -> None:
