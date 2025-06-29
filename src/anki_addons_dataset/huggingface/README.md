@@ -49,23 +49,26 @@ and intermediate files generated from them.
 File `raw/4-overrider/overrides.yaml` contains manually curated data which override automatically parsed values.
 
 Structure of the `raw` folder:
-- `1-anki-web`/
-    - `1-html`/
-        - `addons.html`
-        - `addon`/
-            - `{addon-id}.html`
-    - `2-json`/`addon`/
-        - `{addon-id}.json`
-- `2-github`/`{user}`/`{repo}`/
-    - `{repo}_action-count.json`
-    - `{repo}_languages.json`
-    - `{repo}_last-commit.json`
-    - `{repo}_stars-count.json`
-    - `{repo}_tests-count.json`
-- `3-enricher`/ `addon`/
-    - `{addon-id}.json`
-- `4-overrider`/
-    - `overrides.yaml`
+```
+raw/
+    1-anki-web/
+        1-html/
+            addons.html
+            addon/
+                {addon-id}.html
+        2-json/addon/
+            {addon-id}.json
+    2-github/{user}/{repo}/
+        {repo}_action-count.json
+        {repo}_languages.json
+        {repo}_last-commit.json
+        {repo}_stars-count.json
+        {repo}_tests-count.json
+    3-enricher/addon/
+        {addon-id}.json
+    4-overrider/
+        overrides.yaml
+```
 
 ---
 
