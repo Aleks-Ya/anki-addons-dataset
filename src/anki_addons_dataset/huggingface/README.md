@@ -8,6 +8,10 @@ size_categories:
 tags:
   - anki
   - addon
+configs:
+  - config_name: default
+    data_files: structured/csv/data.csv
+    header: 0
 ---
 
 ## Introduction
