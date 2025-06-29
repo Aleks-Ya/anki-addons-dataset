@@ -18,7 +18,7 @@ class JsonHelper:
     @staticmethod
     def write_dict_to_file(content: dict[str, Any], file: Path) -> None:
         file.parent.mkdir(parents=True, exist_ok=True)
-        content_json: str = json.dumps(content, indent=2)
+        content_json: str = json.dumps(content, indent=2, default=JsonHelper.__date_serializer)
         file.write_text(content_json)
 
     @staticmethod
