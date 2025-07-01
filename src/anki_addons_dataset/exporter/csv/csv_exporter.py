@@ -7,11 +7,11 @@ from anki_addons_dataset.exporter.exporter import Exporter
 
 
 class CsvExporter(Exporter):
-    def __init__(self, dataset_dir: Path):
-        super().__init__(dataset_dir / "structured" / "csv")
+    def __init__(self, final_dir: Path):
+        super().__init__(final_dir / "structured" / "csv")
 
     def export_addon_infos(self, addon_infos: list[AddonInfo]):
-        output_file: Path = self._dataset_dir / "data.csv"
+        output_file: Path = self._final_dir / "data.csv"
 
         id_field: str = 'ID'
         name_field: str = 'Name'
@@ -33,7 +33,7 @@ class CsvExporter(Exporter):
         print(f"Write CSV to file: {output_file}")
 
     def export_aggregation(self, aggregation: Aggregation) -> None:
-        output_file: Path = self._dataset_dir / "aggregation.csv"
+        output_file: Path = self._final_dir / "aggregation.csv"
 
         addon_number_field: str = 'Addon number'
         fieldnames: list[str] = [addon_number_field]

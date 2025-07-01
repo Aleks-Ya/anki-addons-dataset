@@ -32,14 +32,14 @@ class Facade:
         print(f"===== Creating dataset for {creation_date} =====")
         print(f"Offline: {offline}")
         version_dir: Path = self.__history_dir / f"{creation_date.isoformat()}"
-        dataset_dir: Path = version_dir / "dataset"
-        print(f"Dataset dir: {dataset_dir}")
+        final_dir: Path = version_dir / "final"
+        print(f"Final dir: {final_dir}")
         raw_dir: Path = version_dir / "raw"
         print(f"Raw dir: {raw_dir}")
         stage_dir: Path = version_dir / "stage"
         print(f"Stage dir: {stage_dir}")
         self.__delete_dir(stage_dir)
-        self.__delete_dir(dataset_dir)
+        self.__delete_dir(final_dir)
         overrider: Overrider = Overrider(stage_dir)
         addon_page_parser: AddonPageParser = AddonPageParser(overrider)
         ankiweb_service: AnkiWebService = AnkiWebService(raw_dir, stage_dir, addon_page_parser, offline)
@@ -50,10 +50,10 @@ class Facade:
 
         aggregation: Aggregation = Aggregator.aggregate(addon_infos)
 
-        exporter_facade: ExporterFacade = ExporterFacade(dataset_dir)
+        exporter_facade: ExporterFacade = ExporterFacade(final_dir)
         exporter_facade.export_all(addon_infos, aggregation)
 
-        hugging_face: HuggingFace = HuggingFace(dataset_dir, creation_date)
+        hugging_face: HuggingFace = HuggingFace(final_dir, creation_date)
         hugging_face.create_dataset_card()
         hugging_face.create_metadata_yaml()
 

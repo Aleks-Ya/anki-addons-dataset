@@ -9,8 +9,8 @@ from anki_addons_dataset.exporter.csv.csv_exporter import CsvExporter
 
 
 def test_export(note_size_addon_id: AddonId):
-    dataset_dir: Path = Path(tempfile.mkdtemp())
-    exporter: CsvExporter = CsvExporter(dataset_dir)
+    final_dir: Path = Path(tempfile.mkdtemp())
+    exporter: CsvExporter = CsvExporter(final_dir)
     addon_infos: list[AddonInfo] = [
         AddonInfo(
             header=AddonHeader(note_size_addon_id, "NoteSize", "https://ankiweb.net/shared/info/1188705668",
@@ -34,7 +34,7 @@ def test_export(note_size_addon_id: AddonId):
     ]
     exporter.export_addon_infos(addon_infos)
 
-    act_file: Path = dataset_dir / "structured" / "csv" / "data.csv"
+    act_file: Path = final_dir / "structured" / "csv" / "data.csv"
     assert act_file.read_text() == dedent("""\
     ID,Name,Rating,Stars
     1188705668,NoteSize,4,3

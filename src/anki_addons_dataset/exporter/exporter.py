@@ -5,9 +5,9 @@ from anki_addons_dataset.common.data_types import AddonInfo, Aggregation
 
 
 class Exporter(ABC):
-    def __init__(self, dataset_dir: Path):
-        self._dataset_dir: Path = dataset_dir
-        self._dataset_dir.mkdir(parents=True, exist_ok=True)
+    def __init__(self, final_dir: Path):
+        self._final_dir: Path = final_dir
+        self._final_dir.mkdir(parents=True, exist_ok=True)
 
     @abstractmethod
     def export_addon_infos(self, addon_infos: list[AddonInfo]) -> None:

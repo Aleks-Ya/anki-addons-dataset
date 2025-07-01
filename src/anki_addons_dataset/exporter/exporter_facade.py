@@ -9,12 +9,12 @@ from anki_addons_dataset.exporter.xlsx.xlsx_exporter import XlsxExporter
 
 
 class ExporterFacade:
-    def __init__(self, dataset_dir: Path):
+    def __init__(self, final_dir: Path):
         self.exporters: list[Exporter] = [
-            JsonExporter(dataset_dir),
-            MarkdownExporter(dataset_dir),
-            XlsxExporter(dataset_dir),
-            CsvExporter(dataset_dir)
+            JsonExporter(final_dir),
+            MarkdownExporter(final_dir),
+            XlsxExporter(final_dir),
+            CsvExporter(final_dir)
         ]
 
     def export_all(self, addon_infos: list[AddonInfo], aggregation: Aggregation) -> None:
