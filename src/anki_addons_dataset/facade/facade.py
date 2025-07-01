@@ -32,12 +32,12 @@ class Facade:
         print(f"===== Creating dataset for {creation_date} =====")
         print(f"Offline: {offline}")
         version_dir: Path = self.__history_dir / f"{creation_date.isoformat()}"
-        final_dir: Path = version_dir / "final"
-        print(f"Final dir: {final_dir}")
-        raw_dir: Path = version_dir / "raw"
+        raw_dir: Path = version_dir / "1-raw"
         print(f"Raw dir: {raw_dir}")
-        stage_dir: Path = version_dir / "stage"
+        stage_dir: Path = version_dir / "2-stage"
         print(f"Stage dir: {stage_dir}")
+        final_dir: Path = version_dir / "3-final"
+        print(f"Final dir: {final_dir}")
         self.__delete_dir(stage_dir)
         self.__delete_dir(final_dir)
         overrider: Overrider = Overrider(stage_dir)
