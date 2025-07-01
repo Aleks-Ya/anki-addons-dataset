@@ -25,7 +25,7 @@ if __name__ == "__main__":
     shutil.rmtree(dataset_dir, ignore_errors=True)
     overrider: Overrider = Overrider(dataset_dir)
     addon_page_parser: AddonPageParser = AddonPageParser(overrider)
-    ankiweb_service: AnkiWebService = AnkiWebService(dataset_dir, raw_dir, addon_page_parser)
+    ankiweb_service: AnkiWebService = AnkiWebService(raw_dir, addon_page_parser)
     github_service: GithubService = GithubService(dataset_dir, raw_dir)
     enricher: Enricher = Enricher(dataset_dir, github_service)
     collector: AddonCollector = AddonCollector(ankiweb_service, enricher, overrider)

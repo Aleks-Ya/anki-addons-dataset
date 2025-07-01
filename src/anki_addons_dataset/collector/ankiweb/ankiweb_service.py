@@ -12,16 +12,14 @@ from anki_addons_dataset.common.json_helper import JsonHelper
 
 
 class AnkiWebService:
-    def __init__(self, dataset_dir: Path, raw_dir: Path, addon_page_parser: AddonPageParser) -> None:
+    def __init__(self, raw_dir: Path, addon_page_parser: AddonPageParser) -> None:
         self.__addon_page_parser: AddonPageParser = addon_page_parser
         options: Options = Options()
         options.add_argument('--headless')
         self.__driver: WebDriver = webdriver.Chrome(options=options)
-        self.__raw_html_dir: Path = raw_dir / "1-anki-web" / "html"
-        dataset_ankiweb_dir: Path = dataset_dir / "raw" / "1-anki-web"
-        self.__dataset_html_dir: Path = dataset_ankiweb_dir / "html"
-        self.__dataset_html_dir.mkdir(parents=True, exist_ok=True)
-        self.__dataset_json_dir: Path = dataset_ankiweb_dir / "json" / "addon"
+        raw_ankiweb_dir: Path = raw_dir / "1-anki-web"
+        self.__raw_html_dir: Path = raw_ankiweb_dir / "html"
+        self.__raw_json_dir: Path = raw_ankiweb_dir / "json"
 
     def __del__(self) -> None:
         self.__driver.quit()
@@ -34,22 +32,16 @@ class AnkiWebService:
 
     def __get_headers(self) -> list[AddonHeader]:
         html: str = self.__load_addons_page()
-        addons_html_file: Path = self.__dataset_html_dir / "addons.html"
-        addons_html_file.write_text(html)
         addon_headers: list[AddonHeader] = AddonsPageParser.parse_addons_page(html)
         return addon_headers
 
     def __get_addon_infos(self, addon_headers: list[AddonHeader]) -> list[AddonInfo]:
-        dataset_addon_dir: Path = self.__dataset_html_dir / "addon"
-        dataset_addon_dir.mkdir(parents=True, exist_ok=True)
         addon_infos: list[AddonInfo] = []
         for i, addon_header in enumerate(addon_headers):
             print(f"Parsing addon page: {addon_header.id} ({i}/{len(addon_headers)})")
             html: str = self.__load_addon_page(addon_header.id)
-            addon_html_file: Path = dataset_addon_dir / f"{addon_header.id}.html"
-            addon_html_file.write_text(html)
             addon_info: AddonInfo = self.__addon_page_parser.parse_addon_page(addon_header, html)
-            addon_json_file: Path = self.__dataset_json_dir / f"{addon_header.id}.json"
+            addon_json_file: Path = self.__raw_json_dir / "addon" / f"{addon_header.id}.json"
             JsonHelper.write_addon_info_to_file(addon_info, addon_json_file)
             addon_infos.append(addon_info)
         return addon_infos
