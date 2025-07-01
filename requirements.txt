@@ -10,3 +10,4 @@ selenium
 huggingface_hub[cli]
 pandas
 pyarrow
+bump-my-version

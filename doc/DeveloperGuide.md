@@ -20,3 +20,6 @@ Unit-tests are automatically executed in GitHub Actions.
 ## Sonar Qube
 https://sonarcloud.io/project/overview?id=Aleks-Ya_anki-addons-dataset  
 Sonar report is automatically updated in GitHub Actions.
+
+## Version
+Increment patch version: `bump-my-version bump minor`
