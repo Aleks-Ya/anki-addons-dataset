@@ -10,10 +10,10 @@ from anki_addons_dataset.common.json_helper import JsonHelper
 
 
 class RepoHandler(ABC):
-    def __init__(self, repo: GitHubRepo, raw_dir: Path, dataset_dir: Path) -> None:
+    def __init__(self, repo: GitHubRepo, raw_dir: Path, stage_dir: Path) -> None:
         self._repo: GitHubRepo = repo
         self.__raw_dir: Path = raw_dir
-        self.__dataset_dir: Path = dataset_dir
+        self.__stage_dir: Path = stage_dir
 
     def is_downloaded(self) -> bool:
         return self.get_raw_file().exists()
@@ -47,16 +47,16 @@ class RepoHandler(ABC):
         ...
 
     @abstractmethod
-    def get_dataset_filename(self) -> str:
+    def get_stage_filename(self) -> str:
         ...
 
     def get_raw_file(self) -> Path:
         name: str = self.__get_json_filename(self.get_raw_filename())
         return self.__raw_dir / self._repo.user / self._repo.repo_name / f"{name}.json"
 
-    def get_dataset_file(self) -> Path:
-        name: str = self.__get_json_filename(self.get_dataset_filename())
-        return self.__dataset_dir / self._repo.user / self._repo.repo_name / f"{name}.json"
+    def get_stage_file(self) -> Path:
+        name: str = self.__get_json_filename(self.get_stage_filename())
+        return self.__stage_dir / self._repo.user / self._repo.repo_name / f"{name}.json"
 
     def extract_return_value(self) -> Optional[Any]:
         raw_file: Path = self.get_raw_file()
@@ -68,13 +68,13 @@ class RepoHandler(ABC):
         ...
 
     @abstractmethod
-    def prepare_dataset_dict(self, return_value: Any) -> dict[str, Any]:
+    def prepare_stage_dict(self, return_value: Any) -> dict[str, Any]:
         ...
 
-    def write_dataset(self, return_value: Any) -> None:
-        dataset_dict: dict[str, Any] = self.prepare_dataset_dict(return_value)
-        dataset_file: Path = self.get_dataset_file()
-        JsonHelper.write_dict_to_file(dataset_dict, dataset_file)
+    def write_stage(self, return_value: Any) -> None:
+        stage_dict: dict[str, Any] = self.prepare_stage_dict(return_value)
+        stage_file: Path = self.get_stage_file()
+        JsonHelper.write_dict_to_file(stage_dict, stage_file)
 
     def is_repo_marked_as_not_found(self) -> bool:
         return self.__get_not_found_file().exists()

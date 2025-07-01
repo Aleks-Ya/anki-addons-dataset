@@ -27,7 +27,7 @@ if __name__ == "__main__":
     overrider: Overrider = Overrider(dataset_dir)
     addon_page_parser: AddonPageParser = AddonPageParser(overrider)
     ankiweb_service: AnkiWebService = AnkiWebService(raw_dir, stage_dir, addon_page_parser)
-    github_service: GithubService = GithubService(dataset_dir, raw_dir)
+    github_service: GithubService = GithubService(raw_dir, stage_dir)
     enricher: Enricher = Enricher(dataset_dir, github_service)
     collector: AddonCollector = AddonCollector(ankiweb_service, enricher, overrider)
     addon_infos: list[AddonInfo] = collector.collect_addons()

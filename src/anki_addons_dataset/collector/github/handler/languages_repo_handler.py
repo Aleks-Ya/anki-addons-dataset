@@ -9,7 +9,7 @@ class LanguagesRepoHandler(RepoHandler):
     def get_raw_filename(self) -> str:
         return "languages"
 
-    def get_dataset_filename(self) -> str:
+    def get_stage_filename(self) -> str:
         return "languages"
 
     def get_url(self) -> str:
@@ -18,5 +18,5 @@ class LanguagesRepoHandler(RepoHandler):
     def extract_return_value_from_dict(self, content_obj: dict[str, Any]) -> dict[LanguageName, int]:
         return {LanguageName(k): v for k, v in content_obj.items()}
 
-    def prepare_dataset_dict(self, return_value: dict[LanguageName, int]) -> dict[str, Any]:
+    def prepare_stage_dict(self, return_value: dict[LanguageName, int]) -> dict[str, Any]:
         return return_value

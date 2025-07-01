@@ -13,7 +13,7 @@ class TestsRepoHandler(RepoHandler):
     def get_raw_filename(self) -> str:
         return "tree"
 
-    def get_dataset_filename(self) -> str:
+    def get_stage_filename(self) -> str:
         return "tests-count"
 
     def get_url(self) -> str:
@@ -28,7 +28,7 @@ class TestsRepoHandler(RepoHandler):
         files: list[str] = [file["path"] for file in content_obj["tree"]]
         return TestsCounter.count_tests(files)
 
-    def prepare_dataset_dict(self, return_value: int) -> dict[str, Any]:
+    def prepare_stage_dict(self, return_value: int) -> dict[str, Any]:
         return {"tests_count": return_value}
 
     def status_409(self, response: Response) -> None:

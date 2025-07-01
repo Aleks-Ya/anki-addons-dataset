@@ -8,7 +8,7 @@ class ActionsRepoHandler(RepoHandler):
     def get_raw_filename(self) -> str:
         return "actions"
 
-    def get_dataset_filename(self) -> str:
+    def get_stage_filename(self) -> str:
         return "action-count"
 
     def get_url(self) -> str:
@@ -17,5 +17,5 @@ class ActionsRepoHandler(RepoHandler):
     def extract_return_value_from_dict(self, content_obj: dict[str, Any]) -> int:
         return content_obj.get("total_count", 0)
 
-    def prepare_dataset_dict(self, return_value: Any) -> dict[str, Any]:
+    def prepare_stage_dict(self, return_value: Any) -> dict[str, Any]:
         return {"total_count": return_value}

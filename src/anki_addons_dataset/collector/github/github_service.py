@@ -18,33 +18,33 @@ from anki_addons_dataset.common.data_types import GitHubRepo, LanguageName
 class GithubService:
     __sleep_sec: int = 1
 
-    def __init__(self, dataset_dir: Path, raw_dir: Path):
+    def __init__(self, raw_dir: Path, stage_dir: Path):
         token_file: Path = Path.home() / ".github" / "token.txt"
         token: str = token_file.read_text().strip()
         self.__headers: dict[str, str] = {
             'Authorization': f'Bearer {token}'
         }
         self.__raw_dir: Path = raw_dir / "2-github"
-        self.__dataset_dir: Path = dataset_dir / "raw" / "2-github"
+        self.__stage_dir: Path = stage_dir / "2-github"
 
     def get_languages(self, repo: GitHubRepo) -> dict[LanguageName, int]:
-        handler: RepoHandler = LanguagesRepoHandler(repo, self.__raw_dir, self.__dataset_dir)
+        handler: RepoHandler = LanguagesRepoHandler(repo, self.__raw_dir, self.__stage_dir)
         return self.__get_value(handler, repo)
 
     def get_stars_count(self, repo: GitHubRepo) -> int:
-        handler: RepoHandler = StarsRepoHandler(repo, self.__raw_dir, self.__dataset_dir)
+        handler: RepoHandler = StarsRepoHandler(repo, self.__raw_dir, self.__stage_dir)
         return self.__get_value(handler, repo)
 
     def get_last_commit(self, repo: GitHubRepo) -> Optional[datetime]:
-        handler: RepoHandler = LastCommitRepoHandler(repo, self.__raw_dir, self.__dataset_dir)
+        handler: RepoHandler = LastCommitRepoHandler(repo, self.__raw_dir, self.__stage_dir)
         return self.__get_value(handler, repo)
 
     def get_action_count(self, repo: GitHubRepo) -> Optional[int]:
-        handler: RepoHandler = ActionsRepoHandler(repo, self.__raw_dir, self.__dataset_dir)
+        handler: RepoHandler = ActionsRepoHandler(repo, self.__raw_dir, self.__stage_dir)
         return self.__get_value(handler, repo)
 
     def get_tests_count(self, repo: GitHubRepo) -> Optional[int]:
-        handler: RepoHandler = TestsRepoHandler(repo, self.__raw_dir, self.__dataset_dir)
+        handler: RepoHandler = TestsRepoHandler(repo, self.__raw_dir, self.__stage_dir)
         return self.__get_value(handler, repo)
 
     def __get_value(self, handler: RepoHandler, repo: GitHubRepo) -> Optional[Any]:
@@ -66,5 +66,5 @@ class GithubService:
             else:
                 handler.status_other(response)
         return_value: Optional[Any] = handler.extract_return_value()
-        handler.write_dataset(return_value)
+        handler.write_stage(return_value)
         return return_value

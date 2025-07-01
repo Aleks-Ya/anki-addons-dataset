@@ -13,7 +13,7 @@ class LastCommitRepoHandler(RepoHandler):
     def get_raw_filename(self) -> str:
         return "last-commit"
 
-    def get_dataset_filename(self) -> str:
+    def get_stage_filename(self) -> str:
         return "last-commit"
 
     def get_url(self) -> str:
@@ -32,9 +32,9 @@ class LastCommitRepoHandler(RepoHandler):
         raw_file: Path = self.get_raw_file()
         JsonHelper.write_dict_to_file({}, raw_file)
 
-    def prepare_dataset_dict(self, return_value: Any) -> dict[str, Any]:
+    def prepare_stage_dict(self, return_value: Any) -> dict[str, Any]:
         pass
 
-    def write_dataset(self, return_value: Any) -> None:
+    def write_stage(self, return_value: Any) -> None:
         raw_file: Path = self.get_raw_file()
-        self.get_dataset_file().write_text(raw_file.read_text())
+        self.get_stage_file().write_text(raw_file.read_text())

@@ -8,7 +8,7 @@ class StarsRepoHandler(RepoHandler):
     def get_raw_filename(self) -> str:
         return "info"
 
-    def get_dataset_filename(self) -> str:
+    def get_stage_filename(self) -> str:
         return "stars-count"
 
     def get_url(self) -> str:
@@ -17,7 +17,7 @@ class StarsRepoHandler(RepoHandler):
     def extract_return_value_from_dict(self, content_obj: dict[str, Any]) -> int:
         return content_obj["stargazers_count"] if "stargazers_count" in content_obj else 0
 
-    def prepare_dataset_dict(self, return_value: Any) -> dict[str, Any]:
+    def prepare_stage_dict(self, return_value: Any) -> dict[str, Any]:
         return {"stars_count": return_value}
 
     def get_not_found_return_value(self) -> int:
