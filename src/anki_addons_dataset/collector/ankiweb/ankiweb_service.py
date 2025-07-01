@@ -17,7 +17,7 @@ class AnkiWebService:
         options: Options = Options()
         options.add_argument('--headless')
         self.__driver: WebDriver = webdriver.Chrome(options=options)
-        self.__cache_html_dir: Path = cache_dir / "anki-web" / "html"
+        self.__cache_html_dir: Path = cache_dir / "1-anki-web" / "html"
         dataset_ankiweb_dir: Path = dataset_dir / "raw" / "1-anki-web"
         self.__dataset_html_dir: Path = dataset_ankiweb_dir / "html"
         self.__dataset_html_dir.mkdir(parents=True, exist_ok=True)

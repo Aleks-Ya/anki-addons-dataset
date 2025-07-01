@@ -24,8 +24,8 @@ class GithubService:
         self.__headers: dict[str, str] = {
             'Authorization': f'Bearer {token}'
         }
+        self.__cache_dir: Path = cache_dir / "2-github"
         self.__dataset_dir: Path = dataset_dir / "raw" / "2-github"
-        self.__cache_dir: Path = cache_dir / "github"
 
     def get_languages(self, repo: GitHubRepo) -> dict[LanguageName, int]:
         handler: RepoHandler = LanguagesRepoHandler(repo, self.__cache_dir, self.__dataset_dir)
