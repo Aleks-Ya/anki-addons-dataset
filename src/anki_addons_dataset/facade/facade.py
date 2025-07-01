@@ -20,16 +20,17 @@ class Facade:
         self.__working_dir: Path = working_dir
         self.__history_dir: Path = self.__working_dir / "history"
 
-    def create_datasets(self) -> None:
+    def create_datasets(self, offline: bool) -> None:
         for history_sub_dir in self.__history_dir.iterdir():
             if history_sub_dir.is_dir():
                 creation_date: date = date.fromisoformat(history_sub_dir.name)
-                self.create_dataset(creation_date)
-                print(f"Created dataset for {creation_date}")
+                self.create_dataset(creation_date, offline)
             else:
                 print(f"Skipping {history_sub_dir}")
 
-    def create_dataset(self, creation_date: date) -> None:
+    def create_dataset(self, creation_date: date, offline: bool) -> None:
+        print(f"===== Creating dataset for {creation_date} =====")
+        print(f"Offline: {offline}")
         version_dir: Path = self.__history_dir / f"{creation_date.isoformat()}"
         dataset_dir: Path = version_dir / "dataset"
         print(f"Dataset dir: {dataset_dir}")
@@ -41,8 +42,8 @@ class Facade:
         self.__delete_dir(dataset_dir)
         overrider: Overrider = Overrider(stage_dir)
         addon_page_parser: AddonPageParser = AddonPageParser(overrider)
-        ankiweb_service: AnkiWebService = AnkiWebService(raw_dir, stage_dir, addon_page_parser)
-        github_service: GithubService = GithubService(raw_dir, stage_dir)
+        ankiweb_service: AnkiWebService = AnkiWebService(raw_dir, stage_dir, addon_page_parser, offline)
+        github_service: GithubService = GithubService(raw_dir, stage_dir, offline)
         enricher: Enricher = Enricher(stage_dir, github_service)
         collector: AddonCollector = AddonCollector(ankiweb_service, enricher, overrider)
         addon_infos: list[AddonInfo] = collector.collect_addons()
@@ -55,6 +56,8 @@ class Facade:
         hugging_face: HuggingFace = HuggingFace(dataset_dir, creation_date)
         hugging_face.create_dataset_card()
         hugging_face.create_metadata_yaml()
+
+        print(f"===== Created dataset for {creation_date} =====\n")
 
     @staticmethod
     def __delete_dir(directory: Path) -> None:

@@ -18,7 +18,7 @@ from anki_addons_dataset.common.data_types import GitHubRepo, LanguageName
 class GithubService:
     __sleep_sec: int = 1
 
-    def __init__(self, raw_dir: Path, stage_dir: Path):
+    def __init__(self, raw_dir: Path, stage_dir: Path, offline: bool):
         token_file: Path = Path.home() / ".github" / "token.txt"
         token: str = token_file.read_text().strip()
         self.__headers: dict[str, str] = {
@@ -26,6 +26,7 @@ class GithubService:
         }
         self.__raw_dir: Path = raw_dir / "2-github"
         self.__stage_dir: Path = stage_dir / "2-github"
+        self.__offline: bool = offline
 
     def get_languages(self, repo: GitHubRepo) -> dict[LanguageName, int]:
         handler: RepoHandler = LanguagesRepoHandler(repo, self.__raw_dir, self.__stage_dir)
@@ -54,6 +55,8 @@ class GithubService:
             if handler.is_repo_marked_as_not_found():
                 return handler.get_not_found_return_value()
             print(f"Downloading {handler.get_raw_filename()} for {repo.get_id()}")
+            if self.__offline:
+                raise Exception("Offline mode is enabled")
             url: str = handler.get_url()
             sleep(GithubService.__sleep_sec)
             response: Response = requests.request("GET", url, headers=self.__headers)

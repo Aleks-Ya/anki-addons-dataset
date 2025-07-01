@@ -12,13 +12,14 @@ from anki_addons_dataset.common.json_helper import JsonHelper
 
 
 class AnkiWebService:
-    def __init__(self, raw_dir: Path, stage_dir: Path, addon_page_parser: AddonPageParser) -> None:
+    def __init__(self, raw_dir: Path, stage_dir: Path, addon_page_parser: AddonPageParser, offline: bool) -> None:
         self.__addon_page_parser: AddonPageParser = addon_page_parser
         options: Options = Options()
         options.add_argument('--headless')
         self.__driver: WebDriver = webdriver.Chrome(options=options)
         self.__raw_dir: Path = raw_dir / "1-anki-web"
         self.__stage_dir: Path = stage_dir / "1-anki-web"
+        self.__offline: bool = offline
 
     def __del__(self) -> None:
         self.__driver.quit()
@@ -49,6 +50,8 @@ class AnkiWebService:
         raw_file: Path = self.__raw_dir / "addons_page.html"
         if not raw_file.exists():
             print(f"Downloading addons page to {raw_file}")
+            if self.__offline:
+                raise Exception("Offline mode is enabled")
             raw_file.parent.mkdir(parents=True, exist_ok=True)
             html: str = self.__load_page("https://ankiweb.net/shared/addons")
             raw_file.write_text(html)
@@ -59,6 +62,8 @@ class AnkiWebService:
         raw_file: Path = self.__raw_dir / "addon" / f"{addon_id}.html"
         if not raw_file.exists():
             print(f"Downloading addon page to {raw_file}")
+            if self.__offline:
+                raise Exception("Offline mode is enabled")
             raw_file.parent.mkdir(parents=True, exist_ok=True)
             html: str = self.__load_page(f"https://ankiweb.net/shared/info/{addon_id}")
             raw_file.write_text(html)

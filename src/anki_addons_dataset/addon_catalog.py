@@ -9,6 +9,7 @@ if __name__ == "__main__":
     creation_date: date = arguments.get_creation_date()
     print(f"Creation date: {creation_date}")
 
+    offline: bool = True
     working_dir: Path = Path.home() / "anki-addons-dataset"
     facade: Facade = Facade(working_dir)
-    facade.create_dataset(creation_date)
+    facade.create_datasets(offline)
