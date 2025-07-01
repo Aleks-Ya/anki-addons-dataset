@@ -20,9 +20,13 @@ if __name__ == "__main__":
     print(f"Creation date: {creation_date}")
 
     working_dir: Path = Path.home() / "anki-addons-dataset"
-    dataset_dir: Path = working_dir / "dataset"
-    raw_dir: Path = working_dir / "raw"
-    stage_dir: Path = working_dir / "stage"
+    history_dir: Path = working_dir / "history" / f"{creation_date.isoformat()}"
+    dataset_dir: Path = history_dir / "dataset"
+    print(f"Dataset dir: {dataset_dir}")
+    raw_dir: Path = history_dir / "raw"
+    print(f"Raw dir: {raw_dir}")
+    stage_dir: Path = history_dir / "stage"
+    print(f"Stage dir: {stage_dir}")
     shutil.rmtree(dataset_dir, ignore_errors=True)
     overrider: Overrider = Overrider(stage_dir)
     addon_page_parser: AddonPageParser = AddonPageParser(overrider)
