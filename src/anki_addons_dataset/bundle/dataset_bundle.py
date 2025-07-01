@@ -1,0 +1,26 @@
+import shutil
+from datetime import date
+from pathlib import Path
+
+from anki_addons_dataset.common.working_dir import WorkingDir
+
+
+class DatasetBundle:
+    def __init__(self, working_dir: WorkingDir):
+        self.__working_dir: WorkingDir = working_dir
+
+    def create_bundle(self, bundle_dir: Path) -> None:
+        print(f"Creating dataset bundle in {bundle_dir}")
+        shutil.rmtree(bundle_dir, ignore_errors=True)
+        bundle_history_dir: Path = bundle_dir / "history"
+        bundle_history_dir.mkdir(parents=True, exist_ok=True)
+        for version_dir in self.__working_dir.list_version_dirs():
+            creation_date: date = WorkingDir.version_dir_to_creation_date(version_dir)
+            version_bundle_zip: Path = bundle_history_dir / f"{creation_date}.zip"
+            print(f"Creating dataset bundle zip: {version_bundle_zip}")
+            shutil.make_archive(str(version_bundle_zip), 'zip', version_dir)
+        latest_dir: Path = bundle_dir / "latest"
+        print(f"Copying the latest version: {latest_dir}")
+        latest_version_dir: Path = self.__working_dir.get_latest_version_dir()
+        final_dir: Path = WorkingDir.get_final_dir(latest_version_dir)
+        shutil.copytree(final_dir, latest_dir)

@@ -3,6 +3,7 @@ from datetime import date
 from pathlib import Path
 
 from anki_addons_dataset.aggregator.aggregator import Aggregator
+from anki_addons_dataset.bundle.dataset_bundle import DatasetBundle
 from anki_addons_dataset.collector.addon_collector import AddonCollector
 from anki_addons_dataset.collector.ankiweb.addon_page_parser import AddonPageParser
 from anki_addons_dataset.collector.ankiweb.ankiweb_service import AnkiWebService
@@ -24,6 +25,8 @@ class Facade:
         for version_dir in self.__working_dir.list_version_dirs():
             creation_date: date = WorkingDir.version_dir_to_creation_date(version_dir)
             self.create_dataset(creation_date, offline)
+        dataset_bundle: DatasetBundle = DatasetBundle(self.__working_dir)
+        dataset_bundle.create_bundle(self.__working_dir.get_working_dir() / "dataset")
 
     def create_dataset(self, creation_date: date, offline: bool) -> None:
         print(f"===== Creating dataset for {creation_date} =====")
@@ -33,7 +36,7 @@ class Facade:
         print(f"Raw dir: {raw_dir}")
         stage_dir: Path = version_dir / "2-stage"
         print(f"Stage dir: {stage_dir}")
-        final_dir: Path = version_dir / "3-final"
+        final_dir: Path = WorkingDir.get_final_dir(version_dir)
         print(f"Final dir: {final_dir}")
         self.__delete_dir(stage_dir)
         self.__delete_dir(final_dir)
