@@ -20,6 +20,6 @@ class HuggingFace:
         content: dict[str, Any] = {
             "creation_date": WorkingDir.version_dir_to_creation_date(version_dir)
         }
-        dest_file: Path = version_dir / "metadata.json"
+        dest_file: Path = WorkingDir.get_metadata_json(version_dir)
         JsonHelper.write_dict_to_file(content, dest_file)
         print(f"Created dataset metadata file: {dest_file}")

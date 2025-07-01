@@ -26,5 +26,7 @@ class DatasetBundle:
         latest_version_dir: Path = self.__working_dir.get_latest_version_dir()
         final_dir: Path = WorkingDir.get_final_dir(latest_version_dir)
         shutil.copytree(final_dir, latest_dir)
+        metadata_json_file: Path = WorkingDir.get_metadata_json(latest_version_dir)
+        shutil.copyfile(metadata_json_file, latest_dir / metadata_json_file.name)
 
         HuggingFace.create_dataset_card(bundle_dir)

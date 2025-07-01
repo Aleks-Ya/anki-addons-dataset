@@ -38,3 +38,7 @@ class WorkingDir:
     @staticmethod
     def version_dir_to_creation_date(version_dir: Path) -> date:
         return date.fromisoformat(version_dir.name)
+
+    @staticmethod
+    def get_metadata_json(version_dir: Path) -> Path:
+        return version_dir / "metadata.json"
