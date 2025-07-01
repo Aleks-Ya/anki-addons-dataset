@@ -1,26 +1,25 @@
 import shutil
-from datetime import date
 from pathlib import Path
 from typing import Any
 
 from anki_addons_dataset.common.json_helper import JsonHelper
+from anki_addons_dataset.common.working_dir import WorkingDir
 
 
 class HuggingFace:
-    def __init__(self, final_dir: Path, creation_date: date):
-        self.__final_dir: Path = final_dir
-        self.__creation_date: date = creation_date
 
-    def create_dataset_card(self) -> None:
+    @staticmethod
+    def create_dataset_card(dataset_dir: Path) -> None:
         src_file: Path = Path(__file__).parent / "README.md"
-        dest_file: Path = self.__final_dir / "README.md"
+        dest_file: Path = dataset_dir / "README.md"
         shutil.copy(src_file, dest_file)
         print(f"Created dataset card: {dest_file}")
 
-    def create_metadata_yaml(self) -> None:
+    @staticmethod
+    def create_version_metadata_yaml(version_dir: Path) -> None:
         content: dict[str, Any] = {
-            "creation_date": self.__creation_date
+            "creation_date": WorkingDir.version_dir_to_creation_date(version_dir)
         }
-        dest_file: Path = self.__final_dir / "metadata.json"
+        dest_file: Path = version_dir / "metadata.json"
         JsonHelper.write_dict_to_file(content, dest_file)
         print(f"Created dataset metadata file: {dest_file}")

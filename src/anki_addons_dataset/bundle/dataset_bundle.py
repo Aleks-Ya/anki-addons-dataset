@@ -3,6 +3,7 @@ from datetime import date
 from pathlib import Path
 
 from anki_addons_dataset.common.working_dir import WorkingDir
+from anki_addons_dataset.huggingface.hugging_face import HuggingFace
 
 
 class DatasetBundle:
@@ -19,8 +20,11 @@ class DatasetBundle:
             version_bundle_zip: Path = bundle_history_dir / f"{creation_date}.zip"
             print(f"Creating dataset bundle zip: {version_bundle_zip}")
             shutil.make_archive(str(version_bundle_zip), 'zip', version_dir)
+
         latest_dir: Path = bundle_dir / "latest"
         print(f"Copying the latest version: {latest_dir}")
         latest_version_dir: Path = self.__working_dir.get_latest_version_dir()
         final_dir: Path = WorkingDir.get_final_dir(latest_version_dir)
         shutil.copytree(final_dir, latest_dir)
+
+        HuggingFace.create_dataset_card(bundle_dir)

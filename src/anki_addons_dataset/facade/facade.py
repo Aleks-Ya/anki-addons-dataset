@@ -24,11 +24,11 @@ class Facade:
     def create_datasets(self, offline: bool) -> None:
         for version_dir in self.__working_dir.list_version_dirs():
             creation_date: date = WorkingDir.version_dir_to_creation_date(version_dir)
-            self.create_dataset(creation_date, offline)
+            self.__create_dataset(creation_date, offline)
         dataset_bundle: DatasetBundle = DatasetBundle(self.__working_dir)
         dataset_bundle.create_bundle(self.__working_dir.get_working_dir() / "dataset")
 
-    def create_dataset(self, creation_date: date, offline: bool) -> None:
+    def __create_dataset(self, creation_date: date, offline: bool) -> None:
         print(f"===== Creating dataset for {creation_date} =====")
         print(f"Offline: {offline}")
         version_dir: Path = self.__working_dir.get_history_dir() / f"{creation_date.isoformat()}"
@@ -53,9 +53,7 @@ class Facade:
         exporter_facade: ExporterFacade = ExporterFacade(final_dir)
         exporter_facade.export_all(addon_infos, aggregation)
 
-        hugging_face: HuggingFace = HuggingFace(final_dir, creation_date)
-        hugging_face.create_dataset_card()
-        hugging_face.create_metadata_yaml()
+        HuggingFace.create_version_metadata_yaml(version_dir)
 
         print(f"===== Created dataset for {creation_date} =====\n")
 
