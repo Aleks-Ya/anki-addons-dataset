@@ -55,7 +55,7 @@ class Details:
 
 class JsonExporter(Exporter):
     def __init__(self, final_dir: Path):
-        super().__init__(final_dir / "structured" / "json")
+        super().__init__(final_dir / "json")
 
     def export_addon_infos(self, addon_infos: list[AddonInfo]) -> None:
         json_list: list[Details] = []

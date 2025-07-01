@@ -34,7 +34,7 @@ def test_export(note_size_addon_id: AddonId):
     ]
     exporter.export_addon_infos(addon_infos)
 
-    act_file: Path = final_dir / "structured" / "csv" / "data.csv"
+    act_file: Path = final_dir / "csv" / "data.csv"
     assert act_file.read_text() == dedent("""\
     ID,Name,Rating,Stars
     1188705668,NoteSize,4,3

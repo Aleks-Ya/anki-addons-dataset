@@ -10,7 +10,7 @@ tags:
   - addon
 configs:
   - config_name: default
-    data_files: structured/csv/data.csv
+    data_files: latest/csv/data.csv
     header: 0
 ---
 
@@ -26,19 +26,19 @@ and [Anki Forum](https://forums.ankiweb.net).
 ## Files
 ### Excel
 The best for **manual analysis** in Microsoft Excel or LibreOffice Calc.  
-Location: `structured/xlsx/data.xlsx`
+Location: `latest/xlsx/data.xlsx`
 
 ### JSON
 The best for **programmatic analysis** by Python, etc.  
 The JSON file contains all parsed fields. The Excel, CSV, and Markdown files contain part of its fields.  
-Location: `structured/json/data.json`  
-JSON schema: `structured/json/schema.json`
+Location: `latest/json/data.json`  
+JSON schema: `latest/json/schema.json`
 
 ### CSV
-Location: `structured/csv/data.csv`
+Location: `latest/csv/data.csv`
 
 ### Markdown
-Location: `structured/markdown/data.md`
+Location: `latest/markdown/data.md`
 
 ---
 

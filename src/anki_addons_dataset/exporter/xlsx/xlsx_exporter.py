@@ -10,7 +10,7 @@ from anki_addons_dataset.exporter.xlsx.aggregation_sheet import AggregationSheet
 
 class XlsxExporter(Exporter):
     def __init__(self, final_dir: Path):
-        super().__init__(final_dir / "structured" / "xlsx")
+        super().__init__(final_dir / "xlsx")
 
     def export_addon_infos(self, addon_infos: list[AddonInfo]):
         output_file: Path = self._final_dir / "data.xlsx"

@@ -8,7 +8,7 @@ from anki_addons_dataset.exporter.exporter import Exporter
 
 class MarkdownExporter(Exporter):
     def __init__(self, final_dir: Path):
-        super().__init__(final_dir / "structured" / "markdown")
+        super().__init__(final_dir / "markdown")
 
     def export_addon_infos(self, addon_infos: list[AddonInfo]):
         output_file: Path = self._final_dir / "data.md"
