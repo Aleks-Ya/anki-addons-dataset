@@ -8,9 +8,9 @@ from anki_addons_dataset.common.json_helper import JsonHelper
 
 
 class Enricher:
-    def __init__(self, dataset_dir: Path, github_service: GithubService):
-        self.__dataset_dir: Path = dataset_dir / "raw" / "3-enricher" / "addon"
-        self.__dataset_dir.mkdir(parents=True, exist_ok=True)
+    def __init__(self, stage_dir: Path, github_service: GithubService):
+        self.__stage_dir: Path = stage_dir / "3-enricher" / "addon"
+        self.__stage_dir.mkdir(parents=True, exist_ok=True)
         self.__github_service: GithubService = github_service
 
     def enrich_list(self, addon_infos: list[AddonInfo]) -> list[AddonInfo]:
@@ -29,7 +29,7 @@ class Enricher:
         github_info: GithubInfo = GithubInfo(addon_info.github.github_links, addon_info.github.github_repo,
                                              languages, stars, last_commit, action_count, tests_count)
         enriched_addon_info: AddonInfo = AddonInfo(addon_info.header, addon_info.page, github_info)
-        addon_json_file: Path = self.__dataset_dir / f"{addon_info.header.id}.json"
+        addon_json_file: Path = self.__stage_dir / f"{addon_info.header.id}.json"
         JsonHelper.write_addon_info_to_file(addon_info, addon_json_file)
         return enriched_addon_info
 
