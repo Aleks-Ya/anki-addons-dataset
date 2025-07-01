@@ -12,14 +12,13 @@ from anki_addons_dataset.common.json_helper import JsonHelper
 
 
 class AnkiWebService:
-    def __init__(self, raw_dir: Path, addon_page_parser: AddonPageParser) -> None:
+    def __init__(self, raw_dir: Path, stage_dir: Path, addon_page_parser: AddonPageParser) -> None:
         self.__addon_page_parser: AddonPageParser = addon_page_parser
         options: Options = Options()
         options.add_argument('--headless')
         self.__driver: WebDriver = webdriver.Chrome(options=options)
-        raw_ankiweb_dir: Path = raw_dir / "1-anki-web"
-        self.__raw_html_dir: Path = raw_ankiweb_dir / "html"
-        self.__raw_json_dir: Path = raw_ankiweb_dir / "json"
+        self.__raw_dir: Path = raw_dir / "1-anki-web"
+        self.__stage_dir: Path = stage_dir / "1-anki-web"
 
     def __del__(self) -> None:
         self.__driver.quit()
@@ -41,13 +40,13 @@ class AnkiWebService:
             print(f"Parsing addon page: {addon_header.id} ({i}/{len(addon_headers)})")
             html: str = self.__load_addon_page(addon_header.id)
             addon_info: AddonInfo = self.__addon_page_parser.parse_addon_page(addon_header, html)
-            addon_json_file: Path = self.__raw_json_dir / "addon" / f"{addon_header.id}.json"
+            addon_json_file: Path = self.__stage_dir / "addon" / f"{addon_header.id}.json"
             JsonHelper.write_addon_info_to_file(addon_info, addon_json_file)
             addon_infos.append(addon_info)
         return addon_infos
 
     def __load_addons_page(self) -> str:
-        raw_file: Path = self.__raw_html_dir / "addons_page.html"
+        raw_file: Path = self.__raw_dir / "addons_page.html"
         if not raw_file.exists():
             print(f"Downloading addons page to {raw_file}")
             raw_file.parent.mkdir(parents=True, exist_ok=True)
@@ -57,7 +56,7 @@ class AnkiWebService:
         return raw_file.read_text()
 
     def __load_addon_page(self, addon_id: AddonId) -> str:
-        raw_file: Path = self.__raw_html_dir / "addon" / f"{addon_id}.html"
+        raw_file: Path = self.__raw_dir / "addon" / f"{addon_id}.html"
         if not raw_file.exists():
             print(f"Downloading addon page to {raw_file}")
             raw_file.parent.mkdir(parents=True, exist_ok=True)
