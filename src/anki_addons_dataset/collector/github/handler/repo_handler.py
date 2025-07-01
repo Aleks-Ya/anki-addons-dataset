@@ -51,12 +51,12 @@ class RepoHandler(ABC):
         ...
 
     def get_raw_file(self) -> Path:
-        name: str = self.get_raw_filename()
+        name: str = self.__get_json_filename(self.get_raw_filename())
         return self.__raw_dir / self._repo.user / self._repo.repo_name / f"{name}.json"
 
     def get_dataset_file(self) -> Path:
-        name: str = self.get_dataset_filename()
-        return self.__dataset_dir / self._repo.user / self._repo.repo_name / f"{self._repo.user}_{self._repo.repo_name}_{name}.json"
+        name: str = self.__get_json_filename(self.get_dataset_filename())
+        return self.__dataset_dir / self._repo.user / self._repo.repo_name / f"{name}.json"
 
     def extract_return_value(self) -> Optional[Any]:
         raw_file: Path = self.get_raw_file()
@@ -80,4 +80,8 @@ class RepoHandler(ABC):
         return self.__get_not_found_file().exists()
 
     def __get_not_found_file(self) -> Path:
-        return self.__raw_dir / self._repo.user / self._repo.repo_name / "NOT_FOUND_404"
+        name: str = self.__get_json_filename("NOT_FOUND_404")
+        return self.__raw_dir / self._repo.user / self._repo.repo_name / name
+
+    def __get_json_filename(self, name: str) -> str:
+        return f"{self._repo.user}_{self._repo.repo_name}_{name}"
