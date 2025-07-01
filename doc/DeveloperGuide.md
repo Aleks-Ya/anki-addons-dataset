@@ -22,4 +22,7 @@ https://sonarcloud.io/project/overview?id=Aleks-Ya_anki-addons-dataset
 Sonar report is automatically updated in GitHub Actions.
 
 ## Version
-Increment patch version: `bump-my-version bump minor`
+Show the next versions: `bump-my-version show-bump`
+Increment SNAPSHOT version (`0.1.1-SNAPSHOT` -> `0.2.0-SNAPSHOT`): `bump-my-version bump minor`
+Switch SNAPSHOT version to RELEASE (`0.1.1-SNAPSHOT` -> `0.1.1`): `bump-my-version bump release`
+Switch RELEASE version to SNAPSHOT (`0.1.1` -> `0.2.0-SNAPSHOT`): `bump-my-version bump minor`
