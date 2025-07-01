@@ -1,5 +1,6 @@
 from anki_addons_dataset.collector.ankiweb.url_parser import UrlParser
-from anki_addons_dataset.common.data_types import URL, GitHubLink, GitHubRepo, GitHubUser, GithubUserName, GithubRepoName
+from anki_addons_dataset.common.data_types import URL, GitHubLink, GitHubRepo, GitHubUser, GithubUserName, \
+    GithubRepoName
 
 
 def test_find_github_links():

@@ -5,7 +5,7 @@ from anki_addons_dataset.collector.github.handler.repo_handler import RepoHandle
 
 class StarsRepoHandler(RepoHandler):
 
-    def get_cache_filename(self) -> str:
+    def get_raw_filename(self) -> str:
         return "info"
 
     def get_dataset_filename(self) -> str:

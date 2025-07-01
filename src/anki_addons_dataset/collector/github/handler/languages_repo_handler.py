@@ -6,7 +6,7 @@ from anki_addons_dataset.common.data_types import LanguageName
 
 class LanguagesRepoHandler(RepoHandler):
 
-    def get_cache_filename(self) -> str:
+    def get_raw_filename(self) -> str:
         return "languages"
 
     def get_dataset_filename(self) -> str:

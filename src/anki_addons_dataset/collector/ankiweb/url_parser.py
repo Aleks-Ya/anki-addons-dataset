@@ -2,7 +2,8 @@ import re
 from re import Match
 from typing import Optional
 
-from anki_addons_dataset.common.data_types import URL, GitHubLink, GitHubRepo, GithubRepoName, GithubUserName, GitHubUser
+from anki_addons_dataset.common.data_types import URL, GitHubLink, GitHubRepo, GithubRepoName, GithubUserName, \
+    GitHubUser
 
 
 class UrlParser:

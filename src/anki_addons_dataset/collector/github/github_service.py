@@ -18,42 +18,42 @@ from anki_addons_dataset.common.data_types import GitHubRepo, LanguageName
 class GithubService:
     __sleep_sec: int = 1
 
-    def __init__(self, dataset_dir: Path, cache_dir: Path):
+    def __init__(self, dataset_dir: Path, raw_dir: Path):
         token_file: Path = Path.home() / ".github" / "token.txt"
         token: str = token_file.read_text().strip()
         self.__headers: dict[str, str] = {
             'Authorization': f'Bearer {token}'
         }
-        self.__cache_dir: Path = cache_dir / "2-github"
+        self.__raw_dir: Path = raw_dir / "2-github"
         self.__dataset_dir: Path = dataset_dir / "raw" / "2-github"
 
     def get_languages(self, repo: GitHubRepo) -> dict[LanguageName, int]:
-        handler: RepoHandler = LanguagesRepoHandler(repo, self.__cache_dir, self.__dataset_dir)
+        handler: RepoHandler = LanguagesRepoHandler(repo, self.__raw_dir, self.__dataset_dir)
         return self.__get_value(handler, repo)
 
     def get_stars_count(self, repo: GitHubRepo) -> int:
-        handler: RepoHandler = StarsRepoHandler(repo, self.__cache_dir, self.__dataset_dir)
+        handler: RepoHandler = StarsRepoHandler(repo, self.__raw_dir, self.__dataset_dir)
         return self.__get_value(handler, repo)
 
     def get_last_commit(self, repo: GitHubRepo) -> Optional[datetime]:
-        handler: RepoHandler = LastCommitRepoHandler(repo, self.__cache_dir, self.__dataset_dir)
+        handler: RepoHandler = LastCommitRepoHandler(repo, self.__raw_dir, self.__dataset_dir)
         return self.__get_value(handler, repo)
 
     def get_action_count(self, repo: GitHubRepo) -> Optional[int]:
-        handler: RepoHandler = ActionsRepoHandler(repo, self.__cache_dir, self.__dataset_dir)
+        handler: RepoHandler = ActionsRepoHandler(repo, self.__raw_dir, self.__dataset_dir)
         return self.__get_value(handler, repo)
 
     def get_tests_count(self, repo: GitHubRepo) -> Optional[int]:
-        handler: RepoHandler = TestsRepoHandler(repo, self.__cache_dir, self.__dataset_dir)
+        handler: RepoHandler = TestsRepoHandler(repo, self.__raw_dir, self.__dataset_dir)
         return self.__get_value(handler, repo)
 
     def __get_value(self, handler: RepoHandler, repo: GitHubRepo) -> Optional[Any]:
         if not repo:
             return None
-        if not handler.is_cached():
+        if not handler.is_downloaded():
             if handler.is_repo_marked_as_not_found():
                 return handler.get_not_found_return_value()
-            print(f"Downloading {handler.get_cache_filename()} for {repo.get_id()}")
+            print(f"Downloading {handler.get_raw_filename()} for {repo.get_id()}")
             url: str = handler.get_url()
             sleep(GithubService.__sleep_sec)
             response: Response = requests.request("GET", url, headers=self.__headers)

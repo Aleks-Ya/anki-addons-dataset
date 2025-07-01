@@ -10,7 +10,7 @@ from anki_addons_dataset.common.json_helper import JsonHelper
 
 class LastCommitRepoHandler(RepoHandler):
 
-    def get_cache_filename(self) -> str:
+    def get_raw_filename(self) -> str:
         return "last-commit"
 
     def get_dataset_filename(self) -> str:
@@ -29,12 +29,12 @@ class LastCommitRepoHandler(RepoHandler):
 
     def status_409(self, response: Response) -> None:
         print(f"Repo is empty: {self.get_url()}")
-        cache_file: Path = self.get_cache_file()
-        JsonHelper.write_dict_to_file({}, cache_file)
+        raw_file: Path = self.get_raw_file()
+        JsonHelper.write_dict_to_file({}, raw_file)
 
     def prepare_dataset_dict(self, return_value: Any) -> dict[str, Any]:
         pass
 
     def write_dataset(self, return_value: Any) -> None:
-        cache_file: Path = self.get_cache_file()
-        self.get_dataset_file().write_text(cache_file.read_text())
+        raw_file: Path = self.get_raw_file()
+        self.get_dataset_file().write_text(raw_file.read_text())

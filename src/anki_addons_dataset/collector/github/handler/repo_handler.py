@@ -10,26 +10,26 @@ from anki_addons_dataset.common.json_helper import JsonHelper
 
 
 class RepoHandler(ABC):
-    def __init__(self, repo: GitHubRepo, cache_dir: Path, dataset_dir: Path) -> None:
+    def __init__(self, repo: GitHubRepo, raw_dir: Path, dataset_dir: Path) -> None:
         self._repo: GitHubRepo = repo
-        self.__cache_dir: Path = cache_dir
+        self.__raw_dir: Path = raw_dir
         self.__dataset_dir: Path = dataset_dir
 
-    def is_cached(self) -> bool:
-        return self.get_cache_file().exists()
+    def is_downloaded(self) -> bool:
+        return self.get_raw_file().exists()
 
     def get_not_found_return_value(self) -> Any:
         return None
 
     def status_200(self, response: Response) -> None:
-        cache_file: Path = self.get_cache_file()
-        JsonHelper.write_content_to_file(response.text, cache_file)
+        raw_file: Path = self.get_raw_file()
+        JsonHelper.write_content_to_file(response.text, raw_file)
 
     def status_404(self) -> None:
-        cache_file: Path = self.get_cache_file()
+        raw_file: Path = self.get_raw_file()
         url: str = self.get_url()
         print(f"Repo not found: {url}")
-        JsonHelper.write_dict_to_file({}, cache_file)
+        JsonHelper.write_dict_to_file({}, raw_file)
         self.__get_not_found_file().write_text("")
 
     def status_409(self, response: Response) -> None:
@@ -43,24 +43,24 @@ class RepoHandler(ABC):
         ...
 
     @abstractmethod
-    def get_cache_filename(self) -> str:
+    def get_raw_filename(self) -> str:
         ...
 
     @abstractmethod
     def get_dataset_filename(self) -> str:
         ...
 
-    def get_cache_file(self) -> Path:
-        name: str = self.get_cache_filename()
-        return self.__cache_dir / self._repo.user / self._repo.repo_name / f"{name}.json"
+    def get_raw_file(self) -> Path:
+        name: str = self.get_raw_filename()
+        return self.__raw_dir / self._repo.user / self._repo.repo_name / f"{name}.json"
 
     def get_dataset_file(self) -> Path:
         name: str = self.get_dataset_filename()
         return self.__dataset_dir / self._repo.user / self._repo.repo_name / f"{self._repo.user}_{self._repo.repo_name}_{name}.json"
 
     def extract_return_value(self) -> Optional[Any]:
-        cache_file: Path = self.get_cache_file()
-        content_dict: object = json.loads(cache_file.read_text())
+        raw_file: Path = self.get_raw_file()
+        content_dict: object = json.loads(raw_file.read_text())
         return self.extract_return_value_from_dict(content_dict)
 
     @abstractmethod
@@ -80,4 +80,4 @@ class RepoHandler(ABC):
         return self.__get_not_found_file().exists()
 
     def __get_not_found_file(self) -> Path:
-        return self.__cache_dir / self._repo.user / self._repo.repo_name / "NOT_FOUND_404"
+        return self.__raw_dir / self._repo.user / self._repo.repo_name / "NOT_FOUND_404"

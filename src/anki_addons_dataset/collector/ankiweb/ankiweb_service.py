@@ -12,12 +12,12 @@ from anki_addons_dataset.common.json_helper import JsonHelper
 
 
 class AnkiWebService:
-    def __init__(self, dataset_dir: Path, cache_dir: Path, addon_page_parser: AddonPageParser) -> None:
+    def __init__(self, dataset_dir: Path, raw_dir: Path, addon_page_parser: AddonPageParser) -> None:
         self.__addon_page_parser: AddonPageParser = addon_page_parser
         options: Options = Options()
         options.add_argument('--headless')
         self.__driver: WebDriver = webdriver.Chrome(options=options)
-        self.__cache_html_dir: Path = cache_dir / "1-anki-web" / "html"
+        self.__raw_html_dir: Path = raw_dir / "1-anki-web" / "html"
         dataset_ankiweb_dir: Path = dataset_dir / "raw" / "1-anki-web"
         self.__dataset_html_dir: Path = dataset_ankiweb_dir / "html"
         self.__dataset_html_dir.mkdir(parents=True, exist_ok=True)
@@ -55,23 +55,23 @@ class AnkiWebService:
         return addon_infos
 
     def __load_addons_page(self) -> str:
-        cache_file: Path = self.__cache_html_dir / "addons_page.html"
-        if not cache_file.exists():
-            print(f"Downloading addons page to {cache_file}")
-            cache_file.parent.mkdir(parents=True, exist_ok=True)
+        raw_file: Path = self.__raw_html_dir / "addons_page.html"
+        if not raw_file.exists():
+            print(f"Downloading addons page to {raw_file}")
+            raw_file.parent.mkdir(parents=True, exist_ok=True)
             html: str = self.__load_page("https://ankiweb.net/shared/addons")
-            cache_file.write_text(html)
-        print(f"Reading addons page from {cache_file}")
-        return cache_file.read_text()
+            raw_file.write_text(html)
+        print(f"Reading addons page from {raw_file}")
+        return raw_file.read_text()
 
     def __load_addon_page(self, addon_id: AddonId) -> str:
-        cache_file: Path = self.__cache_html_dir / "addon" / f"{addon_id}.html"
-        if not cache_file.exists():
-            print(f"Downloading addon page to {cache_file}")
-            cache_file.parent.mkdir(parents=True, exist_ok=True)
+        raw_file: Path = self.__raw_html_dir / "addon" / f"{addon_id}.html"
+        if not raw_file.exists():
+            print(f"Downloading addon page to {raw_file}")
+            raw_file.parent.mkdir(parents=True, exist_ok=True)
             html: str = self.__load_page(f"https://ankiweb.net/shared/info/{addon_id}")
-            cache_file.write_text(html)
-        return cache_file.read_text()
+            raw_file.write_text(html)
+        return raw_file.read_text()
 
     def __load_page(self, url: str) -> str:
         self.__driver.get(url)

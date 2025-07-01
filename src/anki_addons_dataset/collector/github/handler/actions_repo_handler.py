@@ -5,7 +5,7 @@ from anki_addons_dataset.collector.github.handler.repo_handler import RepoHandle
 
 class ActionsRepoHandler(RepoHandler):
 
-    def get_cache_filename(self) -> str:
+    def get_raw_filename(self) -> str:
         return "actions"
 
     def get_dataset_filename(self) -> str:
