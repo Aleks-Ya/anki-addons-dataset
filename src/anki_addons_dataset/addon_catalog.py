@@ -2,6 +2,7 @@ from datetime import date
 from pathlib import Path
 
 from anki_addons_dataset.argument.script_arguments import ScriptArguments
+from anki_addons_dataset.common.working_dir import WorkingDir
 from anki_addons_dataset.facade.facade import Facade
 
 if __name__ == "__main__":
@@ -10,6 +11,6 @@ if __name__ == "__main__":
     print(f"Creation date: {creation_date}")
 
     offline: bool = True
-    working_dir: Path = Path.home() / "anki-addons-dataset"
+    working_dir: WorkingDir = WorkingDir(Path.home() / "anki-addons-dataset")
     facade: Facade = Facade(working_dir)
     facade.create_datasets(offline)
