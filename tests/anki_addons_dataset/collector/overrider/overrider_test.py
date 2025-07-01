@@ -21,4 +21,4 @@ def test_override_anki_forum_url(overrider: Overrider, note_size_addon_id: Addon
 
 
 def test_copy_override_yaml_to_dataset(overrider: Overrider, dataset_path: Path):
-    assert (dataset_path / "raw" / "4-overrider" / "overrides.yaml").exists()
+    assert (dataset_path / "4-overrider" / "overrides.yaml").exists()

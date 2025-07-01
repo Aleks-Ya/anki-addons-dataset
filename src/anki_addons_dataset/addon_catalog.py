@@ -24,7 +24,7 @@ if __name__ == "__main__":
     raw_dir: Path = working_dir / "raw"
     stage_dir: Path = working_dir / "stage"
     shutil.rmtree(dataset_dir, ignore_errors=True)
-    overrider: Overrider = Overrider(dataset_dir)
+    overrider: Overrider = Overrider(stage_dir)
     addon_page_parser: AddonPageParser = AddonPageParser(overrider)
     ankiweb_service: AnkiWebService = AnkiWebService(raw_dir, stage_dir, addon_page_parser)
     github_service: GithubService = GithubService(raw_dir, stage_dir)

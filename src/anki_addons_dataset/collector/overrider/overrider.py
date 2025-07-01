@@ -12,12 +12,12 @@ class Overrider:
     __github_url_key: str = "GitHubUrl"
     __anki_forum_url_key: str = "AnkiForumUrl"
 
-    def __init__(self, dataset_dir: Path):
+    def __init__(self, stage_dir: Path):
         override_file: Path = Path(__file__).parent / "overrides.yaml"
         print(f"Read override file: {override_file}")
         data: dict[str, dict[AddonId, Any]] = yaml.safe_load(override_file.read_text())
         self.addons_data: dict[AddonId, Any] = data.get("addons", {})
-        dest_file: Path = dataset_dir / "raw" / "4-overrider" / "overrides.yaml"
+        dest_file: Path = stage_dir / "4-overrider" / "overrides.yaml"
         dest_file.parent.mkdir(parents=True, exist_ok=True)
         shutil.copy(override_file, dest_file)
 
