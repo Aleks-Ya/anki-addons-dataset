@@ -43,21 +43,17 @@ Location: `latest/markdown/data.md`
 ---
 
 ## Raw data
-Raw data (collected during the dataset construction) are available in the `raw` folder.  
-It includes HTML pages of the Addon Catalog, responses of GitHub REST API,
-and intermediate files generated from them.  
-File `raw/4-overrider/overrides.yaml` contains manually curated data which override automatically parsed values.
+Raw data (collected during the dataset construction) are available in the `1-raw` folder within `history/*.zip` archives.  
+It includes HTML pages of the Addon Catalog and responses of GitHub REST API.  
+File `1-raw/4-overrider/overrides.yaml` contains manually curated data which override automatically parsed values.
 
-Structure of the `raw` folder:
+Structure of the `1-raw` folder:
 ```
-raw/
+1-raw/
     1-anki-web/
-        1-html/
-            addons.html
-            addon/
-                {addon-id}.html
-        2-json/addon/
-            {addon-id}.json
+        addons.html
+        addon/
+            {addon-id}.html
     2-github/{user}/{repo}/
         {repo}_action-count.json
         {repo}_languages.json
