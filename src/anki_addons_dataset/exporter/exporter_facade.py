@@ -5,6 +5,7 @@ from anki_addons_dataset.exporter.csv.csv_exporter import CsvExporter
 from anki_addons_dataset.exporter.exporter import Exporter
 from anki_addons_dataset.exporter.json.json_exporter import JsonExporter
 from anki_addons_dataset.exporter.markdown.markdown_exporter import MarkdownExporter
+from anki_addons_dataset.exporter.parquet.parquet_exporter import ParquetExporter
 from anki_addons_dataset.exporter.xlsx.xlsx_exporter import XlsxExporter
 
 
@@ -14,7 +15,8 @@ class ExporterFacade:
             JsonExporter(final_dir),
             MarkdownExporter(final_dir),
             XlsxExporter(final_dir),
-            CsvExporter(final_dir)
+            CsvExporter(final_dir),
+            ParquetExporter(final_dir)
         ]
 
     def export_all(self, addon_infos: list[AddonInfo], aggregation: Aggregation) -> None:

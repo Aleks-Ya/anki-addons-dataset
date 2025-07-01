@@ -8,3 +8,5 @@ pytest-cov
 jsonschema
 selenium
 huggingface_hub[cli]
+pandas
+pyarrow

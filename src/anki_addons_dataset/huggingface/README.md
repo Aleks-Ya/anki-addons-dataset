@@ -10,7 +10,7 @@ tags:
   - addon
 configs:
   - config_name: default
-    data_files: latest/csv/data.csv
+    data_files: latest/parquet/data.parquet
     header: 0
 ---
 
@@ -28,8 +28,12 @@ and [Anki Forum](https://forums.ankiweb.net).
 The best for **manual analysis** in Microsoft Excel or LibreOffice Calc.  
 Location: `latest/xlsx/data.xlsx`
 
-### JSON
+### Parquet
 The best for **programmatic analysis** by Python, etc.  
+The JSON file contains all parsed fields. The Excel, CSV, and Markdown files contain part of its fields.  
+Location: `latest/parquet/data.parquet`
+
+### JSON
 The JSON file contains all parsed fields. The Excel, CSV, and Markdown files contain part of its fields.  
 Location: `latest/json/data.json`  
 JSON schema: `latest/json/schema.json`
