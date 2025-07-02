@@ -1,5 +1,5 @@
 import shutil
-from datetime import date
+from datetime import date, datetime
 from pathlib import Path
 
 from anki_addons_dataset.aggregator.aggregator import Aggregator
@@ -13,6 +13,7 @@ from anki_addons_dataset.collector.overrider.overrider import Overrider
 from anki_addons_dataset.common.data_types import AddonInfo, Aggregation
 from anki_addons_dataset.common.working_dir import WorkingDir, VersionDir
 from anki_addons_dataset.exporter.exporter_facade import ExporterFacade
+from anki_addons_dataset.facade.version_metadata import VersionMetadata
 from anki_addons_dataset.huggingface.hugging_face import HuggingFace
 
 
@@ -32,6 +33,10 @@ class Facade:
         print(f"===== Creating dataset for {creation_date} =====")
         print(f"Offline: {offline}")
         version_dir: VersionDir = self.__working_dir.get_version_dir(creation_date)
+        version_metadata: VersionMetadata = VersionMetadata(version_dir)
+        if not version_metadata.get_start_datetime():
+            version_metadata.set_script_version(self.__script_version())
+            version_metadata.set_start_datetime(datetime.now().replace(microsecond=0))
         raw_dir: Path = version_dir.get_raw_dir()
         print(f"Raw dir: {raw_dir}")
         stage_dir: Path = version_dir.get_stage_dir()
@@ -55,9 +60,17 @@ class Facade:
 
         HuggingFace.create_version_metadata_yaml(version_dir)
 
+        if not version_metadata.get_finish_datetime():
+            version_metadata.set_finish_datetime(datetime.now().replace(microsecond=0))
+
         print(f"===== Created dataset for {creation_date} =====\n")
 
     @staticmethod
     def __delete_dir(directory: Path) -> None:
         print(f"Deleting dir: {directory}")
         shutil.rmtree(directory, ignore_errors=True)
+
+    @staticmethod
+    def __script_version() -> str:
+        version_file: Path = Path(__file__).parent.parent / "version.txt"
+        return version_file.read_text().strip()
