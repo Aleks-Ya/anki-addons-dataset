@@ -3,7 +3,7 @@ from pathlib import Path
 from typing import Any
 
 from anki_addons_dataset.common.json_helper import JsonHelper
-from anki_addons_dataset.common.working_dir import WorkingDir
+from anki_addons_dataset.common.working_dir import VersionDir
 
 
 class HuggingFace:
@@ -16,10 +16,10 @@ class HuggingFace:
         print(f"Created dataset card: {dest_file}")
 
     @staticmethod
-    def create_version_metadata_yaml(version_dir: Path) -> None:
+    def create_version_metadata_yaml(version_dir: VersionDir) -> None:
         content: dict[str, Any] = {
-            "creation_date": WorkingDir.version_dir_to_creation_date(version_dir)
+            "creation_date": version_dir.version_dir_to_creation_date()
         }
-        dest_file: Path = WorkingDir.get_metadata_json(version_dir)
+        dest_file: Path = version_dir.get_metadata_json()
         JsonHelper.write_dict_to_file(content, dest_file)
         print(f"Created dataset metadata file: {dest_file}")

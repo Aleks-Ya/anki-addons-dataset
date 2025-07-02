@@ -11,7 +11,7 @@ from anki_addons_dataset.collector.enricher.enricher import Enricher
 from anki_addons_dataset.collector.github.github_service import GithubService
 from anki_addons_dataset.collector.overrider.overrider import Overrider
 from anki_addons_dataset.common.data_types import AddonInfo, Aggregation
-from anki_addons_dataset.common.working_dir import WorkingDir
+from anki_addons_dataset.common.working_dir import WorkingDir, VersionDir
 from anki_addons_dataset.exporter.exporter_facade import ExporterFacade
 from anki_addons_dataset.huggingface.hugging_face import HuggingFace
 
@@ -23,20 +23,20 @@ class Facade:
 
     def create_datasets(self, offline: bool) -> None:
         for version_dir in self.__working_dir.list_version_dirs():
-            creation_date: date = WorkingDir.version_dir_to_creation_date(version_dir)
+            creation_date: date = version_dir.version_dir_to_creation_date()
             self.__create_dataset(creation_date, offline)
         dataset_bundle: DatasetBundle = DatasetBundle(self.__working_dir)
-        dataset_bundle.create_bundle(self.__working_dir.get_working_dir() / "dataset")
+        dataset_bundle.create_bundle(self.__working_dir.get_path() / "dataset")
 
     def __create_dataset(self, creation_date: date, offline: bool) -> None:
         print(f"===== Creating dataset for {creation_date} =====")
         print(f"Offline: {offline}")
-        version_dir: Path = self.__working_dir.get_history_dir() / f"{creation_date.isoformat()}"
-        raw_dir: Path = version_dir / "1-raw"
+        version_dir: VersionDir = self.__working_dir.get_version_dir(creation_date)
+        raw_dir: Path = version_dir.get_raw_dir()
         print(f"Raw dir: {raw_dir}")
-        stage_dir: Path = version_dir / "2-stage"
+        stage_dir: Path = version_dir.get_stage_dir()
         print(f"Stage dir: {stage_dir}")
-        final_dir: Path = WorkingDir.get_final_dir(version_dir)
+        final_dir: Path = version_dir.get_final_dir()
         print(f"Final dir: {final_dir}")
         self.__delete_dir(stage_dir)
         self.__delete_dir(final_dir)
