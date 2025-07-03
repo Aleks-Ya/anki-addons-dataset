@@ -56,7 +56,7 @@ class Facade:
 
         aggregation: Aggregation = Aggregator.aggregate(addon_infos)
 
-        exporter_facade: ExporterFacade = ExporterFacade(final_dir)
+        exporter_facade: ExporterFacade = ExporterFacade(version_dir)
         exporter_facade.export_all(addon_infos, aggregation)
 
         HuggingFace.create_version_metadata_yaml(version_dir, script_version)
