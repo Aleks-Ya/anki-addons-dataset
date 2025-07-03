@@ -16,6 +16,7 @@ Unit-tests are automatically executed in GitHub Actions.
 ## Create a new version
 1. Generate the dataset dir: `PYTHONPATH=src python -m anki_addons_dataset.addon_catalog`
 2. Upload the dataset dir as a new version: `huggingface-cli upload-large-folder Ya-Alex/anki-addons $HOME/anki-addons-dataset/dataset --repo-type=dataset --num-workers=4`
+3. Delete unused files from the remote repo manually (`huggingface-cli` just updates files)
 
 ## Sonar Qube
 https://sonarcloud.io/project/overview?id=Aleks-Ya_anki-addons-dataset  
