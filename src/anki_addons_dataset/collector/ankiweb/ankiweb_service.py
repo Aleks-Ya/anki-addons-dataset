@@ -9,16 +9,17 @@ from anki_addons_dataset.collector.ankiweb.addon_page_parser import AddonPagePar
 from anki_addons_dataset.collector.ankiweb.addons_page_parser import AddonsPageParser
 from anki_addons_dataset.common.data_types import AddonId, AddonInfo, AddonHeader
 from anki_addons_dataset.common.json_helper import JsonHelper
+from anki_addons_dataset.common.working_dir import VersionDir
 
 
 class AnkiWebService:
-    def __init__(self, raw_dir: Path, stage_dir: Path, addon_page_parser: AddonPageParser, offline: bool) -> None:
+    def __init__(self, version_dir: VersionDir, addon_page_parser: AddonPageParser, offline: bool) -> None:
         self.__addon_page_parser: AddonPageParser = addon_page_parser
         options: Options = Options()
         options.add_argument('--headless')
         self.__driver: WebDriver = webdriver.Chrome(options=options)
-        self.__raw_dir: Path = raw_dir / "1-anki-web"
-        self.__stage_dir: Path = stage_dir / "1-anki-web"
+        self.__raw_dir: Path = version_dir.get_raw_dir() / "1-anki-web"
+        self.__stage_dir: Path = version_dir.get_stage_dir() / "1-anki-web"
         self.__offline: bool = offline
 
     def __del__(self) -> None:

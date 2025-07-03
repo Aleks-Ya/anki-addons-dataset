@@ -48,7 +48,7 @@ class Facade:
         self.__delete_dir(final_dir)
         overrider: Overrider = Overrider(stage_dir)
         addon_page_parser: AddonPageParser = AddonPageParser(overrider)
-        ankiweb_service: AnkiWebService = AnkiWebService(raw_dir, stage_dir, addon_page_parser, offline)
+        ankiweb_service: AnkiWebService = AnkiWebService(version_dir, addon_page_parser, offline)
         github_service: GithubService = GithubService(raw_dir, stage_dir, offline)
         enricher: Enricher = Enricher(stage_dir, github_service)
         collector: AddonCollector = AddonCollector(ankiweb_service, enricher, overrider)
