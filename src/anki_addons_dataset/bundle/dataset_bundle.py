@@ -10,16 +10,19 @@ class DatasetBundle:
     def __init__(self, working_dir: WorkingDir):
         self.__working_dir: WorkingDir = working_dir
 
-    def create_bundle(self, bundle_dir: Path) -> None:
+    def create_bundle(self) -> None:
+        bundle_dir: Path = self.__working_dir.get_path() / "dataset"
         print(f"Creating dataset bundle in {bundle_dir}")
         shutil.rmtree(bundle_dir, ignore_errors=True)
         bundle_history_dir: Path = bundle_dir / "history"
         bundle_history_dir.mkdir(parents=True, exist_ok=True)
         for version_dir in self.__working_dir.list_version_dirs():
             creation_date: date = version_dir.version_dir_to_creation_date()
-            version_bundle_zip: Path = bundle_history_dir / f"{creation_date}.zip"
-            print(f"Creating dataset bundle zip: {version_bundle_zip}")
-            shutil.make_archive(str(version_bundle_zip), 'zip', version_dir.get_path())
+            archive_format: str = "zip"
+            base_name: str = f"{creation_date}"
+            version_bundle_zip: str = str(bundle_history_dir / f"{base_name}")
+            print(f"Creating dataset bundle zip: {version_bundle_zip}.{archive_format}")
+            shutil.make_archive(version_bundle_zip, archive_format, version_dir.get_path())
 
         latest_dir: Path = bundle_dir / "latest"
         print(f"Copying the latest version: {latest_dir}")

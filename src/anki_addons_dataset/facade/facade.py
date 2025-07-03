@@ -27,7 +27,7 @@ class Facade:
             creation_date: date = version_dir.version_dir_to_creation_date()
             self.__create_dataset(creation_date, offline)
         dataset_bundle: DatasetBundle = DatasetBundle(self.__working_dir)
-        dataset_bundle.create_bundle(self.__working_dir.get_path() / "dataset")
+        dataset_bundle.create_bundle()
 
     def __create_dataset(self, creation_date: date, offline: bool) -> None:
         print(f"===== Creating dataset for {creation_date} =====")
