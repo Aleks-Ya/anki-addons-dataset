@@ -51,7 +51,7 @@ class AnkiWebService:
         if not raw_file.exists():
             print(f"Downloading addons page to {raw_file}")
             if self.__offline:
-                raise Exception("Offline mode is enabled")
+                raise RuntimeError("Offline mode is enabled")
             raw_file.parent.mkdir(parents=True, exist_ok=True)
             html: str = self.__load_page("https://ankiweb.net/shared/addons")
             raw_file.write_text(html)
@@ -63,7 +63,7 @@ class AnkiWebService:
         if not raw_file.exists():
             print(f"Downloading addon page to {raw_file}")
             if self.__offline:
-                raise Exception("Offline mode is enabled")
+                raise RuntimeError("Offline mode is enabled")
             raw_file.parent.mkdir(parents=True, exist_ok=True)
             html: str = self.__load_page(f"https://ankiweb.net/shared/info/{addon_id}")
             raw_file.write_text(html)
