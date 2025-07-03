@@ -21,7 +21,7 @@ def working_dir(working_dir_path: Path) -> WorkingDir:
 
 @fixture
 def version_dir(working_dir: WorkingDir) -> VersionDir:
-    return working_dir.get_version_dir(date.fromisoformat("2025-01-25"))
+    return working_dir.get_version_dir(date.fromisoformat("2025-01-25")).create()
 
 
 @fixture

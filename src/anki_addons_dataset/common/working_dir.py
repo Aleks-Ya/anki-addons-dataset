@@ -1,3 +1,4 @@
+import shutil
 from datetime import date
 from pathlib import Path
 from typing import Optional
@@ -11,7 +12,17 @@ class VersionDir:
         return self.__version_dir
 
     def create(self) -> 'VersionDir':
-        self.__version_dir.mkdir(parents=True, exist_ok=True)
+        raw_dir: Path = self.get_raw_dir()
+        stage_dir: Path = self.get_stage_dir()
+        final_dir: Path = self.get_final_dir()
+        self.__delete_dir(stage_dir)
+        self.__delete_dir(final_dir)
+        raw_dir.mkdir(parents=True, exist_ok=True)
+        stage_dir.mkdir(parents=True, exist_ok=True)
+        final_dir.mkdir(parents=True, exist_ok=True)
+        print(f"Create raw dir: {raw_dir}")
+        print(f"Create stage dir: {stage_dir}")
+        print(f"Create final dir: {final_dir}")
         return self
 
     def get_raw_dir(self) -> Path:
@@ -28,6 +39,11 @@ class VersionDir:
 
     def get_metadata_json(self) -> Path:
         return self.__version_dir / "metadata.json"
+
+    @staticmethod
+    def __delete_dir(directory: Path) -> None:
+        print(f"Deleting dir: {directory}")
+        shutil.rmtree(directory, ignore_errors=True)
 
     def __lt__(self, other: 'VersionDir') -> bool:
         return self.version_dir_to_creation_date() < other.version_dir_to_creation_date()

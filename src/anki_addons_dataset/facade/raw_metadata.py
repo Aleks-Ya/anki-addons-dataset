@@ -56,5 +56,4 @@ class RawMetadata:
         return res_content
 
     def __write_content(self, content: dict[str, Any]) -> None:
-        self.__metadata_file.parent.mkdir(parents=True, exist_ok=True)
         self.__metadata_file.write_text(json.dumps(content, indent=2))

@@ -1,15 +1,15 @@
 import json
-import tempfile
 from datetime import datetime
 from pathlib import Path
 from typing import Any
 
 from anki_addons_dataset.common.data_types import AddonInfo, AddonHeader, AddonId, GitHubRepo, GithubUserName, \
     GithubRepoName, LanguageName, GithubInfo, AddonPage, Aggregation
+from anki_addons_dataset.common.working_dir import VersionDir
 from anki_addons_dataset.exporter.json.json_exporter import JsonExporter
 
 
-def test_export_addon_infos(note_size_addon_id: AddonId):
+def test_export_addon_infos(note_size_addon_id: AddonId, version_dir: VersionDir):
     addon_infos: list[AddonInfo] = [
         AddonInfo(
             header=AddonHeader(note_size_addon_id, "NoteSize", "https://ankiweb.net/shared/info/1188705668",
@@ -31,7 +31,7 @@ def test_export_addon_infos(note_size_addon_id: AddonId):
                 tests_count=7
             ))
     ]
-    final_dir: Path = Path(tempfile.mkdtemp())
+    final_dir: Path = version_dir.get_final_dir()
     exporter: JsonExporter = JsonExporter(final_dir)
     exporter.export_addon_infos(addon_infos)
 
@@ -58,12 +58,12 @@ def test_export_addon_infos(note_size_addon_id: AddonId):
                          'versions_str': '1.0.0'}]
 
 
-def test_export_aggregation():
+def test_export_aggregation(version_dir: VersionDir):
     aggregation: Aggregation = Aggregation(addon_number=5,
                                            addon_with_github_number=4,
                                            addon_with_anki_forum_page_number=3,
                                            addon_with_unit_tests_number=2)
-    final_dir: Path = Path(tempfile.mkdtemp())
+    final_dir: Path = version_dir.get_final_dir()
     exporter: JsonExporter = JsonExporter(final_dir)
     exporter.export_aggregation(aggregation)
 

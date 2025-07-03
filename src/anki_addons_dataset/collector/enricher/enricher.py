@@ -11,7 +11,6 @@ from anki_addons_dataset.common.working_dir import VersionDir
 class Enricher:
     def __init__(self, version_dir: VersionDir, github_service: GithubService):
         self.__stage_dir: Path = version_dir.get_stage_dir() / "3-enricher" / "addon"
-        self.__stage_dir.mkdir(parents=True, exist_ok=True)
         self.__github_service: GithubService = github_service
 
     def enrich_list(self, addon_infos: list[AddonInfo]) -> list[AddonInfo]:

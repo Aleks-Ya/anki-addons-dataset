@@ -1,4 +1,3 @@
-import shutil
 from datetime import date, datetime
 from pathlib import Path
 
@@ -32,20 +31,12 @@ class Facade:
     def __create_dataset(self, creation_date: date, offline: bool) -> None:
         print(f"===== Creating dataset for {creation_date} =====")
         print(f"Offline: {offline}")
-        version_dir: VersionDir = self.__working_dir.get_version_dir(creation_date)
+        version_dir: VersionDir = self.__working_dir.get_version_dir(creation_date).create()
         raw_metadata: RawMetadata = RawMetadata(version_dir)
         script_version: str = self.__script_version()
         if not raw_metadata.get_start_datetime():
             raw_metadata.set_script_version(script_version)
             raw_metadata.set_start_datetime(datetime.now().replace(microsecond=0))
-        raw_dir: Path = version_dir.get_raw_dir()
-        print(f"Raw dir: {raw_dir}")
-        stage_dir: Path = version_dir.get_stage_dir()
-        print(f"Stage dir: {stage_dir}")
-        final_dir: Path = version_dir.get_final_dir()
-        print(f"Final dir: {final_dir}")
-        self.__delete_dir(stage_dir)
-        self.__delete_dir(final_dir)
         overrider: Overrider = Overrider(version_dir)
         addon_page_parser: AddonPageParser = AddonPageParser(overrider)
         ankiweb_service: AnkiWebService = AnkiWebService(version_dir, addon_page_parser, offline)
@@ -65,11 +56,6 @@ class Facade:
             raw_metadata.set_finish_datetime(datetime.now().replace(microsecond=0))
 
         print(f"===== Created dataset for {creation_date} =====\n")
-
-    @staticmethod
-    def __delete_dir(directory: Path) -> None:
-        print(f"Deleting dir: {directory}")
-        shutil.rmtree(directory, ignore_errors=True)
 
     @staticmethod
     def __script_version() -> str:
