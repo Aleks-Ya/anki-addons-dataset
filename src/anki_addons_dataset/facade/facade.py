@@ -49,7 +49,7 @@ class Facade:
         overrider: Overrider = Overrider(stage_dir)
         addon_page_parser: AddonPageParser = AddonPageParser(overrider)
         ankiweb_service: AnkiWebService = AnkiWebService(version_dir, addon_page_parser, offline)
-        github_service: GithubService = GithubService(raw_dir, stage_dir, offline)
+        github_service: GithubService = GithubService(version_dir, offline)
         enricher: Enricher = Enricher(stage_dir, github_service)
         collector: AddonCollector = AddonCollector(ankiweb_service, enricher, overrider)
         addon_infos: list[AddonInfo] = collector.collect_addons()

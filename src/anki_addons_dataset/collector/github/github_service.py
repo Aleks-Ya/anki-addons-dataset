@@ -13,19 +13,20 @@ from anki_addons_dataset.collector.github.handler.repo_handler import RepoHandle
 from anki_addons_dataset.collector.github.handler.stars_repo_handler import StarsRepoHandler
 from anki_addons_dataset.collector.github.handler.tests_repo_handler import TestsRepoHandler
 from anki_addons_dataset.common.data_types import GitHubRepo, LanguageName
+from anki_addons_dataset.common.working_dir import VersionDir
 
 
 class GithubService:
     __sleep_sec: int = 1
 
-    def __init__(self, raw_dir: Path, stage_dir: Path, offline: bool):
+    def __init__(self, version_dir: VersionDir, offline: bool):
         token_file: Path = Path.home() / ".github" / "token.txt"
         token: str = token_file.read_text().strip()
         self.__headers: dict[str, str] = {
             'Authorization': f'Bearer {token}'
         }
-        self.__raw_dir: Path = raw_dir / "2-github"
-        self.__stage_dir: Path = stage_dir / "2-github"
+        self.__raw_dir: Path = version_dir.get_raw_dir() / "2-github"
+        self.__stage_dir: Path = version_dir.get_stage_dir() / "2-github"
         self.__offline: bool = offline
 
     def get_languages(self, repo: GitHubRepo) -> dict[LanguageName, int]:
