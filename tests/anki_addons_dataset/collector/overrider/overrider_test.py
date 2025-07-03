@@ -1,7 +1,7 @@
 from anki_addons_dataset.collector.overrider.overrider import Overrider
 from anki_addons_dataset.common.data_types import URL, GitHubLink, AddonId, GitHubUser, GithubUserName, GitHubRepo, \
     GithubRepoName
-from anki_addons_dataset.common.working_dir import WorkingDir
+from anki_addons_dataset.common.working_dir import VersionDir
 
 
 def test_override_github_link(overrider: Overrider, note_size_addon_id: AddonId):
@@ -19,5 +19,5 @@ def test_override_anki_forum_url(overrider: Overrider, note_size_addon_id: Addon
         "https://forums.ankiweb.net/t/hypertts-spirtual-successor-to-awesometts/17143")
 
 
-def test_copy_override_yaml_to_dataset(overrider: Overrider, working_dir: WorkingDir):
-    assert (working_dir.get_dataset_dir() / "4-overrider" / "overrides.yaml").exists()
+def test_copy_override_yaml_to_dataset(overrider: Overrider, version_dir: VersionDir):
+    assert (version_dir.get_stage_dir() / "4-overrider" / "overrides.yaml").exists()

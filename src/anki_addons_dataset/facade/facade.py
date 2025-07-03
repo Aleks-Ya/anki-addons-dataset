@@ -46,7 +46,7 @@ class Facade:
         print(f"Final dir: {final_dir}")
         self.__delete_dir(stage_dir)
         self.__delete_dir(final_dir)
-        overrider: Overrider = Overrider(stage_dir)
+        overrider: Overrider = Overrider(version_dir)
         addon_page_parser: AddonPageParser = AddonPageParser(overrider)
         ankiweb_service: AnkiWebService = AnkiWebService(version_dir, addon_page_parser, offline)
         github_service: GithubService = GithubService(version_dir, offline)
