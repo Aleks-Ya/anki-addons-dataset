@@ -16,13 +16,15 @@ def test_create_dataset_card():
 
 
 def test_create_version_metadata_yaml(working_dir: WorkingDir):
+    script_version: str = "v0.0.1"
     version_dir: VersionDir = working_dir.get_version_dir(date.fromisoformat("2025-01-25"))
     exp_file: Path = version_dir.get_path() / "metadata.json"
     assert not exp_file.exists()
-    HuggingFace.create_version_metadata_yaml(version_dir)
+    HuggingFace.create_version_metadata_yaml(version_dir, script_version)
     assert exp_file.read_text() == dedent(
         """\
         {
-          "creation_date": "2025-01-25"
+          "creation_date": "2025-01-25",
+          "script_version": "v0.0.1"
         }"""
     )

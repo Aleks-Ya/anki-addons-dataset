@@ -34,8 +34,9 @@ class Facade:
         print(f"Offline: {offline}")
         version_dir: VersionDir = self.__working_dir.get_version_dir(creation_date)
         version_metadata: VersionMetadata = VersionMetadata(version_dir)
+        script_version: str = self.__script_version()
         if not version_metadata.get_start_datetime():
-            version_metadata.set_script_version(self.__script_version())
+            version_metadata.set_script_version(script_version)
             version_metadata.set_start_datetime(datetime.now().replace(microsecond=0))
         raw_dir: Path = version_dir.get_raw_dir()
         print(f"Raw dir: {raw_dir}")
@@ -58,7 +59,7 @@ class Facade:
         exporter_facade: ExporterFacade = ExporterFacade(final_dir)
         exporter_facade.export_all(addon_infos, aggregation)
 
-        HuggingFace.create_version_metadata_yaml(version_dir)
+        HuggingFace.create_version_metadata_yaml(version_dir, script_version)
 
         if not version_metadata.get_finish_datetime():
             version_metadata.set_finish_datetime(datetime.now().replace(microsecond=0))

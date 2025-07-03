@@ -16,9 +16,10 @@ class HuggingFace:
         print(f"Created dataset card: {dest_file}")
 
     @staticmethod
-    def create_version_metadata_yaml(version_dir: VersionDir) -> None:
+    def create_version_metadata_yaml(version_dir: VersionDir, script_version: str) -> None:
         content: dict[str, Any] = {
-            "creation_date": version_dir.version_dir_to_creation_date()
+            "creation_date": version_dir.version_dir_to_creation_date(),
+            "script_version": script_version
         }
         dest_file: Path = version_dir.get_metadata_json()
         JsonHelper.write_dict_to_file(content, dest_file)
