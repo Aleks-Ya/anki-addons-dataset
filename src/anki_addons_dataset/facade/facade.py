@@ -13,7 +13,7 @@ from anki_addons_dataset.collector.overrider.overrider import Overrider
 from anki_addons_dataset.common.data_types import AddonInfo, Aggregation
 from anki_addons_dataset.common.working_dir import WorkingDir, VersionDir
 from anki_addons_dataset.exporter.exporter_facade import ExporterFacade
-from anki_addons_dataset.facade.version_metadata import VersionMetadata
+from anki_addons_dataset.facade.raw_metadata import RawMetadata
 from anki_addons_dataset.huggingface.hugging_face import HuggingFace
 
 
@@ -33,11 +33,11 @@ class Facade:
         print(f"===== Creating dataset for {creation_date} =====")
         print(f"Offline: {offline}")
         version_dir: VersionDir = self.__working_dir.get_version_dir(creation_date)
-        version_metadata: VersionMetadata = VersionMetadata(version_dir)
+        raw_metadata: RawMetadata = RawMetadata(version_dir)
         script_version: str = self.__script_version()
-        if not version_metadata.get_start_datetime():
-            version_metadata.set_script_version(script_version)
-            version_metadata.set_start_datetime(datetime.now().replace(microsecond=0))
+        if not raw_metadata.get_start_datetime():
+            raw_metadata.set_script_version(script_version)
+            raw_metadata.set_start_datetime(datetime.now().replace(microsecond=0))
         raw_dir: Path = version_dir.get_raw_dir()
         print(f"Raw dir: {raw_dir}")
         stage_dir: Path = version_dir.get_stage_dir()
@@ -61,8 +61,8 @@ class Facade:
 
         HuggingFace.create_version_metadata_yaml(version_dir, script_version)
 
-        if not version_metadata.get_finish_datetime():
-            version_metadata.set_finish_datetime(datetime.now().replace(microsecond=0))
+        if not raw_metadata.get_finish_datetime():
+            raw_metadata.set_finish_datetime(datetime.now().replace(microsecond=0))
 
         print(f"===== Created dataset for {creation_date} =====\n")
 

@@ -6,7 +6,7 @@ from typing import Any, Optional
 from anki_addons_dataset.common.working_dir import VersionDir
 
 
-class VersionMetadata:
+class RawMetadata:
     __start_datetime_key: str = "start_timestamp"
     __finis_datetime_key: str = "finish_timestamp"
     __script_version_key: str = "script_version"
