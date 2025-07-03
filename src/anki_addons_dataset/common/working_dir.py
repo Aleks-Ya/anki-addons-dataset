@@ -51,12 +51,16 @@ class WorkingDir:
     def __init__(self, working_dir_path: Path):
         self.__working_dir_path: Path = working_dir_path
         self.__history_dir: Path = self.__working_dir_path / "history"
+        self.__dataset_dir: Path = self.__working_dir_path / "dataset"
 
     def get_path(self) -> Path:
         return self.__working_dir_path
 
     def get_history_dir(self) -> Path:
         return self.__history_dir
+
+    def get_dataset_dir(self) -> Path:
+        return self.__dataset_dir
 
     def get_version_dir(self, creation_date: date) -> VersionDir:
         return VersionDir(self.__history_dir / creation_date.isoformat())

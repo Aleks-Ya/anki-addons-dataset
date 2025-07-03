@@ -14,18 +14,13 @@ def working_dir_path() -> Path:
 
 
 @fixture
-def dataset_path(working_dir_path: Path) -> Path:
-    return working_dir_path / "dataset"
-
-
-@fixture
 def working_dir(working_dir_path: Path) -> WorkingDir:
     return WorkingDir(working_dir_path)
 
 
 @fixture
-def overrider(dataset_path: Path) -> Overrider:
-    return Overrider(dataset_path)
+def overrider(working_dir: WorkingDir) -> Overrider:
+    return Overrider(working_dir.get_dataset_dir())
 
 
 @fixture

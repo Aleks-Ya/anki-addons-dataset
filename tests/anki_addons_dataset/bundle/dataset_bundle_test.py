@@ -19,7 +19,7 @@ def test_parse_creation_date(working_dir: WorkingDir):
     raw_metadata_2: RawMetadata = RawMetadata(version_dir_2)
     raw_metadata_2.set_script_version("v0.0.1")
 
-    bundle_history_dir: Path = working_dir.get_path() / "dataset" / "history"
+    bundle_history_dir: Path = working_dir.get_dataset_dir() / "history"
     assert not bundle_history_dir.exists()
     dataset_bundle: DatasetBundle = DatasetBundle(working_dir)
     dataset_bundle.create_bundle()

@@ -11,7 +11,7 @@ class DatasetBundle:
         self.__working_dir: WorkingDir = working_dir
 
     def create_bundle(self) -> None:
-        bundle_dir: Path = self.__working_dir.get_path() / "dataset"
+        bundle_dir: Path = self.__working_dir.get_dataset_dir()
         print(f"Creating dataset bundle in {bundle_dir}")
         shutil.rmtree(bundle_dir, ignore_errors=True)
         bundle_history_dir: Path = bundle_dir / "history"
