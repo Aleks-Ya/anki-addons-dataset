@@ -33,8 +33,4 @@ class LastCommitRepoHandler(RepoHandler):
         JsonHelper.write_dict_to_file({}, raw_file)
 
     def _prepare_stage_dict(self, return_value: Any) -> dict[str, Any]:
-        pass
-
-    def write_stage(self, return_value: Any) -> None:
-        raw_file: Path = self.get_raw_file()
-        self.get_stage_file().write_text(raw_file.read_text())
+        return {"last_commit": return_value}
