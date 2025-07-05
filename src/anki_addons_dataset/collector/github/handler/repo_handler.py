@@ -36,7 +36,7 @@ class RepoHandler(ABC):
         self.status_other(response)
 
     def status_other(self, response: Response) -> None:
-        raise Exception(f"Error status {response.status_code} for {self._repo.get_id()}: {response.text}")
+        raise RuntimeError(f"Error status {response.status_code} for {self._repo.get_id()}: {response.text}")
 
     @abstractmethod
     def get_url(self) -> str:

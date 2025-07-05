@@ -69,7 +69,7 @@ class AddonPageParser:
         ]
         filtered_links: list[GitHubLink] = []
         for link in links:
-            if all([not link.url.lower().startswith(prefix.lower()) for prefix in exclude_urls]):
+            if all(not link.url.lower().startswith(prefix.lower()) for prefix in exclude_urls):
                 filtered_links.append(link)
         return filtered_links
 
@@ -104,10 +104,10 @@ class AddonPageParser:
                     max_version: str = ""
                     update_date_str: str = match.group(2)
                 else:
-                    raise Exception(f'Cannot parse version: "{text}"')
+                    raise RuntimeError(f'Cannot parse version: "{text}"')
                 update_date: date = datetime.datetime.fromisoformat(update_date_str).date()
                 version_info: Version = Version(min_version, max_version, update_date)
                 versions.append(version_info)
             else:
-                raise Exception(f'Cannot parse version: "{text}"')
+                raise RuntimeError(f'Cannot parse version: "{text}"')
         return versions

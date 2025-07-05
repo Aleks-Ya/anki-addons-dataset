@@ -22,7 +22,7 @@ class TestsRepoHandler(RepoHandler):
     def extract_return_value_from_dict(self, content_obj: dict[str, Any]) -> int:
         is_truncated: bool = content_obj.get("truncated")
         if is_truncated:
-            raise Exception(f"Repo tree is truncated: {content_obj['url']}")
+            raise RuntimeError(f"Repo tree is truncated: {content_obj['url']}")
         if "tree" not in content_obj:
             return 0
         files: list[str] = [file["path"] for file in content_obj["tree"]]
