@@ -10,16 +10,16 @@ from anki_addons_dataset.common.json_helper import JsonHelper
 
 class LastCommitRepoHandler(RepoHandler):
 
-    def get_raw_filename(self) -> str:
+    def _get_raw_filename(self) -> str:
         return "last-commit"
 
-    def get_stage_filename(self) -> str:
+    def _get_stage_filename(self) -> str:
         return "last-commit"
 
     def get_url(self) -> str:
         return f"https://api.github.com/repos/{self._repo.user}/{self._repo.repo_name}/commits?per_page=1"
 
-    def extract_return_value_from_dict(self, content_obj: list[dict[str, Any]]) -> Optional[datetime]:
+    def _extract_return_value_from_dict(self, content_obj: list[dict[str, Any]]) -> Optional[datetime]:
         if len(content_obj) == 0:
             return None
         json_dict: dict[str, Any] = content_obj[0]
@@ -32,7 +32,7 @@ class LastCommitRepoHandler(RepoHandler):
         raw_file: Path = self.get_raw_file()
         JsonHelper.write_dict_to_file({}, raw_file)
 
-    def prepare_stage_dict(self, return_value: Any) -> dict[str, Any]:
+    def _prepare_stage_dict(self, return_value: Any) -> dict[str, Any]:
         pass
 
     def write_stage(self, return_value: Any) -> None:

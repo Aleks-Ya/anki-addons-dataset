@@ -10,16 +10,16 @@ from anki_addons_dataset.common.json_helper import JsonHelper
 
 class TestsRepoHandler(RepoHandler):
 
-    def get_raw_filename(self) -> str:
+    def _get_raw_filename(self) -> str:
         return "tree"
 
-    def get_stage_filename(self) -> str:
+    def _get_stage_filename(self) -> str:
         return "tests-count"
 
     def get_url(self) -> str:
         return f"https://api.github.com/repos/{self._repo.user}/{self._repo.repo_name}/git/trees/HEAD?recursive=1"
 
-    def extract_return_value_from_dict(self, content_obj: dict[str, Any]) -> int:
+    def _extract_return_value_from_dict(self, content_obj: dict[str, Any]) -> int:
         is_truncated: bool = content_obj.get("truncated")
         if is_truncated:
             raise RuntimeError(f"Repo tree is truncated: {content_obj['url']}")
@@ -28,7 +28,7 @@ class TestsRepoHandler(RepoHandler):
         files: list[str] = [file["path"] for file in content_obj["tree"]]
         return TestsCounter.count_tests(files)
 
-    def prepare_stage_dict(self, return_value: int) -> dict[str, Any]:
+    def _prepare_stage_dict(self, return_value: int) -> dict[str, Any]:
         return {"tests_count": return_value}
 
     def status_409(self, response: Response) -> None:

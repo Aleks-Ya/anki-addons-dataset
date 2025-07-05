@@ -55,10 +55,10 @@ class GithubService:
         if not handler.is_downloaded():
             if handler.is_repo_marked_as_not_found():
                 return handler.get_not_found_return_value()
-            print(f"Downloading {handler.get_raw_filename()} for {repo.get_id()}")
+            url: str = handler.get_url()
+            print(f"Downloading {url} for {repo.get_id()}")
             if self.__offline:
                 raise RuntimeError("Offline mode is enabled")
-            url: str = handler.get_url()
             sleep(GithubService.__sleep_sec)
             response: Response = requests.request("GET", url, headers=self.__headers)
             if response.status_code == 200:
