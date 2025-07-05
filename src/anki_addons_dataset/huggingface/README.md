@@ -11,7 +11,6 @@ tags:
 configs:
   - config_name: default
     data_files: latest/parquet/data.parquet
-    header: 0
 ---
 
 ## Introduction
