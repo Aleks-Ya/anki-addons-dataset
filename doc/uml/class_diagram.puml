@@ -1,0 +1,74 @@
+@startuml
+'https://plantuml.com/class-diagram
+
+package anki_addons_dataset {
+    class Main
+    package argument {
+        class ScriptArguments
+        class Operation
+    }
+    package common {
+        class WorkingDir
+        class VersionDir
+        class AddonHeader
+        class GitHubUser
+        class GitHubRepo
+        class GithubInfo
+        class Version
+        class AddonPage
+        class AddonInfo
+        class Aggregation
+    }
+    package facade {
+        class Facade
+        class RawMetadata
+    }
+    package collector {
+        class AddonCollector
+        package overrider {
+            class Overrider
+        }
+        package awnkiweb {
+            class AddonPageParser
+            class AnkiWebService
+        }
+        package github {
+            class GithubService
+        }
+        package enricher {
+            class Enricher
+        }
+    }
+    package aggregator {
+        class Aggregator
+    }
+    package exporter {
+        class ExporterFacade
+    }
+    package huggingface {
+        class HuggingFace
+    }
+    package bundle {
+        class DatasetBundle
+    }
+}
+
+ScriptArguments --> Operation
+Main --> ScriptArguments
+Main --> WorkingDir
+Main --> Facade
+WorkingDir "1" o-- "*" VersionDir
+Facade --> RawMetadata
+Facade --> AddonCollector
+AddonPageParser --> Overrider
+AnkiWebService --> AddonPageParser
+AddonCollector --> AnkiWebService
+AddonCollector --> Overrider
+Enricher --> GithubService
+AddonCollector --> Enricher
+Facade --> Aggregator
+Facade --> ExporterFacade
+Facade --> HuggingFace
+Facade --> DatasetBundle
+
+@enduml

@@ -1,0 +1,21 @@
+@startuml
+'https://plantuml.com/sequence-diagram
+
+autonumber
+
+create Main
+create ScriptArguments
+Main -> ScriptArguments
+create WorkingDir
+Main -> WorkingDir
+create Facade
+Main -> Facade
+Facade -> WorkingDir: list_version_dirs()
+create VersionDirList
+WorkingDir -> VersionDirList
+
+loop each VersionDir
+    Facade -> Facade: process()
+end
+
+@enduml

@@ -1,0 +1,17 @@
+@startuml
+'https://plantuml.com/component-diagram
+
+component AnkiAddonsDataset
+component AnkiWeb
+component GitHub
+
+interface "REST" as GitHubRest
+interface "HTML" as AnkiWebHtml
+
+GitHub - GitHubRest
+AnkiWeb - AnkiWebHtml
+
+AnkiAddonsDataset --> AnkiWebHtml
+AnkiAddonsDataset --> GitHubRest
+
+@enduml

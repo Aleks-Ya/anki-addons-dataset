@@ -1,0 +1,34 @@
+@startuml
+'https://plantuml.com/activity-diagram-beta
+
+start
+
+group Configuration
+    :Parse arguments;
+    :Define creation date;
+    :Define offline mode;
+    :Define working dir;
+end group
+
+group Downloading
+    :List version dirs in working dir;
+    while (For each Version Dir)
+        :Prepare Raw Metadata;
+        group Collect AddonInfos #lightgreen
+            :Download AddonInfos;
+            :Enrich AddonInfos;
+            :Override AddonInfos;
+        end group
+        :Prepare Aggregation;
+        :Export Version to a directory;
+        :Create HuggingFace metadata;
+    endwhile
+end group
+
+group Packaging
+    :Create Bundle;
+end group
+
+stop
+
+@enduml
