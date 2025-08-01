@@ -14,9 +14,10 @@ Run locally: `pytest`
 Unit-tests are automatically executed in GitHub Actions.
 
 ## Create a new version
-1. Generate the dataset dir: `PYTHONPATH=src python -m anki_addons_dataset.addon_catalog`
-2. Upload the dataset dir as a new version: `huggingface-cli upload-large-folder Ya-Alex/anki-addons $HOME/anki-addons-dataset/dataset --repo-type=dataset --num-workers=4`
-3. Delete unused files from the remote repo manually (`huggingface-cli` just updates files)
+1. Download dataset: `PYTHONPATH=src python -m anki_addons_dataset.addon_catalog download -d 2025-08-01` (creates dir `~/anki-addons-dataset/history/2025-08-01`)
+2. Parse dataset: `PYTHONPATH=src python -m anki_addons_dataset.addon_catalog parse -d 2025-08-01` (creates dir `~/anki-addons-dataset/dataset`)
+3. Upload the dataset dir as a new version: `huggingface-cli upload-large-folder Ya-Alex/anki-addons $HOME/anki-addons-dataset/dataset --repo-type=dataset --num-workers=4`
+4. Delete unused files from the remote repo manually (`huggingface-cli` just updates files)
 
 ## Sonar Qube
 https://sonarcloud.io/project/overview?id=Aleks-Ya_anki-addons-dataset  

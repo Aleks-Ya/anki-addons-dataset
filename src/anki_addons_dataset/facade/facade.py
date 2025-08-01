@@ -2,6 +2,7 @@ from datetime import date, datetime
 from pathlib import Path
 
 from anki_addons_dataset.aggregator.aggregator import Aggregator
+from anki_addons_dataset.argument.script_arguments import Operation
 from anki_addons_dataset.bundle.dataset_bundle import DatasetBundle
 from anki_addons_dataset.collector.addon_collector import AddonCollector
 from anki_addons_dataset.collector.ankiweb.addon_page_parser import AddonPageParser
@@ -21,22 +22,51 @@ class Facade:
     def __init__(self, working_dir: WorkingDir):
         self.__working_dir: WorkingDir = working_dir
 
-    def create_datasets(self, offline: bool) -> None:
+    def process(self, operation: Operation, creation_date: date) -> None:
+        if operation == Operation.DOWNLOAD:
+            self.__download_operation(creation_date)
+        elif operation == Operation.PARSE:
+            self.__parse_operation()
+        else:
+            raise ValueError(f"Unsupported operation: {operation}")
+
+    def __download_operation(self, creation_date: date) -> None:
+        self.__download_version(creation_date)
+
+    def __parse_operation(self) -> None:
         for version_dir in self.__working_dir.list_version_dirs():
             creation_date: date = version_dir.version_dir_to_creation_date()
-            self.__create_dataset(creation_date, offline)
+            self.__parse_version(creation_date)
         dataset_bundle: DatasetBundle = DatasetBundle(self.__working_dir)
         dataset_bundle.create_bundle()
 
-    def __create_dataset(self, creation_date: date, offline: bool) -> None:
-        print(f"===== Creating dataset for {creation_date} =====")
+    def __download_version(self, creation_date: date) -> None:
+        print(f"===== Download dataset for {creation_date} =====")
+        offline: bool = False
         print(f"Offline: {offline}")
         version_dir: VersionDir = self.__working_dir.get_version_dir(creation_date).create()
-        raw_metadata: RawMetadata = RawMetadata(version_dir)
         script_version: str = self.__script_version()
+        raw_metadata: RawMetadata = RawMetadata(version_dir)
         if not raw_metadata.get_start_datetime():
             raw_metadata.set_script_version(script_version)
             raw_metadata.set_start_datetime(datetime.now().replace(microsecond=0))
+        overrider: Overrider = Overrider(version_dir)
+        addon_page_parser: AddonPageParser = AddonPageParser(overrider)
+        ankiweb_service: AnkiWebService = AnkiWebService(version_dir, addon_page_parser, offline)
+        github_service: GithubService = GithubService(version_dir, offline)
+        enricher: Enricher = Enricher(version_dir, github_service)
+        collector: AddonCollector = AddonCollector(ankiweb_service, enricher, overrider)
+        collector.collect_addons()
+        if not raw_metadata.get_finish_datetime():
+            raw_metadata.set_finish_datetime(datetime.now().replace(microsecond=0))
+        print(f"===== Downloaded dataset for {creation_date} =====\n")
+
+    def __parse_version(self, creation_date: date) -> None:
+        offline: bool = True
+        print(f"===== Parse dataset for {creation_date} =====")
+        print(f"Offline: {offline}")
+        version_dir: VersionDir = self.__working_dir.get_version_dir(creation_date).create()
+        script_version: str = self.__script_version()
         overrider: Overrider = Overrider(version_dir)
         addon_page_parser: AddonPageParser = AddonPageParser(overrider)
         ankiweb_service: AnkiWebService = AnkiWebService(version_dir, addon_page_parser, offline)
@@ -52,10 +82,7 @@ class Facade:
 
         HuggingFace.create_version_metadata_yaml(version_dir, script_version)
 
-        if not raw_metadata.get_finish_datetime():
-            raw_metadata.set_finish_datetime(datetime.now().replace(microsecond=0))
-
-        print(f"===== Created dataset for {creation_date} =====\n")
+        print(f"===== Parsed dataset for {creation_date} =====\n")
 
     @staticmethod
     def __script_version() -> str:
