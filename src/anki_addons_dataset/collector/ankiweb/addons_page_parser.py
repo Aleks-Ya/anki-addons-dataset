@@ -21,4 +21,4 @@ class AddonsPageParser:
             versions: str = cells[3].text
             addon_header: AddonHeader = AddonHeader(addon_id, addon_name, addon_page, rating, update_date, versions)
             addon_rows.append(addon_header)
-        return addon_rows
+        return sorted(addon_rows, key=lambda header: header.id)
