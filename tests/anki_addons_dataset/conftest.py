@@ -5,7 +5,9 @@ from unittest.mock import Mock
 
 from pytest import fixture
 
+from anki_addons_dataset.collector.ankiweb.addon_page_downloader import AddonPageDownloader
 from anki_addons_dataset.collector.ankiweb.addon_page_parser import AddonPageParser
+from anki_addons_dataset.collector.ankiweb.addons_page_downloader import AddonsPageDownloader
 from anki_addons_dataset.collector.ankiweb.ankiweb_service import AnkiWebService
 from anki_addons_dataset.collector.ankiweb.page_downloader import PageDownloader
 from anki_addons_dataset.collector.overrider.overrider import Overrider
@@ -54,6 +56,23 @@ def addon_page_parser(overrider: Overrider) -> AddonPageParser:
 
 
 @fixture
-def ankiweb_service(page_downloader: PageDownloader, version_dir: VersionDir,
-                    addon_page_parser: AddonPageParser) -> AnkiWebService:
-    return AnkiWebService(page_downloader, version_dir, addon_page_parser, False)
+def offline() -> bool:
+    return False
+
+
+@fixture
+def addons_page_downloader(page_downloader: PageDownloader, version_dir: VersionDir,
+                           offline: bool) -> AddonsPageDownloader:
+    return AddonsPageDownloader(page_downloader, version_dir, offline)
+
+
+@fixture
+def addon_page_downloader(page_downloader: PageDownloader, version_dir: VersionDir,
+                          addon_page_parser: AddonPageParser, offline: bool) -> AddonPageDownloader:
+    return AddonPageDownloader(page_downloader, version_dir, addon_page_parser, offline)
+
+
+@fixture
+def ankiweb_service(addons_page_downloader: AddonsPageDownloader,
+                    addon_page_downloader: AddonPageDownloader) -> AnkiWebService:
+    return AnkiWebService(addons_page_downloader, addon_page_downloader)

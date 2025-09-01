@@ -5,7 +5,9 @@ from anki_addons_dataset.aggregator.aggregator import Aggregator
 from anki_addons_dataset.argument.script_arguments import Operation
 from anki_addons_dataset.bundle.dataset_bundle import DatasetBundle
 from anki_addons_dataset.collector.addon_collector import AddonCollector
+from anki_addons_dataset.collector.ankiweb.addon_page_downloader import AddonPageDownloader
 from anki_addons_dataset.collector.ankiweb.addon_page_parser import AddonPageParser
+from anki_addons_dataset.collector.ankiweb.addons_page_downloader import AddonsPageDownloader
 from anki_addons_dataset.collector.ankiweb.ankiweb_service import AnkiWebService
 from anki_addons_dataset.collector.ankiweb.page_downloader import PageDownloader
 from anki_addons_dataset.collector.enricher.enricher import Enricher
@@ -54,7 +56,10 @@ class Facade:
         overrider: Overrider = Overrider(version_dir)
         addon_page_parser: AddonPageParser = AddonPageParser(overrider)
         page_downloader: PageDownloader = PageDownloader()
-        ankiweb_service: AnkiWebService = AnkiWebService(page_downloader, version_dir, addon_page_parser, offline)
+        addons_page_downloader: AddonsPageDownloader = AddonsPageDownloader(page_downloader, version_dir, offline)
+        addon_page_downloader: AddonPageDownloader = AddonPageDownloader(
+            page_downloader, version_dir, addon_page_parser, offline)
+        ankiweb_service: AnkiWebService = AnkiWebService(addons_page_downloader, addon_page_downloader)
         github_service: GithubService = GithubService(version_dir, offline)
         enricher: Enricher = Enricher(version_dir, github_service)
         collector: AddonCollector = AddonCollector(ankiweb_service, enricher, overrider)
@@ -72,7 +77,10 @@ class Facade:
         overrider: Overrider = Overrider(version_dir)
         addon_page_parser: AddonPageParser = AddonPageParser(overrider)
         page_downloader: PageDownloader = PageDownloader()
-        ankiweb_service: AnkiWebService = AnkiWebService(page_downloader, version_dir, addon_page_parser, offline)
+        addons_page_downloader: AddonsPageDownloader = AddonsPageDownloader(page_downloader, version_dir, offline)
+        addon_page_downloader: AddonPageDownloader = AddonPageDownloader(
+            page_downloader, version_dir, addon_page_parser, offline)
+        ankiweb_service: AnkiWebService = AnkiWebService(addons_page_downloader, addon_page_downloader)
         github_service: GithubService = GithubService(version_dir, offline)
         enricher: Enricher = Enricher(version_dir, github_service)
         collector: AddonCollector = AddonCollector(ankiweb_service, enricher, overrider)
