@@ -29,6 +29,9 @@ class AddonPageDownloader:
 
     def __load_addon_page(self, addon_id: AddonId) -> HtmlStr:
         raw_file: Path = self.__raw_dir / "addon" / f"{addon_id}.html"
+        if raw_file.exists() and raw_file.stat().st_size == 0:
+            raw_file.unlink()
+            print(f"Removed empty file: {raw_file}")
         if not raw_file.exists():
             print(f"Downloading addon page to {raw_file}")
             if self.__offline:
