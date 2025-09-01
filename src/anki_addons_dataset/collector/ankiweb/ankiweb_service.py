@@ -1,29 +1,21 @@
-import time
 from pathlib import Path
-
-from selenium import webdriver
-from selenium.webdriver.chrome.options import Options
-from selenium.webdriver.chrome.webdriver import WebDriver
 
 from anki_addons_dataset.collector.ankiweb.addon_page_parser import AddonPageParser
 from anki_addons_dataset.collector.ankiweb.addons_page_parser import AddonsPageParser
+from anki_addons_dataset.collector.ankiweb.page_downloader import PageDownloader
 from anki_addons_dataset.common.data_types import AddonId, AddonInfo, AddonHeader, HtmlStr
 from anki_addons_dataset.common.json_helper import JsonHelper
 from anki_addons_dataset.common.working_dir import VersionDir
 
 
 class AnkiWebService:
-    def __init__(self, version_dir: VersionDir, addon_page_parser: AddonPageParser, offline: bool) -> None:
+    def __init__(self, page_downloader: PageDownloader, version_dir: VersionDir, addon_page_parser: AddonPageParser,
+                 offline: bool) -> None:
         self.__addon_page_parser: AddonPageParser = addon_page_parser
-        options: Options = Options()
-        options.add_argument('--headless')
-        self.__driver: WebDriver = webdriver.Chrome(options=options)
+        self.__page_downloader: PageDownloader = page_downloader
         self.__raw_dir: Path = version_dir.get_raw_dir() / "1-anki-web"
         self.__stage_dir: Path = version_dir.get_stage_dir() / "1-anki-web"
         self.__offline: bool = offline
-
-    def __del__(self) -> None:
-        self.__driver.quit()
 
     def load_addon_infos(self) -> list[AddonInfo]:
         addon_headers: list[AddonHeader] = self.__get_headers()
@@ -54,7 +46,7 @@ class AnkiWebService:
             if self.__offline:
                 raise RuntimeError("Offline mode is enabled")
             raw_file.parent.mkdir(parents=True, exist_ok=True)
-            html: HtmlStr = self.__load_page("https://ankiweb.net/shared/addons")
+            html: HtmlStr = self.__page_downloader.load_page("https://ankiweb.net/shared/addons")
             raw_file.write_text(html)
         print(f"Reading addons page from {raw_file}")
         return HtmlStr(raw_file.read_text())
@@ -66,11 +58,6 @@ class AnkiWebService:
             if self.__offline:
                 raise RuntimeError("Offline mode is enabled")
             raw_file.parent.mkdir(parents=True, exist_ok=True)
-            html: HtmlStr = self.__load_page(f"https://ankiweb.net/shared/info/{addon_id}")
+            html: HtmlStr = self.__page_downloader.load_page(f"https://ankiweb.net/shared/info/{addon_id}")
             raw_file.write_text(html)
         return HtmlStr(raw_file.read_text())
-
-    def __load_page(self, url: str) -> HtmlStr:
-        self.__driver.get(url)
-        time.sleep(3)
-        return HtmlStr(self.__driver.page_source)

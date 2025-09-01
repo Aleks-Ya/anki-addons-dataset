@@ -7,6 +7,7 @@ from anki_addons_dataset.bundle.dataset_bundle import DatasetBundle
 from anki_addons_dataset.collector.addon_collector import AddonCollector
 from anki_addons_dataset.collector.ankiweb.addon_page_parser import AddonPageParser
 from anki_addons_dataset.collector.ankiweb.ankiweb_service import AnkiWebService
+from anki_addons_dataset.collector.ankiweb.page_downloader import PageDownloader
 from anki_addons_dataset.collector.enricher.enricher import Enricher
 from anki_addons_dataset.collector.github.github_service import GithubService
 from anki_addons_dataset.collector.overrider.overrider import Overrider
@@ -52,7 +53,8 @@ class Facade:
             raw_metadata.set_start_datetime(datetime.now().replace(microsecond=0))
         overrider: Overrider = Overrider(version_dir)
         addon_page_parser: AddonPageParser = AddonPageParser(overrider)
-        ankiweb_service: AnkiWebService = AnkiWebService(version_dir, addon_page_parser, offline)
+        page_downloader: PageDownloader = PageDownloader()
+        ankiweb_service: AnkiWebService = AnkiWebService(page_downloader, version_dir, addon_page_parser, offline)
         github_service: GithubService = GithubService(version_dir, offline)
         enricher: Enricher = Enricher(version_dir, github_service)
         collector: AddonCollector = AddonCollector(ankiweb_service, enricher, overrider)
@@ -69,7 +71,8 @@ class Facade:
         script_version: str = self.__script_version()
         overrider: Overrider = Overrider(version_dir)
         addon_page_parser: AddonPageParser = AddonPageParser(overrider)
-        ankiweb_service: AnkiWebService = AnkiWebService(version_dir, addon_page_parser, offline)
+        page_downloader: PageDownloader = PageDownloader()
+        ankiweb_service: AnkiWebService = AnkiWebService(page_downloader, version_dir, addon_page_parser, offline)
         github_service: GithubService = GithubService(version_dir, offline)
         enricher: Enricher = Enricher(version_dir, github_service)
         collector: AddonCollector = AddonCollector(ankiweb_service, enricher, overrider)
