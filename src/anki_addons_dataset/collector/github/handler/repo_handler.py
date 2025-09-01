@@ -51,9 +51,12 @@ class RepoHandler(ABC):
         return self.__stage_dir / self._repo.user / self._repo.repo_name / f"{name}.json"
 
     def extract_return_value(self) -> Optional[Any]:
-        raw_file: Path = self.get_raw_file()
-        content_dict: object = json.loads(raw_file.read_text())
-        return self._extract_return_value_from_dict(content_dict)
+        try:
+            raw_file: Path = self.get_raw_file()
+            content_dict: object = json.loads(raw_file.read_text())
+            return self._extract_return_value_from_dict(content_dict)
+        except Exception as e:
+            raise RuntimeError(f"Error while extracting return value for {self._repo.get_id()}") from e
 
     def write_stage(self, return_value: Any) -> None:
         stage_dict: dict[str, Any] = self._prepare_stage_dict(return_value)
