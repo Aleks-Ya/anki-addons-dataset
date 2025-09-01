@@ -4,12 +4,12 @@ from pathlib import Path
 from anki_addons_dataset.collector.ankiweb.addon_page_parser import AddonPageParser
 from anki_addons_dataset.collector.overrider.overrider import Overrider
 from anki_addons_dataset.common.data_types import AddonHeader, AddonInfo, AddonPage, GithubInfo, AddonId, GitHubLink, \
-    URL, GitHubUser, GitHubRepo, GithubUserName, GithubRepoName, Version
+    URL, GitHubUser, GitHubRepo, GithubUserName, GithubRepoName, Version, HtmlStr
 
 
 def test_parse_addon_page(overrider: Overrider):
     addon_html_file: Path = Path(__file__).parent / "1188705668.html"
-    addon_html: str = addon_html_file.read_text()
+    addon_html: HtmlStr = HtmlStr(addon_html_file.read_text())
     parser: AddonPageParser = AddonPageParser(overrider)
     addon_header: AddonHeader = AddonHeader(
         id=AddonId(1188705668),

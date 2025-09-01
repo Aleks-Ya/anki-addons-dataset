@@ -10,14 +10,14 @@ from bs4 import Tag, BeautifulSoup
 from anki_addons_dataset.collector.ankiweb.url_parser import UrlParser
 from anki_addons_dataset.collector.overrider.overrider import Overrider
 from anki_addons_dataset.common.data_types import AddonHeader, AddonInfo, AddonId, URL, GitHubLink, GitHubRepo, \
-    GithubInfo, AddonPage, Version
+    GithubInfo, AddonPage, Version, HtmlStr
 
 
 class AddonPageParser:
     def __init__(self, overrider: Overrider) -> None:
         self.overrider: Overrider = overrider
 
-    def parse_addon_page(self, addon_header: AddonHeader, html: str) -> AddonInfo:
+    def parse_addon_page(self, addon_header: AddonHeader, html: HtmlStr) -> AddonInfo:
         soup: BeautifulSoup = BeautifulSoup(html, 'html.parser')
         all_links: list[URL] = UrlParser.extract_all_links(html)
         github_links: list[GitHubLink] = UrlParser.find_github_links(all_links)

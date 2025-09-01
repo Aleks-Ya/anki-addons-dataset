@@ -1,12 +1,12 @@
 from bs4 import ResultSet, Tag, BeautifulSoup
 
-from anki_addons_dataset.common.data_types import AddonHeader, AddonId
+from anki_addons_dataset.common.data_types import AddonHeader, AddonId, HtmlStr
 
 
 class AddonsPageParser:
 
     @staticmethod
-    def parse_addons_page(html: str) -> list[AddonHeader]:
+    def parse_addons_page(html: HtmlStr) -> list[AddonHeader]:
         soup: BeautifulSoup = BeautifulSoup(html, 'html.parser')
         addon_rows: list[AddonHeader] = []
         table_rows: ResultSet[Tag] = soup.find("main").find("table").find_all("tr")

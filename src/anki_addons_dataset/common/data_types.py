@@ -8,6 +8,7 @@ GithubRepoName = NewType("GithubRepoName", str)
 GithubUserName = NewType("GithubUserName", str)
 GithubRepoId = NewType("GithubRepoId", str)
 LanguageName = NewType("LanguageName", str)
+HtmlStr = NewType("HtmlStr", str)
 
 
 @dataclass

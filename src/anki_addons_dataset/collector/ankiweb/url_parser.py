@@ -3,13 +3,13 @@ from re import Match
 from typing import Optional
 
 from anki_addons_dataset.common.data_types import URL, GitHubLink, GitHubRepo, GithubRepoName, GithubUserName, \
-    GitHubUser
+    GitHubUser, HtmlStr
 
 
 class UrlParser:
 
     @staticmethod
-    def extract_all_links(html: str) -> list[URL]:
+    def extract_all_links(html: HtmlStr) -> list[URL]:
         return re.findall(r'https?://[^\s"<>\']+', html)
 
     @staticmethod

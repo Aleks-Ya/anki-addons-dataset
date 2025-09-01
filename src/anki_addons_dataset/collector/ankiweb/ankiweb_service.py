@@ -7,7 +7,7 @@ from selenium.webdriver.chrome.webdriver import WebDriver
 
 from anki_addons_dataset.collector.ankiweb.addon_page_parser import AddonPageParser
 from anki_addons_dataset.collector.ankiweb.addons_page_parser import AddonsPageParser
-from anki_addons_dataset.common.data_types import AddonId, AddonInfo, AddonHeader
+from anki_addons_dataset.common.data_types import AddonId, AddonInfo, AddonHeader, HtmlStr
 from anki_addons_dataset.common.json_helper import JsonHelper
 from anki_addons_dataset.common.working_dir import VersionDir
 
@@ -32,7 +32,7 @@ class AnkiWebService:
         return addon_infos
 
     def __get_headers(self) -> list[AddonHeader]:
-        html: str = self.__load_addons_page()
+        html: HtmlStr = self.__load_addons_page()
         addon_headers: list[AddonHeader] = AddonsPageParser.parse_addons_page(html)
         return addon_headers
 
@@ -40,37 +40,37 @@ class AnkiWebService:
         addon_infos: list[AddonInfo] = []
         for i, addon_header in enumerate(addon_headers):
             print(f"Parsing addon page: {addon_header.id} ({i}/{len(addon_headers)})")
-            html: str = self.__load_addon_page(addon_header.id)
+            html: HtmlStr = self.__load_addon_page(addon_header.id)
             addon_info: AddonInfo = self.__addon_page_parser.parse_addon_page(addon_header, html)
             addon_json_file: Path = self.__stage_dir / "addon" / f"{addon_header.id}.json"
             JsonHelper.write_addon_info_to_file(addon_info, addon_json_file)
             addon_infos.append(addon_info)
         return addon_infos
 
-    def __load_addons_page(self) -> str:
+    def __load_addons_page(self) -> HtmlStr:
         raw_file: Path = self.__raw_dir / "addons_page.html"
         if not raw_file.exists():
             print(f"Downloading addons page to {raw_file}")
             if self.__offline:
                 raise RuntimeError("Offline mode is enabled")
             raw_file.parent.mkdir(parents=True, exist_ok=True)
-            html: str = self.__load_page("https://ankiweb.net/shared/addons")
+            html: HtmlStr = self.__load_page("https://ankiweb.net/shared/addons")
             raw_file.write_text(html)
         print(f"Reading addons page from {raw_file}")
-        return raw_file.read_text()
+        return HtmlStr(raw_file.read_text())
 
-    def __load_addon_page(self, addon_id: AddonId) -> str:
+    def __load_addon_page(self, addon_id: AddonId) -> HtmlStr:
         raw_file: Path = self.__raw_dir / "addon" / f"{addon_id}.html"
         if not raw_file.exists():
             print(f"Downloading addon page to {raw_file}")
             if self.__offline:
                 raise RuntimeError("Offline mode is enabled")
             raw_file.parent.mkdir(parents=True, exist_ok=True)
-            html: str = self.__load_page(f"https://ankiweb.net/shared/info/{addon_id}")
+            html: HtmlStr = self.__load_page(f"https://ankiweb.net/shared/info/{addon_id}")
             raw_file.write_text(html)
-        return raw_file.read_text()
+        return HtmlStr(raw_file.read_text())
 
-    def __load_page(self, url: str) -> str:
+    def __load_page(self, url: str) -> HtmlStr:
         self.__driver.get(url)
         time.sleep(3)
-        return self.__driver.page_source
+        return HtmlStr(self.__driver.page_source)
