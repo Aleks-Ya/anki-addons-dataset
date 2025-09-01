@@ -1,9 +1,13 @@
 import tempfile
 from datetime import date
 from pathlib import Path
+from unittest.mock import Mock
 
 from pytest import fixture
 
+from anki_addons_dataset.collector.ankiweb.addon_page_parser import AddonPageParser
+from anki_addons_dataset.collector.ankiweb.ankiweb_service import AnkiWebService
+from anki_addons_dataset.collector.ankiweb.page_downloader import PageDownloader
 from anki_addons_dataset.collector.overrider.overrider import Overrider
 from anki_addons_dataset.common.data_types import AddonId
 from anki_addons_dataset.common.working_dir import WorkingDir, VersionDir
@@ -37,3 +41,19 @@ def note_size_addon_id() -> AddonId:
 @fixture
 def hyper_tts_addon_id() -> AddonId:
     return AddonId(111623432)
+
+
+@fixture
+def page_downloader() -> PageDownloader:
+    return Mock()
+
+
+@fixture
+def addon_page_parser(overrider: Overrider) -> AddonPageParser:
+    return AddonPageParser(overrider)
+
+
+@fixture
+def ankiweb_service(page_downloader: PageDownloader, version_dir: VersionDir,
+                    addon_page_parser: AddonPageParser) -> AnkiWebService:
+    return AnkiWebService(page_downloader, version_dir, addon_page_parser, False)
