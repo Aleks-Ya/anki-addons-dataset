@@ -3,8 +3,8 @@
 ## Setup Python virtual environment
 1. Install PyEnv: `brew install pyenv pyenv-virtualenv`
 2. Create virtual environment:
-    1. `pyenv install 3.13.5`
-    2. `pyenv virtualenv 3.13.5 anki-addons-dataset`
+    1. `pyenv install 3.14.0`
+    2. `pyenv virtualenv 3.14.0 anki-addons-dataset`
 3. Install Anki packages
     1. Activate virtual environment: `pyenv activate anki-addons-dataset`
     2. Install packages: `pip install -U -r requirements.txt`
@@ -14,9 +14,9 @@ Run locally: `pytest`
 Unit-tests are automatically executed in GitHub Actions.
 
 ## Create a new version
-1. Check out the latest Git tag: `git checkout v0.5.0`
-2. Download dataset: `PYTHONPATH=src python -m anki_addons_dataset.addon_catalog download -d 2025-10-01` (creates dir `~/anki-addons-dataset/history/2025-10-01`)
-3. Parse dataset: `PYTHONPATH=src python -m anki_addons_dataset.addon_catalog parse -d 2025-10-01` (creates dir `~/anki-addons-dataset/dataset`)
+1. Check out the latest Git tag: `git checkout v0.6.0`
+2. Download dataset: `PYTHONPATH=src python -m anki_addons_dataset.addon_catalog download -d 2025-11-01` (creates dir `~/anki-addons-dataset/history/2025-11-01`)
+3. Parse dataset: `PYTHONPATH=src python -m anki_addons_dataset.addon_catalog parse -d 2025-11-01` (creates dir `~/anki-addons-dataset/dataset`)
 4. Upload the dataset dir as a new version: `huggingface-cli upload-large-folder Ya-Alex/anki-addons $HOME/anki-addons-dataset/dataset --repo-type=dataset --num-workers=4`
 5. Delete unused files from the remote repo manually (`huggingface-cli` just updates files)
 
