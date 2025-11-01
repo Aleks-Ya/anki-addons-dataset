@@ -16,14 +16,17 @@ class AddonCollector:
         self.__overrider: Overrider = overrider
 
     def collect_addons(self) -> list[AddonInfo]:
+        self.__enricher.start()
+
         addon_headers: list[AddonHeader] = self.__ankiweb_service.get_headers()
-        addon_infos: list[AddonInfo] = []
+        log.info(f"Addon number: {len(addon_headers)}")
         for i, addon_header in enumerate(addon_headers):
             log.info(f"Parsing addon page: {addon_header.id} ({i}/{len(addon_headers)})")
             addon_info: AddonInfo = self.__ankiweb_service.get_addon_info(addon_header)
-            addon_infos.append(addon_info)
-        log.info(f"Addon number: {len(addon_infos)}")
+            self.__enricher.enrich(addon_info)
+        log.info("All addons are added to queue")
+        enriched_addon_infos: list[AddonInfo] = self.__enricher.wait_finish()
+        log.info("All addons are enriched")
 
-        enriched_addon_infos: list[AddonInfo] = self.__enricher.enrich_list(addon_infos)
         overridden_addon_infos: list[AddonInfo] = self.__overrider.override(enriched_addon_infos)
         return overridden_addon_infos

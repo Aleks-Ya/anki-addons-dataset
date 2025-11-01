@@ -33,7 +33,7 @@ class AddonPageDownloader:
             raw_file.unlink()
             log.info(f"Removed empty file: {raw_file}")
         if not raw_file.exists():
-            log.info(f"Downloading addon page to {raw_file}")
+            log.debug(f"Downloading addon page to {raw_file}")
             if self.__offline:
                 raise RuntimeError("Offline mode is enabled")
             raw_file.parent.mkdir(parents=True, exist_ok=True)

@@ -60,7 +60,7 @@ class GithubService:
             if handler.is_repo_marked_as_not_found():
                 return handler.get_not_found_return_value()
             url: str = handler.get_url()
-            log.info(f"Downloading {url} for {repo.get_id()}")
+            log.debug(f"Downloading {url} for {repo.get_id()}")
             if self.__offline:
                 raise RuntimeError("Offline mode is enabled")
             sleep(self.__sleep_sec)
