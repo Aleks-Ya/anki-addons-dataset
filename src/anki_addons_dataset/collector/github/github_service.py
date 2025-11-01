@@ -2,6 +2,8 @@ from datetime import datetime
 from pathlib import Path
 from time import sleep
 from typing import Any, Optional
+import logging
+from logging import Logger
 
 from requests import Response
 import requests
@@ -14,6 +16,8 @@ from anki_addons_dataset.collector.github.handler.stars_repo_handler import Star
 from anki_addons_dataset.collector.github.handler.tests_repo_handler import TestsRepoHandler
 from anki_addons_dataset.common.data_types import GitHubRepo, LanguageName
 from anki_addons_dataset.common.working_dir import VersionDir
+
+log: Logger = logging.getLogger(__name__)
 
 
 class GithubService:
@@ -56,7 +60,7 @@ class GithubService:
             if handler.is_repo_marked_as_not_found():
                 return handler.get_not_found_return_value()
             url: str = handler.get_url()
-            print(f"Downloading {url} for {repo.get_id()}")
+            log.info(f"Downloading {url} for {repo.get_id()}")
             if self.__offline:
                 raise RuntimeError("Offline mode is enabled")
             sleep(self.__sleep_sec)

@@ -1,5 +1,7 @@
 from datetime import date, datetime
 from pathlib import Path
+import logging
+from logging import Logger
 
 from anki_addons_dataset.aggregator.aggregator import Aggregator
 from anki_addons_dataset.argument.script_arguments import Operation
@@ -18,6 +20,8 @@ from anki_addons_dataset.common.working_dir import WorkingDir, VersionDir
 from anki_addons_dataset.exporter.exporter_facade import ExporterFacade
 from anki_addons_dataset.facade.raw_metadata import RawMetadata
 from anki_addons_dataset.huggingface.hugging_face import HuggingFace
+
+log: Logger = logging.getLogger(__name__)
 
 
 class Facade:
@@ -44,9 +48,9 @@ class Facade:
         dataset_bundle.create_bundle()
 
     def __download_version(self, creation_date: date) -> None:
-        print(f"===== Download dataset for {creation_date} =====")
+        log.info(f"===== Download dataset for {creation_date} =====")
         offline: bool = False
-        print(f"Offline: {offline}")
+        log.info(f"Offline: {offline}")
         version_dir: VersionDir = self.__working_dir.get_version_dir(creation_date).create()
         script_version: str = self.__script_version()
         raw_metadata: RawMetadata = RawMetadata(version_dir)
@@ -68,12 +72,12 @@ class Facade:
         collector.collect_addons()
         if not raw_metadata.get_finish_datetime():
             raw_metadata.set_finish_datetime(datetime.now().replace(microsecond=0))
-        print(f"===== Downloaded dataset for {creation_date} =====\n")
+        log.info(f"===== Downloaded dataset for {creation_date} =====\n")
 
     def __parse_version(self, creation_date: date) -> None:
         offline: bool = True
-        print(f"===== Parse dataset for {creation_date} =====")
-        print(f"Offline: {offline}")
+        log.info(f"===== Parse dataset for {creation_date} =====")
+        log.info(f"Offline: {offline}")
         version_dir: VersionDir = self.__working_dir.get_version_dir(creation_date).create()
         script_version: str = self.__script_version()
         overrider: Overrider = Overrider(version_dir)
@@ -97,7 +101,7 @@ class Facade:
 
         HuggingFace.create_version_metadata_yaml(version_dir, script_version)
 
-        print(f"===== Parsed dataset for {creation_date} =====\n")
+        log.info(f"===== Parsed dataset for {creation_date} =====\n")
 
     @staticmethod
     def __script_version() -> str:

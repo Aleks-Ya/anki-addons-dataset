@@ -1,11 +1,15 @@
 from datetime import datetime
 from pathlib import Path
 from typing import Any, Optional
+import logging
+from logging import Logger
 
 from requests import Response
 
 from anki_addons_dataset.collector.github.handler.repo_handler import RepoHandler
 from anki_addons_dataset.common.json_helper import JsonHelper
+
+log: Logger = logging.getLogger(__name__)
 
 
 class LastCommitRepoHandler(RepoHandler):
@@ -28,7 +32,7 @@ class LastCommitRepoHandler(RepoHandler):
         return date_obj
 
     def status_409(self, response: Response) -> None:
-        print(f"Repo is empty: {self.get_url()}")
+        log.info(f"Repo is empty: {self.get_url()}")
         raw_file: Path = self.get_raw_file()
         JsonHelper.write_dict_to_file({}, raw_file)
 

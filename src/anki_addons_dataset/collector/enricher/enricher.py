@@ -1,11 +1,15 @@
 from datetime import datetime
 from pathlib import Path
 from typing import Optional
+import logging
+from logging import Logger
 
 from anki_addons_dataset.common.data_types import AddonInfo, LanguageName, GithubInfo
 from anki_addons_dataset.collector.github.github_service import GithubService
 from anki_addons_dataset.common.json_helper import JsonHelper
 from anki_addons_dataset.common.working_dir import VersionDir
+
+log: Logger = logging.getLogger(__name__)
 
 
 class Enricher:
@@ -16,7 +20,7 @@ class Enricher:
     def enrich_list(self, addon_infos: list[AddonInfo]) -> list[AddonInfo]:
         enriched: list[AddonInfo] = []
         for i, addon_info in enumerate(addon_infos):
-            print(f"Enriching {addon_info.header.id} ({i}/{len(addon_infos)})")
+            log.info(f"Enriching {addon_info.header.id} ({i}/{len(addon_infos)})")
             enriched.append(self.__enrich(addon_info))
         return enriched
 

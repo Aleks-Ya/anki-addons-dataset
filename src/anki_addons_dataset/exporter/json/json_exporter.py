@@ -3,12 +3,16 @@ import json
 import shutil
 from pathlib import Path
 from typing import Any
+import logging
+from logging import Logger
 
 from jsonschema import validate
 
 from anki_addons_dataset.common.data_types import AddonInfo, Aggregation
 from anki_addons_dataset.exporter.exporter import Exporter
 from anki_addons_dataset.exporter.json_addon_info import JsonAddonInfo, Details
+
+log: Logger = logging.getLogger(__name__)
 
 
 class JsonExporter(Exporter):
@@ -20,7 +24,7 @@ class JsonExporter(Exporter):
         output_file: Path = self._final_dir / "data.json"
         json_str: str = JsonExporter.__to_json(json_list)
         output_file.write_text(json_str)
-        print(f"Write JSON to file: {output_file}")
+        log.info(f"Write JSON to file: {output_file}")
         schema_file: Path = Path(__file__).parent / "schema.json"
         dataset_schema_file: Path = self._final_dir / "schema.json"
         shutil.copyfile(schema_file, dataset_schema_file)
@@ -31,7 +35,7 @@ class JsonExporter(Exporter):
         output_file: Path = self._final_dir / "aggregation.json"
         json_str: str = json.dumps(aggregation_dict, indent=2)
         output_file.write_text(json_str)
-        print(f"Write JSON to file: {output_file}")
+        log.info(f"Write JSON to file: {output_file}")
 
     @staticmethod
     def __to_json(addons: list[Details]) -> str:

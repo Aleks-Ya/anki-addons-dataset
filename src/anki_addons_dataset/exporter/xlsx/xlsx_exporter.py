@@ -1,4 +1,6 @@
 from pathlib import Path
+import logging
+from logging import Logger
 
 from xlsxwriter import Workbook
 
@@ -6,6 +8,8 @@ from anki_addons_dataset.common.data_types import AddonInfo, Aggregation
 from anki_addons_dataset.exporter.exporter import Exporter
 from anki_addons_dataset.exporter.xlsx.addon_info_sheet import AddonInfoSheet
 from anki_addons_dataset.exporter.xlsx.aggregation_sheet import AggregationSheet
+
+log: Logger = logging.getLogger(__name__)
 
 
 class XlsxExporter(Exporter):
@@ -18,7 +22,7 @@ class XlsxExporter(Exporter):
         addon_info_sheet: AddonInfoSheet = AddonInfoSheet(workbook)
         addon_info_sheet.create_sheet(addon_infos)
         workbook.close()
-        print(f"Write XLSX to file: {output_file}")
+        log.info(f"Write XLSX to file: {output_file}")
 
     def export_aggregation(self, aggregation: Aggregation) -> None:
         output_file: Path = self._final_dir / "aggregation.xlsx"
@@ -26,4 +30,4 @@ class XlsxExporter(Exporter):
         aggregation_sheet: AggregationSheet = AggregationSheet(workbook)
         aggregation_sheet.create_sheet(aggregation)
         workbook.close()
-        print(f"Write XLSX to file: {output_file}")
+        log.info(f"Write XLSX to file: {output_file}")

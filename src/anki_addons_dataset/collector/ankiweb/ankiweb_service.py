@@ -1,6 +1,11 @@
+import logging
+from logging import Logger
+
 from anki_addons_dataset.collector.ankiweb.addon_page_downloader import AddonPageDownloader
 from anki_addons_dataset.collector.ankiweb.addons_page_downloader import AddonsPageDownloader
 from anki_addons_dataset.common.data_types import AddonInfo, AddonHeader
+
+log: Logger = logging.getLogger(__name__)
 
 
 class AnkiWebService:
@@ -12,5 +17,5 @@ class AnkiWebService:
     def load_addon_infos(self) -> list[AddonInfo]:
         addon_headers: list[AddonHeader] = self.__addons_page_downloader.get_headers()
         addon_infos: list[AddonInfo] = self.__addon_page_downloader.get_addon_infos(addon_headers)
-        print(f"Addon number: {len(addon_infos)}")
+        log.info(f"Addon number: {len(addon_infos)}")
         return addon_infos

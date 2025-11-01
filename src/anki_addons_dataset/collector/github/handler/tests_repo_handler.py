@@ -1,11 +1,15 @@
 from pathlib import Path
 from typing import Any
+import logging
+from logging import Logger
 
 from requests import Response
 
 from anki_addons_dataset.collector.github.handler.repo_handler import RepoHandler
 from anki_addons_dataset.collector.github.handler.tests_counter import TestsCounter
 from anki_addons_dataset.common.json_helper import JsonHelper
+
+log: Logger = logging.getLogger(__name__)
 
 
 class TestsRepoHandler(RepoHandler):
@@ -32,6 +36,6 @@ class TestsRepoHandler(RepoHandler):
         return {"tests_count": return_value}
 
     def status_409(self, response: Response) -> None:
-        print(f"Repo is empty: {self.get_url()}")
+        log.info(f"Repo is empty: {self.get_url()}")
         raw_file: Path = self.get_raw_file()
         JsonHelper.write_dict_to_file({}, raw_file)

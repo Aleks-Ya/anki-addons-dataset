@@ -1,12 +1,16 @@
 import shutil
 from pathlib import Path
 from typing import Any, Optional
+import logging
+from logging import Logger
 
 import yaml
 
 from anki_addons_dataset.collector.ankiweb.url_parser import UrlParser
 from anki_addons_dataset.common.data_types import AddonInfo, AddonId, URL, GitHubLink
 from anki_addons_dataset.common.working_dir import VersionDir
+
+log: Logger = logging.getLogger(__name__)
 
 
 class Overrider:
@@ -15,7 +19,7 @@ class Overrider:
 
     def __init__(self, version_dir: VersionDir):
         override_file: Path = Path(__file__).parent / "overrides.yaml"
-        print(f"Read override file: {override_file}")
+        log.info(f"Read override file: {override_file}")
         data: dict[str, dict[AddonId, Any]] = yaml.safe_load(override_file.read_text())
         self.addons_data: dict[AddonId, Any] = data.get("addons", {})
         dest_file: Path = version_dir.get_stage_dir() / "4-overrider" / "overrides.yaml"

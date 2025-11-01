@@ -2,11 +2,15 @@ import json
 from abc import abstractmethod, ABC
 from pathlib import Path
 from typing import Any, Optional
+import logging
+from logging import Logger
 
 from requests import Response
 
 from anki_addons_dataset.common.data_types import GitHubRepo
 from anki_addons_dataset.common.json_helper import JsonHelper
+
+log: Logger = logging.getLogger(__name__)
 
 
 class RepoHandler(ABC):
@@ -28,7 +32,7 @@ class RepoHandler(ABC):
     def status_404(self) -> None:
         raw_file: Path = self.get_raw_file()
         url: str = self.get_url()
-        print(f"Repo not found: {url}")
+        log.info(f"Repo not found: {url}")
         JsonHelper.write_dict_to_file({}, raw_file)
         self.__get_not_found_file().write_text("")
 

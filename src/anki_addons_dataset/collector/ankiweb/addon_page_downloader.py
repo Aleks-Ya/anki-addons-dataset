@@ -1,10 +1,14 @@
 from pathlib import Path
+import logging
+from logging import Logger
 
 from anki_addons_dataset.collector.ankiweb.addon_page_parser import AddonPageParser
 from anki_addons_dataset.collector.ankiweb.page_downloader import PageDownloader
 from anki_addons_dataset.common.data_types import AddonId, AddonInfo, AddonHeader, HtmlStr
 from anki_addons_dataset.common.json_helper import JsonHelper
 from anki_addons_dataset.common.working_dir import VersionDir
+
+log: Logger = logging.getLogger(__name__)
 
 
 class AddonPageDownloader:
@@ -19,7 +23,7 @@ class AddonPageDownloader:
     def get_addon_infos(self, addon_headers: list[AddonHeader]) -> list[AddonInfo]:
         addon_infos: list[AddonInfo] = []
         for i, addon_header in enumerate(addon_headers):
-            print(f"Parsing addon page: {addon_header.id} ({i}/{len(addon_headers)})")
+            log.info(f"Parsing addon page: {addon_header.id} ({i}/{len(addon_headers)})")
             html: HtmlStr = self.__load_addon_page(addon_header.id)
             addon_info: AddonInfo = self.__addon_page_parser.parse_addon_page(addon_header, html)
             addon_json_file: Path = self.__stage_dir / "addon" / f"{addon_header.id}.json"
@@ -31,9 +35,9 @@ class AddonPageDownloader:
         raw_file: Path = self.__raw_dir / "addon" / f"{addon_id}.html"
         if raw_file.exists() and raw_file.stat().st_size == 0:
             raw_file.unlink()
-            print(f"Removed empty file: {raw_file}")
+            log.info(f"Removed empty file: {raw_file}")
         if not raw_file.exists():
-            print(f"Downloading addon page to {raw_file}")
+            log.info(f"Downloading addon page to {raw_file}")
             if self.__offline:
                 raise RuntimeError("Offline mode is enabled")
             raw_file.parent.mkdir(parents=True, exist_ok=True)

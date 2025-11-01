@@ -2,6 +2,10 @@ import shutil
 from datetime import date
 from pathlib import Path
 from typing import Optional
+import logging
+from logging import Logger
+
+log: Logger = logging.getLogger(__name__)
 
 
 class VersionDir:
@@ -20,9 +24,9 @@ class VersionDir:
         raw_dir.mkdir(parents=True, exist_ok=True)
         stage_dir.mkdir(parents=True, exist_ok=True)
         final_dir.mkdir(parents=True, exist_ok=True)
-        print(f"Create raw dir: {raw_dir}")
-        print(f"Create stage dir: {stage_dir}")
-        print(f"Create final dir: {final_dir}")
+        log.info(f"Create raw dir: {raw_dir}")
+        log.info(f"Create stage dir: {stage_dir}")
+        log.info(f"Create final dir: {final_dir}")
         return self
 
     def get_raw_dir(self) -> Path:
@@ -42,7 +46,7 @@ class VersionDir:
 
     @staticmethod
     def __delete_dir(directory: Path) -> None:
-        print(f"Deleting dir: {directory}")
+        log.info(f"Deleting dir: {directory}")
         shutil.rmtree(directory, ignore_errors=True)
 
     def __lt__(self, other: 'VersionDir') -> bool:
@@ -88,7 +92,7 @@ class WorkingDir:
                 if sub_dir.is_dir():
                     version_dirs.append(VersionDir(sub_dir))
                 else:
-                    print(f"Skipping {sub_dir}")
+                    log.info(f"Skipping {sub_dir}")
         version_dirs.sort()
         return version_dirs
 

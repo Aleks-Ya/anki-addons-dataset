@@ -1,9 +1,13 @@
 import shutil
 from pathlib import Path
 from typing import Any
+import logging
+from logging import Logger
 
 from anki_addons_dataset.common.json_helper import JsonHelper
 from anki_addons_dataset.common.working_dir import VersionDir
+
+log: Logger = logging.getLogger(__name__)
 
 
 class HuggingFace:
@@ -13,7 +17,7 @@ class HuggingFace:
         src_file: Path = Path(__file__).parent / "README.md"
         dest_file: Path = dataset_dir / "README.md"
         shutil.copy(src_file, dest_file)
-        print(f"Created dataset card: {dest_file}")
+        log.info(f"Created dataset card: {dest_file}")
 
     @staticmethod
     def create_version_metadata_yaml(version_dir: VersionDir, script_version: str) -> None:
@@ -23,4 +27,4 @@ class HuggingFace:
         }
         dest_file: Path = version_dir.get_metadata_json()
         JsonHelper.write_dict_to_file(content, dest_file)
-        print(f"Created dataset metadata file: {dest_file}")
+        log.info(f"Created dataset metadata file: {dest_file}")

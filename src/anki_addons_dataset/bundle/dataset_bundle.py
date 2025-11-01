@@ -1,9 +1,13 @@
+import logging
 import shutil
 from datetime import date
+from logging import Logger
 from pathlib import Path
 
 from anki_addons_dataset.common.working_dir import WorkingDir, VersionDir
 from anki_addons_dataset.huggingface.hugging_face import HuggingFace
+
+log: Logger = logging.getLogger(__name__)
 
 
 class DatasetBundle:
@@ -12,7 +16,7 @@ class DatasetBundle:
 
     def create_bundle(self) -> None:
         bundle_dir: Path = self.__working_dir.get_dataset_dir()
-        print(f"Creating dataset bundle in {bundle_dir}")
+        log.info(f"Creating dataset bundle in {bundle_dir}")
         shutil.rmtree(bundle_dir, ignore_errors=True)
         bundle_history_dir: Path = bundle_dir / "history"
         bundle_history_dir.mkdir(parents=True, exist_ok=True)
@@ -21,11 +25,11 @@ class DatasetBundle:
             archive_format: str = "zip"
             base_name: str = f"{creation_date}"
             version_bundle_zip: str = str(bundle_history_dir / f"{base_name}")
-            print(f"Creating dataset bundle zip: {version_bundle_zip}.{archive_format}")
+            log.info(f"Creating dataset bundle zip: {version_bundle_zip}.{archive_format}")
             shutil.make_archive(version_bundle_zip, archive_format, version_dir.get_path())
 
         latest_dir: Path = bundle_dir / "latest"
-        print(f"Copying the latest version: {latest_dir}")
+        log.info(f"Copying the latest version: {latest_dir}")
         latest_version_dir: VersionDir = self.__working_dir.get_latest_version_dir()
         final_dir: Path = latest_version_dir.get_final_dir()
         shutil.copytree(final_dir, latest_dir)

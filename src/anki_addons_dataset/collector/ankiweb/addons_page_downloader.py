@@ -1,9 +1,13 @@
 from pathlib import Path
+import logging
+from logging import Logger
 
 from anki_addons_dataset.collector.ankiweb.addons_page_parser import AddonsPageParser
 from anki_addons_dataset.collector.ankiweb.page_downloader import PageDownloader
 from anki_addons_dataset.common.data_types import AddonHeader, HtmlStr
 from anki_addons_dataset.common.working_dir import VersionDir
+
+log: Logger = logging.getLogger(__name__)
 
 
 class AddonsPageDownloader:
@@ -20,11 +24,11 @@ class AddonsPageDownloader:
     def __load_addons_page(self) -> HtmlStr:
         raw_file: Path = self.__raw_dir / "addons_page.html"
         if not raw_file.exists():
-            print(f"Downloading addons page to {raw_file}")
+            log.info(f"Downloading addons page to {raw_file}")
             if self.__offline:
                 raise RuntimeError("Offline mode is enabled")
             raw_file.parent.mkdir(parents=True, exist_ok=True)
             html: HtmlStr = self.__page_downloader.load_page("https://ankiweb.net/shared/addons")
             raw_file.write_text(html)
-        print(f"Reading addons page from {raw_file}")
+        log.info(f"Reading addons page from {raw_file}")
         return HtmlStr(raw_file.read_text())

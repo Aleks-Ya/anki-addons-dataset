@@ -1,9 +1,13 @@
 from csv import DictWriter
 from pathlib import Path
 from typing import Any
+import logging
+from logging import Logger
 
 from anki_addons_dataset.common.data_types import AddonInfo, Aggregation
 from anki_addons_dataset.exporter.exporter import Exporter
+
+log: Logger = logging.getLogger(__name__)
 
 
 class CsvExporter(Exporter):
@@ -30,7 +34,7 @@ class CsvExporter(Exporter):
                     stars_field: addon.github.stars
                 }
                 writer.writerow(row)
-        print(f"Write CSV to file: {output_file}")
+        log.info(f"Write CSV to file: {output_file}")
 
     def export_aggregation(self, aggregation: Aggregation) -> None:
         output_file: Path = self._final_dir / "aggregation.csv"
@@ -45,4 +49,4 @@ class CsvExporter(Exporter):
                 addon_number_field: aggregation.addon_number
             }
             writer.writerow(row)
-        print(f"Write CSV to file: {output_file}")
+        log.info(f"Write CSV to file: {output_file}")
