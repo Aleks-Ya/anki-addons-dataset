@@ -8,11 +8,11 @@ from anki_addons_dataset.common.data_types import HtmlStr
 
 
 class PageDownloader:
-    def __init__(self, sleep_sec: int) -> None:
+    def __init__(self, sleep_sec: float) -> None:
         options: Options = Options()
         options.add_argument('--headless')
         self.__driver: WebDriver = webdriver.Chrome(options=options)
-        self.__sleep_sec: int = sleep_sec
+        self.__sleep_sec: float = sleep_sec
 
     def __del__(self) -> None:
         self.__driver.quit()

@@ -22,7 +22,7 @@ log: Logger = logging.getLogger(__name__)
 
 class GithubService:
 
-    def __init__(self, version_dir: VersionDir, sleep_sec: int, offline: bool):
+    def __init__(self, version_dir: VersionDir, sleep_sec: float, offline: bool):
         token_file: Path = Path.home() / ".github" / "token.txt"
         token: str = token_file.read_text().strip()
         self.__headers: dict[str, str] = {
@@ -30,7 +30,7 @@ class GithubService:
         }
         self.__raw_dir: Path = version_dir.get_raw_dir() / "2-github"
         self.__stage_dir: Path = version_dir.get_stage_dir() / "2-github"
-        self.__sleep_sec: int = sleep_sec
+        self.__sleep_sec: float = sleep_sec
         self.__offline: bool = offline
 
     def get_languages(self, repo: GitHubRepo) -> dict[LanguageName, int]:
