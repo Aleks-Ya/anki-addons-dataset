@@ -1,6 +1,8 @@
 @startuml
 'https://plantuml.com/component-diagram
 
+left to right direction
+
 component AnkiAddonsDataset
 component AnkiWeb
 component GitHub
@@ -8,8 +10,8 @@ component GitHub
 interface "REST" as GitHubRest
 interface "HTML" as AnkiWebHtml
 
-GitHub - GitHubRest
-AnkiWeb - AnkiWebHtml
+GitHub -u- GitHubRest
+AnkiWeb -u- AnkiWebHtml
 
 AnkiAddonsDataset --> AnkiWebHtml
 AnkiAddonsDataset --> GitHubRest
