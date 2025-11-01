@@ -65,7 +65,14 @@ class AddonPageParser:
     def __exclude_links(links: list[GitHubLink]) -> list[GitHubLink]:
         exclude_urls: list[str] = [
             'https://github.com/ankitects/anki',
-            'https://github.com/ankidroid/anki-android'
+            'https://github.com/ankidroid/anki-android',
+            'https://github.com/tesseract-ocr/tesseract',
+            'https://github.com/mpv-player/mpv',
+            'https://github.com/dae/anki',
+            'https://github.com/rhasspy/piper',
+            'https://github.com/btbn/ffmpeg-builds',
+            'https://github.com/beautify-web/js-beautify',
+            'https://github.com/tesseract-ocr/tessdata'
         ]
         filtered_links: list[GitHubLink] = []
         for link in links:
