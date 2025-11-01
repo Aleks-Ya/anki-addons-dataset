@@ -24,12 +24,16 @@ class AddonPageDownloader:
         addon_infos: list[AddonInfo] = []
         for i, addon_header in enumerate(addon_headers):
             log.info(f"Parsing addon page: {addon_header.id} ({i}/{len(addon_headers)})")
-            html: HtmlStr = self.__load_addon_page(addon_header.id)
-            addon_info: AddonInfo = self.__addon_page_parser.parse_addon_page(addon_header, html)
-            addon_json_file: Path = self.__stage_dir / "addon" / f"{addon_header.id}.json"
-            JsonHelper.write_addon_info_to_file(addon_info, addon_json_file)
+            addon_info: AddonInfo = self.__get_addon_info(addon_header)
             addon_infos.append(addon_info)
         return addon_infos
+
+    def __get_addon_info(self, addon_header: AddonHeader) -> AddonInfo:
+        html: HtmlStr = self.__load_addon_page(addon_header.id)
+        addon_info: AddonInfo = self.__addon_page_parser.parse_addon_page(addon_header, html)
+        addon_json_file: Path = self.__stage_dir / "addon" / f"{addon_header.id}.json"
+        JsonHelper.write_addon_info_to_file(addon_info, addon_json_file)
+        return addon_info
 
     def __load_addon_page(self, addon_id: AddonId) -> HtmlStr:
         raw_file: Path = self.__raw_dir / "addon" / f"{addon_id}.html"
