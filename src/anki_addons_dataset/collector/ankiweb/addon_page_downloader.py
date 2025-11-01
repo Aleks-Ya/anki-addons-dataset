@@ -20,15 +20,7 @@ class AddonPageDownloader:
         self.__stage_dir: Path = version_dir.get_stage_dir() / "1-anki-web"
         self.__offline: bool = offline
 
-    def get_addon_infos(self, addon_headers: list[AddonHeader]) -> list[AddonInfo]:
-        addon_infos: list[AddonInfo] = []
-        for i, addon_header in enumerate(addon_headers):
-            log.info(f"Parsing addon page: {addon_header.id} ({i}/{len(addon_headers)})")
-            addon_info: AddonInfo = self.__get_addon_info(addon_header)
-            addon_infos.append(addon_info)
-        return addon_infos
-
-    def __get_addon_info(self, addon_header: AddonHeader) -> AddonInfo:
+    def get_addon_info(self, addon_header: AddonHeader) -> AddonInfo:
         html: HtmlStr = self.__load_addon_page(addon_header.id)
         addon_info: AddonInfo = self.__addon_page_parser.parse_addon_page(addon_header, html)
         addon_json_file: Path = self.__stage_dir / "addon" / f"{addon_header.id}.json"

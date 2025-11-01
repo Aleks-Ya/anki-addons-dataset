@@ -26,7 +26,5 @@ def test_download_empty_files(addon_page_downloader: AddonPageDownloader, page_d
         rating=12,
         update_date="2025-04-19",
         versions="24.04.1-25.02.1+ (Updated 2025-04-19) ")
-    addon_headers: list[AddonHeader] = [addon_header]
-    addon_infos: list[AddonInfo] = addon_page_downloader.get_addon_infos(addon_headers)
-    assert len(addon_infos) == 1
-    assert addon_infos[0].page.anki_forum_url == 'https://forums.ankiweb.net/t/note-size-addon-support/46001'
+    addon_info: AddonInfo = addon_page_downloader.get_addon_info(addon_header)
+    assert addon_info.page.anki_forum_url == 'https://forums.ankiweb.net/t/note-size-addon-support/46001'
