@@ -44,8 +44,7 @@ class CollectorFacade:
         addon_page_downloader: AddonPageDownloader = AddonPageDownloader(
             page_downloader, version_dir, addon_page_parser, offline)
         ankiweb_service: AnkiWebService = AnkiWebService(addons_page_downloader, addon_page_downloader)
-        github_sleep_sec: float = 1
-        github_service: GithubService = GithubService(version_dir, github_sleep_sec, offline)
+        github_service: GithubService = GithubService(version_dir, offline)
         enricher: Enricher = Enricher(version_dir, github_service)
         collector: AddonCollector = AddonCollector(ankiweb_service, enricher, overrider)
         collector.collect_addons()
@@ -67,8 +66,7 @@ class CollectorFacade:
         addon_page_downloader: AddonPageDownloader = AddonPageDownloader(
             page_downloader, version_dir, addon_page_parser, offline)
         ankiweb_service: AnkiWebService = AnkiWebService(addons_page_downloader, addon_page_downloader)
-        github_sleep_sec: float = 1
-        github_service: GithubService = GithubService(version_dir, github_sleep_sec, offline)
+        github_service: GithubService = GithubService(version_dir, offline)
         enricher: Enricher = Enricher(version_dir, github_service)
         collector: AddonCollector = AddonCollector(ankiweb_service, enricher, overrider)
         addon_infos: list[AddonInfo] = collector.collect_addons()
