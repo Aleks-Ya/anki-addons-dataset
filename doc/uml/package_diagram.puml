@@ -1,0 +1,49 @@
+@startuml
+'https://plantuml.com/class-diagram
+hide empty members
+
+package anki_addons_dataset {
+    package aggregator {}
+    package argument {}
+    package bundle {}
+    package collector {
+        package overrider {}
+        package awnkiweb {}
+        package github {}
+        package enricher {}
+    }
+    package common {}
+    package exporter {
+        package csv {}
+        package json {}
+        package markdown {}
+        package parquet {}
+        package xlsx {}
+    }
+    package facade {}
+    package huggingface {}
+    package log {}
+}
+
+aggregator --> common
+
+bundle --> common
+bundle --> huggingface
+
+collector --> common
+collector --> huggingface
+
+exporter --> common
+
+facade --> aggregator
+facade --> argument
+facade --> bundle
+facade --> collector
+facade --> common
+facade --> exporter
+
+huggingface --> common
+
+
+
+@enduml

@@ -1,0 +1,27 @@
+@startuml
+
+folder ~ {
+    folder anki-addons-dataset {
+        folder dataset {
+            folder ".cache"
+            folder history as datasetHistory {
+                file "2025-06-22.zip" as zip
+            }
+            folder latest
+            file README.md
+        }
+        folder history {
+            folder "2025-06-22" as historyDate {
+                folder "1-raw"
+                folder "2-stage"
+                folder "3-final" as historyFinal
+                file metadata.json
+            }
+        }
+    }
+}
+
+historyFinal --> latest
+historyDate --> zip : bundle
+
+@enduml

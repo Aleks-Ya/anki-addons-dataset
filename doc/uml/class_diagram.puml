@@ -25,6 +25,7 @@ package anki_addons_dataset {
         class RawMetadata
     }
     package collector {
+        class CollectorFacade
         class AddonCollector
         package overrider {
             class Overrider
@@ -60,7 +61,8 @@ Main --> WorkingDir
 Main --> Facade
 WorkingDir "1" o-- "*" VersionDir
 Facade --> RawMetadata
-Facade --> AddonCollector
+Facade --> CollectorFacade
+CollectorFacade --> AddonCollector
 AddonPageParser --> Overrider
 AnkiWebService --> AddonPageParser
 AddonCollector --> AnkiWebService
