@@ -38,8 +38,7 @@ class CollectorFacade:
             raw_metadata.set_start_datetime(datetime.now().replace(microsecond=0))
         overrider: Overrider = Overrider(version_dir)
         addon_page_parser: AddonPageParser = AddonPageParser(overrider)
-        ankiweb_sleep_sec: float = 3
-        page_downloader: PageDownloader = PageDownloader(ankiweb_sleep_sec)
+        page_downloader: PageDownloader = PageDownloader()
         addons_page_downloader: AddonsPageDownloader = AddonsPageDownloader(page_downloader, version_dir, offline)
         addon_page_downloader: AddonPageDownloader = AddonPageDownloader(
             page_downloader, version_dir, addon_page_parser, offline)
@@ -60,8 +59,7 @@ class CollectorFacade:
         script_version: str = self.__script_version()
         overrider: Overrider = Overrider(version_dir)
         addon_page_parser: AddonPageParser = AddonPageParser(overrider)
-        ankiweb_sleep_sec: float = 3
-        page_downloader: PageDownloader = PageDownloader(ankiweb_sleep_sec)
+        page_downloader: PageDownloader = PageDownloader()
         addons_page_downloader: AddonsPageDownloader = AddonsPageDownloader(page_downloader, version_dir, offline)
         addon_page_downloader: AddonPageDownloader = AddonPageDownloader(
             page_downloader, version_dir, addon_page_parser, offline)
