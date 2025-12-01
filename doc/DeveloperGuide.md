@@ -13,12 +13,16 @@
 Run locally: `pytest`  
 Unit-tests are automatically executed in GitHub Actions.
 
+## HuggingFace CLI
+1. Login: `hf auth login`
+2. Verify: `hf auth whoami`
+
 ## Create a new version of HuggingFace dataset
 1. Check out the latest Git tag: `git checkout v0.6.0`
 2. Download dataset: `PYTHONPATH=src python -m anki_addons_dataset.addon_catalog download -d 2025-11-01` (creates dir `~/anki-addons-dataset/history/2025-11-01`)
 3. Parse dataset: `PYTHONPATH=src python -m anki_addons_dataset.addon_catalog parse -d 2025-11-01` (creates dir `~/anki-addons-dataset/dataset`)
-4. Upload the dataset dir as a new version: `huggingface-cli upload-large-folder Ya-Alex/anki-addons $HOME/anki-addons-dataset/dataset --repo-type=dataset --num-workers=4`
-5. Delete unused files from the remote repo manually (`huggingface-cli` just updates files)
+4. Upload the dataset dir as a new version: `hf upload-large-folder Ya-Alex/anki-addons $HOME/anki-addons-dataset/dataset --repo-type=dataset --num-workers=4`
+5. Delete unused files from the remote repo manually (`hf` just updates files)
 
 ## Sonar Qube
 https://sonarcloud.io/project/overview?id=Aleks-Ya_anki-addons-dataset  
