@@ -21,11 +21,14 @@ class AddonPageDownloader:
         self.__offline: bool = offline
 
     def get_addon_info(self, addon_header: AddonHeader) -> AddonInfo:
-        html: HtmlStr = self.__load_addon_page(addon_header.id)
-        addon_info: AddonInfo = self.__addon_page_parser.parse_addon_page(addon_header, html)
-        addon_json_file: Path = self.__stage_dir / "addon" / f"{addon_header.id}.json"
-        JsonHelper.write_addon_info_to_file(addon_info, addon_json_file)
-        return addon_info
+        try:
+            html: HtmlStr = self.__load_addon_page(addon_header.id)
+            addon_info: AddonInfo = self.__addon_page_parser.parse_addon_page(addon_header, html)
+            addon_json_file: Path = self.__stage_dir / "addon" / f"{addon_header.id}.json"
+            JsonHelper.write_addon_info_to_file(addon_info, addon_json_file)
+            return addon_info
+        except Exception as e:
+            raise RuntimeError(f"Cannot get addon info: {addon_header.id}") from e
 
     def __load_addon_page(self, addon_id: AddonId) -> HtmlStr:
         raw_file: Path = self.__raw_dir / "addon" / f"{addon_id}.html"
