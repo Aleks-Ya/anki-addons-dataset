@@ -21,6 +21,8 @@ class Facade:
             self.__download_operation(creation_date)
         elif operation == Operation.PARSE:
             self.__parse_operation()
+        elif operation == Operation.BUNDLE:
+            self.__bundle_operation()
         else:
             raise ValueError(f"Unsupported operation: {operation}")
 
@@ -31,5 +33,7 @@ class Facade:
         for version_dir in self.__working_dir.list_version_dirs():
             creation_date: date = version_dir.version_dir_to_creation_date()
             self.__collector_facade.parse_version(creation_date)
+
+    def __bundle_operation(self) -> None:
         dataset_bundle: DatasetBundle = DatasetBundle(self.__working_dir)
         dataset_bundle.create_bundle()

@@ -6,6 +6,7 @@ from enum import Enum
 class Operation(Enum):
     DOWNLOAD = "download"
     PARSE = "parse"
+    BUNDLE = "bundle"
 
 
 class ScriptArguments:

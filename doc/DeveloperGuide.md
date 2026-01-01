@@ -28,8 +28,9 @@ Sonar report is automatically updated in GitHub Actions.
 1. Upgrade Python packages: `pip install -U -r requirements.txt`
 2. Check out the latest Git tag: `git checkout v0.8.0`
 3. Download dataset: `PYTHONPATH=src python -m anki_addons_dataset.addon_catalog download -d 2026-01-01` (creates dir `~/anki-addons-dataset/history/2026-01-01`)
-4. Parse dataset: `PYTHONPATH=src python -m anki_addons_dataset.addon_catalog parse -d 2026-01-01` (creates dir `~/anki-addons-dataset/dataset`)
-5. Upload the dataset dir as a new version: `hf upload Ya-Alex/anki-addons $HOME/anki-addons-dataset/dataset --repo-type=dataset --delete="*"`
+4. Parse dataset: `PYTHONPATH=src python -m anki_addons_dataset.addon_catalog parse` (enriches all versions in `~/anki-addons-dataset/history`)
+5. Create a bundle: `PYTHONPATH=src python -m anki_addons_dataset.addon_catalog bundle` (creates dir `~/anki-addons-dataset/dataset`)
+6. Upload the dataset dir as a new version: `hf upload Ya-Alex/anki-addons $HOME/anki-addons-dataset/dataset --repo-type=dataset --delete="*"`
 
 ## Release a new version of this repository
 On branch `main`:
