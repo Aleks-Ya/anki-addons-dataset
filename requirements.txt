@@ -7,7 +7,7 @@ pytest
 pytest-cov
 jsonschema
 selenium
-huggingface_hub[cli]
+huggingface-hub
 pandas
 pyarrow
 bump-my-version
