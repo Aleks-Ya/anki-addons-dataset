@@ -3,11 +3,11 @@
 ## Setup Python virtual environment
 1. Install PyEnv: `brew install pyenv pyenv-virtualenv`
 2. Create virtual environment:
-    1. `pyenv install 3.14.0`
-    2. `pyenv virtualenv 3.14.0 anki-addons-dataset`
+    1. `pyenv install 3.14.2`
+    2. `pyenv virtualenv 3.14.2 anki-addons-dataset`
 3. Install Anki packages
     1. Activate virtual environment: `pyenv activate anki-addons-dataset`
-    2. Install packages: `pip install -U -r requirements.txt`
+    2. Install packages: `pip install -U pip -r requirements.txt`
 
 ## Unit-test
 Run locally: `pytest`  
