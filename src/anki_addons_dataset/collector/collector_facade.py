@@ -28,57 +28,44 @@ class CollectorFacade:
 
     def download_version(self, creation_date: date) -> None:
         log.info(f"===== Download dataset for {creation_date} =====")
-        offline: bool = False
-        log.info(f"Offline: {offline}")
         version_dir: VersionDir = self.__working_dir.get_version_dir(creation_date).create()
         script_version: str = self.__script_version()
         raw_metadata: RawMetadata = RawMetadata(version_dir)
         if not raw_metadata.get_start_datetime():
             raw_metadata.set_script_version(script_version)
             raw_metadata.set_start_datetime(datetime.now().replace(microsecond=0))
-        overrider: Overrider = Overrider(version_dir)
-        addon_page_parser: AddonPageParser = AddonPageParser(overrider)
-        page_downloader: PageDownloader = PageDownloader()
-        addons_page_downloader: AddonsPageDownloader = AddonsPageDownloader(page_downloader, version_dir, offline)
-        addon_page_downloader: AddonPageDownloader = AddonPageDownloader(
-            page_downloader, version_dir, addon_page_parser, offline)
-        ankiweb_service: AnkiWebService = AnkiWebService(addons_page_downloader, addon_page_downloader)
-        github_service: GithubService = GithubService(version_dir, offline)
-        enricher: Enricher = Enricher(version_dir, github_service)
-        collector: AddonCollector = AddonCollector(ankiweb_service, enricher, overrider)
-        collector.collect_addons()
+        self.__collect(version_dir, False)
         if not raw_metadata.get_finish_datetime():
             raw_metadata.set_finish_datetime(datetime.now().replace(microsecond=0))
         log.info(f"===== Downloaded dataset for {creation_date} =====\n")
 
     def parse_version(self, creation_date: date) -> None:
-        offline: bool = True
         log.info(f"===== Parse dataset for {creation_date} =====")
-        log.info(f"Offline: {offline}")
         version_dir: VersionDir = self.__working_dir.get_version_dir(creation_date).create()
         script_version: str = self.__script_version()
-        overrider: Overrider = Overrider(version_dir)
-        addon_page_parser: AddonPageParser = AddonPageParser(overrider)
-        page_downloader: PageDownloader = PageDownloader()
-        addons_page_downloader: AddonsPageDownloader = AddonsPageDownloader(page_downloader, version_dir, offline)
-        addon_page_downloader: AddonPageDownloader = AddonPageDownloader(
-            page_downloader, version_dir, addon_page_parser, offline)
-        ankiweb_service: AnkiWebService = AnkiWebService(addons_page_downloader, addon_page_downloader)
-        github_service: GithubService = GithubService(version_dir, offline)
-        enricher: Enricher = Enricher(version_dir, github_service)
-        collector: AddonCollector = AddonCollector(ankiweb_service, enricher, overrider)
-        addon_infos: list[AddonInfo] = collector.collect_addons()
-
+        addon_infos: list[AddonInfo] = self.__collect(version_dir, True)
         aggregation: Aggregation = Aggregator.aggregate(addon_infos)
-
         exporter_facade: ExporterFacade = ExporterFacade(version_dir)
         exporter_facade.export_all(addon_infos, aggregation)
-
         HuggingFace.create_version_metadata_yaml(version_dir, script_version)
-
         log.info(f"===== Parsed dataset for {creation_date} =====\n")
 
     @staticmethod
     def __script_version() -> str:
         version_file: Path = Path(__file__).parent.parent / "version.txt"
         return version_file.read_text().strip()
+
+    @staticmethod
+    def __collect(version_dir: VersionDir, offline: bool) -> list[AddonInfo]:
+        log.info(f"Offline: {offline}")
+        overrider: Overrider = Overrider(version_dir)
+        addon_page_parser: AddonPageParser = AddonPageParser(overrider)
+        page_downloader: PageDownloader = PageDownloader()
+        addons_page_downloader: AddonsPageDownloader = AddonsPageDownloader(page_downloader, version_dir, offline)
+        addon_page_downloader: AddonPageDownloader = AddonPageDownloader(
+            page_downloader, version_dir, addon_page_parser, offline)
+        ankiweb_service: AnkiWebService = AnkiWebService(addons_page_downloader, addon_page_downloader)
+        github_service: GithubService = GithubService(version_dir, offline)
+        enricher: Enricher = Enricher(version_dir, github_service)
+        collector: AddonCollector = AddonCollector(ankiweb_service, enricher, overrider)
+        return collector.collect_addons()
