@@ -21,12 +21,11 @@ class DatasetBundle:
         bundle_history_dir: Path = bundle_dir / "history"
         bundle_history_dir.mkdir(parents=True, exist_ok=True)
         for version_dir in self.__working_dir.list_version_dirs():
+            raw_dir: Path = version_dir.get_raw_dir()
             creation_date: date = version_dir.version_dir_to_creation_date()
-            archive_format: str = "zip"
             base_name: str = f"{creation_date}"
-            version_bundle_zip: str = str(bundle_history_dir / f"{base_name}")
-            log.info(f"Creating dataset bundle zip: {version_bundle_zip}.{archive_format}")
-            shutil.make_archive(version_bundle_zip, archive_format, version_dir.get_path())
+            output_dir: Path = bundle_history_dir / base_name
+            self.__create_zip(raw_dir, output_dir, "raw")
 
         latest_dir: Path = bundle_dir / "latest"
         log.info(f"Copying the latest version: {latest_dir}")
@@ -37,3 +36,10 @@ class DatasetBundle:
         shutil.copyfile(metadata_json_file, latest_dir / metadata_json_file.name)
 
         HuggingFace.create_dataset_card(bundle_dir)
+
+    @staticmethod
+    def __create_zip(source_dir: Path, output_dir: Path, output_base_name: str) -> None:
+        zip_base_name: str = str(output_dir / f"{output_base_name}")
+        archive_format: str = "zip"
+        log.info(f"Creating zip: {zip_base_name}.{archive_format}")
+        shutil.make_archive(zip_base_name, archive_format, source_dir)
