@@ -1,9 +1,12 @@
 from datetime import date
-from pathlib import Path
+import textwrap
+
+from seedir import seedir
 
 from anki_addons_dataset.bundle.dataset_bundle import DatasetBundle
 from anki_addons_dataset.common.working_dir import WorkingDir, VersionDir
 from anki_addons_dataset.facade.raw_metadata import RawMetadata
+
 
 
 def test_parse_creation_date(working_dir: WorkingDir):
@@ -17,9 +20,19 @@ def test_parse_creation_date(working_dir: WorkingDir):
     raw_metadata_2: RawMetadata = RawMetadata(version_dir_2)
     raw_metadata_2.set_script_version("v0.0.1")
 
-    bundle_history_dir: Path = working_dir.get_dataset_dir() / "history"
-    assert not bundle_history_dir.exists()
+    assert not working_dir.get_dataset_dir().exists()
     dataset_bundle: DatasetBundle = DatasetBundle(working_dir)
     dataset_bundle.create_bundle()
-    act_version_zips: list[str] = sorted([version_zip.name for version_zip in bundle_history_dir.iterdir()])
-    assert act_version_zips == ['2025-01-01.zip', '2025-01-02.zip']
+    tree: str = seedir(working_dir.get_dataset_dir(), printout=False, sort=True)
+    assert tree == textwrap.dedent("""\
+                                dataset/
+                                ├─README.md
+                                ├─history/
+                                │ ├─2025-01-01/
+                                │ │ ├─raw.zip
+                                │ │ └─stage.zip
+                                │ └─2025-01-02/
+                                │   ├─raw.zip
+                                │   └─stage.zip
+                                └─latest/
+                                  └─metadata.json""")

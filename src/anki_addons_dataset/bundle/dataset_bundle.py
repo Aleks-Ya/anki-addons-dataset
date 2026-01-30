@@ -20,12 +20,15 @@ class DatasetBundle:
         shutil.rmtree(bundle_dir, ignore_errors=True)
         bundle_history_dir: Path = bundle_dir / "history"
         bundle_history_dir.mkdir(parents=True, exist_ok=True)
+
         for version_dir in self.__working_dir.list_version_dirs():
-            raw_dir: Path = version_dir.get_raw_dir()
             creation_date: date = version_dir.version_dir_to_creation_date()
             base_name: str = f"{creation_date}"
             output_dir: Path = bundle_history_dir / base_name
-            self.__create_zip(raw_dir, output_dir, "raw")
+            self.__create_zip(version_dir.get_raw_dir(), output_dir, "raw")
+            self.__create_zip(version_dir.get_stage_dir(), output_dir, "stage")
+            log.info(f"Copying {version_dir.get_final_dir()} to {output_dir}")
+            shutil.copytree(version_dir.get_final_dir(), output_dir, dirs_exist_ok=True)
 
         latest_dir: Path = bundle_dir / "latest"
         log.info(f"Copying the latest version: {latest_dir}")

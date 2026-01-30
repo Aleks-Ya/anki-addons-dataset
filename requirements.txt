@@ -11,3 +11,4 @@ huggingface-hub
 pandas
 pyarrow
 bump-my-version
+seedir
