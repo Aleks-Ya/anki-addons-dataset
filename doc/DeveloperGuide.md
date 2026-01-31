@@ -25,7 +25,7 @@ Sonar report is automatically updated in GitHub Actions.
 2. Verify: `hf auth whoami`
 
 ## Create a new version of HuggingFace dataset
-1. Upgrade Python packages: `pip install -U -r requirements.txt`
+1. Upgrade Python packages: `pip install -U pip -r requirements.txt`
 2. Check out the latest Git tag: `git checkout v0.8.0`
 3. Download dataset: `PYTHONPATH=src python -m anki_addons_dataset.addon_catalog download -d 2026-01-01` (creates dir `~/anki-addons-dataset/history/2026-01-01`)
 4. Parse dataset: `PYTHONPATH=src python -m anki_addons_dataset.addon_catalog parse` (enriches all versions in `~/anki-addons-dataset/history`)
@@ -44,9 +44,8 @@ On branch `main`:
     3. Review Sonar Qube report: https://sonarcloud.io/summary/overall?id=Aleks-Ya_anki-addons-dataset&branch=main
 4. Increment version:
     1. Show the next versions: `bump-my-version show-bump`
-    2. Increment SNAPSHOT version (`0.1.1-SNAPSHOT` -> `0.2.0-SNAPSHOT`): `bump-my-version bump minor`
-    3. Switch SNAPSHOT version to RELEASE (`0.1.1-SNAPSHOT` -> `0.1.1`): `bump-my-version bump release --tag`
-    4. Switch RELEASE version to SNAPSHOT (`0.1.1` -> `0.2.0-SNAPSHOT`): `bump-my-version bump minor`
+    2. Switch SNAPSHOT version to RELEASE (`0.1.1-SNAPSHOT` -> `0.1.1`): `bump-my-version bump release --tag`
+    3. Switch RELEASE version to SNAPSHOT (`0.1.1` -> `0.2.0-SNAPSHOT`): `bump-my-version bump minor`
 5. Create a GitHub release:
     1. Push tags: `git push --tags`
     2. Create a release from the tag: https://github.com/Aleks-Ya/anki-addons-dataset/releases
