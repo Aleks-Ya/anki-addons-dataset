@@ -10,6 +10,8 @@ from anki_addons_dataset.collector.ankiweb.addon_page_parser import AddonPagePar
 from anki_addons_dataset.collector.ankiweb.addons_page_downloader import AddonsPageDownloader
 from anki_addons_dataset.collector.ankiweb.ankiweb_service import AnkiWebService
 from anki_addons_dataset.collector.ankiweb.page_downloader import PageDownloader
+from anki_addons_dataset.collector.enricher.enricher import Enricher
+from anki_addons_dataset.collector.github.github_service import GithubService
 from anki_addons_dataset.collector.overrider.overrider import Overrider
 from anki_addons_dataset.common.data_types import AddonId
 from anki_addons_dataset.common.working_dir import WorkingDir, VersionDir
@@ -76,3 +78,13 @@ def addon_page_downloader(page_downloader: PageDownloader, version_dir: VersionD
 def ankiweb_service(addons_page_downloader: AddonsPageDownloader,
                     addon_page_downloader: AddonPageDownloader) -> AnkiWebService:
     return AnkiWebService(addons_page_downloader, addon_page_downloader)
+
+
+@fixture
+def github_service() -> GithubService:
+    return Mock()
+
+
+@fixture
+def enricher(version_dir: VersionDir, github_service: GithubService) -> Enricher:
+    return Enricher(version_dir, github_service)
