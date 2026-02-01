@@ -12,3 +12,4 @@ pandas
 pyarrow
 bump-my-version
 seedir
+openpyxl
