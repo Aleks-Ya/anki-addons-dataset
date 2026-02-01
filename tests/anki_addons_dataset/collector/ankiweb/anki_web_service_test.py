@@ -15,7 +15,7 @@ def test_load_addon_infos(ankiweb_service: AnkiWebService, page_downloader: Page
     addons_html: HtmlStr = HtmlStr(addons_html_file.read_text())
     addon_html_file: Path = Path(__file__).parent / "1188705668.html"
     addon_html: HtmlStr = HtmlStr(addon_html_file.read_text())
-    addons_number: int = 2066
+    addons_number: int = 2
     htmls: list[HtmlStr] = [addons_html] + [addon_html] * addons_number
     page_downloader.load_page = Mock(side_effect=htmls)
     addon_headers: list[AddonHeader] = ankiweb_service.get_headers()

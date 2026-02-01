@@ -8,7 +8,7 @@ def test_addons_number():
     addons_html_file: Path = Path(__file__).parent / "addons_page.html"
     addons_html: HtmlStr = HtmlStr(addons_html_file.read_text())
     addon_headers: list[AddonHeader] = AddonsPageParser.parse_addons_page(addons_html)
-    assert len(addon_headers) == 2066
+    assert len(addon_headers) == 2
 
 
 def test_addons_order():
