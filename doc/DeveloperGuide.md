@@ -7,7 +7,7 @@
     2. `pyenv virtualenv 3.14.2 anki-addons-dataset`
 3. Install Anki packages
     1. Activate virtual environment: `pyenv activate anki-addons-dataset`
-    2. Install packages: `pip install -U pip -r requirements.txt`
+    2. Install packages: `./pip_update.sh`
 
 ## Unit-test
 Run locally: `pytest`  
@@ -25,7 +25,7 @@ Sonar report is automatically updated in GitHub Actions.
 2. Verify: `hf auth whoami`
 
 ## Create a new version of HuggingFace dataset
-1. Upgrade Python packages: `pip install -U pip -r requirements.txt`
+1. Upgrade Python packages: `./pip_update.sh`
 2. Check out the latest Git tag: `git checkout v0.8.0`
 3. Download dataset: `PYTHONPATH=src python -m anki_addons_dataset.addon_catalog download -d 2026-01-01` (creates dir `~/anki-addons-dataset/history/2026-01-01`)
 4. Parse dataset: `PYTHONPATH=src python -m anki_addons_dataset.addon_catalog parse` (enriches all versions in `~/anki-addons-dataset/history`)
@@ -36,7 +36,7 @@ Sonar report is automatically updated in GitHub Actions.
 
 ## Release a new version of this repository
 On branch `main`:
-1. Upgrade Python packages: `pip install -U -r requirements.txt`
+1. Upgrade Python packages: `./pip_update.sh`
 2. Execute unit-tests: `pytest`
 3. Pass Sonar Qube analysis:
     1. Push changes: `git push`
