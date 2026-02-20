@@ -41,8 +41,9 @@ def test_enrich(enricher: Enricher, github_service: GithubService, note_size_add
     github_service.get_tests_count = Mock(return_value=7)
 
     enricher.start()
-    enricher.enrich(addon_info)
-    act_addon_infos: AddonInfos = enricher.wait_finish()
+    enricher.download_in_background(addon_info)
+    enricher.wait_download_finish()
+    act_addon_infos: AddonInfos = enricher.enrich(AddonInfos([addon_info]))
 
     exp_addon_info: AddonInfo = AddonInfo(
         header=AddonHeader(note_size_addon_id, "NoteSize", "https://ankiweb.net/shared/info/1188705668",

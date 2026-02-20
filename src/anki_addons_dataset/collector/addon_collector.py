@@ -20,13 +20,20 @@ class AddonCollector:
 
         addon_headers: list[AddonHeader] = self.__ankiweb_service.get_headers()
         log.info(f"Addon number: {len(addon_headers)}")
-        for i, addon_header in enumerate(addon_headers):
-            log.info(f"Parsing addon page: {addon_header.id} ({i}/{len(addon_headers)})")
-            addon_info: AddonInfo = self.__ankiweb_service.get_addon_info(addon_header)
-            self.__enricher.enrich(addon_info)
+        addons_infos: AddonInfos = self.__get_addon_infos(addon_headers)
         log.info("All addons are added to queue")
-        enriched_addon_infos: AddonInfos = self.__enricher.wait_finish()
+        self.__enricher.wait_download_finish()
+        enriched_addon_infos: AddonInfos = self.__enricher.enrich(addons_infos)
         log.info("All addons are enriched")
 
         overridden_addon_infos: AddonInfos = self.__overrider.override(enriched_addon_infos)
         return overridden_addon_infos
+
+    def __get_addon_infos(self, addon_headers: list[AddonHeader]) -> AddonInfos:
+        addon_infos: list[AddonInfo] = []
+        for i, addon_header in enumerate(addon_headers):
+            log.info(f"Parsing addon page: {addon_header.id} ({i}/{len(addon_headers)})")
+            addon_info: AddonInfo = self.__ankiweb_service.get_addon_info(addon_header)
+            self.__enricher.download_in_background(addon_info)
+            addon_infos.append(addon_info)
+        return AddonInfos(addon_infos)
