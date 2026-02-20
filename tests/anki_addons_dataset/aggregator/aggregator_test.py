@@ -2,12 +2,12 @@ from datetime import datetime
 
 from anki_addons_dataset.aggregator.aggregator import Aggregator
 from anki_addons_dataset.common.data_types import Aggregation, AddonInfo, AddonHeader, AddonPage, GithubInfo, \
-    GitHubRepo, GithubUserName, GithubRepoName, LanguageName, AddonId, URL
+    GitHubRepo, GithubUserName, GithubRepoName, LanguageName, AddonId, URL, AddonInfos
 
 
 def test_aggregate_empty():
     aggregator: Aggregator = Aggregator()
-    aggregation: Aggregation = aggregator.aggregate([])
+    aggregation: Aggregation = aggregator.aggregate(AddonInfos([]))
     assert aggregation == Aggregation(
         addon_number=0,
         addon_with_github_number=0,
@@ -17,7 +17,7 @@ def test_aggregate_empty():
 
 
 def test_aggregate(note_size_addon_id: AddonId):
-    addon_infos: list[AddonInfo] = [
+    addon_infos: AddonInfos = AddonInfos([
         AddonInfo(
             header=AddonHeader(note_size_addon_id, "NoteSize", "https://ankiweb.net/shared/info/1188705668",
                                4, "2023-03-15", "1.0.0"),
@@ -37,7 +37,7 @@ def test_aggregate(note_size_addon_id: AddonId):
                 action_count=5,
                 tests_count=7
             ))
-    ]
+    ])
     aggregator: Aggregator = Aggregator()
     aggregation: Aggregation = aggregator.aggregate(addon_infos)
     assert aggregation == Aggregation(

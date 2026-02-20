@@ -1,7 +1,7 @@
 from abc import abstractmethod, ABC
 from pathlib import Path
 
-from anki_addons_dataset.common.data_types import AddonInfo, Aggregation
+from anki_addons_dataset.common.data_types import Aggregation, AddonInfos
 
 
 class Exporter(ABC):
@@ -10,7 +10,7 @@ class Exporter(ABC):
         self._final_dir.mkdir(parents=True, exist_ok=True)
 
     @abstractmethod
-    def export_addon_infos(self, addon_infos: list[AddonInfo]) -> None:
+    def export_addon_infos(self, addon_infos: AddonInfos) -> None:
         ...
 
     @abstractmethod

@@ -82,6 +82,9 @@ class AddonInfo:
     github: Optional[GithubInfo]
 
 
+AddonInfos = NewType("AddonInfos", list[AddonInfo])
+
+
 @dataclass
 class Aggregation:
     addon_number: int

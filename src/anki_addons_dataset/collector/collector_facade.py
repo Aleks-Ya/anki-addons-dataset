@@ -12,7 +12,7 @@ from anki_addons_dataset.collector.ankiweb.page_downloader import PageDownloader
 from anki_addons_dataset.collector.enricher.enricher import Enricher
 from anki_addons_dataset.collector.github.github_service import GithubService
 from anki_addons_dataset.collector.overrider.overrider import Overrider
-from anki_addons_dataset.common.data_types import AddonInfo, Aggregation
+from anki_addons_dataset.common.data_types import Aggregation, AddonInfos
 from anki_addons_dataset.collector.ankiweb.ankiweb_service import AnkiWebService
 from anki_addons_dataset.common.working_dir import VersionDir, WorkingDir
 from anki_addons_dataset.exporter.exporter_facade import ExporterFacade
@@ -43,7 +43,7 @@ class CollectorFacade:
         log.info(f"===== Parse dataset for {creation_date} =====")
         version_dir: VersionDir = self.__working_dir.get_version_dir(creation_date).create()
         script_version: str = self.__script_version()
-        addon_infos: list[AddonInfo] = self.__collect(version_dir, True)
+        addon_infos: AddonInfos = self.__collect(version_dir, True)
         aggregation: Aggregation = Aggregator.aggregate(addon_infos)
         exporter_facade: ExporterFacade = ExporterFacade(version_dir)
         exporter_facade.export_all(addon_infos, aggregation)
@@ -56,7 +56,7 @@ class CollectorFacade:
         return version_file.read_text().strip()
 
     @staticmethod
-    def __collect(version_dir: VersionDir, offline: bool) -> list[AddonInfo]:
+    def __collect(version_dir: VersionDir, offline: bool) -> AddonInfos:
         log.info(f"Offline: {offline}")
         overrider: Overrider = Overrider(version_dir)
         addon_page_parser: AddonPageParser = AddonPageParser(overrider)

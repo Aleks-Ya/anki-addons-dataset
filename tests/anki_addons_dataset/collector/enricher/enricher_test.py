@@ -6,7 +6,7 @@ from unittest.mock import Mock
 from anki_addons_dataset.collector.enricher.enricher import Enricher
 from anki_addons_dataset.collector.github.github_service import GithubService
 from anki_addons_dataset.common.data_types import AddonInfo, AddonHeader, AddonId, AddonPage, GitHubRepo, \
-    GithubUserName, GithubRepoName, LanguageName, GithubInfo
+    GithubUserName, GithubRepoName, LanguageName, GithubInfo, AddonInfos
 
 log: Logger = logging.getLogger(__name__)
 
@@ -42,7 +42,7 @@ def test_enrich(enricher: Enricher, github_service: GithubService, note_size_add
 
     enricher.start()
     enricher.enrich(addon_info)
-    act_addon_infos: list[AddonInfo] = enricher.wait_finish()
+    act_addon_infos: AddonInfos = enricher.wait_finish()
 
     exp_addon_info: AddonInfo = AddonInfo(
         header=AddonHeader(note_size_addon_id, "NoteSize", "https://ankiweb.net/shared/info/1188705668",

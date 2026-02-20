@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from anki_addons_dataset.common.data_types import AddonInfo, Aggregation
+from anki_addons_dataset.common.data_types import Aggregation, AddonInfos
 from anki_addons_dataset.common.working_dir import VersionDir
 from anki_addons_dataset.exporter.csv.csv_exporter import CsvExporter
 from anki_addons_dataset.exporter.exporter import Exporter
@@ -21,7 +21,7 @@ class ExporterFacade:
             ParquetExporter(final_dir)
         ]
 
-    def export_all(self, addon_infos: list[AddonInfo], aggregation: Aggregation) -> None:
+    def export_all(self, addon_infos: AddonInfos, aggregation: Aggregation) -> None:
         for exporter in self.exporters:
             exporter.export_addon_infos(addon_infos)
             exporter.export_aggregation(aggregation)

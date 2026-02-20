@@ -4,13 +4,13 @@ from pathlib import Path
 from typing import Any
 
 from anki_addons_dataset.common.data_types import AddonInfo, AddonHeader, AddonId, GitHubRepo, GithubUserName, \
-    GithubRepoName, LanguageName, GithubInfo, AddonPage, Aggregation
+    GithubRepoName, LanguageName, GithubInfo, AddonPage, Aggregation, AddonInfos
 from anki_addons_dataset.common.working_dir import VersionDir
 from anki_addons_dataset.exporter.json.json_exporter import JsonExporter
 
 
 def test_export_addon_infos(note_size_addon_id: AddonId, version_dir: VersionDir):
-    addon_infos: list[AddonInfo] = [
+    addon_infos: AddonInfos = AddonInfos([
         AddonInfo(
             header=AddonHeader(note_size_addon_id, "NoteSize", "https://ankiweb.net/shared/info/1188705668",
                                4, "2023-03-15", "1.0.0"),
@@ -30,7 +30,7 @@ def test_export_addon_infos(note_size_addon_id: AddonId, version_dir: VersionDir
                 action_count=5,
                 tests_count=7
             ))
-    ]
+    ])
     final_dir: Path = version_dir.get_final_dir()
     exporter: JsonExporter = JsonExporter(final_dir)
     exporter.export_addon_infos(addon_infos)

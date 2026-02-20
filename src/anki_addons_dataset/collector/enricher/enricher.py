@@ -2,11 +2,12 @@ from datetime import datetime
 from pathlib import Path
 from queue import Queue
 from threading import Thread
-from typing import Optional
+from typing import Optional, cast
 import logging
 from logging import Logger
 
-from anki_addons_dataset.common.data_types import AddonInfo, LanguageName, GithubInfo, AddonHeader, AddonPage, AddonId
+from anki_addons_dataset.common.data_types import AddonInfo, LanguageName, GithubInfo, AddonHeader, AddonPage, AddonId, \
+    AddonInfos
 from anki_addons_dataset.collector.github.github_service import GithubService
 from anki_addons_dataset.common.json_helper import JsonHelper
 from anki_addons_dataset.common.working_dir import VersionDir
@@ -20,7 +21,7 @@ class Enricher(Thread):
         self.__stage_dir: Path = version_dir.get_stage_dir() / "3-enricher" / "addon"
         self.__github_service: GithubService = github_service
         self.__queue: Queue[AddonInfo] = Queue()
-        self.__addon_infos: list[AddonInfo] = []
+        self.__addon_infos: AddonInfos = AddonInfos([])
         self.__sentinel: AddonInfo = AddonInfo(AddonHeader(AddonId(0), "", "", 0, "", ""),
                                                AddonPage(0, 0, [], [], None), None)
 
@@ -39,7 +40,7 @@ class Enricher(Thread):
             self.__queue.task_done()
         log.info("Exit run")
 
-    def wait_finish(self) -> list[AddonInfo]:
+    def wait_finish(self) -> AddonInfos:
         log.info("Wait finish")
         if self.is_alive():
             log.info("Waiting for finish")
@@ -52,7 +53,8 @@ class Enricher(Thread):
         self.__queue.put(addon_info)
 
     def __enrich(self, addon_info: AddonInfo) -> AddonInfo:
-        log.info(f"Enriching: {addon_info.header.id}. Queue: {self.__queue.qsize()}. Done: {len(self.__addon_infos)}")
+        log.info(f"Enriching: {addon_info.header.id}. Queue: {self.__queue.qsize()}. "
+                 f"Done: {len(cast(list[AddonInfo], self.__addon_infos))}")
         languages: list[LanguageName] = self.__get_languages(addon_info)
         stars: int = self.__github_service.get_stars_count(addon_info.github.github_repo)
         last_commit: Optional[datetime] = self.__github_service.get_last_commit(addon_info.github.github_repo)

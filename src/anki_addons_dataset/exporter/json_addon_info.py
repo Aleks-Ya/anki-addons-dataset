@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from typing import Optional
 
-from anki_addons_dataset.common.data_types import AddonInfo
+from anki_addons_dataset.common.data_types import AddonInfos
 
 
 @dataclass
@@ -48,7 +48,7 @@ class Details:
 
 class JsonAddonInfo:
     @staticmethod
-    def addon_infos_to_json(addon_infos: list[AddonInfo]) -> list[Details]:
+    def addon_infos_to_json(addon_infos: AddonInfos) -> list[Details]:
         json_list: list[Details] = []
         for addon in addon_infos:
             links: list[Link] = [Link(link.url,

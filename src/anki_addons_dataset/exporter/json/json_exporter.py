@@ -8,7 +8,7 @@ from logging import Logger
 
 from jsonschema import validate
 
-from anki_addons_dataset.common.data_types import AddonInfo, Aggregation
+from anki_addons_dataset.common.data_types import Aggregation, AddonInfos
 from anki_addons_dataset.exporter.exporter import Exporter
 from anki_addons_dataset.exporter.json_addon_info import JsonAddonInfo, Details
 
@@ -19,7 +19,7 @@ class JsonExporter(Exporter):
     def __init__(self, final_dir: Path):
         super().__init__(final_dir / "json")
 
-    def export_addon_infos(self, addon_infos: list[AddonInfo]) -> None:
+    def export_addon_infos(self, addon_infos: AddonInfos) -> None:
         json_list: list[Details] = JsonAddonInfo.addon_infos_to_json(addon_infos)
         output_file: Path = self._final_dir / "data.json"
         json_str: str = JsonExporter.__to_json(json_list)

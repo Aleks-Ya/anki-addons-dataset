@@ -1,11 +1,13 @@
-from anki_addons_dataset.common.data_types import Aggregation, AddonInfo
+from typing import cast
+
+from anki_addons_dataset.common.data_types import Aggregation, AddonInfos, AddonInfo
 
 
 class Aggregator:
 
     @staticmethod
-    def aggregate(addon_infos: list[AddonInfo]) -> Aggregation:
-        addon_number: int = len(addon_infos)
+    def aggregate(addon_infos: AddonInfos) -> Aggregation:
+        addon_number: int = len(cast(list[AddonInfo], addon_infos))
         addon_with_github_number: int = len([addon for addon in addon_infos
                                              if addon.github.github_repo is not None])
         addon_with_anki_forum_page_number: int = len([addon for addon in addon_infos

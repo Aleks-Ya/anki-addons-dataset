@@ -3,7 +3,7 @@ from logging import Logger
 
 from anki_addons_dataset.collector.enricher.enricher import Enricher
 from anki_addons_dataset.collector.overrider.overrider import Overrider
-from anki_addons_dataset.common.data_types import AddonInfo, AddonHeader
+from anki_addons_dataset.common.data_types import AddonInfo, AddonHeader, AddonInfos
 from anki_addons_dataset.collector.ankiweb.ankiweb_service import AnkiWebService
 
 log: Logger = logging.getLogger(__name__)
@@ -15,7 +15,7 @@ class AddonCollector:
         self.__enricher: Enricher = enricher
         self.__overrider: Overrider = overrider
 
-    def collect_addons(self) -> list[AddonInfo]:
+    def collect_addons(self) -> AddonInfos:
         self.__enricher.start()
 
         addon_headers: list[AddonHeader] = self.__ankiweb_service.get_headers()
@@ -25,8 +25,8 @@ class AddonCollector:
             addon_info: AddonInfo = self.__ankiweb_service.get_addon_info(addon_header)
             self.__enricher.enrich(addon_info)
         log.info("All addons are added to queue")
-        enriched_addon_infos: list[AddonInfo] = self.__enricher.wait_finish()
+        enriched_addon_infos: AddonInfos = self.__enricher.wait_finish()
         log.info("All addons are enriched")
 
-        overridden_addon_infos: list[AddonInfo] = self.__overrider.override(enriched_addon_infos)
+        overridden_addon_infos: AddonInfos = self.__overrider.override(enriched_addon_infos)
         return overridden_addon_infos

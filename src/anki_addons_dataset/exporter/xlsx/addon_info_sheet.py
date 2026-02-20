@@ -2,7 +2,7 @@ from xlsxwriter import Workbook
 from xlsxwriter.format import Format
 from xlsxwriter.worksheet import Worksheet
 
-from anki_addons_dataset.common.data_types import AddonInfo
+from anki_addons_dataset.common.data_types import AddonInfos
 
 
 class AddonInfoSheet:
@@ -28,7 +28,7 @@ class AddonInfoSheet:
     def __init__(self, workbook: Workbook):
         self.__workbook: Workbook = workbook
 
-    def create_sheet(self, addon_infos: list[AddonInfo]) -> None:
+    def create_sheet(self, addon_infos: AddonInfos) -> None:
         worksheet: Worksheet = self.__workbook.add_worksheet(name="Addons")
         self.__set_column_width(worksheet)
         self.__add_header(self.__workbook, worksheet)
@@ -87,7 +87,7 @@ class AddonInfoSheet:
         worksheet.autofilter(first_row=row2, last_row=row2,
                              first_col=self.__id_col, last_col=self.__tests_count_col)
 
-    def __add_rows(self, addon_infos: list[AddonInfo], worksheet: Worksheet) -> None:
+    def __add_rows(self, addon_infos: AddonInfos, worksheet: Worksheet) -> None:
         for i, addon in enumerate(addon_infos):
             row: int = i + self.__header_row_bottom + 1
             worksheet.write_number(row, self.__id_col, addon.header.id)
