@@ -15,7 +15,7 @@ from anki_addons_dataset.common.working_dir import VersionDir
 log: Logger = logging.getLogger(__name__)
 
 
-class Enricher(Thread):
+class GithubEnricher(Thread):
     def __init__(self, version_dir: VersionDir, github_service: GithubService):
         super().__init__(daemon=True)
         self.__stage_dir: Path = version_dir.get_stage_dir() / "3-enricher" / "addon"

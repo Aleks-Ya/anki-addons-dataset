@@ -3,7 +3,7 @@ import logging
 from logging import Logger
 from unittest.mock import Mock
 
-from anki_addons_dataset.collector.enricher.enricher import Enricher
+from anki_addons_dataset.collector.github.github_enricher import GithubEnricher
 from anki_addons_dataset.collector.github.github_service import GithubService
 from anki_addons_dataset.common.data_types import AddonInfo, AddonHeader, AddonId, AddonPage, GitHubRepo, \
     GithubUserName, GithubRepoName, LanguageName, GithubInfo, AddonInfos
@@ -11,7 +11,7 @@ from anki_addons_dataset.common.data_types import AddonInfo, AddonHeader, AddonI
 log: Logger = logging.getLogger(__name__)
 
 
-def test_enrich(enricher: Enricher, github_service: GithubService, note_size_addon_id: AddonId):
+def test_enrich(github_enricher: GithubEnricher, github_service: GithubService, note_size_addon_id: AddonId):
     addon_info: AddonInfo = AddonInfo(
         header=AddonHeader(note_size_addon_id, "NoteSize", "https://ankiweb.net/shared/info/1188705668",
                            4, "2023-03-15", "1.0.0"),
@@ -40,10 +40,10 @@ def test_enrich(enricher: Enricher, github_service: GithubService, note_size_add
     github_service.get_action_count = Mock(return_value=5)
     github_service.get_tests_count = Mock(return_value=7)
 
-    enricher.start()
-    enricher.download_in_background(addon_info)
-    enricher.wait_download_finish()
-    act_addon_infos: AddonInfos = enricher.enrich(AddonInfos([addon_info]))
+    github_enricher.start()
+    github_enricher.download_in_background(addon_info)
+    github_enricher.wait_download_finish()
+    act_addon_infos: AddonInfos = github_enricher.enrich(AddonInfos([addon_info]))
 
     exp_addon_info: AddonInfo = AddonInfo(
         header=AddonHeader(note_size_addon_id, "NoteSize", "https://ankiweb.net/shared/info/1188705668",
