@@ -6,14 +6,18 @@ left to right direction
 component AnkiAddonsDataset
 component AnkiWeb
 component GitHub
+component AnkiForum
 
 interface "REST" as GitHubRest
 interface "HTML" as AnkiWebHtml
+interface "REST" as AnkiForumRest
 
+AnkiForum -u- AnkiForumRest
 GitHub -u- GitHubRest
 AnkiWeb -u- AnkiWebHtml
 
 AnkiAddonsDataset --> AnkiWebHtml
 AnkiAddonsDataset --> GitHubRest
+AnkiAddonsDataset --> AnkiForumRest
 
 @enduml

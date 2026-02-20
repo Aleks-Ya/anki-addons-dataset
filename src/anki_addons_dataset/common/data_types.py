@@ -9,6 +9,9 @@ GithubUserName = NewType("GithubUserName", str)
 GithubRepoId = NewType("GithubRepoId", str)
 LanguageName = NewType("LanguageName", str)
 HtmlStr = NewType("HtmlStr", str)
+TopicSlug = NewType("TopicSlug", str)
+TopicId = NewType("TopicId", int)
+LastPostedAt = NewType("LastPostedAt", datetime)
 
 
 @dataclass
@@ -76,10 +79,18 @@ class AddonPage:
 
 
 @dataclass
+class AnkiForumInfo:
+    topic_slug: TopicSlug
+    topic_id: TopicId
+    last_posted_at: Optional[LastPostedAt]
+
+
+@dataclass
 class AddonInfo:
     header: AddonHeader
     page: AddonPage
     github: Optional[GithubInfo]
+    forum: Optional[AnkiForumInfo]
 
 
 AddonInfos = NewType("AddonInfos", list[AddonInfo])

@@ -28,8 +28,9 @@
       <option name="region" />
       <option name="useCurrentConnection" value="false" />
     </EXTENSION>
+    <option name="RUN_TOOL" value="" />
     <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/anki_addons_dataset/addon_catalog.py" />
-    <option name="PARAMETERS" value="parse -d 2025-11-01" />
+    <option name="PARAMETERS" value="parse" />
     <option name="SHOW_COMMAND_LINE" value="false" />
     <option name="EMULATE_TERMINAL" value="false" />
     <option name="MODULE_MODE" value="false" />

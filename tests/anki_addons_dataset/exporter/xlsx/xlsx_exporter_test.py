@@ -6,22 +6,30 @@ from pandas import DataFrame
 import pandas.testing as pdt
 
 from anki_addons_dataset.common.data_types import AddonInfo, AddonHeader, AddonId, GitHubRepo, LanguageName, GithubInfo, \
-    AddonPage, Aggregation, AddonInfos
+    AddonPage, Aggregation, AddonInfos, AnkiForumInfo, TopicSlug, TopicId, \
+    LastPostedAt, URL
 from anki_addons_dataset.common.working_dir import VersionDir
 from anki_addons_dataset.exporter.xlsx.xlsx_exporter import XlsxExporter
 
 
-def test_export_addon_infos(note_size_addon_id: AddonId, version_dir: VersionDir, github_repo: GitHubRepo):
+def test_export_addon_infos(note_size_addon_id: AddonId, version_dir: VersionDir, topic_slug: TopicSlug,
+                            topic_id: TopicId, last_posted_at: LastPostedAt, github_repo: GitHubRepo):
     addon_infos: AddonInfos = AddonInfos([
         AddonInfo(
-            header=AddonHeader(note_size_addon_id, "NoteSize", "https://ankiweb.net/shared/info/1188705668",
-                               4, "2023-03-15", "1.0.0"),
+            header=AddonHeader(
+                id=note_size_addon_id,
+                name="NoteSize",
+                addon_page="https://ankiweb.net/shared/info/1188705668",
+                rating=4,
+                update_date="2023-03-15",
+                versions="1.0.0"
+            ),
             page=AddonPage(
                 like_number=0,
                 dislike_number=0,
                 versions=[],
                 other_links=[],
-                anki_forum_url=None
+                anki_forum_url=URL("https://forums.ankiweb.net/t/note-size-addon-support/46001")
             ),
             github=GithubInfo(
                 github_links=[],
@@ -31,7 +39,13 @@ def test_export_addon_infos(note_size_addon_id: AddonId, version_dir: VersionDir
                 last_commit=datetime(2023, 3, 15, 12, 0, 0, 0),
                 action_count=5,
                 tests_count=7
-            ))
+            ),
+            forum=AnkiForumInfo(
+                topic_slug=topic_slug,
+                topic_id=topic_id,
+                last_posted_at=last_posted_at
+            )
+        )
     ])
     final_dir: Path = version_dir.get_final_dir()
     exporter: XlsxExporter = XlsxExporter(final_dir)

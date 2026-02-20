@@ -3,8 +3,12 @@ from datetime import datetime, date
 from logging import Logger
 from pathlib import Path
 
+from pydiscourse import DiscourseClient
+
 from anki_addons_dataset.aggregator.aggregator import Aggregator
 from anki_addons_dataset.collector.addon_collector import AddonCollector
+from anki_addons_dataset.collector.ankiforum.ankiforum_enricher import AnkiForumEnricher
+from anki_addons_dataset.collector.ankiforum.ankiforum_service import AnkiForumService
 from anki_addons_dataset.collector.ankiweb.addon_page_downloader import AddonPageDownloader
 from anki_addons_dataset.collector.ankiweb.addon_page_parser import AddonPageParser
 from anki_addons_dataset.collector.ankiweb.addons_page_downloader import AddonsPageDownloader
@@ -73,6 +77,10 @@ class CollectorFacade:
         ankiweb_service: AnkiWebService = AnkiWebService(addons_page_downloader, addon_page_downloader)
         github_rest_client: GithubRestClient = GithubRestClient(offline)
         github_service: GithubService = GithubService(version_dir, github_rest_client)
+        discourse_client: DiscourseClient = DiscourseClient(host="https://forums.ankiweb.net",
+                                                            api_username=None, api_key=None)
+        anki_forum_service: AnkiForumService = AnkiForumService(discourse_client, version_dir, offline)
         github_enricher: GithubEnricher = GithubEnricher(version_dir, github_service)
-        collector: AddonCollector = AddonCollector(ankiweb_service, github_enricher, overrider)
+        anki_forum_enricher: AnkiForumEnricher = AnkiForumEnricher(version_dir, anki_forum_service)
+        collector: AddonCollector = AddonCollector(ankiweb_service, github_enricher, anki_forum_enricher, overrider)
         return collector.collect_addons()

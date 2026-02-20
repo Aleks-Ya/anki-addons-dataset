@@ -28,7 +28,8 @@ def test_export_addon_infos(note_size_addon_id: AddonId, version_dir: VersionDir
                 last_commit=datetime(2023, 3, 15, 12, 0, 0, 0),
                 action_count=5,
                 tests_count=7
-            ))
+            ),
+            forum=None)
     ])
     final_dir: Path = version_dir.get_final_dir()
     exporter: MarkdownExporter = MarkdownExporter(final_dir)

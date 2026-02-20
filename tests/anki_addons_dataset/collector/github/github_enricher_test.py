@@ -6,16 +6,22 @@ from unittest.mock import Mock
 from anki_addons_dataset.collector.github.github_enricher import GithubEnricher
 from anki_addons_dataset.collector.github.github_service import GithubService
 from anki_addons_dataset.common.data_types import AddonInfo, AddonHeader, AddonId, AddonPage, GitHubRepo, \
-    LanguageName, GithubInfo, AddonInfos
+    LanguageName, GithubInfo, AddonInfos, AnkiForumInfo, TopicSlug, TopicId, LastPostedAt
 
 log: Logger = logging.getLogger(__name__)
 
 
 def test_enrich(github_enricher: GithubEnricher, github_service: GithubService, note_size_addon_id: AddonId,
-                github_repo: GitHubRepo):
+                topic_slug: TopicSlug, topic_id: TopicId, last_posted_at: LastPostedAt, github_repo: GitHubRepo):
     addon_info: AddonInfo = AddonInfo(
-        header=AddonHeader(note_size_addon_id, "NoteSize", "https://ankiweb.net/shared/info/1188705668",
-                           4, "2023-03-15", "1.0.0"),
+        header=AddonHeader(
+            id=note_size_addon_id,
+            name="NoteSize",
+            addon_page="https://ankiweb.net/shared/info/1188705668",
+            rating=4,
+            update_date="2023-03-15",
+            versions="1.0.0"
+        ),
         page=AddonPage(
             like_number=0,
             dislike_number=0,
@@ -31,6 +37,11 @@ def test_enrich(github_enricher: GithubEnricher, github_service: GithubService, 
             last_commit=None,
             action_count=0,
             tests_count=0
+        ),
+        forum=AnkiForumInfo(
+            topic_slug=topic_slug,
+            topic_id=topic_id,
+            last_posted_at=last_posted_at
         )
     )
 
@@ -47,8 +58,14 @@ def test_enrich(github_enricher: GithubEnricher, github_service: GithubService, 
     act_addon_infos: AddonInfos = github_enricher.enrich(AddonInfos([addon_info]))
 
     exp_addon_info: AddonInfo = AddonInfo(
-        header=AddonHeader(note_size_addon_id, "NoteSize", "https://ankiweb.net/shared/info/1188705668",
-                           4, "2023-03-15", "1.0.0"),
+        header=AddonHeader(
+            id=note_size_addon_id,
+            name="NoteSize",
+            addon_page="https://ankiweb.net/shared/info/1188705668",
+            rating=4,
+            update_date="2023-03-15",
+            versions="1.0.0"
+        ),
         page=AddonPage(
             like_number=0,
             dislike_number=0,
@@ -64,6 +81,12 @@ def test_enrich(github_enricher: GithubEnricher, github_service: GithubService, 
             last_commit=last_commit,
             action_count=5,
             tests_count=7
-        ))
+        ),
+        forum=AnkiForumInfo(
+            topic_slug=topic_slug,
+            topic_id=topic_id,
+            last_posted_at=last_posted_at
+        )
+    )
 
     assert act_addon_infos == [exp_addon_info]
