@@ -5,6 +5,7 @@ pyyaml
 XlsxWriter
 pytest
 pytest-cov
+pytest-mock
 jsonschema
 selenium
 huggingface-hub
@@ -13,3 +14,4 @@ pyarrow
 bump-my-version
 seedir
 openpyxl
+pydiscourse

@@ -1,0 +1,41 @@
+@startuml
+'https://plantuml.com/sequence-diagram
+
+autonumber
+
+box Main Thread #lightyellow
+    AddonCollector -> AnkiWebService: get_headers()
+    AddonCollector <-- AnkiWebService
+end box
+
+loop each AddonInfo
+    box GitHub Thread #lightblue
+        AddonCollector -> GitHubEnricher: download AddonInfo
+        GitHubEnricher -> GitHubEnricher: enqueue
+        GitHubEnricher -> GithubService
+        GithubService -> VersionDir
+        GithubService <-- VersionDir
+        GithubService -> GitHub
+        GithubService <-- GitHub
+        GitHubEnricher <-- GithubService: collect
+    end box
+    box AnkiForum Thread #lightgreen
+        AddonCollector -> AnkiForumEnricher: download AddonInfo
+        AnkiForumEnricher -> AnkiForumEnricher: enqueue
+        AnkiForumEnricher -> AnkiForumService
+        AnkiForumService -> VersionDir
+        AnkiForumService <-- VersionDir
+        AnkiForumService -> AnkiForum
+        AnkiForumService <-- AnkiForum
+        AnkiForumEnricher <-- AnkiForumService: collect
+    end box
+end
+
+AddonCollector -> GitHubEnricher: wait_finish()
+AddonCollector -> GitHubEnricher: enrich(AddonInfos)
+AddonCollector <-- GitHubEnricher: all AddonInfos
+
+AddonCollector -> AnkiForumEnricher: wait_finish()
+AddonCollector -> AnkiForumEnricher: enrich(AddonInfos)
+AddonCollector <-- AnkiForumEnricher: all AddonInfos
+@enduml

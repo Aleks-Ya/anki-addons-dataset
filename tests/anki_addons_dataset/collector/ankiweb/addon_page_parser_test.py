@@ -104,5 +104,6 @@ def test_parse_addon_page(overrider: Overrider):
             last_commit=None,
             action_count=0,
             tests_count=0
-        )
+        ),
+        forum=None
     )

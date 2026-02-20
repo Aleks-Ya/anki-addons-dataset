@@ -27,7 +27,7 @@ class AddonPageParser:
         dislikes: int = self.__extract_dislikes(soup)
         versions: list[Version] = self.__extract_versions(soup)
         addon_page: AddonPage = AddonPage(likes, dislikes, versions, other_links, anki_forum_url)
-        addon_info: AddonInfo = AddonInfo(addon_header, addon_page, github_info)
+        addon_info: AddonInfo = AddonInfo(addon_header, addon_page, github_info, None)
         return addon_info
 
     def __deduct_github_repo_name(self, addon_id: AddonId, github_urls: list[GitHubLink]) -> Optional[GitHubRepo]:

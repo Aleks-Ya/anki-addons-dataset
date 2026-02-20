@@ -36,7 +36,8 @@ def test_aggregate(note_size_addon_id: AddonId, github_repo: GitHubRepo):
                 last_commit=datetime(2023, 3, 15, 12, 0, 0, 0),
                 action_count=5,
                 tests_count=7
-            ))
+            ),
+            forum=None)
     ])
     aggregator: Aggregator = Aggregator()
     aggregation: Aggregation = aggregator.aggregate(addon_infos)

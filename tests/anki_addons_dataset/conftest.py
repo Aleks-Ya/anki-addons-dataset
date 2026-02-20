@@ -1,10 +1,13 @@
 import tempfile
-from datetime import date
+from datetime import date, datetime, timezone
 from pathlib import Path
 from unittest.mock import Mock
 
+from pydiscourse import DiscourseClient
 from pytest import fixture
 
+from anki_addons_dataset.collector.ankiforum.ankiforum_enricher import AnkiForumEnricher
+from anki_addons_dataset.collector.ankiforum.ankiforum_service import TopicSlug, TopicId, AnkiForumService
 from anki_addons_dataset.collector.ankiweb.addon_page_downloader import AddonPageDownloader
 from anki_addons_dataset.collector.ankiweb.addon_page_parser import AddonPageParser
 from anki_addons_dataset.collector.ankiweb.addons_page_downloader import AddonsPageDownloader
@@ -14,7 +17,7 @@ from anki_addons_dataset.collector.github.github_enricher import GithubEnricher
 from anki_addons_dataset.collector.github.github_rest_client import GithubRestClient
 from anki_addons_dataset.collector.github.github_service import GithubService
 from anki_addons_dataset.collector.overrider.overrider import Overrider
-from anki_addons_dataset.common.data_types import AddonId, GitHubRepo, GithubUserName, GithubRepoName
+from anki_addons_dataset.common.data_types import AddonId, GitHubRepo, GithubUserName, GithubRepoName, LastPostedAt, URL
 from anki_addons_dataset.common.working_dir import WorkingDir, VersionDir
 
 
@@ -87,6 +90,36 @@ def github_rest_client() -> GithubRestClient:
 
 
 @fixture
+def topic_slug() -> TopicSlug:
+    return TopicSlug("note-size-addon-support")
+
+
+@fixture
+def topic_id() -> TopicId:
+    return TopicId(46001)
+
+
+@fixture
+def anki_forum_url(topic_slug: TopicSlug, topic_id: TopicId) -> URL:
+    return URL(f"https://forums.ankiweb.net/t/{topic_slug}/{topic_id}")
+
+
+@fixture
+def last_posted_at() -> LastPostedAt:
+    return LastPostedAt(datetime(2023, 9, 10, 12, 0, 0, 0, tzinfo=timezone.utc))
+
+
+@fixture
+def discourse_client() -> DiscourseClient:
+    return DiscourseClient(host="", api_username=None, api_key=None)
+
+
+@fixture
+def anki_forum_service(discourse_client: DiscourseClient, version_dir: VersionDir, offline: bool) -> AnkiForumService:
+    return AnkiForumService(discourse_client, version_dir, offline)
+
+
+@fixture
 def github_service(version_dir: VersionDir, github_rest_client: GithubRestClient) -> GithubService:
     return GithubService(version_dir, github_rest_client)
 
@@ -94,6 +127,12 @@ def github_service(version_dir: VersionDir, github_rest_client: GithubRestClient
 @fixture
 def github_enricher(version_dir: VersionDir, github_service: GithubService) -> GithubEnricher:
     return GithubEnricher(version_dir, github_service)
+
+
+@fixture
+def anki_forum_enricher(version_dir: VersionDir, anki_forum_service: AnkiForumService) -> AnkiForumEnricher:
+    return AnkiForumEnricher(version_dir, anki_forum_service)
+
 
 @fixture
 def github_repo() -> GitHubRepo:
