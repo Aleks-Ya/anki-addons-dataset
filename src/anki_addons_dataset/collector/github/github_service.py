@@ -26,27 +26,27 @@ class GithubService:
         self.__stage_dir: Path = version_dir.get_stage_dir() / "2-github"
         self.__github_rest_client: GithubRestClient = github_rest_client
 
-    def get_languages(self, repo: GitHubRepo) -> dict[LanguageName, int]:
+    def get_languages(self, repo: Optional[GitHubRepo]) -> dict[LanguageName, int]:
         handler: RepoHandler = LanguagesRepoHandler(repo, self.__raw_dir, self.__stage_dir)
         return self.__get_value(handler, repo)
 
-    def get_stars_count(self, repo: GitHubRepo) -> int:
+    def get_stars_count(self, repo: Optional[GitHubRepo]) -> int:
         handler: RepoHandler = StarsRepoHandler(repo, self.__raw_dir, self.__stage_dir)
         return self.__get_value(handler, repo)
 
-    def get_last_commit(self, repo: GitHubRepo) -> Optional[datetime]:
+    def get_last_commit(self, repo: Optional[GitHubRepo]) -> Optional[datetime]:
         handler: RepoHandler = LastCommitRepoHandler(repo, self.__raw_dir, self.__stage_dir)
         return self.__get_value(handler, repo)
 
-    def get_action_count(self, repo: GitHubRepo) -> Optional[int]:
+    def get_action_count(self, repo: Optional[GitHubRepo]) -> Optional[int]:
         handler: RepoHandler = ActionsRepoHandler(repo, self.__raw_dir, self.__stage_dir)
         return self.__get_value(handler, repo)
 
-    def get_tests_count(self, repo: GitHubRepo) -> Optional[int]:
+    def get_tests_count(self, repo: Optional[GitHubRepo]) -> Optional[int]:
         handler: RepoHandler = TestsRepoHandler(repo, self.__raw_dir, self.__stage_dir)
         return self.__get_value(handler, repo)
 
-    def __get_value(self, handler: RepoHandler, repo: GitHubRepo) -> Optional[Any]:
+    def __get_value(self, handler: RepoHandler, repo: Optional[GitHubRepo]) -> Optional[Any]:
         if not repo:
             return None
         if not handler.is_downloaded():
