@@ -2,7 +2,7 @@ import re
 from re import Match
 from typing import Optional
 
-from anki_addons_dataset.common.data_types import URL, GitHubLink, GitHubRepo, GithubRepoName, GithubUserName, \
+from anki_addons_dataset.common.data_types import URL, GitHubLink, GithubRepo, GithubRepoName, GithubUserName, \
     GitHubUser, HtmlStr
 
 
@@ -30,7 +30,7 @@ class UrlParser:
             user_name: GithubUserName = GithubUserName(repo_match.group('user').lower())
             user: GitHubUser = GitHubUser(user_name)
             repo_name: GithubRepoName = GithubRepoName(repo_match.group('repo').lower())
-            repo: GitHubRepo = GitHubRepo(user_name, repo_name)
+            repo: GithubRepo = GithubRepo(user_name, repo_name)
             return GitHubLink(url, user, repo)
         user_pattern: str = r'https://github\.com[:/](?P<user>[^/]+)'
         user_match: Optional[Match[str]] = re.search(user_pattern, url)

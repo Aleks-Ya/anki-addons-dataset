@@ -7,15 +7,15 @@ from logging import Logger
 
 from requests import Response
 
-from anki_addons_dataset.common.data_types import GitHubRepo
+from anki_addons_dataset.common.data_types import GithubRepo
 from anki_addons_dataset.common.json_helper import JsonHelper
 
 log: Logger = logging.getLogger(__name__)
 
 
 class RepoHandler(ABC):
-    def __init__(self, repo: GitHubRepo, raw_dir: Path, stage_dir: Path) -> None:
-        self._repo: GitHubRepo = repo
+    def __init__(self, repo: GithubRepo, raw_dir: Path, stage_dir: Path) -> None:
+        self._repo: GithubRepo = repo
         self.__raw_dir: Path = raw_dir
         self.__stage_dir: Path = stage_dir
 

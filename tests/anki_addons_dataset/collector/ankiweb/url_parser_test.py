@@ -1,5 +1,5 @@
 from anki_addons_dataset.collector.ankiweb.url_parser import UrlParser
-from anki_addons_dataset.common.data_types import URL, GitHubLink, GitHubRepo, GitHubUser, GithubUserName, \
+from anki_addons_dataset.common.data_types import URL, GitHubLink, GithubRepo, GitHubUser, GithubUserName, \
     GithubRepoName
 
 
@@ -16,19 +16,19 @@ def test_find_github_links():
     assert github_links == [
         GitHubLink(URL("https://github.com/Aleks-Ya/note-size-anki-addon/issues"),
                    GitHubUser(GithubUserName("aleks-ya")),
-                   GitHubRepo(GithubUserName("aleks-ya"), GithubRepoName("note-size-anki-addon"))),
+                   GithubRepo(GithubUserName("aleks-ya"), GithubRepoName("note-size-anki-addon"))),
         GitHubLink(URL("https://github.com/shigeyukey/AnkiRestart"),
                    GitHubUser(GithubUserName("shigeyukey")),
-                   GitHubRepo(GithubUserName("shigeyukey"), GithubRepoName("ankirestart"))),
+                   GithubRepo(GithubUserName("shigeyukey"), GithubRepoName("ankirestart"))),
         GitHubLink(URL("https://github.com/Arthur-Milchior/anki-copy-note?tab=readme-ov-file#copy-notes"),
                    GitHubUser(GithubUserName("arthur-milchior")),
-                   GitHubRepo(GithubUserName("arthur-milchior"), GithubRepoName("anki-copy-note"))),
+                   GithubRepo(GithubUserName("arthur-milchior"), GithubRepoName("anki-copy-note"))),
         GitHubLink(URL("https://github.com/kanjieater/anki-plugin-heisigs-rtk#readme"),
                    GitHubUser(GithubUserName("kanjieater")),
-                   GitHubRepo(GithubUserName("kanjieater"), GithubRepoName("anki-plugin-heisigs-rtk"))),
+                   GithubRepo(GithubUserName("kanjieater"), GithubRepoName("anki-plugin-heisigs-rtk"))),
         GitHubLink(URL("https://github.com/Arthur-Milchior/note-organizer)*"),
                    GitHubUser(GithubUserName("arthur-milchior")),
-                   GitHubRepo(GithubUserName("arthur-milchior"), GithubRepoName("note-organizer")))
+                   GithubRepo(GithubUserName("arthur-milchior"), GithubRepoName("note-organizer")))
     ]
 
 

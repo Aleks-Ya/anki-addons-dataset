@@ -5,7 +5,7 @@ import pandas
 from pandas import DataFrame
 import pandas.testing as pdt
 
-from anki_addons_dataset.common.data_types import AddonInfo, AddonHeader, AddonId, GitHubRepo, LanguageName, GithubInfo, \
+from anki_addons_dataset.common.data_types import AddonInfo, AddonHeader, AddonId, GithubRepo, LanguageName, GithubInfo, \
     AddonPage, Aggregation, AddonInfos, AnkiForumInfo, TopicSlug, TopicId, \
     LastPostedAt, URL
 from anki_addons_dataset.common.working_dir import VersionDir
@@ -13,7 +13,7 @@ from anki_addons_dataset.exporter.xlsx.xlsx_exporter import XlsxExporter
 
 
 def test_export_addon_infos(note_size_addon_id: AddonId, version_dir: VersionDir, topic_slug: TopicSlug,
-                            topic_id: TopicId, last_posted_at: LastPostedAt, github_repo: GitHubRepo):
+                            topic_id: TopicId, last_posted_at: LastPostedAt, github_repo: GithubRepo):
     addon_infos: AddonInfos = AddonInfos([
         AddonInfo(
             header=AddonHeader(

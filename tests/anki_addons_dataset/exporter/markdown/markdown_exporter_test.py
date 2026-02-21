@@ -2,13 +2,13 @@ from datetime import datetime
 from pathlib import Path
 from textwrap import dedent
 
-from anki_addons_dataset.common.data_types import AddonInfo, AddonHeader, AddonId, GitHubRepo, LanguageName, GithubInfo, \
+from anki_addons_dataset.common.data_types import AddonInfo, AddonHeader, AddonId, GithubRepo, LanguageName, GithubInfo, \
     AddonPage, Aggregation, AddonInfos
 from anki_addons_dataset.common.working_dir import VersionDir
 from anki_addons_dataset.exporter.markdown.markdown_exporter import MarkdownExporter
 
 
-def test_export_addon_infos(note_size_addon_id: AddonId, version_dir: VersionDir, github_repo: GitHubRepo):
+def test_export_addon_infos(note_size_addon_id: AddonId, version_dir: VersionDir, github_repo: GithubRepo):
     addon_infos: AddonInfos = AddonInfos([
         AddonInfo(
             header=AddonHeader(note_size_addon_id, "NoteSize", "https://ankiweb.net/shared/info/1188705668",

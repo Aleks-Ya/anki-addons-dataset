@@ -4,7 +4,7 @@ from pathlib import Path
 from anki_addons_dataset.collector.ankiweb.addon_page_parser import AddonPageParser
 from anki_addons_dataset.collector.overrider.overrider import Overrider
 from anki_addons_dataset.common.data_types import AddonHeader, AddonInfo, AddonPage, GithubInfo, AddonId, GitHubLink, \
-    URL, GitHubUser, GitHubRepo, GithubUserName, GithubRepoName, Version, HtmlStr
+    URL, GitHubUser, GithubRepo, GithubUserName, GithubRepoName, Version, HtmlStr
 
 
 def test_parse_addon_page(overrider: Overrider):
@@ -20,7 +20,7 @@ def test_parse_addon_page(overrider: Overrider):
         versions="24.04.1-25.02.1+ (Updated 2025-04-19) ")
     addon_info: AddonInfo = parser.parse_addon_page(addon_header, addon_html)
     github_user: GitHubUser = GitHubUser(GithubUserName("aleks-ya"))
-    github_repo: GitHubRepo = GitHubRepo(GithubUserName("aleks-ya"), GithubRepoName("note-size-anki-addon"))
+    github_repo: GithubRepo = GithubRepo(GithubUserName("aleks-ya"), GithubRepoName("note-size-anki-addon"))
     assert addon_info == AddonInfo(
         addon_header,
         AddonPage(
