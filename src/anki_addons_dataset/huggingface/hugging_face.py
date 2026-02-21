@@ -13,9 +13,9 @@ log: Logger = logging.getLogger(__name__)
 class HuggingFace:
 
     @staticmethod
-    def create_dataset_card(dataset_dir: Path) -> None:
+    def create_dataset_card(bundle_dir: Path) -> None:
         src_file: Path = Path(__file__).parent / "README.md"
-        dest_file: Path = dataset_dir / "README.md"
+        dest_file: Path = bundle_dir / "README.md"
         shutil.copy(src_file, dest_file)
         log.info(f"Created dataset card: {dest_file}")
 
