@@ -10,6 +10,7 @@ from anki_addons_dataset.collector.ankiweb.addon_page_parser import AddonPagePar
 from anki_addons_dataset.collector.ankiweb.addons_page_downloader import AddonsPageDownloader
 from anki_addons_dataset.collector.ankiweb.page_downloader import PageDownloader
 from anki_addons_dataset.collector.github.github_enricher import GithubEnricher
+from anki_addons_dataset.collector.github.github_rest_client import GithubRestClient
 from anki_addons_dataset.collector.github.github_service import GithubService
 from anki_addons_dataset.collector.overrider.overrider import Overrider
 from anki_addons_dataset.common.data_types import Aggregation, AddonInfos
@@ -70,7 +71,8 @@ class CollectorFacade:
         addon_page_downloader: AddonPageDownloader = AddonPageDownloader(
             page_downloader, version_dir, addon_page_parser, offline)
         ankiweb_service: AnkiWebService = AnkiWebService(addons_page_downloader, addon_page_downloader)
-        github_service: GithubService = GithubService(version_dir, offline)
+        github_rest_client: GithubRestClient = GithubRestClient(offline)
+        github_service: GithubService = GithubService(version_dir, github_rest_client)
         github_enricher: GithubEnricher = GithubEnricher(version_dir, github_service)
         collector: AddonCollector = AddonCollector(ankiweb_service, github_enricher, overrider)
         return collector.collect_addons()

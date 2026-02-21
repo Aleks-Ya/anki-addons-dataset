@@ -11,6 +11,7 @@ from anki_addons_dataset.collector.ankiweb.addons_page_downloader import AddonsP
 from anki_addons_dataset.collector.ankiweb.ankiweb_service import AnkiWebService
 from anki_addons_dataset.collector.ankiweb.page_downloader import PageDownloader
 from anki_addons_dataset.collector.github.github_enricher import GithubEnricher
+from anki_addons_dataset.collector.github.github_rest_client import GithubRestClient
 from anki_addons_dataset.collector.github.github_service import GithubService
 from anki_addons_dataset.collector.overrider.overrider import Overrider
 from anki_addons_dataset.common.data_types import AddonId
@@ -81,8 +82,13 @@ def ankiweb_service(addons_page_downloader: AddonsPageDownloader,
 
 
 @fixture
-def github_service() -> GithubService:
+def github_rest_client() -> GithubRestClient:
     return Mock()
+
+
+@fixture
+def github_service(version_dir: VersionDir, github_rest_client: GithubRestClient) -> GithubService:
+    return GithubService(version_dir, github_rest_client)
 
 
 @fixture

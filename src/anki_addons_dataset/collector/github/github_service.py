@@ -5,9 +5,8 @@ import logging
 from logging import Logger
 
 from requests import Response
-import requests
 
-from anki_addons_dataset.collector.github.github_rate_limit import GithubRateLimit
+from anki_addons_dataset.collector.github.github_rest_client import GithubRestClient
 from anki_addons_dataset.collector.github.handler.actions_repo_handler import ActionsRepoHandler
 from anki_addons_dataset.collector.github.handler.languages_repo_handler import LanguagesRepoHandler
 from anki_addons_dataset.collector.github.handler.last_commit_repo_handler import LastCommitRepoHandler
@@ -22,16 +21,10 @@ log: Logger = logging.getLogger(__name__)
 
 class GithubService:
 
-    def __init__(self, version_dir: VersionDir, offline: bool):
-        token_file: Path = Path.home() / ".github" / "token.txt"
-        token: str = token_file.read_text().strip()
-        self.__headers: dict[str, str] = {
-            'Authorization': f'Bearer {token}'
-        }
+    def __init__(self, version_dir: VersionDir, github_rest_client: GithubRestClient):
         self.__raw_dir: Path = version_dir.get_raw_dir() / "2-github"
         self.__stage_dir: Path = version_dir.get_stage_dir() / "2-github"
-        self.__offline: bool = offline
-        self.__rate_limit: GithubRateLimit = GithubRateLimit()
+        self.__github_rest_client: GithubRestClient = github_rest_client
 
     def get_languages(self, repo: GitHubRepo) -> dict[LanguageName, int]:
         handler: RepoHandler = LanguagesRepoHandler(repo, self.__raw_dir, self.__stage_dir)
@@ -60,12 +53,7 @@ class GithubService:
             if handler.is_repo_marked_as_not_found():
                 return handler.get_not_found_return_value()
             url: str = handler.get_url()
-            log.debug(f"Downloading {url} for {repo.get_id()} (limit {self.__rate_limit.get_limit_remaining()})")
-            if self.__offline:
-                raise RuntimeError("Offline mode is enabled")
-            self.__rate_limit.wait_for_reset()
-            response: Response = requests.request("GET", url, headers=self.__headers)
-            self.__rate_limit.update_rate_limit(response)
+            response: Response = self.__github_rest_client.get_from_url(url)
             if response.status_code == 200:
                 handler.status_200(response)
             elif response.status_code == 404:
