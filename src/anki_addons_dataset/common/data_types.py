@@ -33,7 +33,7 @@ class GitHubUser:
 
 
 @dataclass(frozen=True)
-class GitHubRepo:
+class GithubRepo:
     user: GithubUserName
     repo_name: GithubRepoName
 
@@ -48,13 +48,13 @@ class GitHubRepo:
 class GitHubLink:
     url: URL
     user: GitHubUser
-    repo: Optional[GitHubRepo]
+    repo: Optional[GithubRepo]
 
 
 @dataclass
 class GithubInfo:
     github_links: list[GitHubLink]
-    github_repo: Optional[GitHubRepo]
+    github_repo: Optional[GithubRepo]
     languages: list[LanguageName]
     stars: int
     last_commit: Optional[datetime]

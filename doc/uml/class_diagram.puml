@@ -13,7 +13,7 @@ package anki_addons_dataset {
         class VersionDir
         class AddonHeader
         class GitHubUser
-        class GitHubRepo
+        class GithubRepo
         class GithubInfo
         class Version
         class AddonPage

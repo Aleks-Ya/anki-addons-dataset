@@ -2,7 +2,7 @@ from datetime import datetime
 
 from anki_addons_dataset.aggregator.aggregator import Aggregator
 from anki_addons_dataset.common.data_types import Aggregation, AddonInfo, AddonHeader, AddonPage, GithubInfo, \
-    GitHubRepo, LanguageName, AddonId, URL, AddonInfos
+    GithubRepo, LanguageName, AddonId, URL, AddonInfos
 
 
 def test_aggregate_empty():
@@ -16,7 +16,7 @@ def test_aggregate_empty():
     )
 
 
-def test_aggregate(note_size_addon_id: AddonId, github_repo: GitHubRepo):
+def test_aggregate(note_size_addon_id: AddonId, github_repo: GithubRepo):
     addon_infos: AddonInfos = AddonInfos([
         AddonInfo(
             header=AddonHeader(note_size_addon_id, "NoteSize", "https://ankiweb.net/shared/info/1188705668",

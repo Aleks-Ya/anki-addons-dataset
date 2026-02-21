@@ -1,5 +1,5 @@
 from anki_addons_dataset.collector.overrider.overrider import Overrider
-from anki_addons_dataset.common.data_types import URL, GitHubLink, AddonId, GitHubUser, GithubUserName, GitHubRepo, \
+from anki_addons_dataset.common.data_types import URL, GitHubLink, AddonId, GitHubUser, GithubUserName, GithubRepo, \
     GithubRepoName
 from anki_addons_dataset.common.working_dir import VersionDir
 
@@ -10,7 +10,7 @@ def test_override_github_link(overrider: Overrider, note_size_addon_id: AddonId)
     github_user_name: GithubUserName = GithubUserName("r-appleton")
     assert override_link == GitHubLink(URL("https://github.com/r-appleton/addons"),
                                        GitHubUser(github_user_name),
-                                       GitHubRepo(github_user_name, GithubRepoName("addons")))
+                                       GithubRepo(github_user_name, GithubRepoName("addons")))
 
 
 def test_override_anki_forum_url(overrider: Overrider, note_size_addon_id: AddonId, hyper_tts_addon_id: AddonId):

@@ -6,7 +6,7 @@ from requests import Response
 
 from anki_addons_dataset.collector.github.github_rest_client import GithubRestClient
 from anki_addons_dataset.collector.github.github_service import GithubService
-from anki_addons_dataset.common.data_types import GitHubRepo, LanguageName
+from anki_addons_dataset.common.data_types import GithubRepo, LanguageName
 
 
 def test_repo_none(github_service: GithubService):
@@ -18,7 +18,7 @@ def test_repo_none(github_service: GithubService):
 
 
 def test_get_languages_200(github_service: GithubService, github_rest_client: GithubRestClient,
-                           github_repo: GitHubRepo):
+                           github_repo: GithubRepo):
     content: str = """{"Python":145190,"Shell":1154}"""
     github_rest_client.get_from_url = __mock_content(content)
     exp: dict[LanguageName, int] = {LanguageName("Python"): 145190, LanguageName("Shell"): 1154}
@@ -28,7 +28,7 @@ def test_get_languages_200(github_service: GithubService, github_rest_client: Gi
 
 
 def test_get_languages_404(github_service: GithubService, github_rest_client: GithubRestClient,
-                           github_repo: GitHubRepo):
+                           github_repo: GithubRepo):
     github_rest_client.get_from_url = __mock_content("", status_code=404)
     exp: dict[LanguageName, int] = {}
     assert github_service.get_languages(github_repo) == exp
@@ -37,7 +37,7 @@ def test_get_languages_404(github_service: GithubService, github_rest_client: Gi
 
 
 def test_get_languages_409(github_service: GithubService, github_rest_client: GithubRestClient,
-                           github_repo: GitHubRepo):
+                           github_repo: GithubRepo):
     github_rest_client.get_from_url = __mock_content("", status_code=409)
     with raises(RuntimeError) as ex_info:
         github_service.get_languages(github_repo)
@@ -45,7 +45,7 @@ def test_get_languages_409(github_service: GithubService, github_rest_client: Gi
     github_rest_client.get_from_url.assert_called_once()
 
 
-def test_stars_count_200(github_service: GithubService, github_rest_client: GithubRestClient, github_repo: GitHubRepo):
+def test_stars_count_200(github_service: GithubService, github_rest_client: GithubRestClient, github_repo: GithubRepo):
     content: str = """{"stargazers_count":5}"""
     github_rest_client.get_from_url = __mock_content(content)
     exp: int = 5
@@ -55,7 +55,7 @@ def test_stars_count_200(github_service: GithubService, github_rest_client: Gith
 
 
 def test_get_last_commit_200(github_service: GithubService, github_rest_client: GithubRestClient,
-                             github_repo: GitHubRepo):
+                             github_repo: GithubRepo):
     content: str = """[{"commit":{"committer":{"date":"2023-02-05T19:55:48Z"}}}]"""
     github_rest_client.get_from_url = __mock_content(content)
     exp: datetime = datetime(2023, 2, 5, 19, 55, 48)
@@ -65,7 +65,7 @@ def test_get_last_commit_200(github_service: GithubService, github_rest_client: 
 
 
 def test_get_action_count_200(github_service: GithubService, github_rest_client: GithubRestClient,
-                              github_repo: GitHubRepo):
+                              github_repo: GithubRepo):
     content: str = """{"total_count":7}"""
     github_rest_client.get_from_url = __mock_content(content)
     exp: int = 7
@@ -75,7 +75,7 @@ def test_get_action_count_200(github_service: GithubService, github_rest_client:
 
 
 def test_get_tests_count_200(github_service: GithubService, github_rest_client: GithubRestClient,
-                             github_repo: GitHubRepo):
+                             github_repo: GithubRepo):
     content: str = """{"tree":[{"path":"src/app/service.py"},{"path":"test/app/service_test.py"}],"truncated":false}"""
     github_rest_client.get_from_url = __mock_content(content)
     exp: int = 1

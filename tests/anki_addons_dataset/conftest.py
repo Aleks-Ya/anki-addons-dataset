@@ -17,7 +17,7 @@ from anki_addons_dataset.collector.github.github_enricher import GithubEnricher
 from anki_addons_dataset.collector.github.github_rest_client import GithubRestClient
 from anki_addons_dataset.collector.github.github_service import GithubService
 from anki_addons_dataset.collector.overrider.overrider import Overrider
-from anki_addons_dataset.common.data_types import AddonId, GitHubRepo, GithubUserName, GithubRepoName, LastPostedAt, URL
+from anki_addons_dataset.common.data_types import AddonId, GithubRepo, GithubUserName, GithubRepoName, LastPostedAt, URL
 from anki_addons_dataset.common.working_dir import WorkingDir, VersionDir
 
 
@@ -135,5 +135,5 @@ def anki_forum_enricher(version_dir: VersionDir, anki_forum_service: AnkiForumSe
 
 
 @fixture
-def github_repo() -> GitHubRepo:
-    return GitHubRepo(GithubUserName("John"), GithubRepoName("app"))
+def github_repo() -> GithubRepo:
+    return GithubRepo(GithubUserName("John"), GithubRepoName("app"))
