@@ -39,7 +39,12 @@ class CollectorFacade:
             raw_metadata.set_finish_datetime(datetime.now().replace(microsecond=0))
         log.info(f"===== Downloaded dataset for {creation_date} =====\n")
 
-    def parse_version(self, creation_date: date) -> None:
+    def parse_versions(self) -> None:
+        for version_dir in self.__working_dir.list_version_dirs():
+            creation_date: date = version_dir.version_dir_to_creation_date()
+            self.__parse_version(creation_date)
+
+    def __parse_version(self, creation_date: date) -> None:
         log.info(f"===== Parse dataset for {creation_date} =====")
         version_dir: VersionDir = self.__working_dir.get_version_dir(creation_date).create()
         script_version: str = self.__script_version()

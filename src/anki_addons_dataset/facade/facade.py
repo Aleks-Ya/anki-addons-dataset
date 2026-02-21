@@ -18,22 +18,11 @@ class Facade:
 
     def process(self, operation: Operation, creation_date: date) -> None:
         if operation == Operation.DOWNLOAD:
-            self.__download_operation(creation_date)
+            self.__collector_facade.download_version(creation_date)
         elif operation == Operation.PARSE:
-            self.__parse_operation()
+            self.__collector_facade.parse_versions()
         elif operation == Operation.BUNDLE:
-            self.__bundle_operation()
+            dataset_bundle: DatasetBundle = DatasetBundle(self.__working_dir)
+            dataset_bundle.create_bundle()
         else:
             raise ValueError(f"Unsupported operation: {operation}")
-
-    def __download_operation(self, creation_date: date) -> None:
-        self.__collector_facade.download_version(creation_date)
-
-    def __parse_operation(self) -> None:
-        for version_dir in self.__working_dir.list_version_dirs():
-            creation_date: date = version_dir.version_dir_to_creation_date()
-            self.__collector_facade.parse_version(creation_date)
-
-    def __bundle_operation(self) -> None:
-        dataset_bundle: DatasetBundle = DatasetBundle(self.__working_dir)
-        dataset_bundle.create_bundle()
