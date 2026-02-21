@@ -20,12 +20,12 @@ def test_parse_creation_date(working_dir: WorkingDir):
     raw_metadata_2: RawMetadata = RawMetadata(version_dir_2)
     raw_metadata_2.set_script_version("v0.0.1")
 
-    assert not working_dir.get_dataset_dir().exists()
+    assert not working_dir.get_bundle_dir().exists()
     dataset_bundle: DatasetBundle = DatasetBundle(working_dir)
     dataset_bundle.create_bundle()
-    tree: str = seedir(working_dir.get_dataset_dir(), printout=False, sort=True)
+    tree: str = seedir(working_dir.get_bundle_dir(), printout=False, sort=True)
     assert tree == textwrap.dedent("""\
-                                dataset/
+                                bundle/
                                 ├─README.md
                                 ├─history/
                                 │ ├─2025-01-01/
