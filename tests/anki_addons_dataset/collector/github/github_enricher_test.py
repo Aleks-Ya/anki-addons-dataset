@@ -6,12 +6,13 @@ from unittest.mock import Mock
 from anki_addons_dataset.collector.github.github_enricher import GithubEnricher
 from anki_addons_dataset.collector.github.github_service import GithubService
 from anki_addons_dataset.common.data_types import AddonInfo, AddonHeader, AddonId, AddonPage, GitHubRepo, \
-    GithubUserName, GithubRepoName, LanguageName, GithubInfo, AddonInfos
+    LanguageName, GithubInfo, AddonInfos
 
 log: Logger = logging.getLogger(__name__)
 
 
-def test_enrich(github_enricher: GithubEnricher, github_service: GithubService, note_size_addon_id: AddonId):
+def test_enrich(github_enricher: GithubEnricher, github_service: GithubService, note_size_addon_id: AddonId,
+                github_repo: GitHubRepo):
     addon_info: AddonInfo = AddonInfo(
         header=AddonHeader(note_size_addon_id, "NoteSize", "https://ankiweb.net/shared/info/1188705668",
                            4, "2023-03-15", "1.0.0"),
@@ -24,7 +25,7 @@ def test_enrich(github_enricher: GithubEnricher, github_service: GithubService, 
         ),
         github=GithubInfo(
             github_links=[],
-            github_repo=GitHubRepo(GithubUserName("John"), GithubRepoName("app")),
+            github_repo=github_repo,
             languages=[],
             stars=0,
             last_commit=None,
@@ -57,7 +58,7 @@ def test_enrich(github_enricher: GithubEnricher, github_service: GithubService, 
         ),
         github=GithubInfo(
             github_links=[],
-            github_repo=GitHubRepo(GithubUserName("John"), GithubRepoName("app")),
+            github_repo=github_repo,
             languages=[LanguageName("Python"), LanguageName("Rust")],
             stars=3,
             last_commit=last_commit,

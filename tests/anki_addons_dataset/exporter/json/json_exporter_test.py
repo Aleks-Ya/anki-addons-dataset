@@ -3,13 +3,13 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any
 
-from anki_addons_dataset.common.data_types import AddonInfo, AddonHeader, AddonId, GitHubRepo, GithubUserName, \
-    GithubRepoName, LanguageName, GithubInfo, AddonPage, Aggregation, AddonInfos
+from anki_addons_dataset.common.data_types import AddonInfo, AddonHeader, AddonId, GitHubRepo, LanguageName, GithubInfo, \
+    AddonPage, Aggregation, AddonInfos
 from anki_addons_dataset.common.working_dir import VersionDir
 from anki_addons_dataset.exporter.json.json_exporter import JsonExporter
 
 
-def test_export_addon_infos(note_size_addon_id: AddonId, version_dir: VersionDir):
+def test_export_addon_infos(note_size_addon_id: AddonId, version_dir: VersionDir, github_repo: GitHubRepo):
     addon_infos: AddonInfos = AddonInfos([
         AddonInfo(
             header=AddonHeader(note_size_addon_id, "NoteSize", "https://ankiweb.net/shared/info/1188705668",
@@ -23,7 +23,7 @@ def test_export_addon_infos(note_size_addon_id: AddonId, version_dir: VersionDir
             ),
             github=GithubInfo(
                 github_links=[],
-                github_repo=GitHubRepo(GithubUserName("John"), GithubRepoName("app")),
+                github_repo=github_repo,
                 languages=[LanguageName("Python"), LanguageName("Rust")],
                 stars=3,
                 last_commit=datetime(2023, 3, 15, 12, 0, 0, 0),

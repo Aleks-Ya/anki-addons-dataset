@@ -14,7 +14,7 @@ from anki_addons_dataset.collector.github.github_enricher import GithubEnricher
 from anki_addons_dataset.collector.github.github_rest_client import GithubRestClient
 from anki_addons_dataset.collector.github.github_service import GithubService
 from anki_addons_dataset.collector.overrider.overrider import Overrider
-from anki_addons_dataset.common.data_types import AddonId
+from anki_addons_dataset.common.data_types import AddonId, GitHubRepo, GithubUserName, GithubRepoName
 from anki_addons_dataset.common.working_dir import WorkingDir, VersionDir
 
 
@@ -94,3 +94,7 @@ def github_service(version_dir: VersionDir, github_rest_client: GithubRestClient
 @fixture
 def github_enricher(version_dir: VersionDir, github_service: GithubService) -> GithubEnricher:
     return GithubEnricher(version_dir, github_service)
+
+@fixture
+def github_repo() -> GitHubRepo:
+    return GitHubRepo(GithubUserName("John"), GithubRepoName("app"))
