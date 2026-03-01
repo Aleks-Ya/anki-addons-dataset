@@ -1,8 +1,5 @@
-from datetime import datetime
-
 from anki_addons_dataset.aggregator.aggregator import Aggregator
-from anki_addons_dataset.common.data_types import Aggregation, AddonInfo, AddonHeader, AddonPage, GithubInfo, \
-    GithubRepo, LanguageName, AddonId, URL, AddonInfos
+from anki_addons_dataset.common.data_types import Aggregation, AddonInfos
 
 
 def test_aggregate_empty():
@@ -16,29 +13,7 @@ def test_aggregate_empty():
     )
 
 
-def test_aggregate(note_size_addon_id: AddonId, github_repo: GithubRepo):
-    addon_infos: AddonInfos = AddonInfos([
-        AddonInfo(
-            header=AddonHeader(note_size_addon_id, "NoteSize", "https://ankiweb.net/shared/info/1188705668",
-                               4, "2023-03-15", "1.0.0"),
-            page=AddonPage(
-                like_number=0,
-                dislike_number=0,
-                versions=[],
-                other_links=[],
-                anki_forum_url=URL("https://forums.ankiweb.net/t/note-size-addon-support/46001")
-            ),
-            github=GithubInfo(
-                github_links=[],
-                github_repo=github_repo,
-                languages=[LanguageName("Python"), LanguageName("Rust")],
-                stars=3,
-                last_commit=datetime(2023, 3, 15, 12, 0, 0, 0),
-                action_count=5,
-                tests_count=7
-            ),
-            forum=None)
-    ])
+def test_aggregate(addon_infos: AddonInfos):
     aggregator: Aggregator = Aggregator()
     aggregation: Aggregation = aggregator.aggregate(addon_infos)
     assert aggregation == Aggregation(

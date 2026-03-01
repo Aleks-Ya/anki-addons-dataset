@@ -4,7 +4,7 @@ from pydiscourse import DiscourseClient
 from pytest_mock import MockerFixture
 
 from anki_addons_dataset.collector.ankiforum.ankiforum_service import AnkiForumService
-from anki_addons_dataset.common.data_types import TopicId, TopicSlug, LastPostedAt
+from anki_addons_dataset.common.data_types import TopicId, TopicSlug, LastPostedAt, PostsCount
 from anki_addons_dataset.common.working_dir import VersionDir
 
 
@@ -32,3 +32,29 @@ def test_get_last_posted_at_offline(version_dir: VersionDir, discourse_client: D
     offline: bool = True
     anki_forum_service: AnkiForumService = AnkiForumService(discourse_client, version_dir, offline)
     assert anki_forum_service.get_last_posted_at(topic_slug, topic_id) is None
+
+
+def test_get_posts_count(anki_forum_service: AnkiForumService, discourse_client: DiscourseClient,
+                         topic_slug: TopicSlug, topic_id: TopicId, mocker: MockerFixture):
+    method_object: MagicMock = mocker.patch.object(discourse_client, 'topic', return_value={
+        'posts_count': '42'
+    })
+    exp_post_count: PostsCount = PostsCount(42)
+    assert anki_forum_service.get_posts_count(topic_slug, topic_id) == exp_post_count  # from DiscourseClient
+    assert anki_forum_service.get_posts_count(topic_slug, topic_id) == exp_post_count  # from VersionDir
+    method_object.assert_called_once_with(topic_slug, topic_id, override_request_kwargs={"allow_redirects": True})
+
+
+def test_get_posts_count_none(anki_forum_service: AnkiForumService, discourse_client: DiscourseClient,
+                              topic_slug: TopicSlug, topic_id: TopicId, mocker: MockerFixture):
+    method_object: MagicMock = mocker.patch.object(discourse_client, 'topic', return_value=None)
+    assert anki_forum_service.get_posts_count(topic_slug, topic_id) is None  # from DiscourseClient
+    assert anki_forum_service.get_posts_count(topic_slug, topic_id) is None  # from VersionDir
+    method_object.assert_called_once_with(topic_slug, topic_id, override_request_kwargs={"allow_redirects": True})
+
+
+def test_get_posts_count_offline(version_dir: VersionDir, discourse_client: DiscourseClient,
+                                 topic_slug: TopicSlug, topic_id: TopicId):
+    offline: bool = True
+    anki_forum_service: AnkiForumService = AnkiForumService(discourse_client, version_dir, offline)
+    assert anki_forum_service.get_posts_count(topic_slug, topic_id) is None

@@ -7,7 +7,7 @@ from anki_addons_dataset.collector.ankiforum.ankiforum_service import AnkiForumS
 from anki_addons_dataset.collector.ankiforum.ankiforum_topic import AnkiForumTopic
 from anki_addons_dataset.collector.enricher import Enricher
 from anki_addons_dataset.common.data_types import AddonInfo, AddonId, \
-    AnkiForumInfo, TopicSlug, TopicId, LastPostedAt, AddonInfos
+    AnkiForumInfo, TopicSlug, TopicId, LastPostedAt, AddonInfos, PostsCount
 from anki_addons_dataset.common.json_helper import JsonHelper
 from anki_addons_dataset.common.working_dir import VersionDir
 
@@ -32,7 +32,8 @@ class AnkiForumEnricher(Enricher):
             topic_slug: TopicSlug = AnkiForumTopic.extract_topic_slug(addon_info.page.anki_forum_url)
             topic_id: TopicId = AnkiForumTopic.extract_topic_id(addon_info.page.anki_forum_url)
             last_posted_at: Optional[LastPostedAt] = self.__anki_forum_service.get_last_posted_at(topic_slug, topic_id)
-            anki_forum: Optional[AnkiForumInfo] = AnkiForumInfo(topic_slug, topic_id, last_posted_at)
+            posts_count: Optional[PostsCount] = self.__anki_forum_service.get_posts_count(topic_slug, topic_id)
+            anki_forum: Optional[AnkiForumInfo] = AnkiForumInfo(topic_slug, topic_id, last_posted_at, posts_count)
         else:
             anki_forum: Optional[AnkiForumInfo] = None
         self.__anki_forum_infos[addon_info.header.id] = anki_forum

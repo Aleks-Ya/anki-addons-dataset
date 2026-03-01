@@ -7,7 +7,7 @@ from typing import Optional
 
 from pydiscourse import DiscourseClient
 
-from anki_addons_dataset.common.data_types import TopicId, TopicSlug, LastPostedAt
+from anki_addons_dataset.common.data_types import TopicId, TopicSlug, LastPostedAt, PostsCount
 from anki_addons_dataset.common.working_dir import VersionDir
 
 log: Logger = logging.getLogger(__name__)
@@ -17,8 +17,8 @@ class AnkiForumService:
 
     def __init__(self, discourse_client: DiscourseClient, version_dir: VersionDir, offline: bool):
         self.__discourse_client: DiscourseClient = discourse_client
-        self.__raw_dir: Path = version_dir.get_raw_dir() / "3-forum"
-        self.__topic = self.__raw_dir / "topic"
+        raw_dir: Path = version_dir.get_raw_dir() / "3-forum"
+        self.__topic = raw_dir / "topic"
         self.__topic.mkdir(parents=True, exist_ok=True)
         self.__offline: bool = offline
 
@@ -31,9 +31,12 @@ class AnkiForumService:
             tzinfo=timezone.utc)
         return LastPostedAt(last_posted_at)
 
-    def get_post_number(self, topic_slug: TopicSlug, topic_id: TopicId) -> Optional[int]:
+    def get_posts_count(self, topic_slug: TopicSlug, topic_id: TopicId) -> Optional[PostsCount]:
         topic_dict: Optional[dict] = self.__read_topic_json(topic_slug, topic_id)
-        return topic_dict['posts_count'] if not topic_dict else None
+        if not topic_dict:
+            return None
+        posts_count_str: str = topic_dict['posts_count']
+        return PostsCount(int(posts_count_str))
 
     def __read_topic_json(self, topic_slug: TopicSlug, topic_id: TopicId) -> Optional[dict]:
         json_file: Path = self.__topic / f"{topic_id}.json"

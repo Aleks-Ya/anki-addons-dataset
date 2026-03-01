@@ -28,6 +28,7 @@ class Forum:
     topic_slug: Optional[str]
     topic_id: Optional[int]
     last_posted_at: Optional[str]
+    posts_count: Optional[int]
 
 
 @dataclass
@@ -89,7 +90,8 @@ class JsonAddonInfo:
         slug: str = addon.forum.topic_slug
         topic_id: int = addon.forum.topic_id
         last_posted_at: str = str(addon.forum.last_posted_at)
-        return Forum(slug, topic_id, last_posted_at)
+        posts_count: int = addon.forum.posts_count
+        return Forum(slug, topic_id, last_posted_at, posts_count)
 
     @staticmethod
     def __versions(addon: AddonInfo) -> list[Version]:

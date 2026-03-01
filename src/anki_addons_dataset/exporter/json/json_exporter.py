@@ -26,9 +26,9 @@ class JsonExporter(Exporter):
         output_file.write_text(json_str)
         log.info(f"Write JSON to file: {output_file}")
         schema_file: Path = Path(__file__).parent / "schema.json"
+        self.__verify_schema(output_file, schema_file)
         dataset_schema_file: Path = self._final_dir / "schema.json"
         shutil.copyfile(schema_file, dataset_schema_file)
-        self.__verify_schema(output_file, schema_file)
 
     def export_aggregation(self, aggregation: Aggregation) -> None:
         aggregation_dict: dict[str, int] = dataclasses.asdict(aggregation)

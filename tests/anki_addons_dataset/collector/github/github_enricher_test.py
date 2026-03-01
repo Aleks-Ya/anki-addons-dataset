@@ -6,13 +6,14 @@ from unittest.mock import Mock
 from anki_addons_dataset.collector.github.github_enricher import GithubEnricher
 from anki_addons_dataset.collector.github.github_service import GithubService
 from anki_addons_dataset.common.data_types import AddonInfo, AddonHeader, AddonId, AddonPage, GithubRepo, \
-    LanguageName, GithubInfo, AddonInfos, AnkiForumInfo, TopicSlug, TopicId, LastPostedAt
+    LanguageName, GithubInfo, AddonInfos, AnkiForumInfo, TopicSlug, TopicId, LastPostedAt, PostsCount
 
 log: Logger = logging.getLogger(__name__)
 
 
 def test_enrich(github_enricher: GithubEnricher, github_service: GithubService, note_size_addon_id: AddonId,
-                topic_slug: TopicSlug, topic_id: TopicId, last_posted_at: LastPostedAt, github_repo: GithubRepo):
+                topic_slug: TopicSlug, topic_id: TopicId, last_posted_at: LastPostedAt, posts_count: PostsCount,
+                github_repo: GithubRepo):
     addon_info: AddonInfo = AddonInfo(
         header=AddonHeader(
             id=note_size_addon_id,
@@ -41,7 +42,8 @@ def test_enrich(github_enricher: GithubEnricher, github_service: GithubService, 
         forum=AnkiForumInfo(
             topic_slug=topic_slug,
             topic_id=topic_id,
-            last_posted_at=last_posted_at
+            last_posted_at=last_posted_at,
+            posts_count=posts_count
         )
     )
 
@@ -85,7 +87,8 @@ def test_enrich(github_enricher: GithubEnricher, github_service: GithubService, 
         forum=AnkiForumInfo(
             topic_slug=topic_slug,
             topic_id=topic_id,
-            last_posted_at=last_posted_at
+            last_posted_at=last_posted_at,
+            posts_count=posts_count
         )
     )
 

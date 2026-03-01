@@ -17,7 +17,8 @@ from anki_addons_dataset.collector.github.github_enricher import GithubEnricher
 from anki_addons_dataset.collector.github.github_rest_client import GithubRestClient
 from anki_addons_dataset.collector.github.github_service import GithubService
 from anki_addons_dataset.collector.overrider.overrider import Overrider
-from anki_addons_dataset.common.data_types import AddonId, GithubRepo, GithubUserName, GithubRepoName, LastPostedAt, URL
+from anki_addons_dataset.common.data_types import AddonId, GithubRepo, GithubUserName, GithubRepoName, LastPostedAt, \
+    URL, PostsCount, AddonInfo, AddonHeader, AddonPage, GithubInfo, AnkiForumInfo, LanguageName, AddonInfos
 from anki_addons_dataset.common.working_dir import WorkingDir, VersionDir
 
 
@@ -107,6 +108,53 @@ def anki_forum_url(topic_slug: TopicSlug, topic_id: TopicId) -> URL:
 @fixture
 def last_posted_at() -> LastPostedAt:
     return LastPostedAt(datetime(2023, 9, 10, 12, 0, 0, 0, tzinfo=timezone.utc))
+
+
+@fixture
+def posts_count() -> PostsCount:
+    return PostsCount(42)
+
+
+@fixture
+def addon_info(note_size_addon_id: AddonId, github_repo: GithubRepo, topic_slug: TopicSlug, topic_id: TopicId,
+               last_posted_at: LastPostedAt, posts_count: PostsCount) -> AddonInfo:
+    return AddonInfo(
+        header=AddonHeader(
+            id=note_size_addon_id,
+            name="NoteSize",
+            addon_page="https://ankiweb.net/shared/info/1188705668",
+            rating=4,
+            update_date="2023-03-15",
+            versions="1.0.0"
+        ),
+        page=AddonPage(
+            like_number=0,
+            dislike_number=0,
+            versions=[],
+            other_links=[],
+            anki_forum_url=URL("https://forums.ankiweb.net/t/note-size-addon-support/46001")
+        ),
+        github=GithubInfo(
+            github_links=[],
+            github_repo=github_repo,
+            languages=[LanguageName("Python"), LanguageName("Rust")],
+            stars=3,
+            last_commit=datetime(2023, 3, 15, 12, 0, 0, 0),
+            action_count=5,
+            tests_count=7
+        ),
+        forum=AnkiForumInfo(
+            topic_slug=topic_slug,
+            topic_id=topic_id,
+            last_posted_at=last_posted_at,
+            posts_count=posts_count
+        )
+    )
+
+
+@fixture
+def addon_infos(addon_info: AddonInfo) -> AddonInfos:
+    return AddonInfos([addon_info])
 
 
 @fixture

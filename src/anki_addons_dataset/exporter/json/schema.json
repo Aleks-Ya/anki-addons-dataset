@@ -3,6 +3,20 @@
   "type": "array",
   "items": {
     "type": "object",
+    "additionalProperties": false,
+    "required": [
+      "addon_page",
+      "dislikes",
+      "github",
+      "id",
+      "likes",
+      "links",
+      "rating",
+      "name",
+      "update_date",
+      "versions",
+      "versions_str"
+    ],
     "properties": {
       "id": {
         "type": "integer"
@@ -144,21 +158,31 @@
       },
       "dislikes": {
         "type": "integer"
+      },
+      "forum": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "anki_forum_url"
+        ],
+        "properties": {
+          "anki_forum_url": {
+            "type": "string"
+          },
+          "topic_slug": {
+            "type": "string"
+          },
+          "topic_id": {
+            "type": "integer"
+          },
+          "last_posted_at": {
+            "type": "string"
+          },
+          "posts_count": {
+            "type": "integer"
+          }
+        }
       }
-    },
-    "required": [
-      "addon_page",
-      "anki_forum_url",
-      "dislikes",
-      "github",
-      "id",
-      "likes",
-      "links",
-      "rating",
-      "name",
-      "update_date",
-      "versions",
-      "versions_str"
-    ]
+    }
   }
 }

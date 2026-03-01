@@ -18,13 +18,14 @@ class AddonInfoSheet:
     __dislikes_col: int = 6
     __anki_web_url_col: int = 7
     __anki_forum_url_col: int = 8
-    __anki_forum_last_posted_at_col: int = 9
-    __github_url_col: int = 10
-    __stars_col: int = 11
-    __last_commit_col: int = 12
-    __languages_col: int = 13
-    __actions_count_col: int = 14
-    __tests_count_col: int = 15
+    __anki_forum_posts_count_col: int = 9
+    __anki_forum_last_posted_at_col: int = 10
+    __github_url_col: int = 11
+    __stars_col: int = 12
+    __last_commit_col: int = 13
+    __languages_col: int = 14
+    __actions_count_col: int = 15
+    __tests_count_col: int = 16
 
     def __init__(self, workbook: Workbook):
         self.__workbook: Workbook = workbook
@@ -45,6 +46,7 @@ class AddonInfoSheet:
         worksheet.set_column(self.__dislikes_col, self.__dislikes_col, 7)
         worksheet.set_column(self.__anki_web_url_col, self.__anki_web_url_col, 8)
         worksheet.set_column(self.__anki_forum_url_col, self.__anki_forum_url_col, 8)
+        worksheet.set_column(self.__anki_forum_posts_count_col, self.__anki_forum_posts_count_col, 8)
         worksheet.set_column(self.__anki_forum_last_posted_at_col, self.__anki_forum_last_posted_at_col, 10)
         worksheet.set_column(self.__github_url_col, self.__github_url_col, 8)
         worksheet.set_column(self.__stars_col, self.__stars_col, 8)
@@ -74,6 +76,7 @@ class AddonInfoSheet:
                               first_row=row1, last_row=row1,
                               first_col=self.__anki_forum_url_col, last_col=self.__anki_forum_last_posted_at_col)
         worksheet.write_string(row2, self.__anki_forum_url_col, "Page", header_format)
+        worksheet.write_string(row2, self.__anki_forum_posts_count_col, "Posts Count", header_format)
         worksheet.write_string(row2, self.__anki_forum_last_posted_at_col, "Last post", header_format)
 
         worksheet.merge_range(data="GitHub", cell_format=header_format,
@@ -110,6 +113,7 @@ class AddonInfoSheet:
             worksheet.write_url(row, self.__anki_forum_url_col, addon.page.anki_forum_url, string='link')
         last_posted_at_str: str = addon.forum.last_posted_at.strftime("%Y-%m-%d") \
             if addon.forum and addon.forum.last_posted_at else ""
+        worksheet.write_number(row, self.__anki_forum_posts_count_col, addon.forum.posts_count)
         worksheet.write_string(row, self.__anki_forum_last_posted_at_col, last_posted_at_str)
         if addon.github.github_repo:
             worksheet.write_url(row, self.__github_url_col, addon.github.github_repo.get_url(), string='link')

@@ -12,6 +12,7 @@ HtmlStr = NewType("HtmlStr", str)
 TopicSlug = NewType("TopicSlug", str)
 TopicId = NewType("TopicId", int)
 LastPostedAt = NewType("LastPostedAt", datetime)
+PostsCount = NewType("PostsCount", int)
 
 
 @dataclass
@@ -83,6 +84,7 @@ class AnkiForumInfo:
     topic_slug: TopicSlug
     topic_id: TopicId
     last_posted_at: Optional[LastPostedAt]
+    posts_count: Optional[PostsCount]
 
 
 @dataclass
