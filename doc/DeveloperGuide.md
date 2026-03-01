@@ -33,6 +33,8 @@ Sonar report is automatically updated in GitHub Actions.
 6. Upload
     1. Delete old files: `hf repo-files delete --repo-type=dataset Ya-Alex/anki-addons '*'`
     2. Upload new files: `hf upload-large-folder --repo-type=dataset Ya-Alex/anki-addons $HOME/anki-addons-dataset/bundle`
+7. Post on Anki Forum: https://forums.ankiweb.net/t/anki-addons-dataset-a-detailed-list-of-addons/63090
+8. Restart the visualization space: https://huggingface.co/spaces/Ya-Alex/anki-addons
 
 ## Release a new version of this repository
 On branch `main`:
@@ -49,4 +51,3 @@ On branch `main`:
 5. Create a GitHub release:
     1. Push tags: `git push --tags`
     2. Create a release from the tag: https://github.com/Aleks-Ya/anki-addons-dataset/releases
-6. Post on Anki Forum: https://forums.ankiweb.net/t/anki-addons-dataset-a-detailed-list-of-addons/63090
