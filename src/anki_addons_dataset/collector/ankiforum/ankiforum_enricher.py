@@ -4,6 +4,7 @@ import logging
 from logging import Logger
 
 from anki_addons_dataset.collector.ankiforum.ankiforum_service import AnkiForumService
+from anki_addons_dataset.collector.ankiforum.ankiforum_topic import AnkiForumTopic
 from anki_addons_dataset.collector.enricher import Enricher
 from anki_addons_dataset.common.data_types import AddonInfo, AddonId, \
     AnkiForumInfo, TopicSlug, TopicId, LastPostedAt, AddonInfos
@@ -28,8 +29,8 @@ class AnkiForumEnricher(Enricher):
 
     def _download(self, addon_info: AddonInfo) -> None:
         if addon_info.page.anki_forum_url:
-            topic_slug: TopicSlug = self.__anki_forum_service.extract_topic_slug(addon_info.page.anki_forum_url)
-            topic_id: TopicId = self.__anki_forum_service.extract_topic_id(addon_info.page.anki_forum_url)
+            topic_slug: TopicSlug = AnkiForumTopic.extract_topic_slug(addon_info.page.anki_forum_url)
+            topic_id: TopicId = AnkiForumTopic.extract_topic_id(addon_info.page.anki_forum_url)
             last_posted_at: Optional[LastPostedAt] = self.__anki_forum_service.get_last_posted_at(topic_slug, topic_id)
             anki_forum: Optional[AnkiForumInfo] = AnkiForumInfo(topic_slug, topic_id, last_posted_at)
         else:
