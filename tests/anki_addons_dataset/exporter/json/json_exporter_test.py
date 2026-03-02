@@ -15,7 +15,6 @@ def test_export_addon_infos(version_dir: VersionDir, addon_infos: AddonInfos):
     act_file: Path = final_dir / "json" / "data.json"
     act_json: dict[str, Any] = json.loads(act_file.read_text())
     assert act_json == [{'addon_page': 'https://ankiweb.net/shared/info/1188705668',
-                         'anki_forum_url': 'https://forums.ankiweb.net/t/note-size-addon-support/46001',
                          'dislikes': 0,
                          'github': {'action_count': 5,
                                     'languages': ['Python', 'Rust'],
@@ -25,7 +24,8 @@ def test_export_addon_infos(version_dir: VersionDir, addon_infos: AddonInfos):
                                     'stars': 3,
                                     'tests_count': 7,
                                     'user': 'John'},
-                         'forum': {'topic_slug': 'note-size-addon-support',
+                         'forum': {'anki_forum_url': 'https://forums.ankiweb.net/t/note-size-addon-support/46001',
+                                   'topic_slug': 'note-size-addon-support',
                                    'topic_id': 46001,
                                    'last_posted_at': '2023-09-10 12:00:00+00:00',
                                    'posts_count': 42},

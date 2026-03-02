@@ -25,6 +25,7 @@ class GitHub:
 
 @dataclass
 class Forum:
+    anki_forum_url: Optional[str]
     topic_slug: Optional[str]
     topic_id: Optional[int]
     last_posted_at: Optional[str]
@@ -47,7 +48,6 @@ class Details:
     update_date: str
     versions_str: str
     versions: list[Version]
-    anki_forum_url: Optional[str]
     github: Optional[GitHub]
     forum: Optional[Forum]
     links: list[str]
@@ -65,8 +65,8 @@ class JsonAddonInfo:
             versions: list[Version] = JsonAddonInfo.__versions(addon)
             json_obj: Details = Details(addon.header.id, addon.header.name, addon.header.addon_page,
                                         addon.header.rating, addon.header.update_date, addon.header.versions, versions,
-                                        addon.page.anki_forum_url, github, forum, addon.page.other_links,
-                                        addon.page.like_number, addon.page.dislike_number)
+                                        github, forum, addon.page.other_links, addon.page.like_number,
+                                        addon.page.dislike_number)
             json_list.append(json_obj)
         return json_list
 
@@ -87,11 +87,12 @@ class JsonAddonInfo:
     def __forum(addon: AddonInfo) -> Optional[Forum]:
         if not addon.forum:
             return None
+        anki_forum_url: str = addon.forum.anki_forum_url
         slug: str = addon.forum.topic_slug
         topic_id: int = addon.forum.topic_id
         last_posted_at: str = str(addon.forum.last_posted_at)
         posts_count: int = addon.forum.posts_count
-        return Forum(slug, topic_id, last_posted_at, posts_count)
+        return Forum(anki_forum_url, slug, topic_id, last_posted_at, posts_count)
 
     @staticmethod
     def __versions(addon: AddonInfo) -> list[Version]:

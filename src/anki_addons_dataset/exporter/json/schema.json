@@ -61,12 +61,6 @@
           ]
         }
       },
-      "anki_forum_url": {
-        "type": [
-          "null",
-          "string"
-        ]
-      },
       "github": {
         "anyOf": [
           {
@@ -74,6 +68,17 @@
           },
           {
             "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "action_count",
+              "languages",
+              "last_commit",
+              "links",
+              "repo",
+              "stars",
+              "tests_count",
+              "user"
+            ],
             "properties": {
               "user": {
                 "type": "string"
@@ -133,17 +138,7 @@
                   "null"
                 ]
               }
-            },
-            "required": [
-              "action_count",
-              "languages",
-              "last_commit",
-              "links",
-              "repo",
-              "stars",
-              "tests_count",
-              "user"
-            ]
+            }
           }
         ]
       },

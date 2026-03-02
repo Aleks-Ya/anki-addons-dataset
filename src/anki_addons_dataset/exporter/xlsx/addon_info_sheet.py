@@ -109,8 +109,8 @@ class AddonInfoSheet:
         worksheet.write_number(row, self.__likes_col, addon.page.like_number)
         worksheet.write_number(row, self.__dislikes_col, addon.page.dislike_number)
         worksheet.write_url(row, self.__anki_web_url_col, addon.header.addon_page, string='link')
-        if addon.page.anki_forum_url:
-            worksheet.write_url(row, self.__anki_forum_url_col, addon.page.anki_forum_url, string='link')
+        if addon.forum.anki_forum_url:
+            worksheet.write_url(row, self.__anki_forum_url_col, addon.forum.anki_forum_url, string='link')
         last_posted_at_str: str = addon.forum.last_posted_at.strftime("%Y-%m-%d") \
             if addon.forum and addon.forum.last_posted_at else ""
         worksheet.write_number(row, self.__anki_forum_posts_count_col, addon.forum.posts_count)

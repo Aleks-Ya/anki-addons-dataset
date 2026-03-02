@@ -76,13 +76,13 @@ class AddonPage:
     dislike_number: int
     versions: list[Version]
     other_links: list[URL]
-    anki_forum_url: Optional[URL]
 
 
 @dataclass
 class AnkiForumInfo:
-    topic_slug: TopicSlug
-    topic_id: TopicId
+    anki_forum_url: Optional[URL]
+    topic_slug: Optional[TopicSlug]
+    topic_id: Optional[TopicId]
     last_posted_at: Optional[LastPostedAt]
     posts_count: Optional[PostsCount]
 

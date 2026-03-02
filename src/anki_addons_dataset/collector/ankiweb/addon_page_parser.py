@@ -7,7 +7,7 @@ from anki_addons_dataset.collector.ankiweb.url_parser import UrlParser
 from anki_addons_dataset.collector.ankiweb.version_parser import VersionParser
 from anki_addons_dataset.collector.overrider.overrider import Overrider
 from anki_addons_dataset.common.data_types import AddonHeader, AddonInfo, AddonId, URL, GitHubLink, GithubRepo, \
-    GithubInfo, AddonPage, Version, HtmlStr
+    GithubInfo, AddonPage, Version, HtmlStr, AnkiForumInfo
 
 
 class AddonPageParser:
@@ -26,8 +26,9 @@ class AddonPageParser:
         likes: int = self.__extract_likes(soup)
         dislikes: int = self.__extract_dislikes(soup)
         versions: list[Version] = self.__extract_versions(soup)
-        addon_page: AddonPage = AddonPage(likes, dislikes, versions, other_links, anki_forum_url)
-        addon_info: AddonInfo = AddonInfo(addon_header, addon_page, github_info, None)
+        addon_page: AddonPage = AddonPage(likes, dislikes, versions, other_links)
+        anki_forum_info: AnkiForumInfo = AnkiForumInfo(anki_forum_url, None, None, None, None)
+        addon_info: AddonInfo = AddonInfo(addon_header, addon_page, github_info, anki_forum_info)
         return addon_info
 
     def __deduct_github_repo_name(self, addon_id: AddonId, github_urls: list[GitHubLink]) -> Optional[GithubRepo]:

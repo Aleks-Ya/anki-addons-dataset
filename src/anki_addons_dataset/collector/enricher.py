@@ -18,7 +18,7 @@ class Enricher(ABC, Thread):
         self.__name: str = name
         self.__queue: Queue[AddonInfo] = Queue()
         self.__sentinel: AddonInfo = AddonInfo(AddonHeader(AddonId(0), "", "", 0, "", ""),
-                                               AddonPage(0, 0, [], [], None), None, None)
+                                               AddonPage(0, 0, [], []), None, None)
 
     def run(self) -> None:
         log.info(f"Start thread: {self.__name}")

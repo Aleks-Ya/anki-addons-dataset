@@ -27,8 +27,7 @@ def test_enrich(github_enricher: GithubEnricher, github_service: GithubService, 
             like_number=0,
             dislike_number=0,
             versions=[],
-            other_links=[],
-            anki_forum_url=None
+            other_links=[]
         ),
         github=GithubInfo(
             github_links=[],
@@ -40,6 +39,7 @@ def test_enrich(github_enricher: GithubEnricher, github_service: GithubService, 
             tests_count=0
         ),
         forum=AnkiForumInfo(
+            anki_forum_url=None,
             topic_slug=topic_slug,
             topic_id=topic_id,
             last_posted_at=last_posted_at,
@@ -72,8 +72,7 @@ def test_enrich(github_enricher: GithubEnricher, github_service: GithubService, 
             like_number=0,
             dislike_number=0,
             versions=[],
-            other_links=[],
-            anki_forum_url=None
+            other_links=[]
         ),
         github=GithubInfo(
             github_links=[],
@@ -85,6 +84,7 @@ def test_enrich(github_enricher: GithubEnricher, github_service: GithubService, 
             tests_count=7
         ),
         forum=AnkiForumInfo(
+            anki_forum_url=None,
             topic_slug=topic_slug,
             topic_id=topic_id,
             last_posted_at=last_posted_at,

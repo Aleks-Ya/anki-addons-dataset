@@ -131,8 +131,7 @@ def addon_info(note_size_addon_id: AddonId, github_repo: GithubRepo, topic_slug:
             like_number=0,
             dislike_number=0,
             versions=[],
-            other_links=[],
-            anki_forum_url=URL("https://forums.ankiweb.net/t/note-size-addon-support/46001")
+            other_links=[]
         ),
         github=GithubInfo(
             github_links=[],
@@ -144,6 +143,7 @@ def addon_info(note_size_addon_id: AddonId, github_repo: GithubRepo, topic_slug:
             tests_count=7
         ),
         forum=AnkiForumInfo(
+            anki_forum_url=URL("https://forums.ankiweb.net/t/note-size-addon-support/46001"),
             topic_slug=topic_slug,
             topic_id=topic_id,
             last_posted_at=last_posted_at,

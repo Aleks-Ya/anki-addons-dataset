@@ -4,7 +4,7 @@ from pathlib import Path
 from anki_addons_dataset.collector.ankiweb.addon_page_parser import AddonPageParser
 from anki_addons_dataset.collector.overrider.overrider import Overrider
 from anki_addons_dataset.common.data_types import AddonHeader, AddonInfo, AddonPage, GithubInfo, AddonId, GitHubLink, \
-    URL, GitHubUser, GithubRepo, GithubUserName, GithubRepoName, Version, HtmlStr
+    URL, GitHubUser, GithubRepo, GithubUserName, GithubRepoName, Version, HtmlStr, AnkiForumInfo
 
 
 def test_parse_addon_page(overrider: Overrider):
@@ -74,8 +74,7 @@ def test_parse_addon_page(overrider: Overrider):
                 URL('https://ankiweb.net/shared/info/1151815987'),
                 URL('https://github.com/Aleks-Ya/note-size-anki-addon/blob/main/description/configuration.md#logging-level'),
                 URL('https://apps.ankiweb.net')
-            ],
-            anki_forum_url=URL("https://forums.ankiweb.net/t/note-size-addon-support/46001")
+            ]
         ),
         GithubInfo(
             github_links=[
@@ -105,5 +104,11 @@ def test_parse_addon_page(overrider: Overrider):
             action_count=0,
             tests_count=0
         ),
-        forum=None
+        forum=AnkiForumInfo(
+            anki_forum_url=URL("https://forums.ankiweb.net/t/note-size-addon-support/46001"),
+            topic_slug=None,
+            topic_id=None,
+            last_posted_at=None,
+            posts_count=None
+        )
     )
