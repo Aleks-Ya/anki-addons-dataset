@@ -177,7 +177,10 @@
             "type": "string"
           },
           "posts_count": {
-            "type": "integer"
+            "type": [
+              "integer",
+              "null"
+            ]
           }
         }
       }
