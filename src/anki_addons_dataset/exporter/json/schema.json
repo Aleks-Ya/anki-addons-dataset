@@ -155,7 +155,10 @@
         "type": "integer"
       },
       "forum": {
-        "type": "object",
+        "type": [
+          "object",
+          "null"
+        ],
         "additionalProperties": false,
         "required": [
           "anki_forum_url"

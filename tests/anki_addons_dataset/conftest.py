@@ -21,6 +21,7 @@ from anki_addons_dataset.collector.overrider.overrider import Overrider
 from anki_addons_dataset.common.data_types import AddonId, GithubRepo, GithubUserName, GithubRepoName, LastPostedAt, \
     URL, PostsCount, AddonInfo, AddonHeader, AddonPage, GithubInfo, AnkiForumInfo, LanguageName, AddonInfos
 from anki_addons_dataset.common.working_dir import WorkingDir, VersionDir
+from anki_addons_dataset.exporter.json.json_exporter import JsonExporter
 
 
 @fixture
@@ -196,3 +197,8 @@ def github_repo() -> GithubRepo:
 @fixture
 def aggregator() -> Aggregator:
     return Aggregator()
+
+
+@fixture
+def json_exporter(version_dir: VersionDir) -> JsonExporter:
+    return JsonExporter(version_dir.get_final_dir())
