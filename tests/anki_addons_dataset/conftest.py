@@ -22,6 +22,7 @@ from anki_addons_dataset.common.data_types import AddonId, GithubRepo, GithubUse
     URL, PostsCount, AddonInfo, AddonHeader, AddonPage, GithubInfo, AnkiForumInfo, LanguageName, AddonInfos
 from anki_addons_dataset.common.working_dir import WorkingDir, VersionDir
 from anki_addons_dataset.exporter.json.json_exporter import JsonExporter
+from anki_addons_dataset.exporter.xlsx.xlsx_exporter import XlsxExporter
 
 
 @fixture
@@ -202,3 +203,8 @@ def aggregator() -> Aggregator:
 @fixture
 def json_exporter(version_dir: VersionDir) -> JsonExporter:
     return JsonExporter(version_dir.get_final_dir())
+
+
+@fixture
+def xlsx_exporter(version_dir: VersionDir) -> XlsxExporter:
+    return XlsxExporter(version_dir.get_final_dir())
