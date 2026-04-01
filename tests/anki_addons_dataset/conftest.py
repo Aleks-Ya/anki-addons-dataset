@@ -6,6 +6,7 @@ from unittest.mock import Mock
 from pydiscourse import DiscourseClient
 from pytest import fixture
 
+from anki_addons_dataset.aggregator.aggregator import Aggregator
 from anki_addons_dataset.collector.ankiforum.ankiforum_enricher import AnkiForumEnricher
 from anki_addons_dataset.collector.ankiforum.ankiforum_service import TopicSlug, TopicId, AnkiForumService
 from anki_addons_dataset.collector.ankiweb.addon_page_downloader import AddonPageDownloader
@@ -116,17 +117,22 @@ def posts_count() -> PostsCount:
 
 
 @fixture
-def addon_info(note_size_addon_id: AddonId, github_repo: GithubRepo, topic_slug: TopicSlug, topic_id: TopicId,
+def addon_header(note_size_addon_id: AddonId) -> AddonHeader:
+    return AddonHeader(
+        id=note_size_addon_id,
+        name="NoteSize",
+        addon_page="https://ankiweb.net/shared/info/1188705668",
+        rating=4,
+        update_date="2023-03-15",
+        versions="1.0.0"
+    )
+
+
+@fixture
+def addon_info(addon_header: AddonHeader, github_repo: GithubRepo, topic_slug: TopicSlug, topic_id: TopicId,
                last_posted_at: LastPostedAt, posts_count: PostsCount) -> AddonInfo:
     return AddonInfo(
-        header=AddonHeader(
-            id=note_size_addon_id,
-            name="NoteSize",
-            addon_page="https://ankiweb.net/shared/info/1188705668",
-            rating=4,
-            update_date="2023-03-15",
-            versions="1.0.0"
-        ),
+        header=addon_header,
         page=AddonPage(
             like_number=0,
             dislike_number=0,
@@ -185,3 +191,8 @@ def anki_forum_enricher(version_dir: VersionDir, anki_forum_service: AnkiForumSe
 @fixture
 def github_repo() -> GithubRepo:
     return GithubRepo(GithubUserName("John"), GithubRepoName("app"))
+
+
+@fixture
+def aggregator() -> Aggregator:
+    return Aggregator()
