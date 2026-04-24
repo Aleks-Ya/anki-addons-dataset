@@ -7,6 +7,7 @@ class Operation(Enum):
     DOWNLOAD = "download"
     PARSE = "parse"
     BUNDLE = "bundle"
+    UPLOAD = "upload"
 
 
 class ScriptArguments:
