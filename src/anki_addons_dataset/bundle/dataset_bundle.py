@@ -3,6 +3,7 @@ import shutil
 from datetime import date
 from logging import Logger
 from pathlib import Path
+from typing import Optional
 
 from anki_addons_dataset.common.working_dir import WorkingDir, VersionDir
 from anki_addons_dataset.huggingface.hugging_face import HuggingFace
@@ -32,7 +33,9 @@ class DatasetBundle:
 
         latest_dir: Path = bundle_dir / "latest"
         log.info(f"Copying the latest version: {latest_dir}")
-        latest_version_dir: VersionDir = self.__working_dir.get_latest_version_dir()
+        latest_version_dir: Optional[VersionDir] = self.__working_dir.get_latest_version_dir()
+        if not latest_version_dir:
+            raise Exception("No versions found")
         final_dir: Path = latest_version_dir.get_final_dir()
         shutil.copytree(final_dir, latest_dir)
         metadata_json_file: Path = latest_version_dir.get_metadata_json()
