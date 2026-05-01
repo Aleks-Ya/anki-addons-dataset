@@ -29,9 +29,11 @@ def test_parse_creation_date(working_dir: WorkingDir):
                                 ├─README.md
                                 ├─history/
                                 │ ├─2025-01-01/
+                                │ │ ├─metadata.json
                                 │ │ ├─raw.zip
                                 │ │ └─stage.zip
                                 │ └─2025-01-02/
+                                │   ├─metadata.json
                                 │   ├─raw.zip
                                 │   └─stage.zip
                                 └─latest/
