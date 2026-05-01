@@ -4,6 +4,7 @@ from enum import Enum
 
 
 class Operation(Enum):
+    INIT = "init"
     DOWNLOAD = "download"
     PARSE = "parse"
     BUNDLE = "bundle"

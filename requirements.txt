@@ -15,3 +15,4 @@ bump-my-version
 seedir
 openpyxl
 pydiscourse
+freezegun

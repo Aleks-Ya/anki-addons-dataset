@@ -13,6 +13,7 @@ TopicSlug = NewType("TopicSlug", str)
 TopicId = NewType("TopicId", int)
 LastPostedAt = NewType("LastPostedAt", datetime)
 PostsCount = NewType("PostsCount", int)
+HuggingFaceFolder = NewType("HuggingFaceFolder", str)
 
 
 @dataclass

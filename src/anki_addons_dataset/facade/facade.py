@@ -7,6 +7,8 @@ from anki_addons_dataset.bundle.dataset_bundle import DatasetBundle
 from anki_addons_dataset.collector.collector_facade import CollectorFacade
 from anki_addons_dataset.common.working_dir import WorkingDir
 from anki_addons_dataset.huggingface.hugging_face_client import HuggingFaceClient
+from anki_addons_dataset.initializer.working_dir_backup import WorkingDirBackup
+from anki_addons_dataset.initializer.working_dir_initializer import WorkingDirInitializer
 
 log: Logger = logging.getLogger(__name__)
 
@@ -19,7 +21,12 @@ class Facade:
         self.__collector_facade: CollectorFacade = CollectorFacade(working_dir)
 
     def process(self, operation: Operation, creation_date: date) -> None:
-        if operation == Operation.DOWNLOAD:
+        if operation == Operation.INIT:
+            working_dir_backup: WorkingDirBackup = WorkingDirBackup(self.__working_dir)
+            working_dir_initializer: WorkingDirInitializer = WorkingDirInitializer(
+                self.__working_dir, self.__hugging_face_client, working_dir_backup)
+            working_dir_initializer.initialize_working_dir()
+        elif operation == Operation.DOWNLOAD:
             self.__collector_facade.download_version(creation_date)
         elif operation == Operation.PARSE:
             self.__collector_facade.parse_versions()
