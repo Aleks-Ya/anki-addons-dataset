@@ -10,7 +10,7 @@ from anki_addons_dataset.argument.script_arguments import ScriptArguments, Opera
 from anki_addons_dataset.common.working_dir import WorkingDir
 from anki_addons_dataset.facade.facade import Facade
 from anki_addons_dataset.huggingface.hugging_face_client import HuggingFaceClient
-from anki_addons_dataset.log.log import Log
+from anki_addons_dataset.common.log import Log
 
 log: Logger = logging.getLogger(__name__)
 

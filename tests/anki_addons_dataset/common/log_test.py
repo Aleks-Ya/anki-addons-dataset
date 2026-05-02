@@ -3,7 +3,7 @@ from logging import Logger
 
 from _pytest.logging import LogCaptureFixture
 
-from anki_addons_dataset.log.log import Log
+from anki_addons_dataset.common.log import Log
 
 
 def test_configure_logging(caplog: LogCaptureFixture):
