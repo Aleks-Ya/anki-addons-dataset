@@ -6,8 +6,9 @@ from anki_addons_dataset.common.data_types import AddonInfos
 
 
 class AddonInfoSheet:
-    __header_row_top: int = 0
-    __header_row_bottom: int = 1
+    __title_row_top: int = 0
+    __header_row_top: int = 1
+    __header_row_bottom: int = 2
 
     __id_col: int = 0
     __name_col: int = 1
@@ -32,9 +33,16 @@ class AddonInfoSheet:
 
     def create_sheet(self, addon_infos: AddonInfos) -> None:
         worksheet: Worksheet = self.__workbook.add_worksheet(name="Addons")
+        self.__add_title(self.__workbook, worksheet)
         self.__set_column_width(worksheet)
         self.__add_header(self.__workbook, worksheet)
         self.__add_rows(addon_infos, worksheet)
+
+    def __add_title(self, workbook: Workbook, worksheet: Worksheet) -> None:
+        title_format: Format = workbook.add_format({"bold": True, 'align': 'left', 'font_size': 18})
+        worksheet.merge_range(data="Anki Addons Dataset", cell_format=title_format,
+                              first_row=self.__title_row_top, last_row=self.__title_row_top,
+                              first_col=self.__id_col, last_col=self.__name_col)
 
     def __set_column_width(self, worksheet: Worksheet) -> None:
         worksheet.set_column(self.__id_col, self.__id_col, 12)

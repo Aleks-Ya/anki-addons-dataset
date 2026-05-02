@@ -6,7 +6,8 @@ from anki_addons_dataset.common.data_types import Aggregation
 
 
 class AggregationSheet:
-    __header_row: int = 0
+    __title_row_top: int = 0
+    __header_row: int = 2
     __property_col: int = 0
     __value_col: int = 1
 
@@ -15,9 +16,16 @@ class AggregationSheet:
 
     def create_sheet(self, aggregation: Aggregation) -> None:
         worksheet: Worksheet = self.__workbook.add_worksheet(name="Addons")
+        self.__add_title(self.__workbook, worksheet)
         self.__set_column_width(worksheet)
         self.__add_header(self.__workbook, worksheet)
         self.__add_rows(aggregation, worksheet)
+
+    def __add_title(self, workbook: Workbook, worksheet: Worksheet) -> None:
+        title_format: Format = workbook.add_format({"bold": True, 'align': 'left', 'font_size': 18})
+        worksheet.merge_range(data="Anki Addons Dataset", cell_format=title_format,
+                              first_row=self.__title_row_top, last_row=self.__title_row_top,
+                              first_col=self.__property_col, last_col=self.__value_col)
 
     def __set_column_width(self, worksheet: Worksheet) -> None:
         worksheet.set_column(self.__property_col, self.__property_col, 40)
