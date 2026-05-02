@@ -14,16 +14,16 @@ from anki_addons_dataset.collector.ankiweb.addon_page_downloader import AddonPag
 from anki_addons_dataset.collector.ankiweb.addon_page_parser import AddonPageParser
 from anki_addons_dataset.collector.ankiweb.addons_page_downloader import AddonsPageDownloader
 from anki_addons_dataset.collector.ankiweb.page_downloader import PageDownloader
+from anki_addons_dataset.collector.dataset_metadata import DatasetMetadata
 from anki_addons_dataset.collector.github.github_enricher import GithubEnricher
 from anki_addons_dataset.collector.github.github_rest_client import GithubRestClient
 from anki_addons_dataset.collector.github.github_service import GithubService
 from anki_addons_dataset.collector.overrider.overrider import Overrider
-from anki_addons_dataset.common.data_types import Aggregation, AddonInfos
+from anki_addons_dataset.common.data_types import Aggregation, AddonInfos, DatasetVersionMetadata
 from anki_addons_dataset.collector.ankiweb.ankiweb_service import AnkiWebService
 from anki_addons_dataset.common.working_dir import VersionDir, WorkingDir
 from anki_addons_dataset.exporter.exporter_facade import ExporterFacade
 from anki_addons_dataset.facade.raw_metadata import RawMetadata
-from anki_addons_dataset.huggingface.hugging_face import HuggingFace
 
 log: Logger = logging.getLogger(__name__)
 
@@ -60,7 +60,9 @@ class CollectorFacade:
         aggregation: Aggregation = Aggregator.aggregate(addon_infos)
         exporter_facade: ExporterFacade = ExporterFacade(version_dir)
         exporter_facade.export_all(addon_infos, aggregation)
-        HuggingFace.create_version_metadata_yaml(version_dir, script_version)
+        dataset_version_metadata: DatasetVersionMetadata = DatasetMetadata.create_dataset_version_metadata(
+            version_dir, script_version)
+        DatasetMetadata.write_version_metadata_to_json(version_dir, dataset_version_metadata)
         log.info(f"===== Parsed dataset for {creation_date} =====\n")
 
     @staticmethod
