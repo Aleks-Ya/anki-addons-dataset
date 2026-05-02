@@ -3,7 +3,7 @@ from typing import Optional
 
 from bs4 import Tag, BeautifulSoup
 
-from anki_addons_dataset.collector.ankiweb.url_parser import UrlParser
+from anki_addons_dataset.collector.url_parser import UrlParser
 from anki_addons_dataset.collector.ankiweb.addon_version_parser import AddonVersionParser
 from anki_addons_dataset.collector.overrider.overrider import Overrider
 from anki_addons_dataset.common.data_types import AddonHeader, AddonInfo, AddonId, URL, GitHubLink, GithubRepo, \

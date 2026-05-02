@@ -6,7 +6,7 @@ from logging import Logger
 
 import yaml
 
-from anki_addons_dataset.collector.ankiweb.url_parser import UrlParser
+from anki_addons_dataset.collector.url_parser import UrlParser
 from anki_addons_dataset.common.data_types import AddonId, URL, GitHubLink, AddonInfos
 from anki_addons_dataset.common.working_dir import VersionDir
 

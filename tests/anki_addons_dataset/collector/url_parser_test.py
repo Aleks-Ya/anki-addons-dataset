@@ -1,4 +1,4 @@
-from anki_addons_dataset.collector.ankiweb.url_parser import UrlParser
+from anki_addons_dataset.collector.url_parser import UrlParser
 from anki_addons_dataset.common.data_types import URL, GitHubLink, GithubRepo, GitHubUser, GithubUserName, \
     GithubRepoName
 
