@@ -39,11 +39,11 @@ class CollectorFacade:
         version_dir: VersionDir = self.__working_dir.get_version_dir(creation_date).create()
         script_version: str = self.__script_version()
         raw_metadata_collector: RawMetadataCollector = RawMetadataCollector(version_dir)
-        if not raw_metadata_collector.get_start_datetime():
+        if not raw_metadata_collector.read_metadata().start_timestamp:
             raw_metadata_collector.set_script_version(script_version)
             raw_metadata_collector.set_start_datetime(datetime.now().replace(microsecond=0))
         self.__collect(version_dir, False)
-        if not raw_metadata_collector.get_finish_datetime():
+        if not raw_metadata_collector.read_metadata().finish_timestamp:
             raw_metadata_collector.set_finish_datetime(datetime.now().replace(microsecond=0))
         log.info(f"===== Downloaded dataset for {creation_date} =====\n")
 

@@ -9,42 +9,42 @@ from anki_addons_dataset.facade.raw_metadata_collector import RawMetadataCollect
 def test_set_start_datetime(working_dir: WorkingDir):
     version_dir: VersionDir = working_dir.get_version_dir(date.fromisoformat("2025-01-01")).create()
     raw_metadata_collector: RawMetadataCollector = RawMetadataCollector(version_dir)
-    assert raw_metadata_collector.get_start_datetime() is None
-    assert raw_metadata_collector.get_finish_datetime() is None
-    assert raw_metadata_collector.get_script_version() is None
+    assert raw_metadata_collector.read_metadata().start_timestamp is None
+    assert raw_metadata_collector.read_metadata().finish_timestamp is None
+    assert raw_metadata_collector.read_metadata().script_version is None
     start_datetime: datetime = datetime.fromisoformat("2025-01-02T15:45:50")
     raw_metadata_collector.set_start_datetime(start_datetime)
-    assert raw_metadata_collector.get_start_datetime() == start_datetime
-    assert raw_metadata_collector.get_finish_datetime() is None
-    assert raw_metadata_collector.get_script_version() is None
+    assert raw_metadata_collector.read_metadata().start_timestamp == start_datetime
+    assert raw_metadata_collector.read_metadata().finish_timestamp is None
+    assert raw_metadata_collector.read_metadata().script_version is None
 
 
 def test_set_finish_datetime(working_dir: WorkingDir):
     version_dir: VersionDir = working_dir.get_version_dir(date.fromisoformat("2025-01-01")).create()
     raw_metadata_collector: RawMetadataCollector = RawMetadataCollector(version_dir)
-    assert raw_metadata_collector.get_start_datetime() is None
-    assert raw_metadata_collector.get_finish_datetime() is None
-    assert raw_metadata_collector.get_script_version() is None
+    assert raw_metadata_collector.read_metadata().start_timestamp is None
+    assert raw_metadata_collector.read_metadata().finish_timestamp is None
+    assert raw_metadata_collector.read_metadata().script_version is None
     start_datetime: datetime = datetime.fromisoformat("2025-01-02T15:45:50")
     finish_datetime: datetime = datetime.fromisoformat("2025-01-03T16:46:51")
     raw_metadata_collector.set_start_datetime(start_datetime)
     raw_metadata_collector.set_finish_datetime(finish_datetime)
-    assert raw_metadata_collector.get_start_datetime() == start_datetime
-    assert raw_metadata_collector.get_finish_datetime() == finish_datetime
-    assert raw_metadata_collector.get_script_version() is None
+    assert raw_metadata_collector.read_metadata().start_timestamp == start_datetime
+    assert raw_metadata_collector.read_metadata().finish_timestamp == finish_datetime
+    assert raw_metadata_collector.read_metadata().script_version is None
 
 
 def test_set_script_version(working_dir: WorkingDir):
     version_dir: VersionDir = working_dir.get_version_dir(date.fromisoformat("2025-01-01")).create()
     raw_metadata_collector: RawMetadataCollector = RawMetadataCollector(version_dir)
-    assert raw_metadata_collector.get_start_datetime() is None
-    assert raw_metadata_collector.get_finish_datetime() is None
-    assert raw_metadata_collector.get_script_version() is None
+    assert raw_metadata_collector.read_metadata().start_timestamp is None
+    assert raw_metadata_collector.read_metadata().finish_timestamp is None
+    assert raw_metadata_collector.read_metadata().script_version is None
     script_version: str = "v0.0.1"
     raw_metadata_collector.set_script_version(script_version)
-    assert raw_metadata_collector.get_start_datetime() is None
-    assert raw_metadata_collector.get_finish_datetime() is None
-    assert raw_metadata_collector.get_script_version() == script_version
+    assert raw_metadata_collector.read_metadata().start_timestamp is None
+    assert raw_metadata_collector.read_metadata().finish_timestamp is None
+    assert raw_metadata_collector.read_metadata().script_version == script_version
 
 
 def test_file_content(working_dir: WorkingDir):

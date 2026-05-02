@@ -108,6 +108,13 @@ class Aggregation:
 
 
 @dataclass
+class RawMetadata:
+    start_timestamp: Optional[datetime]
+    finish_timestamp: Optional[datetime]
+    script_version: Optional[str]
+
+
+@dataclass
 class DatasetVersionMetadata:
     creation_date: date
     script_version: str
