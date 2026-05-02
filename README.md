@@ -5,7 +5,7 @@ A HuggingFace dataset of addons for the [Anki](https://apps.ankiweb.net) flashca
 ## Links
 - [Visualizations](https://huggingface.co/spaces/Ya-Alex/anki-addons) in HuggingFace Spaces
 - [HuggingFace Dataset](https://huggingface.co/datasets/Ya-Alex/anki-addons)
-- [Developer Guide](doc/DeveloperGuide.md)
+- [Developer Guide](README-DEV.md)
 - [Sonar Qube](https://sonarcloud.io/project/overview?id=Aleks-Ya_anki-addons-dataset)
 - Anki
     - [Anki home page](https://apps.ankiweb.net)
