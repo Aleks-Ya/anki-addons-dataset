@@ -65,7 +65,7 @@ class GithubInfo:
 
 
 @dataclass
-class Version:
+class AddonVersion:
     min_version: str
     max_version: str
     updated: date
@@ -75,7 +75,7 @@ class Version:
 class AddonPage:
     like_number: int
     dislike_number: int
-    versions: list[Version]
+    versions: list[AddonVersion]
     other_links: list[URL]
 
 

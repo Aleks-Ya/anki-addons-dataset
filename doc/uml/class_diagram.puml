@@ -11,13 +11,15 @@ package anki_addons_dataset {
     package common {
         class WorkingDir
         class VersionDir
+        class AddonInfos
         class AddonHeader
         class GitHubUser
         class GithubRepo
         class GithubInfo
-        class Version
+        class AddonVersion
         class AddonPage
         class AddonInfo
+        class AnkiForumInfo
         class Aggregation
     }
     package facade {
@@ -73,5 +75,12 @@ Facade --> Aggregator
 Facade --> ExporterFacade
 Facade --> HuggingFace
 Facade --> DatasetBundle
+
+AddonInfos "1" o-- "*" AddonInfo
+AddonInfos "1" o-- "1..0" GithubRepo
+AddonInfo o-- AddonHeader
+AddonInfo o-- AddonPage
+AddonInfo "1" o-- "1..0" GithubInfo
+AddonInfo "1" o-- "1..0" AnkiForumInfo
 
 @enduml

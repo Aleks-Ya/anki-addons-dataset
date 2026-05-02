@@ -4,7 +4,7 @@ from pathlib import Path
 from anki_addons_dataset.collector.ankiweb.addon_page_parser import AddonPageParser
 from anki_addons_dataset.collector.overrider.overrider import Overrider
 from anki_addons_dataset.common.data_types import AddonHeader, AddonInfo, AddonPage, GithubInfo, AddonId, GitHubLink, \
-    URL, GitHubUser, GithubRepo, GithubUserName, GithubRepoName, Version, HtmlStr, AnkiForumInfo
+    URL, GitHubUser, GithubRepo, GithubUserName, GithubRepoName, AddonVersion, HtmlStr, AnkiForumInfo
 
 
 def test_parse_addon_page(overrider: Overrider):
@@ -26,7 +26,7 @@ def test_parse_addon_page(overrider: Overrider):
         AddonPage(
             like_number=12,
             dislike_number=0,
-            versions=[Version(min_version='24.04.1', max_version='25.02.1+', updated=datetime.date(2025, 4, 19))],
+            versions=[AddonVersion(min_version='24.04.1', max_version='25.02.1+', updated=datetime.date(2025, 4, 19))],
             other_links=[
                 URL('https://ankiweb.net/logo.png'),
                 URL('https://ankiweb.net/_app/immutable/nodes/0.DbG5vJiZ.mjs'),
