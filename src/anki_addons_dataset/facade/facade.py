@@ -1,4 +1,4 @@
-from datetime import date
+from datetime import date, datetime
 import logging
 from logging import Logger
 from typing import Optional
@@ -21,7 +21,7 @@ class Facade:
         self.__hugging_face_client: HuggingFaceClient = hugging_face_client
         self.__collector_facade: CollectorFacade = CollectorFacade(working_dir)
 
-    def process(self, operation: Operation, creation_date: Optional[date]) -> None:
+    def process(self, operation: Operation, creation_date: Optional[date], now: datetime) -> None:
         if operation == Operation.INIT:
             working_dir_backup: WorkingDirBackup = WorkingDirBackup(self.__working_dir)
             working_dir_initializer: WorkingDirInitializer = WorkingDirInitializer(
@@ -30,7 +30,7 @@ class Facade:
         elif operation == Operation.DOWNLOAD:
             self.__collector_facade.download_version(creation_date)
         elif operation == Operation.PARSE:
-            self.__collector_facade.parse_versions()
+            self.__collector_facade.parse_versions(now)
         elif operation == Operation.BUNDLE:
             dataset_bundle: DatasetBundle = DatasetBundle(self.__working_dir)
             dataset_bundle.create_bundle()

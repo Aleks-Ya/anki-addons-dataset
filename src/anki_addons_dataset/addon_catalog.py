@@ -1,5 +1,5 @@
 import logging
-from datetime import date
+from datetime import date, datetime
 from logging import Logger
 from pathlib import Path
 from typing import Optional
@@ -21,9 +21,11 @@ if __name__ == "__main__":
     operation: Operation = arguments.get_operation()
     creation_date: Optional[date] = arguments.get_creation_date()
     log.info(f"Creation date: {creation_date}")
+    now: datetime = datetime.now()
+    log.info(f"Now: {now}")
 
     hf_api: HfApi = HfApi()
     hugging_face_client: HuggingFaceClient = HuggingFaceClient(hf_api)
     working_dir: WorkingDir = WorkingDir(Path.home() / "anki-addons-dataset")
     facade: Facade = Facade(working_dir, hugging_face_client)
-    facade.process(operation, creation_date)
+    facade.process(operation, creation_date, now)

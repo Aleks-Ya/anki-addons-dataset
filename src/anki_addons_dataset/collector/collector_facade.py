@@ -47,12 +47,12 @@ class CollectorFacade:
             raw_metadata_collector.set_finish_datetime(datetime.now().replace(microsecond=0))
         log.info(f"===== Downloaded dataset for {creation_date} =====\n")
 
-    def parse_versions(self) -> None:
+    def parse_versions(self, now: datetime) -> None:
         for version_dir in self.__working_dir.list_version_dirs():
             creation_date: date = version_dir.version_dir_to_creation_date()
-            self.__parse_version(creation_date)
+            self.__parse_version(creation_date, now)
 
-    def __parse_version(self, creation_date: date) -> None:
+    def __parse_version(self, creation_date: date, now: datetime) -> None:
         log.info(f"===== Parse dataset for {creation_date} =====")
         version_dir: VersionDir = self.__working_dir.get_version_dir(creation_date).create()
         script_version: str = self.__script_version()
@@ -60,7 +60,7 @@ class CollectorFacade:
         aggregation: Aggregation = Aggregator.aggregate(addon_infos)
         exporter_facade: ExporterFacade = ExporterFacade(version_dir)
         dataset_version_metadata: DatasetVersionMetadata = DatasetMetadata.create_dataset_version_metadata(
-            version_dir, script_version)
+            version_dir, script_version, now)
         DatasetMetadata.write_version_metadata_to_json(version_dir, dataset_version_metadata)
         raw_metadata_collector: RawMetadataCollector = RawMetadataCollector(version_dir)
         raw_metadata: RawMetadata = raw_metadata_collector.read_metadata()

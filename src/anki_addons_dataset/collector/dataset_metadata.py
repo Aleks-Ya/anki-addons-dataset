@@ -1,4 +1,5 @@
 from dataclasses import asdict
+from datetime import datetime
 from pathlib import Path
 from typing import Any
 import logging
@@ -14,9 +15,11 @@ log: Logger = logging.getLogger(__name__)
 class DatasetMetadata:
 
     @staticmethod
-    def create_dataset_version_metadata(version_dir: VersionDir, script_version: str) -> DatasetVersionMetadata:
+    def create_dataset_version_metadata(version_dir: VersionDir, script_version: str,
+                                        now: datetime) -> DatasetVersionMetadata:
         dataset_version_metadata: DatasetVersionMetadata = DatasetVersionMetadata(
             creation_date=version_dir.version_dir_to_creation_date(),
+            report_date=now,
             script_version=script_version
         )
         log.info(f"Created dataset version metadata: {dataset_version_metadata}")

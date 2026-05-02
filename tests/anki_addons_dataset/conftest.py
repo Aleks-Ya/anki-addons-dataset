@@ -248,5 +248,10 @@ def raw_metadata(script_version) -> RawMetadata:
 
 
 @fixture
-def dataset_version_metadata(version_dir: VersionDir, script_version: str) -> DatasetVersionMetadata:
-    return DatasetMetadata.create_dataset_version_metadata(version_dir, script_version)
+def dataset_version_metadata(version_dir: VersionDir, script_version: str, now: datetime) -> DatasetVersionMetadata:
+    return DatasetMetadata.create_dataset_version_metadata(version_dir, script_version, now)
+
+
+@fixture
+def now() -> datetime:
+    return datetime(2026, 4, 25, 14, 25, 45)
