@@ -1,16 +1,16 @@
 @startuml
 'https://plantuml.com/class-diagram
 hide empty members
+skinparam ArrowColor red
 
 package anki_addons_dataset {
-    package aggregator {}
     package argument {}
     package bundle {}
     package collector {
-        package overrider {}
+        package ankiforum {}
         package awnkiweb {}
         package github {}
-        package enricher {}
+        package overrider {}
     }
     package common {}
     package exporter {
@@ -20,25 +20,25 @@ package anki_addons_dataset {
     }
     package facade {}
     package huggingface {}
-    package log {}
+    package initializer {}
 }
-
-aggregator --> common
 
 bundle --> common
 bundle --> huggingface
 
 collector --> common
-collector --> huggingface
 
 exporter --> common
 
-facade --> aggregator
 facade --> argument
 facade --> bundle
 facade --> collector
 facade --> common
 facade --> exporter
+facade --> initializer
+
+initializer --> common
+initializer --> huggingface
 
 huggingface --> common
 

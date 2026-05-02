@@ -1,0 +1,215 @@
+@startuml
+' Create a PlantUML diagram of Python classes in `src`. Include this prompt in the diagram as a non-visible comment.
+' https://plantuml.com/class-diagram
+
+hide empty members
+skinparam packageStyle rectangle
+
+package "anki_addons_dataset" {
+  class AddonCatalog
+
+  package "argument" {
+    enum Operation
+    class ScriptArguments
+  }
+
+  package "bundle" {
+    class DatasetBundle
+  }
+
+  package "common" {
+    class Log
+    class JsonHelper
+    class VersionDir
+    class WorkingDir
+
+    class AddonHeader <<dataclass>>
+    class GitHubUser <<dataclass>>
+    class GithubRepo <<dataclass>>
+    class GitHubLink <<dataclass>>
+    class GithubInfo <<dataclass>>
+    class AddonVersion <<dataclass>>
+    class AddonPage <<dataclass>>
+    class AnkiForumInfo <<dataclass>>
+    class AddonInfo <<dataclass>>
+    class Aggregation <<dataclass>>
+    class RawMetadata <<dataclass>>
+    class DatasetVersionMetadata <<dataclass>>
+  }
+
+  package "facade" {
+    class Facade
+  }
+
+  package "collector" {
+    class AddonCollector
+    class Aggregator
+    class CollectorFacade
+    class DatasetMetadata
+    abstract class Enricher
+    class RawMetadataCollector
+    class UrlParser
+
+    package "ankiweb" {
+      class AddonPageDownloader
+      class AddonPageParser
+      class AddonVersionParser
+      class AddonsPageDownloader
+      class AddonsPageParser
+      class AnkiWebService
+      class PageDownloader
+    }
+
+    package "ankiforum" {
+      class AnkiForumEnricher
+      class AnkiForumService
+      class AnkiForumTopic
+    }
+
+    package "github" {
+      class GithubEnricher
+      class GithubRateLimit
+      class GithubRestClient
+      class GithubService
+
+      package "handler" {
+        abstract class RepoHandler
+        class ActionsRepoHandler
+        class LanguagesRepoHandler
+        class LastCommitRepoHandler
+        class StarsRepoHandler
+        class TestsCounter
+        class TestsRepoHandler
+      }
+    }
+
+    package "overrider" {
+      class Overrider
+    }
+  }
+
+  package "exporter" {
+    abstract class Exporter
+    class ExporterFacade
+    class JsonAddonInfo
+
+    class Link <<dataclass>>
+    class GitHub <<dataclass>>
+    class Forum <<dataclass>>
+    class Version <<dataclass>>
+    class Details <<dataclass>>
+
+    package "json" {
+      class JsonExporter
+    }
+
+    package "parquet" {
+      class ParquetExporter
+    }
+
+    package "xlsx" {
+      class AddonInfoSheet
+      class AggregationSheet
+      class XlsxExporter
+    }
+  }
+
+  package "huggingface" {
+    class HuggingFace
+    class HuggingFaceClient
+  }
+
+  package "initializer" {
+    class WorkingDirBackup
+    class WorkingDirInitializer
+  }
+}
+
+' Core orchestration
+AddonCatalog --> ScriptArguments
+AddonCatalog --> Facade
+ScriptArguments --> Operation
+Facade --> CollectorFacade
+Facade --> DatasetBundle
+Facade --> HuggingFace
+CollectorFacade --> WorkingDir
+CollectorFacade --> AddonCollector
+CollectorFacade --> Aggregator
+CollectorFacade --> DatasetMetadata
+CollectorFacade --> ExporterFacade
+CollectorFacade --> RawMetadataCollector
+
+' Working directories and initialization
+WorkingDir "1" o-- "*" VersionDir
+WorkingDirBackup --> WorkingDir
+WorkingDirInitializer --> WorkingDir
+WorkingDirInitializer --> VersionDir
+WorkingDirInitializer --> HuggingFaceClient
+WorkingDirInitializer --> WorkingDirBackup
+
+' Data model composition
+GitHubLink --> GitHubUser
+GitHubLink --> GithubRepo
+GithubInfo "1" o-- "*" GitHubLink
+GithubInfo --> GithubRepo
+AddonPage "1" o-- "*" AddonVersion
+AddonInfo *-- AddonHeader
+AddonInfo *-- AddonPage
+AddonInfo --> GithubInfo
+AddonInfo --> AnkiForumInfo
+
+' Collection flow
+AddonCollector --> AnkiWebService
+AddonCollector --> GithubEnricher
+AddonCollector --> AnkiForumEnricher
+AddonCollector --> Overrider
+AnkiWebService --> AddonsPageDownloader
+AnkiWebService --> AddonPageDownloader
+AddonsPageDownloader --> PageDownloader
+AddonPageDownloader --> PageDownloader
+AddonPageDownloader --> AddonPageParser
+AddonPageParser --> AddonVersionParser
+AddonPageParser --> Overrider
+AddonsPageParser --> AddonHeader
+GithubEnricher --|> Enricher
+AnkiForumEnricher --|> Enricher
+GithubEnricher --> GithubService
+AnkiForumEnricher --> AnkiForumService
+GithubService --> GithubRestClient
+GithubService --> RepoHandler
+AnkiForumService --> AnkiForumTopic
+
+' GitHub repo handlers
+ActionsRepoHandler --|> RepoHandler
+LanguagesRepoHandler --|> RepoHandler
+LastCommitRepoHandler --|> RepoHandler
+StarsRepoHandler --|> RepoHandler
+TestsRepoHandler --|> RepoHandler
+TestsRepoHandler --> TestsCounter
+
+' Export flow
+ExporterFacade --> Exporter
+JsonExporter --|> Exporter
+ParquetExporter --|> Exporter
+XlsxExporter --|> Exporter
+JsonExporter --> JsonAddonInfo
+JsonAddonInfo --> Details
+Details *-- GitHub
+Details *-- Forum
+Details *-- Version
+GitHub *-- Link
+XlsxExporter --> AddonInfoSheet
+XlsxExporter --> AggregationSheet
+ExporterFacade --> JsonExporter
+ExporterFacade --> ParquetExporter
+ExporterFacade --> XlsxExporter
+
+' Metadata and persistence helpers
+DatasetMetadata --> DatasetVersionMetadata
+DatasetMetadata --> JsonHelper
+RawMetadataCollector --> RawMetadata
+RawMetadataCollector --> VersionDir
+DatasetBundle --> VersionDir
+HuggingFace --> HuggingFaceClient
+
+@enduml

@@ -1,0 +1,53 @@
+@startuml
+' Create a PlantUML diagram of dependencies between folders in `src`.
+' Do not show self-dependencies.
+' Do not show dependencies on its own inner folders.
+' Do not show dependencies on own parent folders.
+' Make narrows red.
+' Include this prompt in the diagram as a non-visible comment.
+
+skinparam linetype ortho
+skinparam ArrowColor red
+
+folder src {
+    folder anki_addons_dataset {
+        folder argument
+        folder bundle
+        folder collector {
+            folder ankiforum
+            folder ankiweb
+            folder github
+            folder overrider
+        }
+        folder common
+        folder exporter {
+            folder json
+            folder parquet
+            folder xlsx
+        }
+        folder facade
+        folder huggingface
+        folder initializer
+    }
+}
+
+bundle --> common
+bundle --> huggingface
+
+collector --> common
+
+exporter --> common
+
+facade --> argument
+facade --> bundle
+facade --> collector
+facade --> common
+facade --> exporter
+facade --> initializer
+
+initializer --> common
+initializer --> huggingface
+
+huggingface --> common
+
+@enduml

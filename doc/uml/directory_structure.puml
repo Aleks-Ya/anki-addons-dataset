@@ -8,7 +8,7 @@ folder ~ {
         together {
             folder ".cache"
             file README.md
-            file metadata.json as metadataJsonHistory
+            file "bundle-metadata.json" as metadataJsonHistory
         }
         folder history as datasetHistory {
             file "2025-06-22.zip" as zip
@@ -18,11 +18,13 @@ folder ~ {
         folder history {
             folder "2025-06-22" as historyDate {
             together {
-                folder "1-raw"
+                folder "1-raw" {
+                    file "raw-metadata.json"
+                }
                 folder "2-stage"
                 folder "3-final" as historyFinal
             }
-            file metadata.json  as metadataJsonBundle
+            file "version-metadata.json"  as versionMetadata
             }
         }
     }
