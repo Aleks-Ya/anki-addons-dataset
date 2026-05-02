@@ -2,7 +2,6 @@ from pathlib import Path
 
 from anki_addons_dataset.common.data_types import Aggregation, AddonInfos
 from anki_addons_dataset.common.working_dir import VersionDir
-from anki_addons_dataset.exporter.csv.csv_exporter import CsvExporter
 from anki_addons_dataset.exporter.exporter import Exporter
 from anki_addons_dataset.exporter.json.json_exporter import JsonExporter
 from anki_addons_dataset.exporter.markdown.markdown_exporter import MarkdownExporter
@@ -17,7 +16,6 @@ class ExporterFacade:
             JsonExporter(final_dir),
             MarkdownExporter(final_dir),
             XlsxExporter(final_dir),
-            CsvExporter(final_dir),
             ParquetExporter(final_dir)
         ]
 
