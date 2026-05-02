@@ -23,7 +23,7 @@ from anki_addons_dataset.common.data_types import Aggregation, AddonInfos, Datas
 from anki_addons_dataset.collector.ankiweb.ankiweb_service import AnkiWebService
 from anki_addons_dataset.common.working_dir import VersionDir, WorkingDir
 from anki_addons_dataset.exporter.exporter_facade import ExporterFacade
-from anki_addons_dataset.facade.raw_metadata import RawMetadata
+from anki_addons_dataset.facade.raw_metadata_collector import RawMetadataCollector
 
 log: Logger = logging.getLogger(__name__)
 
@@ -38,13 +38,13 @@ class CollectorFacade:
             raise ValueError("Creation date is required")
         version_dir: VersionDir = self.__working_dir.get_version_dir(creation_date).create()
         script_version: str = self.__script_version()
-        raw_metadata: RawMetadata = RawMetadata(version_dir)
-        if not raw_metadata.get_start_datetime():
-            raw_metadata.set_script_version(script_version)
-            raw_metadata.set_start_datetime(datetime.now().replace(microsecond=0))
+        raw_metadata_collector: RawMetadataCollector = RawMetadataCollector(version_dir)
+        if not raw_metadata_collector.get_start_datetime():
+            raw_metadata_collector.set_script_version(script_version)
+            raw_metadata_collector.set_start_datetime(datetime.now().replace(microsecond=0))
         self.__collect(version_dir, False)
-        if not raw_metadata.get_finish_datetime():
-            raw_metadata.set_finish_datetime(datetime.now().replace(microsecond=0))
+        if not raw_metadata_collector.get_finish_datetime():
+            raw_metadata_collector.set_finish_datetime(datetime.now().replace(microsecond=0))
         log.info(f"===== Downloaded dataset for {creation_date} =====\n")
 
     def parse_versions(self) -> None:
