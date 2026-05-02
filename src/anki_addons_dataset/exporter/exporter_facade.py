@@ -4,7 +4,6 @@ from anki_addons_dataset.common.data_types import Aggregation, AddonInfos
 from anki_addons_dataset.common.working_dir import VersionDir
 from anki_addons_dataset.exporter.exporter import Exporter
 from anki_addons_dataset.exporter.json.json_exporter import JsonExporter
-from anki_addons_dataset.exporter.markdown.markdown_exporter import MarkdownExporter
 from anki_addons_dataset.exporter.parquet.parquet_exporter import ParquetExporter
 from anki_addons_dataset.exporter.xlsx.xlsx_exporter import XlsxExporter
 
@@ -14,7 +13,6 @@ class ExporterFacade:
         final_dir: Path = version_dir.get_final_dir()
         self.exporters: list[Exporter] = [
             JsonExporter(final_dir),
-            MarkdownExporter(final_dir),
             XlsxExporter(final_dir),
             ParquetExporter(final_dir)
         ]

@@ -15,7 +15,6 @@ package anki_addons_dataset {
     package common {}
     package exporter {
         package json {}
-        package markdown {}
         package parquet {}
         package xlsx {}
     }

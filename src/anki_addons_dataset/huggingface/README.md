@@ -38,9 +38,6 @@ Folder `latest` contains the most recent day from `history`.
 │   │   │   ├── aggregation.json
 │   │   │   ├── data.json
 │   │   │   └── schema.json
-│   │   ├── markdown
-│   │   │   ├── aggregation.md
-│   │   │   └── data.md
 │   │   ├── parquet
 │   │   │   ├── aggregation.parquet
 │   │   │   └── data.parquet
@@ -54,9 +51,6 @@ Folder `latest` contains the most recent day from `history`.
 │   │   ├── aggregation.json
 │   │   ├── data.json
 │   │   └── schema.json
-│   ├── markdown
-│   │   ├── aggregation.md
-│   │   └── data.md
 │   ├── metadata.json
 │   ├── parquet
 │   │   ├── aggregation.parquet
@@ -73,16 +67,13 @@ Location: `latest/xlsx/data.xlsx`, `history/YYYY-MM-DD/xlsx/data.xlsx`
 
 ### Parquet
 The best for **programmatic analysis** by Python, etc.  
-The JSON file contains all parsed fields. The Excel and Markdown files contain part of its fields.  
+The JSON file contains all parsed fields. The Excel file contains a part of its fields.  
 Location: `latest/parquet/data.parquet`, `history/YYYY-MM-DD/xlsx/data.xlsx`
 
 ### JSON
-The JSON file contains all parsed fields. The Excel and Markdown files contain part of its fields.  
+The JSON file contains all parsed fields. The Excel file contains a part of its fields.  
 Location: `latest/json/data.json`  , `history/YYYY-MM-DD/json/data.json`
 JSON schema: `latest/json/schema.json`, `history/YYYY-MM-DD/json/schema.json`
-
-### Markdown
-Location: `latest/markdown/data.md`, `history/YYYY-MM-DD/markdown/data.md`
 
 ---
 
