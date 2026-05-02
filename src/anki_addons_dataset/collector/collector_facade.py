@@ -59,10 +59,10 @@ class CollectorFacade:
         addon_infos: AddonInfos = self.__collect(version_dir, True)
         aggregation: Aggregation = Aggregator.aggregate(addon_infos)
         exporter_facade: ExporterFacade = ExporterFacade(version_dir)
-        exporter_facade.export_all(addon_infos, aggregation)
         dataset_version_metadata: DatasetVersionMetadata = DatasetMetadata.create_dataset_version_metadata(
             version_dir, script_version)
         DatasetMetadata.write_version_metadata_to_json(version_dir, dataset_version_metadata)
+        exporter_facade.export_all(addon_infos, aggregation, dataset_version_metadata)
         log.info(f"===== Parsed dataset for {creation_date} =====\n")
 
     @staticmethod

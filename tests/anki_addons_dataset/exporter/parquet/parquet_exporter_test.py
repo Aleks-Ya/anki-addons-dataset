@@ -4,15 +4,16 @@ import pandas
 from pandas import DataFrame
 import pandas.testing as pdt
 
-from anki_addons_dataset.common.data_types import Aggregation, AddonInfos
+from anki_addons_dataset.common.data_types import Aggregation, AddonInfos, DatasetVersionMetadata
 from anki_addons_dataset.common.working_dir import VersionDir
 from anki_addons_dataset.exporter.parquet.parquet_exporter import ParquetExporter
 
 
-def test_export_addon_infos(version_dir: VersionDir, addon_infos: AddonInfos):
+def test_export_addon_infos(version_dir: VersionDir, addon_infos: AddonInfos,
+                            dataset_version_metadata: DatasetVersionMetadata):
     final_dir: Path = version_dir.get_final_dir()
     exporter: ParquetExporter = ParquetExporter(final_dir)
-    exporter.export_addon_infos(addon_infos)
+    exporter.export_addon_infos(addon_infos, dataset_version_metadata)
 
     act_file: Path = final_dir / "parquet" / "data.parquet"
     act_df: DataFrame = pandas.read_parquet(act_file)
@@ -46,14 +47,14 @@ def test_export_addon_infos(version_dir: VersionDir, addon_infos: AddonInfos):
     pdt.assert_frame_equal(act_df, exp_df)
 
 
-def test_export_aggregation(version_dir: VersionDir):
+def test_export_aggregation(version_dir: VersionDir, dataset_version_metadata: DatasetVersionMetadata):
     aggregation: Aggregation = Aggregation(addon_number=5,
                                            addon_with_github_number=4,
                                            addon_with_anki_forum_page_number=3,
                                            addon_with_unit_tests_number=2)
     final_dir: Path = version_dir.get_final_dir()
     exporter: ParquetExporter = ParquetExporter(final_dir)
-    exporter.export_aggregation(aggregation)
+    exporter.export_aggregation(aggregation, dataset_version_metadata)
 
     act_file: Path = final_dir / "parquet" / "aggregation.parquet"
     act_df: DataFrame = pandas.read_parquet(act_file)

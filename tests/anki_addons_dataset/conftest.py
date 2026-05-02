@@ -14,12 +14,14 @@ from anki_addons_dataset.collector.ankiweb.addon_page_parser import AddonPagePar
 from anki_addons_dataset.collector.ankiweb.addons_page_downloader import AddonsPageDownloader
 from anki_addons_dataset.collector.ankiweb.ankiweb_service import AnkiWebService
 from anki_addons_dataset.collector.ankiweb.page_downloader import PageDownloader
+from anki_addons_dataset.collector.dataset_metadata import DatasetMetadata
 from anki_addons_dataset.collector.github.github_enricher import GithubEnricher
 from anki_addons_dataset.collector.github.github_rest_client import GithubRestClient
 from anki_addons_dataset.collector.github.github_service import GithubService
 from anki_addons_dataset.collector.overrider.overrider import Overrider
 from anki_addons_dataset.common.data_types import AddonId, GithubRepo, GithubUserName, GithubRepoName, LastPostedAt, \
-    URL, PostsCount, AddonInfo, AddonHeader, AddonPage, GithubInfo, AnkiForumInfo, LanguageName, AddonInfos
+    URL, PostsCount, AddonInfo, AddonHeader, AddonPage, GithubInfo, AnkiForumInfo, LanguageName, AddonInfos, \
+    DatasetVersionMetadata
 from anki_addons_dataset.common.working_dir import WorkingDir, VersionDir
 from anki_addons_dataset.exporter.json.json_exporter import JsonExporter
 from anki_addons_dataset.exporter.xlsx.xlsx_exporter import XlsxExporter
@@ -233,3 +235,13 @@ def working_dir_initializer(working_dir: WorkingDir, hugging_face_client: Huggin
 @fixture
 def facade(working_dir: WorkingDir, hugging_face_client: HuggingFaceClient) -> Facade:
     return Facade(working_dir, hugging_face_client)
+
+
+@fixture
+def script_version() -> str:
+    return "0.12.0"
+
+
+@fixture
+def dataset_version_metadata(version_dir: VersionDir, script_version: str) -> DatasetVersionMetadata:
+    return DatasetMetadata.create_dataset_version_metadata(version_dir, script_version)
