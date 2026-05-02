@@ -2,7 +2,7 @@ from xlsxwriter import Workbook
 from xlsxwriter.format import Format
 from xlsxwriter.worksheet import Worksheet
 
-from anki_addons_dataset.common.data_types import AddonInfos
+from anki_addons_dataset.common.data_types import AddonInfos, DatasetVersionMetadata, RawMetadata
 
 
 class AddonInfoSheet:
@@ -31,18 +31,37 @@ class AddonInfoSheet:
     def __init__(self, workbook: Workbook):
         self.__workbook: Workbook = workbook
 
-    def create_sheet(self, addon_infos: AddonInfos) -> None:
+    def create_sheet(self, addon_infos: AddonInfos, dataset_version_metadata: DatasetVersionMetadata,
+                     raw_metadata: RawMetadata) -> None:
         worksheet: Worksheet = self.__workbook.add_worksheet(name="Addons")
-        self.__add_title(self.__workbook, worksheet)
+        self.__add_title(self.__workbook, worksheet, dataset_version_metadata, raw_metadata)
         self.__set_column_width(worksheet)
         self.__add_header(self.__workbook, worksheet)
         self.__add_rows(addon_infos, worksheet)
 
-    def __add_title(self, workbook: Workbook, worksheet: Worksheet) -> None:
+    def __add_title(self, workbook: Workbook, worksheet: Worksheet,
+                    dataset_version_metadata: DatasetVersionMetadata, raw_metadata: RawMetadata) -> None:
         title_format: Format = workbook.add_format({"bold": True, 'align': 'left', 'font_size': 18})
+        property_name_format: Format = workbook.add_format({'align': 'right', 'valign': 'vcenter'})
+        date_format: Format = workbook.add_format({'align': 'left', 'valign': 'vcenter', "num_format": "yyyy-mm-dd"})
         worksheet.merge_range(data="Anki Addons Dataset", cell_format=title_format,
                               first_row=self.__title_row_top, last_row=self.__title_row_top,
                               first_col=self.__id_col, last_col=self.__name_col)
+        worksheet.merge_range(data="Data collected:", cell_format=property_name_format,
+                              first_row=self.__title_row_top, last_row=self.__title_row_top,
+                              first_col=self.__updated_col, last_col=self.__versions_col)
+        if raw_metadata.start_timestamp:
+            worksheet.merge_range(data=raw_metadata.start_timestamp.date(),
+                                  cell_format=date_format,
+                                  first_row=self.__title_row_top, last_row=self.__title_row_top,
+                                  first_col=self.__rating_col, last_col=self.__likes_col)
+        worksheet.merge_range(data="Report generated:", cell_format=property_name_format,
+                              first_row=self.__title_row_top, last_row=self.__title_row_top,
+                              first_col=self.__anki_web_url_col, last_col=self.__anki_forum_url_col)
+        worksheet.merge_range(data=dataset_version_metadata.creation_date, cell_format=date_format,
+                              first_row=self.__title_row_top, last_row=self.__title_row_top,
+                              first_col=self.__anki_forum_posts_count_col,
+                              last_col=self.__anki_forum_last_posted_at_col)
 
     def __set_column_width(self, worksheet: Worksheet) -> None:
         worksheet.set_column(self.__id_col, self.__id_col, 12)

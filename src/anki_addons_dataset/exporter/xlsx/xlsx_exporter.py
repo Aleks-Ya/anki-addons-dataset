@@ -21,7 +21,7 @@ class XlsxExporter(Exporter):
         output_file: Path = self._final_dir / "data.xlsx"
         workbook: Workbook = Workbook(output_file)
         addon_info_sheet: AddonInfoSheet = AddonInfoSheet(workbook)
-        addon_info_sheet.create_sheet(addon_infos)
+        addon_info_sheet.create_sheet(addon_infos, dataset_version_metadata, raw_metadata)
         workbook.close()
         log.info(f"Write XLSX to file: {output_file}")
 
@@ -30,6 +30,6 @@ class XlsxExporter(Exporter):
         output_file: Path = self._final_dir / "aggregation.xlsx"
         workbook: Workbook = Workbook(output_file)
         aggregation_sheet: AggregationSheet = AggregationSheet(workbook)
-        aggregation_sheet.create_sheet(aggregation)
+        aggregation_sheet.create_sheet(aggregation, dataset_version_metadata, raw_metadata)
         workbook.close()
         log.info(f"Write XLSX to file: {output_file}")

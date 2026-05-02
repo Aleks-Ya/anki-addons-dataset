@@ -244,7 +244,7 @@ def script_version() -> str:
 
 @fixture
 def raw_metadata(script_version) -> RawMetadata:
-    return RawMetadata(script_version=script_version)
+    return RawMetadata(start_timestamp=datetime(2025, 10, 25), script_version=script_version)
 
 
 @fixture
