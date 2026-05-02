@@ -1,6 +1,6 @@
 from typing import Optional
 
-from anki_addons_dataset.aggregator.aggregator import Aggregator
+from anki_addons_dataset.collector.aggregator import Aggregator
 from anki_addons_dataset.common.data_types import Aggregation, AddonInfos, AddonInfo, AnkiForumInfo
 
 

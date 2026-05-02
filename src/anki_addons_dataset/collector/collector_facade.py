@@ -6,7 +6,7 @@ from typing import Optional
 
 from pydiscourse import DiscourseClient
 
-from anki_addons_dataset.aggregator.aggregator import Aggregator
+from anki_addons_dataset.collector.aggregator import Aggregator
 from anki_addons_dataset.collector.addon_collector import AddonCollector
 from anki_addons_dataset.collector.ankiforum.ankiforum_enricher import AnkiForumEnricher
 from anki_addons_dataset.collector.ankiforum.ankiforum_service import AnkiForumService
