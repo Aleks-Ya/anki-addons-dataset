@@ -21,7 +21,7 @@ from anki_addons_dataset.collector.github.github_service import GithubService
 from anki_addons_dataset.collector.overrider.overrider import Overrider
 from anki_addons_dataset.common.data_types import AddonId, GithubRepo, GithubUserName, GithubRepoName, LastPostedAt, \
     URL, PostsCount, AddonInfo, AddonHeader, AddonPage, GithubInfo, AnkiForumInfo, LanguageName, AddonInfos, \
-    DatasetVersionMetadata
+    DatasetVersionMetadata, RawMetadata
 from anki_addons_dataset.common.working_dir import WorkingDir, VersionDir
 from anki_addons_dataset.exporter.json.json_exporter import JsonExporter
 from anki_addons_dataset.exporter.xlsx.xlsx_exporter import XlsxExporter
@@ -240,6 +240,11 @@ def facade(working_dir: WorkingDir, hugging_face_client: HuggingFaceClient) -> F
 @fixture
 def script_version() -> str:
     return "0.12.0"
+
+
+@fixture
+def raw_metadata(script_version) -> RawMetadata:
+    return RawMetadata(script_version=script_version)
 
 
 @fixture

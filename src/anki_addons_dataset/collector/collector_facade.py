@@ -19,7 +19,7 @@ from anki_addons_dataset.collector.github.github_enricher import GithubEnricher
 from anki_addons_dataset.collector.github.github_rest_client import GithubRestClient
 from anki_addons_dataset.collector.github.github_service import GithubService
 from anki_addons_dataset.collector.overrider.overrider import Overrider
-from anki_addons_dataset.common.data_types import Aggregation, AddonInfos, DatasetVersionMetadata
+from anki_addons_dataset.common.data_types import Aggregation, AddonInfos, DatasetVersionMetadata, RawMetadata
 from anki_addons_dataset.collector.ankiweb.ankiweb_service import AnkiWebService
 from anki_addons_dataset.common.working_dir import VersionDir, WorkingDir
 from anki_addons_dataset.exporter.exporter_facade import ExporterFacade
@@ -62,7 +62,9 @@ class CollectorFacade:
         dataset_version_metadata: DatasetVersionMetadata = DatasetMetadata.create_dataset_version_metadata(
             version_dir, script_version)
         DatasetMetadata.write_version_metadata_to_json(version_dir, dataset_version_metadata)
-        exporter_facade.export_all(addon_infos, aggregation, dataset_version_metadata)
+        raw_metadata_collector: RawMetadataCollector = RawMetadataCollector(version_dir)
+        raw_metadata: RawMetadata = raw_metadata_collector.read_metadata()
+        exporter_facade.export_all(addon_infos, aggregation, dataset_version_metadata, raw_metadata)
         log.info(f"===== Parsed dataset for {creation_date} =====\n")
 
     @staticmethod

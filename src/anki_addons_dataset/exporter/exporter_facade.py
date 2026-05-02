@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from anki_addons_dataset.common.data_types import Aggregation, AddonInfos, DatasetVersionMetadata
+from anki_addons_dataset.common.data_types import Aggregation, AddonInfos, DatasetVersionMetadata, RawMetadata
 from anki_addons_dataset.common.working_dir import VersionDir
 from anki_addons_dataset.exporter.exporter import Exporter
 from anki_addons_dataset.exporter.json.json_exporter import JsonExporter
@@ -18,7 +18,7 @@ class ExporterFacade:
         ]
 
     def export_all(self, addon_infos: AddonInfos, aggregation: Aggregation,
-                   dataset_version_metadata: DatasetVersionMetadata) -> None:
+                   dataset_version_metadata: DatasetVersionMetadata, raw_metadata: RawMetadata) -> None:
         for exporter in self.exporters:
-            exporter.export_addon_infos(addon_infos, dataset_version_metadata)
-            exporter.export_aggregation(aggregation, dataset_version_metadata)
+            exporter.export_addon_infos(addon_infos, dataset_version_metadata, raw_metadata)
+            exporter.export_aggregation(aggregation, dataset_version_metadata, raw_metadata)

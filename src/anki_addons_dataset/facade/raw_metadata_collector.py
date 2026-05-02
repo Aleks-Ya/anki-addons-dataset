@@ -39,7 +39,7 @@ class RawMetadataCollector:
                 content[self.__finish_datetime_key] = datetime.fromisoformat(content[self.__finish_datetime_key])
             return RawMetadata(**content)
         else:
-            return RawMetadata(None, None, None)
+            return RawMetadata()
 
     def __write_metadata(self, raw_metadata: RawMetadata) -> None:
         data = asdict(raw_metadata)

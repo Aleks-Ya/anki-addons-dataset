@@ -109,9 +109,9 @@ class Aggregation:
 
 @dataclass
 class RawMetadata:
-    start_timestamp: Optional[datetime]
-    finish_timestamp: Optional[datetime]
-    script_version: Optional[str]
+    start_timestamp: Optional[datetime] = None
+    finish_timestamp: Optional[datetime] = None
+    script_version: Optional[str] = None
 
 
 @dataclass

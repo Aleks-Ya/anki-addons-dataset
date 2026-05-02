@@ -8,7 +8,7 @@ from logging import Logger
 
 from jsonschema import validate
 
-from anki_addons_dataset.common.data_types import Aggregation, AddonInfos, DatasetVersionMetadata
+from anki_addons_dataset.common.data_types import Aggregation, AddonInfos, DatasetVersionMetadata, RawMetadata
 from anki_addons_dataset.exporter.exporter import Exporter
 from anki_addons_dataset.exporter.json_addon_info import JsonAddonInfo, Details
 
@@ -19,7 +19,8 @@ class JsonExporter(Exporter):
     def __init__(self, final_dir: Path):
         super().__init__(final_dir / "json")
 
-    def export_addon_infos(self, addon_infos: AddonInfos, dataset_version_metadata: DatasetVersionMetadata) -> None:
+    def export_addon_infos(self, addon_infos: AddonInfos, dataset_version_metadata: DatasetVersionMetadata,
+                           raw_metadata: RawMetadata) -> None:
         json_list: list[Details] = JsonAddonInfo.addon_infos_to_json(addon_infos)
         output_file: Path = self._final_dir / "data.json"
         json_str: str = JsonExporter.__to_json(json_list)
@@ -30,7 +31,8 @@ class JsonExporter(Exporter):
         dataset_schema_file: Path = self._final_dir / "schema.json"
         shutil.copyfile(schema_file, dataset_schema_file)
 
-    def export_aggregation(self, aggregation: Aggregation, dataset_version_metadata: DatasetVersionMetadata) -> None:
+    def export_aggregation(self, aggregation: Aggregation, dataset_version_metadata: DatasetVersionMetadata,
+                           raw_metadata: RawMetadata) -> None:
         aggregation_dict: dict[str, int] = dataclasses.asdict(aggregation)
         output_file: Path = self._final_dir / "aggregation.json"
         json_str: str = json.dumps(aggregation_dict, indent=2)
