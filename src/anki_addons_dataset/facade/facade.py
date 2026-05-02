@@ -1,6 +1,7 @@
 from datetime import date
 import logging
 from logging import Logger
+from typing import Optional
 
 from anki_addons_dataset.argument.script_arguments import Operation
 from anki_addons_dataset.bundle.dataset_bundle import DatasetBundle
@@ -20,7 +21,7 @@ class Facade:
         self.__hugging_face_client: HuggingFaceClient = hugging_face_client
         self.__collector_facade: CollectorFacade = CollectorFacade(working_dir)
 
-    def process(self, operation: Operation, creation_date: date) -> None:
+    def process(self, operation: Operation, creation_date: Optional[date]) -> None:
         if operation == Operation.INIT:
             working_dir_backup: WorkingDirBackup = WorkingDirBackup(self.__working_dir)
             working_dir_initializer: WorkingDirInitializer = WorkingDirInitializer(

@@ -23,6 +23,7 @@ from anki_addons_dataset.common.data_types import AddonId, GithubRepo, GithubUse
 from anki_addons_dataset.common.working_dir import WorkingDir, VersionDir
 from anki_addons_dataset.exporter.json.json_exporter import JsonExporter
 from anki_addons_dataset.exporter.xlsx.xlsx_exporter import XlsxExporter
+from anki_addons_dataset.facade.facade import Facade
 from anki_addons_dataset.huggingface.hugging_face_client import HuggingFaceClient
 from anki_addons_dataset.initializer.working_dir_backup import WorkingDirBackup
 from anki_addons_dataset.initializer.working_dir_initializer import WorkingDirInitializer
@@ -227,3 +228,8 @@ def hugging_face_client() -> HuggingFaceClient:
 def working_dir_initializer(working_dir: WorkingDir, hugging_face_client: HuggingFaceClient,
                             working_dir_backup: WorkingDirBackup) -> WorkingDirInitializer:
     return WorkingDirInitializer(working_dir, hugging_face_client, working_dir_backup)
+
+
+@fixture
+def facade(working_dir: WorkingDir, hugging_face_client: HuggingFaceClient) -> Facade:
+    return Facade(working_dir, hugging_face_client)

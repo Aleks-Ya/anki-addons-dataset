@@ -2,6 +2,7 @@ import logging
 from datetime import date
 from logging import Logger
 from pathlib import Path
+from typing import Optional
 
 from huggingface_hub import HfApi
 
@@ -18,7 +19,7 @@ if __name__ == "__main__":
 
     arguments: ScriptArguments = ScriptArguments()
     operation: Operation = arguments.get_operation()
-    creation_date: date = arguments.get_creation_date()
+    creation_date: Optional[date] = arguments.get_creation_date()
     log.info(f"Creation date: {creation_date}")
 
     hf_api: HfApi = HfApi()

@@ -2,6 +2,7 @@ import logging
 from datetime import datetime, date
 from logging import Logger
 from pathlib import Path
+from typing import Optional
 
 from pydiscourse import DiscourseClient
 
@@ -31,8 +32,10 @@ class CollectorFacade:
     def __init__(self, working_dir: WorkingDir):
         self.__working_dir: WorkingDir = working_dir
 
-    def download_version(self, creation_date: date) -> None:
+    def download_version(self, creation_date: Optional[date]) -> None:
         log.info(f"===== Download dataset for {creation_date} =====")
+        if not creation_date:
+            raise ValueError("Creation date is required")
         version_dir: VersionDir = self.__working_dir.get_version_dir(creation_date).create()
         script_version: str = self.__script_version()
         raw_metadata: RawMetadata = RawMetadata(version_dir)

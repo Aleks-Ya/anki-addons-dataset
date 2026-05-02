@@ -1,6 +1,7 @@
 from argparse import ArgumentParser, Namespace, ArgumentTypeError
 from datetime import date, datetime
 from enum import Enum
+from typing import Optional
 
 
 class Operation(Enum):
@@ -18,7 +19,7 @@ class ScriptArguments:
         parser.add_argument('-d', '--creation-date', type=self.__valid_date)
         self.namespace: Namespace = parser.parse_args()
 
-    def get_creation_date(self) -> date:
+    def get_creation_date(self) -> Optional[date]:
         return self.namespace.creation_date
 
     def get_operation(self) -> Operation:
