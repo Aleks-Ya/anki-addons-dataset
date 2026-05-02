@@ -58,7 +58,7 @@ class AddonInfoSheet:
         worksheet.merge_range(data="Report generated:", cell_format=property_name_format,
                               first_row=self.__title_row_top, last_row=self.__title_row_top,
                               first_col=self.__anki_web_url_col, last_col=self.__anki_forum_url_col)
-        worksheet.merge_range(data=dataset_version_metadata.creation_date, cell_format=date_format,
+        worksheet.merge_range(data=dataset_version_metadata.report_date, cell_format=date_format,
                               first_row=self.__title_row_top, last_row=self.__title_row_top,
                               first_col=self.__anki_forum_posts_count_col,
                               last_col=self.__anki_forum_last_posted_at_col)
