@@ -23,7 +23,7 @@ from anki_addons_dataset.common.data_types import Aggregation, AddonInfos, Datas
 from anki_addons_dataset.collector.ankiweb.ankiweb_service import AnkiWebService
 from anki_addons_dataset.common.working_dir import VersionDir, WorkingDir
 from anki_addons_dataset.exporter.exporter_facade import ExporterFacade
-from anki_addons_dataset.facade.raw_metadata_collector import RawMetadataCollector
+from anki_addons_dataset.collector.raw_metadata_collector import RawMetadataCollector
 
 log: Logger = logging.getLogger(__name__)
 

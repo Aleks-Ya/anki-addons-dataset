@@ -3,7 +3,7 @@ from pathlib import Path
 from textwrap import dedent
 
 from anki_addons_dataset.common.working_dir import WorkingDir, VersionDir
-from anki_addons_dataset.facade.raw_metadata_collector import RawMetadataCollector
+from anki_addons_dataset.collector.raw_metadata_collector import RawMetadataCollector
 
 
 def test_set_start_datetime(working_dir: WorkingDir):
