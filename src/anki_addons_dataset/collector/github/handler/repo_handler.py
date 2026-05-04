@@ -34,7 +34,7 @@ class RepoHandler(ABC):
         url: str = self.get_url()
         log.info(f"Repo not found: {url}")
         JsonHelper.write_dict_to_file({}, raw_file)
-        self.__get_not_found_file().write_text("")
+        self.__get_not_found_file().touch()
 
     def status_409(self, response: Response) -> None:
         self.status_other(response)
