@@ -47,12 +47,10 @@ class RepoHandler(ABC):
         ...
 
     def get_raw_file(self) -> Path:
-        name: str = self.__get_json_filename(self._get_raw_filename())
-        return self.__raw_dir / self._repo.user / self._repo.repo_name / f"{name}.json"
+        return self.__raw_dir / self._repo.user / self._repo.repo_name / f"{self._get_raw_filename()}.json"
 
     def get_stage_file(self) -> Path:
-        name: str = self.__get_json_filename(self._get_stage_filename())
-        return self.__stage_dir / self._repo.user / self._repo.repo_name / f"{name}.json"
+        return self.__stage_dir / self._repo.user / self._repo.repo_name / f"{self._get_stage_filename()}.json"
 
     def extract_return_value(self) -> Optional[Any]:
         try:
@@ -87,8 +85,4 @@ class RepoHandler(ABC):
         ...
 
     def __get_not_found_file(self) -> Path:
-        name: str = self.__get_json_filename("NOT_FOUND_404")
-        return self.__raw_dir / self._repo.user / self._repo.repo_name / name
-
-    def __get_json_filename(self, name: str) -> str:
-        return f"{self._repo.user}_{self._repo.repo_name}_{name}"
+        return self.__raw_dir / self._repo.user / self._repo.repo_name / "NOT_FOUND_404"
