@@ -43,7 +43,7 @@ class WorkingDirInitializer:
         return VersionDir(self.__working_dir.get_history_dir() / version_name)
 
     def __download_raw_zip_files(self, versions: dict[VersionDir, HuggingFaceFolder]):
-        log.info(f"Downloading versions")
+        log.info("Downloading versions")
         for version_dir, hugging_face_folder in versions.items():
             version_dir.create()
             hf_raw_zip: str = f"{hugging_face_folder}/raw.zip"
@@ -52,4 +52,4 @@ class WorkingDirInitializer:
             log.info(f"Unzipping {version_dir.get_path()}")
             shutil.unpack_archive(cached_raw_zip, version_dir.get_raw_dir())
             log.info(f"Unzipped {version_dir.get_path()}")
-        log.info(f"Downloaded versions")
+        log.info("Downloaded versions")

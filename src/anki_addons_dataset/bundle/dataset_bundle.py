@@ -44,7 +44,7 @@ class DatasetBundle:
         log.info(f"Copying the latest version: {latest_dir}")
         latest_version_dir: Optional[VersionDir] = self.__working_dir.get_latest_version_dir()
         if not latest_version_dir:
-            raise Exception("No versions found")
+            raise ValueError("No versions found")
         final_dir: Path = latest_version_dir.get_final_dir()
         shutil.copytree(final_dir, latest_dir)
         src_metadata_file: Path = latest_version_dir.get_metadata_json()

@@ -32,12 +32,10 @@ class HuggingFaceClient:
             self.__api.delete_folder(path_in_repo="history", repo_id=self.__repo_id, repo_type="dataset")
         except EntryNotFoundError:
             log.info(f"History folder not found for dataset: {self.__repo_id}")
-            pass
         try:
             self.__api.delete_folder(path_in_repo="latest", repo_id=self.__repo_id, repo_type="dataset")
         except EntryNotFoundError:
             log.info(f"Latest folder not found for dataset: {self.__repo_id}")
-            pass
         log.info(f"Deleted dataset: {self.__repo_id}")
 
     def list_version_folders(self) -> list[HuggingFaceFolder]:
