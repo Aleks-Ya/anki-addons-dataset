@@ -44,6 +44,7 @@ Folder `latest` contains the most recent day from `history`.
 │   │   ├── xlsx
 │   │   │   ├── aggregation.xlsx
 │   │   │   └── data.xlsx
+│   │   ├── metadata.json
 │   │   ├── raw.zip
 │   │   └── stage.zip
 ├── latest
@@ -51,13 +52,13 @@ Folder `latest` contains the most recent day from `history`.
 │   │   ├── aggregation.json
 │   │   ├── data.json
 │   │   └── schema.json
-│   ├── metadata.json
 │   ├── parquet
 │   │   ├── aggregation.parquet
 │   │   └── data.parquet
-│   └── xlsx
-│       ├── aggregation.xlsx
-│       └── data.xlsx
+│   ├── xlsx
+│   │   ├── aggregation.xlsx
+│   │   └── data.xlsx
+│   └── metadata.json
 └── README.md
 ```
 
@@ -67,52 +68,48 @@ Location: `latest/xlsx/data.xlsx`, `history/YYYY-MM-DD/xlsx/data.xlsx`
 
 ### Parquet
 The best for **programmatic analysis** by Python, etc.  
-The JSON file contains all parsed fields. The Excel file contains a part of its fields.  
 Location: `latest/parquet/data.parquet`, `history/YYYY-MM-DD/xlsx/data.xlsx`
 
 ### JSON
-The JSON file contains all parsed fields. The Excel file contains a part of its fields.  
-Location: `latest/json/data.json`  , `history/YYYY-MM-DD/json/data.json`
+Exported from the Parquet file.   
+Location: `latest/json/data.json`  , `history/YYYY-MM-DD/json/data.json`  
 JSON schema: `latest/json/schema.json`, `history/YYYY-MM-DD/json/schema.json`
 
 ---
 
 ## Raw and Stage data
 Raw data (collected during the dataset construction) are available in `history/YYYY-MM-DD/raw.zip`.  
-It includes HTML pages of the Addon Catalog and responses of GitHub REST API.  
+It includes HTML pages of the Addon Catalog, responses of GitHub REST API, and responses of Anki Forum API.  
 Structure of the raw data:
 ```
 raw-metadata.json
 1-anki-web/
-    addons.html
-    addon/
-        {addon-id}.html
+    addons_page.html
+    addon/{addon-id}.html
 2-github/{user}/{repo}/
-    {repo}_action-count.json
-    {repo}_languages.json
-    {repo}_last-commit.json
-    {repo}_stars-count.json
-    {repo}_tests-count.json
+    actions.json
+    info.json
+    languages.json
+    last-commit.json
+    tree.json
+3-forum/topic/{topic_id}.json
 ```
 
 Stage data (intermediate data generated during the dataset construction) are available in `history/YYYY-MM-DD/stage.zip`.  
 File `4-overrider/overrides.yaml` contains manually curated data which override automatically parsed values.  
 Structure of the stage data:
 ```
-1-anki-web/
-    addons.html
-    addon/
-        {addon-id}.html
+1-anki-web/addon/{addon-id}.html
 2-github/{user}/{repo}/
-    {repo}_action-count.json
-    {repo}_languages.json
-    {repo}_last-commit.json
-    {repo}_stars-count.json
-    {repo}_tests-count.json
-3-enricher/addon/
-    {addon-id}.json
-4-overrider/
-    overrides.yaml
+    action-count.json
+    languages.json
+    last-commit.json
+    stars-count.json
+    tests-count.json
+3-enricher/
+    forum/{addon-id}.json
+    github/{addon-id}.json
+4-overrider/overrides.yaml
 ```
 
 ---
