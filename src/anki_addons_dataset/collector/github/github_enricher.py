@@ -31,8 +31,8 @@ class GithubEnricher(Enricher):
         languages: list[LanguageName] = self.__get_languages(addon_info)
         stars: int = self.__github_service.get_stars_count(addon_info.github.github_repo)
         last_commit: Optional[datetime] = self.__github_service.get_last_commit(addon_info.github.github_repo)
-        action_count: int = self.__github_service.get_action_count(addon_info.github.github_repo)
-        tests_count: int = self.__github_service.get_tests_count(addon_info.github.github_repo)
+        action_count: Optional[int] = self.__github_service.get_action_count(addon_info.github.github_repo)
+        tests_count: Optional[int] = self.__github_service.get_tests_count(addon_info.github.github_repo)
         github_info: GithubInfo = GithubInfo(addon_info.github.github_links, addon_info.github.github_repo,
                                              languages, stars, last_commit, action_count, tests_count)
         self.__github_infos[addon_info.header.id] = github_info

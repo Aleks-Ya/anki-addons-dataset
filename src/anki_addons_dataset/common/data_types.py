@@ -60,8 +60,8 @@ class GithubInfo:
     languages: list[LanguageName]
     stars: int
     last_commit: Optional[datetime]
-    action_count: int
-    tests_count: int
+    action_count: Optional[int]
+    tests_count: Optional[int]
 
 
 @dataclass
