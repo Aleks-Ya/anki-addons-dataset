@@ -67,7 +67,7 @@ class GithubInfo:
 @dataclass
 class AddonVersion:
     min_version: str
-    max_version: str
+    max_version: Optional[str]
     updated: date
 
 
