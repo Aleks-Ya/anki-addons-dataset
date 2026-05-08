@@ -14,8 +14,8 @@
       "rating",
       "name",
       "update_date",
-      "versions",
-      "versions_str"
+      "branches",
+      "anki_version"
     ],
     "properties": {
       "id": {
@@ -33,10 +33,10 @@
       "update_date": {
         "type": "string"
       },
-      "versions_str": {
+      "anki_version": {
         "type": "string"
       },
-      "versions": {
+      "branches": {
         "type": "array",
         "items": {
           "type": "object",

@@ -14,6 +14,7 @@ TopicId = NewType("TopicId", int)
 LastPostedAt = NewType("LastPostedAt", datetime)
 PostsCount = NewType("PostsCount", int)
 HuggingFaceFolder = NewType("HuggingFaceFolder", str)
+AnkiVersion = NewType("AnkiVersion", str)
 
 
 @dataclass
@@ -23,7 +24,7 @@ class AddonHeader:
     addon_page: str
     rating: int
     update_date: str
-    versions: str
+    anki_version: AnkiVersion
 
 
 @dataclass
@@ -65,9 +66,9 @@ class GithubInfo:
 
 
 @dataclass
-class AddonVersion:
-    min_version: str
-    max_version: Optional[str]
+class AddonBranch:
+    min_anki_version: AnkiVersion
+    max_anki_version: Optional[AnkiVersion]
     updated: date
 
 
@@ -75,7 +76,7 @@ class AddonVersion:
 class AddonPage:
     like_number: int
     dislike_number: int
-    versions: list[AddonVersion]
+    branches: list[AddonBranch]
     other_links: list[URL]
 
 

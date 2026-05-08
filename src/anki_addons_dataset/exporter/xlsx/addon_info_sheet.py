@@ -131,7 +131,7 @@ class AddonInfoSheet:
         worksheet.write_number(row, self.__id_col, addon.header.id)
         worksheet.write_string(row, self.__name_col, addon.header.name)
         worksheet.write_string(row, self.__updated_col, addon.header.update_date)
-        worksheet.write_string(row, self.__versions_col, addon.header.versions)
+        worksheet.write_string(row, self.__versions_col, addon.header.anki_version)
         worksheet.write_number(row, self.__rating_col, addon.header.rating)
         worksheet.write_number(row, self.__likes_col, addon.page.like_number)
         worksheet.write_number(row, self.__dislikes_col, addon.page.dislike_number)

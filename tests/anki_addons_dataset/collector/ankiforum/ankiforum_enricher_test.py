@@ -7,7 +7,7 @@ from anki_addons_dataset.collector.ankiforum.ankiforum_enricher import AnkiForum
 from anki_addons_dataset.collector.ankiforum.ankiforum_service import AnkiForumService
 from anki_addons_dataset.common.data_types import AddonInfo, AddonHeader, AddonId, AddonPage, GithubInfo, AddonInfos, \
     AnkiForumInfo, TopicSlug, TopicId, LastPostedAt, URL, PostsCount, LanguageName, GithubRepo, GithubUserName, \
-    GithubRepoName
+    GithubRepoName, AnkiVersion
 
 log: Logger = logging.getLogger(__name__)
 
@@ -28,12 +28,12 @@ def test_enrich(anki_forum_enricher: AnkiForumEnricher, anki_forum_service: Anki
             addon_page="https://ankiweb.net/shared/info/1188705668",
             rating=4,
             update_date="2023-03-15",
-            versions="1.0.0"
+            anki_version=AnkiVersion("1.0.0")
         ),
         page=AddonPage(
             like_number=0,
             dislike_number=0,
-            versions=[],
+            branches=[],
             other_links=[]
         ),
         github=GithubInfo(

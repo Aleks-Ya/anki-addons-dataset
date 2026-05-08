@@ -4,7 +4,7 @@ from pathlib import Path
 from anki_addons_dataset.collector.ankiweb.addon_page_parser import AddonPageParser
 from anki_addons_dataset.collector.overrider.overrider import Overrider
 from anki_addons_dataset.common.data_types import AddonHeader, AddonInfo, AddonPage, GithubInfo, AddonId, GitHubLink, \
-    URL, GitHubUser, GithubRepo, GithubUserName, GithubRepoName, AddonVersion, HtmlStr, AnkiForumInfo
+    URL, GitHubUser, GithubRepo, GithubUserName, GithubRepoName, AddonBranch, HtmlStr, AnkiForumInfo, AnkiVersion
 
 
 def test_parse_addon_page(overrider: Overrider):
@@ -17,7 +17,7 @@ def test_parse_addon_page(overrider: Overrider):
         addon_page="https://ankiweb.net/shared/info/1188705668",
         rating=12,
         update_date="2025-04-19",
-        versions="24.04.1-25.02.1+ (Updated 2025-04-19) ")
+        anki_version=AnkiVersion("25.09.2~"))
     addon_info: AddonInfo = parser.parse_addon_page(addon_header, addon_html)
     github_user: GitHubUser = GitHubUser(GithubUserName("aleks-ya"))
     github_repo: GithubRepo = GithubRepo(GithubUserName("aleks-ya"), GithubRepoName("note-size-anki-addon"))
@@ -26,7 +26,9 @@ def test_parse_addon_page(overrider: Overrider):
         AddonPage(
             like_number=12,
             dislike_number=0,
-            versions=[AddonVersion(min_version='24.04.1', max_version='25.02.1+', updated=datetime.date(2025, 4, 19))],
+            branches=[AddonBranch(min_anki_version=AnkiVersion('24.04.1'),
+                                  max_anki_version=AnkiVersion('25.02.1+'),
+                                  updated=datetime.date(2025, 4, 19))],
             other_links=[
                 URL('https://ankiweb.net/logo.png'),
                 URL('https://ankiweb.net/_app/immutable/nodes/0.DbG5vJiZ.mjs'),

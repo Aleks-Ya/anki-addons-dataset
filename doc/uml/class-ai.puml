@@ -28,7 +28,7 @@ package "anki_addons_dataset" {
     class GithubRepo <<dataclass>>
     class GitHubLink <<dataclass>>
     class GithubInfo <<dataclass>>
-    class AddonVersion <<dataclass>>
+    class AddonBranch <<dataclass>>
     class AddonPage <<dataclass>>
     class AnkiForumInfo <<dataclass>>
     class AddonInfo <<dataclass>>
@@ -53,7 +53,7 @@ package "anki_addons_dataset" {
     package "ankiweb" {
       class AddonPageDownloader
       class AddonPageParser
-      class AddonVersionParser
+      class AddonBranchParser
       class AddonsPageDownloader
       class AddonsPageParser
       class AnkiWebService
@@ -152,7 +152,7 @@ GitHubLink --> GitHubUser
 GitHubLink --> GithubRepo
 GithubInfo "1" o-- "*" GitHubLink
 GithubInfo --> GithubRepo
-AddonPage "1" o-- "*" AddonVersion
+AddonPage "1" o-- "*" AddonBranch
 AddonInfo *-- AddonHeader
 AddonInfo *-- AddonPage
 AddonInfo --> GithubInfo
@@ -168,7 +168,7 @@ AnkiWebService --> AddonPageDownloader
 AddonsPageDownloader --> PageDownloader
 AddonPageDownloader --> PageDownloader
 AddonPageDownloader --> AddonPageParser
-AddonPageParser --> AddonVersionParser
+AddonPageParser --> AddonBranchParser
 AddonPageParser --> Overrider
 AddonsPageParser --> AddonHeader
 GithubEnricher --|> Enricher

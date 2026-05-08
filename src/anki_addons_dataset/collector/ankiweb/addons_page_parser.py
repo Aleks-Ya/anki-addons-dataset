@@ -18,7 +18,7 @@ class AddonsPageParser:
             addon_id: AddonId = AddonId(int(addon_page.split("/")[-1]))
             rating: int = int(cells[1].text)
             update_date: str = cells[2].text
-            versions: str = cells[3].text
-            addon_header: AddonHeader = AddonHeader(addon_id, addon_name, addon_page, rating, update_date, versions)
+            branches: str = cells[3].text
+            addon_header: AddonHeader = AddonHeader(addon_id, addon_name, addon_page, rating, update_date, branches)
             addon_rows.append(addon_header)
         return sorted(addon_rows, key=lambda header: header.id)

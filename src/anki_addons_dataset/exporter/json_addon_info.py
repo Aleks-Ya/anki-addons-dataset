@@ -33,7 +33,7 @@ class Forum:
 
 
 @dataclass
-class Version:
+class Branch:
     min_version: Optional[str]
     max_version: Optional[str]
     updated: Optional[str]
@@ -46,8 +46,8 @@ class Details:
     addon_page: str
     rating: int
     update_date: str
-    versions_str: str
-    versions: list[Version]
+    anki_version: str
+    branches: list[Branch]
     github: Optional[GitHub]
     forum: Optional[Forum]
     links: list[str]
@@ -62,9 +62,9 @@ class JsonAddonInfo:
         for addon in addon_infos:
             github: Optional[GitHub] = JsonAddonInfo.__github(addon)
             forum: Optional[Forum] = JsonAddonInfo.__forum(addon)
-            versions: list[Version] = JsonAddonInfo.__versions(addon)
+            branches: list[Branch] = JsonAddonInfo.__branches(addon)
             json_obj: Details = Details(addon.header.id, addon.header.name, addon.header.addon_page,
-                                        addon.header.rating, addon.header.update_date, addon.header.versions, versions,
+                                        addon.header.rating, addon.header.update_date, addon.header.anki_version, branches,
                                         github, forum, addon.page.other_links, addon.page.like_number,
                                         addon.page.dislike_number)
             json_list.append(json_obj)
@@ -95,6 +95,6 @@ class JsonAddonInfo:
         return Forum(anki_forum_url, slug, topic_id, last_posted_at, posts_count)
 
     @staticmethod
-    def __versions(addon: AddonInfo) -> list[Version]:
-        return [Version(version.min_version, version.max_version, str(version.updated))
-                for version in addon.page.versions]
+    def __branches(addon: AddonInfo) -> list[Branch]:
+        return [Branch(branch.min_anki_version, branch.max_anki_version, str(branch.updated))
+                for branch in addon.page.branches]

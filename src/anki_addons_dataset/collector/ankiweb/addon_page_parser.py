@@ -4,10 +4,10 @@ from typing import Optional
 from bs4 import Tag, BeautifulSoup
 
 from anki_addons_dataset.collector.url_parser import UrlParser
-from anki_addons_dataset.collector.ankiweb.addon_version_parser import AddonVersionParser
+from anki_addons_dataset.collector.ankiweb.addon_branch_parser import AddonBranchParser
 from anki_addons_dataset.collector.overrider.overrider import Overrider
 from anki_addons_dataset.common.data_types import AddonHeader, AddonInfo, AddonId, URL, GitHubLink, GithubRepo, \
-    GithubInfo, AddonPage, AddonVersion, HtmlStr, AnkiForumInfo
+    GithubInfo, AddonPage, AddonBranch, HtmlStr, AnkiForumInfo
 
 
 class AddonPageParser:
@@ -25,8 +25,8 @@ class AddonPageParser:
         github_info: GithubInfo = GithubInfo(github_links, github_repo, [], 0, None, 0, 0)
         likes: int = self.__extract_likes(soup)
         dislikes: int = self.__extract_dislikes(soup)
-        addon_versions: list[AddonVersion] = self.__extract_addon_versions(soup)
-        addon_page: AddonPage = AddonPage(likes, dislikes, addon_versions, other_links)
+        addon_branches: list[AddonBranch] = self.__extract_addon_branches(soup)
+        addon_page: AddonPage = AddonPage(likes, dislikes, addon_branches, other_links)
         anki_forum_info: AnkiForumInfo = AnkiForumInfo(anki_forum_url, None, None, None, None)
         addon_info: AddonInfo = AddonInfo(addon_header, addon_page, github_info, anki_forum_info)
         return addon_info
@@ -91,11 +91,11 @@ class AddonPageParser:
         return dislikes
 
     @staticmethod
-    def __extract_addon_versions(soup: BeautifulSoup) -> list[AddonVersion]:
-        addon_versions: list[AddonVersion] = []
-        version_list: Tag = soup.find('ul', class_='mb-0')
-        for version in version_list.find_all('li'):
-            text: str = version.get_text().strip()
-            addon_version: AddonVersion = AddonVersionParser.extract_addon_version(text)
-            addon_versions.append(addon_version)
-        return addon_versions
+    def __extract_addon_branches(soup: BeautifulSoup) -> list[AddonBranch]:
+        addon_branches: list[AddonBranch] = []
+        addon_branches_tag: Tag = soup.find('ul', class_='mb-0')
+        for addon_branch_tag in addon_branches_tag.find_all('li'):
+            text: str = addon_branch_tag.get_text().strip()
+            addon_branch: AddonBranch = AddonBranchParser.extract_addon_branch(text)
+            addon_branches.append(addon_branch)
+        return addon_branches
