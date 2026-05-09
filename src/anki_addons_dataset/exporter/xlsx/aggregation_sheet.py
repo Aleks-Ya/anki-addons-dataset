@@ -49,7 +49,7 @@ class AggregationSheet:
         worksheet.merge_range(data="Report generated:", cell_format=property_name_format,
                               first_row=self.__title_row_top, last_row=self.__title_row_top,
                               first_col=self.__h_col, last_col=self.__i_col)
-        worksheet.merge_range(data=dataset_version_metadata.report_date,
+        worksheet.merge_range(data=dataset_version_metadata.report_generation_date,
                               cell_format=date_format,
                               first_row=self.__title_row_top, last_row=self.__title_row_top,
                               first_col=self.__j_col, last_col=self.__k_col)

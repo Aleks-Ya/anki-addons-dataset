@@ -118,5 +118,5 @@ class RawMetadata:
 @dataclass
 class DatasetVersionMetadata:
     data_collection_date: date
-    report_date: datetime
+    report_generation_date: datetime
     script_version: str

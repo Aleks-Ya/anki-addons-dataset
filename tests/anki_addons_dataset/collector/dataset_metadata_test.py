@@ -19,7 +19,7 @@ def test_create_dataset_version_metadata(working_dir: WorkingDir, now: datetime)
         """\
         {
           "data_collection_date": "2025-01-25",
-          "report_date": "2026-04-25T14:25:45",
+          "report_generation_date": "2026-04-25T14:25:45",
           "script_version": "v0.0.1"
         }"""
     )

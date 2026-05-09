@@ -19,7 +19,7 @@ class DatasetMetadata:
                                         now: datetime) -> DatasetVersionMetadata:
         dataset_version_metadata: DatasetVersionMetadata = DatasetVersionMetadata(
             data_collection_date=version_dir.version_dir_to_creation_date(),
-            report_date=now,
+            report_generation_date=now,
             script_version=script_version
         )
         log.info(f"Created dataset version metadata: {dataset_version_metadata}")
