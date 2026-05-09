@@ -35,8 +35,10 @@ def test_export_addon_infos(json_exporter: JsonExporter, version_dir: VersionDir
                          'rating': 4,
                          'name': 'NoteSize',
                          'update_date': '2023-03-15',
-                         'branches': [],
-                         'anki_version': '1.0.0'}]
+                         'branches': [{'max_version': '25.09.2~',
+                                       'min_version': '24.04.1',
+                                       'updated': '2023-03-15'}],
+                         'anki_version': '25.09.2~'}]
 
 
 def test_export_addon_infos_empty_forum(json_exporter: JsonExporter, version_dir: VersionDir, addon_info: AddonInfo,
@@ -66,8 +68,10 @@ def test_export_addon_infos_empty_forum(json_exporter: JsonExporter, version_dir
                          'rating': 4,
                          'name': 'NoteSize',
                          'update_date': '2023-03-15',
-                         'branches': [],
-                         'anki_version': '1.0.0'}]
+                         'branches': [{'max_version': '25.09.2~',
+                                       'min_version': '24.04.1',
+                                       'updated': '2023-03-15'}],
+                         'anki_version': '25.09.2~'}]
 
 
 def test_export_addon_infos_empty_posts_count(json_exporter: JsonExporter, version_dir: VersionDir,
@@ -102,8 +106,10 @@ def test_export_addon_infos_empty_posts_count(json_exporter: JsonExporter, versi
                          'rating': 4,
                          'name': 'NoteSize',
                          'update_date': '2023-03-15',
-                         'branches': [],
-                         'anki_version': '1.0.0'}]
+                         'branches': [{'max_version': '25.09.2~',
+                                       'min_version': '24.04.1',
+                                       'updated': '2023-03-15'}],
+                         'anki_version': '25.09.2~'}]
 
 
 def test_export_aggregation(json_exporter: JsonExporter, version_dir: VersionDir,

@@ -21,7 +21,7 @@ from anki_addons_dataset.collector.github.github_service import GithubService
 from anki_addons_dataset.collector.overrider.overrider import Overrider
 from anki_addons_dataset.common.data_types import AddonId, GithubRepo, GithubUserName, GithubRepoName, LastPostedAt, \
     URL, PostsCount, AddonInfo, AddonHeader, AddonPage, GithubInfo, AnkiForumInfo, LanguageName, AddonInfos, \
-    DatasetVersionMetadata, RawMetadata, AnkiVersion
+    DatasetVersionMetadata, RawMetadata, AnkiVersion, AddonBranch
 from anki_addons_dataset.common.working_dir import WorkingDir, VersionDir
 from anki_addons_dataset.exporter.json.json_exporter import JsonExporter
 from anki_addons_dataset.exporter.xlsx.xlsx_exporter import XlsxExporter
@@ -132,7 +132,7 @@ def addon_header(note_size_addon_id: AddonId) -> AddonHeader:
         addon_page="https://ankiweb.net/shared/info/1188705668",
         rating=4,
         update_date="2023-03-15",
-        anki_version=AnkiVersion("1.0.0")
+        anki_version=AnkiVersion("25.09.2~")
     )
 
 
@@ -144,7 +144,9 @@ def addon_info(addon_header: AddonHeader, github_repo: GithubRepo, topic_slug: T
         page=AddonPage(
             like_number=0,
             dislike_number=0,
-            branches=[],
+            branches=[AddonBranch(min_anki_version=AnkiVersion("24.04.1"),
+                                  max_anki_version=AnkiVersion("25.09.2~"),
+                                  updated=date(2023, 3, 15))],
             other_links=[]
         ),
         github=GithubInfo(

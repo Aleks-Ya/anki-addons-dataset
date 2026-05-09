@@ -2,7 +2,7 @@ from xlsxwriter import Workbook
 from xlsxwriter.format import Format
 from xlsxwriter.worksheet import Worksheet
 
-from anki_addons_dataset.common.data_types import AddonInfos, DatasetVersionMetadata, RawMetadata
+from anki_addons_dataset.common.data_types import AddonInfos, DatasetVersionMetadata, RawMetadata, AddonInfo
 
 
 class AddonInfoSheet:
@@ -14,19 +14,20 @@ class AddonInfoSheet:
     __name_col: int = 1
     __updated_col: int = 2
     __versions_col: int = 3
-    __rating_col: int = 4
-    __likes_col: int = 5
-    __dislikes_col: int = 6
-    __anki_web_url_col: int = 7
-    __anki_forum_url_col: int = 8
-    __anki_forum_posts_count_col: int = 9
-    __anki_forum_last_posted_at_col: int = 10
-    __github_url_col: int = 11
-    __stars_col: int = 12
-    __last_commit_col: int = 13
-    __languages_col: int = 14
-    __actions_count_col: int = 15
-    __tests_count_col: int = 16
+    __branches_number_col: int = 4
+    __rating_col: int = 5
+    __likes_col: int = 6
+    __dislikes_col: int = 7
+    __anki_web_url_col: int = 8
+    __anki_forum_url_col: int = 9
+    __anki_forum_posts_count_col: int = 10
+    __anki_forum_last_posted_at_col: int = 11
+    __github_url_col: int = 12
+    __stars_col: int = 13
+    __last_commit_col: int = 14
+    __languages_col: int = 15
+    __actions_count_col: int = 16
+    __tests_count_col: int = 17
 
     def __init__(self, workbook: Workbook):
         self.__workbook: Workbook = workbook
@@ -54,7 +55,7 @@ class AddonInfoSheet:
             worksheet.merge_range(data=raw_metadata.start_timestamp.date(),
                                   cell_format=date_format,
                                   first_row=self.__title_row_top, last_row=self.__title_row_top,
-                                  first_col=self.__rating_col, last_col=self.__likes_col)
+                                  first_col=self.__branches_number_col, last_col=self.__rating_col)
         worksheet.merge_range(data="Report generated:", cell_format=property_name_format,
                               first_row=self.__title_row_top, last_row=self.__title_row_top,
                               first_col=self.__anki_web_url_col, last_col=self.__anki_forum_url_col)
@@ -68,6 +69,7 @@ class AddonInfoSheet:
         worksheet.set_column(self.__name_col, self.__name_col, 80)
         worksheet.set_column(self.__updated_col, self.__updated_col, 10)
         worksheet.set_column(self.__versions_col, self.__versions_col, 10)
+        worksheet.set_column(self.__branches_number_col, self.__branches_number_col, 8)
         worksheet.set_column(self.__rating_col, self.__rating_col, 6)
         worksheet.set_column(self.__likes_col, self.__likes_col, 6)
         worksheet.set_column(self.__dislikes_col, self.__dislikes_col, 7)
@@ -94,6 +96,11 @@ class AddonInfoSheet:
         worksheet.write_string(row2, self.__name_col, "Name", header_format)
         worksheet.write_string(row2, self.__updated_col, "Updated", header_format)
         worksheet.write_string(row2, self.__versions_col, "Versions", header_format)
+        worksheet.write_string(row2, self.__branches_number_col, "Branches Number", header_format)
+        worksheet.write_comment(row2, self.__branches_number_col,
+                                'It is NOT a Git branch. '
+                                'An add-on can have multiple "branches". '
+                                'Each "branch" can work only with specified Anki versions.')
         worksheet.write_string(row2, self.__rating_col, "Rating", header_format)
         worksheet.write_string(row2, self.__likes_col, "Likes", header_format)
         worksheet.write_string(row2, self.__dislikes_col, "Dislikes", header_format)
@@ -126,12 +133,13 @@ class AddonInfoSheet:
         for i, addon in enumerate(addon_infos):
             self.__add_row(addon, i, worksheet)
 
-    def __add_row(self, addon, i: int, worksheet: Worksheet):
+    def __add_row(self, addon: AddonInfo, i: int, worksheet: Worksheet):
         row: int = i + self.__header_row_bottom + 1
         worksheet.write_number(row, self.__id_col, addon.header.id)
         worksheet.write_string(row, self.__name_col, addon.header.name)
         worksheet.write_string(row, self.__updated_col, addon.header.update_date)
         worksheet.write_string(row, self.__versions_col, addon.header.anki_version)
+        worksheet.write_number(row, self.__branches_number_col, len(addon.page.branches))
         worksheet.write_number(row, self.__rating_col, addon.header.rating)
         worksheet.write_number(row, self.__likes_col, addon.page.like_number)
         worksheet.write_number(row, self.__dislikes_col, addon.page.dislike_number)
