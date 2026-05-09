@@ -6,7 +6,7 @@ import logging
 from logging import Logger
 
 from anki_addons_dataset.common.data_types import AddonInfo, AddonHeader, AddonPage, AddonId, \
-    AddonInfos
+    AddonInfos, AnkiVersion
 
 log: Logger = logging.getLogger(__name__)
 
@@ -17,7 +17,7 @@ class Enricher(ABC, Thread):
         super().__init__(name=name, daemon=True)
         self.__name: str = name
         self.__queue: Queue[AddonInfo] = Queue()
-        self.__sentinel: AddonInfo = AddonInfo(AddonHeader(AddonId(0), "", "", 0, "", ""),
+        self.__sentinel: AddonInfo = AddonInfo(AddonHeader(AddonId(0), "", "", 0, "", AnkiVersion("")),
                                                AddonPage(0, 0, [], []), None, None)
 
     def run(self) -> None:

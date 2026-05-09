@@ -144,22 +144,30 @@ class AddonInfoSheet:
         worksheet.write_number(row, self.__likes_col, addon.page.like_number)
         worksheet.write_number(row, self.__dislikes_col, addon.page.dislike_number)
         worksheet.write_url(row, self.__anki_web_url_col, addon.header.addon_page, string='link')
-        if addon.forum and addon.forum.anki_forum_url:
-            worksheet.write_url(row, self.__anki_forum_url_col, addon.forum.anki_forum_url, string='link')
-        last_posted_at_str: str = addon.forum.last_posted_at.strftime("%Y-%m-%d") \
-            if addon.forum and addon.forum.last_posted_at else ""
-        if addon.forum and addon.forum.posts_count:
-            worksheet.write_number(row, self.__anki_forum_posts_count_col, addon.forum.posts_count)
-        worksheet.write_string(row, self.__anki_forum_last_posted_at_col, last_posted_at_str)
-        if addon.github.github_repo:
-            worksheet.write_url(row, self.__github_url_col, addon.github.github_repo.get_url(), string='link')
-        if addon.github.stars:
-            worksheet.write_number(row, self.__stars_col, addon.github.stars)
-        commit_str: str = addon.github.last_commit.strftime("%Y-%m-%d") if addon.github.last_commit else ""
-        worksheet.write_string(row, self.__last_commit_col, commit_str)
-        languages_str: str = ", ".join(addon.github.languages)
-        worksheet.write_string(row, self.__languages_col, languages_str)
-        if addon.github.action_count:
-            worksheet.write_number(row, self.__actions_count_col, addon.github.action_count)
-        if addon.github.tests_count:
-            worksheet.write_number(row, self.__tests_count_col, addon.github.tests_count)
+        self.__fill_anki_forum_row_columns(addon, row, worksheet)
+        self.__fill_github_row_columns(addon, row, worksheet)
+
+    def __fill_anki_forum_row_columns(self, addon: AddonInfo, row: int, worksheet: Worksheet):
+        if addon.forum:
+            if addon.forum.anki_forum_url:
+                worksheet.write_url(row, self.__anki_forum_url_col, addon.forum.anki_forum_url, string='link')
+            last_posted_at_str: str = addon.forum.last_posted_at.strftime("%Y-%m-%d") \
+                if addon.forum.last_posted_at else ""
+            if addon.forum.posts_count:
+                worksheet.write_number(row, self.__anki_forum_posts_count_col, addon.forum.posts_count)
+            worksheet.write_string(row, self.__anki_forum_last_posted_at_col, last_posted_at_str)
+
+    def __fill_github_row_columns(self, addon: AddonInfo, row: int, worksheet: Worksheet):
+        if addon.github:
+            if addon.github.github_repo:
+                worksheet.write_url(row, self.__github_url_col, addon.github.github_repo.get_url(), string='link')
+            if addon.github.stars:
+                worksheet.write_number(row, self.__stars_col, addon.github.stars)
+            commit_str: str = addon.github.last_commit.strftime("%Y-%m-%d") if addon.github.last_commit else ""
+            worksheet.write_string(row, self.__last_commit_col, commit_str)
+            languages_str: str = ", ".join(addon.github.languages)
+            worksheet.write_string(row, self.__languages_col, languages_str)
+            if addon.github.action_count:
+                worksheet.write_number(row, self.__actions_count_col, addon.github.action_count)
+            if addon.github.tests_count:
+                worksheet.write_number(row, self.__tests_count_col, addon.github.tests_count)

@@ -17,10 +17,10 @@ class GitHub:
     repo: Optional[str]
     languages: list[str]
     stars: int
-    last_commit: str
+    last_commit: Optional[str]
     links: list[Link]
-    action_count: int
-    tests_count: int
+    action_count: Optional[int]
+    tests_count: Optional[int]
 
 
 @dataclass
@@ -64,7 +64,8 @@ class JsonAddonInfo:
             forum: Optional[Forum] = JsonAddonInfo.__forum(addon)
             branches: list[Branch] = JsonAddonInfo.__branches(addon)
             json_obj: Details = Details(addon.header.id, addon.header.name, addon.header.addon_page,
-                                        addon.header.rating, addon.header.update_date, addon.header.anki_version, branches,
+                                        addon.header.rating, addon.header.update_date, addon.header.anki_version,
+                                        branches,
                                         github, forum, addon.page.other_links, addon.page.like_number,
                                         addon.page.dislike_number)
             json_list.append(json_obj)
@@ -72,26 +73,26 @@ class JsonAddonInfo:
 
     @staticmethod
     def __github(addon: AddonInfo) -> Optional[GitHub]:
-        if not addon.github.github_repo:
+        if not addon.github or not addon.github.github_repo:
             return None
         user: str = addon.github.github_repo.user
         repo_str: str = addon.github.github_repo.repo_name
         links: list[Link] = [Link(link.url, link.user.user_name, link.repo.repo_name if link.repo else None)
                              for link in addon.github.github_links]
-        last_commit_str: str = addon.github.last_commit.isoformat() if addon.github.last_commit else None
+        last_commit_str: Optional[str] = addon.github.last_commit.isoformat() if addon.github.last_commit else None
         return GitHub(user, repo_str, addon.github.languages, addon.github.stars,
                       last_commit_str, links, addon.github.action_count,
                       addon.github.tests_count)
 
     @staticmethod
     def __forum(addon: AddonInfo) -> Optional[Forum]:
-        if not addon.forum:
+        if not addon or not addon.forum:
             return None
-        anki_forum_url: str = addon.forum.anki_forum_url
-        slug: str = addon.forum.topic_slug
-        topic_id: int = addon.forum.topic_id
+        anki_forum_url: Optional[str] = addon.forum.anki_forum_url
+        slug: Optional[str] = addon.forum.topic_slug
+        topic_id: Optional[int] = addon.forum.topic_id
         last_posted_at: str = str(addon.forum.last_posted_at)
-        posts_count: int = addon.forum.posts_count
+        posts_count: Optional[int] = addon.forum.posts_count
         return Forum(anki_forum_url, slug, topic_id, last_posted_at, posts_count)
 
     @staticmethod

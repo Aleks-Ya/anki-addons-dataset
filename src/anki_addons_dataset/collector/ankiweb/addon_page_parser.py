@@ -80,22 +80,23 @@ class AddonPageParser:
 
     @staticmethod
     def __extract_likes(soup: BeautifulSoup) -> int:
-        like_image: Tag = soup.find('img', alt='thumbs up')
-        likes: int = int(like_image.next_sibling.get_text())
+        like_image: Optional[Tag] = soup.find('img', alt='thumbs up')
+        likes: int = int(like_image.next_sibling.get_text()) if like_image and like_image.next_sibling else 0
         return likes
 
     @staticmethod
     def __extract_dislikes(soup: BeautifulSoup) -> int:
-        like_image: Tag = soup.find('img', alt='thumbs down')
-        dislikes: int = int(like_image.next_sibling.get_text())
+        like_image: Optional[Tag] = soup.find('img', alt='thumbs down')
+        dislikes: int = int(like_image.next_sibling.get_text()) if like_image and like_image.next_sibling else 0
         return dislikes
 
     @staticmethod
     def __extract_addon_branches(soup: BeautifulSoup) -> list[AddonBranch]:
         addon_branches: list[AddonBranch] = []
-        addon_branches_tag: Tag = soup.find('ul', class_='mb-0')
-        for addon_branch_tag in addon_branches_tag.find_all('li'):
-            text: str = addon_branch_tag.get_text().strip()
-            addon_branch: AddonBranch = AddonBranchParser.extract_addon_branch(text)
-            addon_branches.append(addon_branch)
+        addon_branches_tag: Optional[Tag] = soup.find('ul', class_='mb-0')
+        if addon_branches_tag:
+            for addon_branch_tag in addon_branches_tag.find_all('li'):
+                text: str = addon_branch_tag.get_text().strip()
+                addon_branch: AddonBranch = AddonBranchParser.extract_addon_branch(text)
+                addon_branches.append(addon_branch)
         return addon_branches

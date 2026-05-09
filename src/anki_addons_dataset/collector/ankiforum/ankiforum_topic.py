@@ -12,7 +12,7 @@ class AnkiForumTopic:
     def extract_topic_slug(topic_url: Optional[URL]) -> Optional[TopicSlug]:
         if topic_url is None:
             return None
-        match: Match[str] = re.search(AnkiForumTopic.__url_pattern, topic_url)
+        match: Optional[Match[str]] = re.search(AnkiForumTopic.__url_pattern, topic_url)
         if match:
             topic_slug_str: str = match.group(1)
             return TopicSlug(topic_slug_str)
@@ -23,7 +23,7 @@ class AnkiForumTopic:
     def extract_topic_id(topic_url: Optional[URL]) -> Optional[TopicId]:
         if topic_url is None:
             return None
-        match: Match[str] = re.search(AnkiForumTopic.__url_pattern, topic_url)
+        match: Optional[Match[str]] = re.search(AnkiForumTopic.__url_pattern, topic_url)
         if match:
             topic_id_str: str = match.group(2)
             return TopicId(int(topic_id_str))

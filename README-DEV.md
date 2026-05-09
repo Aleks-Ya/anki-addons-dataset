@@ -1,8 +1,8 @@
 # Developer Guide
 
-## Setup Python virtual environment
+## Set up a Python virtual environment
 1. Install PyEnv: `brew install pyenv pyenv-virtualenv`
-2. Create virtual environment:
+2. Create a virtual environment:
     1. `pyenv install 3.14.2`
     2. `pyenv virtualenv 3.14.2 anki-addons-dataset`
 3. Install Anki packages

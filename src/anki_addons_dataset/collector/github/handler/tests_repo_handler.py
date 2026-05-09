@@ -24,7 +24,7 @@ class TestsRepoHandler(RepoHandler):
         return f"https://api.github.com/repos/{self._repo.user}/{self._repo.repo_name}/git/trees/HEAD?recursive=1"
 
     def _extract_return_value_from_dict(self, content_obj: dict[str, Any]) -> int:
-        is_truncated: bool = content_obj.get("truncated")
+        is_truncated: bool = bool(content_obj.get("truncated"))
         if is_truncated:
             raise RuntimeError(f"Repo tree is truncated: {content_obj['url']}")
         if "tree" not in content_obj:

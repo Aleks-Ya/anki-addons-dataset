@@ -22,7 +22,8 @@ class AnkiForumService:
         self.__topic.mkdir(parents=True, exist_ok=True)
         self.__offline: bool = offline
 
-    def get_last_posted_at(self, topic_slug: TopicSlug, topic_id: TopicId) -> Optional[LastPostedAt]:
+    def get_last_posted_at(self, topic_slug: Optional[TopicSlug], topic_id: Optional[TopicId]) -> Optional[
+        LastPostedAt]:
         topic_dict: Optional[dict] = self.__read_topic_json(topic_slug, topic_id)
         if not topic_dict:
             return None
@@ -31,14 +32,14 @@ class AnkiForumService:
             tzinfo=timezone.utc)
         return LastPostedAt(last_posted_at)
 
-    def get_posts_count(self, topic_slug: TopicSlug, topic_id: TopicId) -> Optional[PostsCount]:
+    def get_posts_count(self, topic_slug: Optional[TopicSlug], topic_id: Optional[TopicId]) -> Optional[PostsCount]:
         topic_dict: Optional[dict] = self.__read_topic_json(topic_slug, topic_id)
         if not topic_dict:
             return None
         posts_count_str: str = topic_dict['posts_count']
         return PostsCount(int(posts_count_str))
 
-    def __read_topic_json(self, topic_slug: TopicSlug, topic_id: TopicId) -> Optional[dict]:
+    def __read_topic_json(self, topic_slug: Optional[TopicSlug], topic_id: Optional[TopicId]) -> Optional[dict]:
         json_file: Path = self.__topic / f"{topic_id}.json"
         if json_file.exists():
             json_str: str = json_file.read_text()
