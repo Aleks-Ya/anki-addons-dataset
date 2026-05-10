@@ -16,6 +16,10 @@ jobs:
       - uses: actions/checkout@v6 # https://github.com/actions/checkout/tags
         with:
           fetch-depth: 0
+      - name: Run TruffleHog
+        uses: trufflesecurity/trufflehog@main # https://github.com/trufflesecurity/trufflehog/tags
+        with:
+          extra_args: --results=verified,unknown --debug
       - name: Set up Python
         uses: actions/setup-python@v6 # https://github.com/actions/setup-python/tags
         with:
