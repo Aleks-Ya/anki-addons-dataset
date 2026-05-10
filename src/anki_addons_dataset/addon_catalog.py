@@ -21,7 +21,7 @@ if __name__ == "__main__":
     operation: Operation = arguments.get_operation()
     creation_date: Optional[date] = arguments.get_creation_date()
     log.info(f"Creation date: {creation_date}")
-    now: datetime = datetime.now()
+    now: datetime = datetime.now().replace(microsecond=0)
     log.info(f"Now: {now}")
 
     hf_api: HfApi = HfApi()
