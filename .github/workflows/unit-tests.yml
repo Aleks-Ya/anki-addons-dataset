@@ -13,11 +13,11 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6 # https://github.com/actions/checkout/tags
         with:
           fetch-depth: 0
       - name: Set up Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6 # https://github.com/actions/setup-python/tags
         with:
           python-version: "3.14"
       - name: Install dependencies
@@ -25,6 +25,6 @@ jobs:
       - name: PyTest
         run: pytest -v --cov=anki_addons_dataset --cov-report=xml --cov-branch
       - name: SonarCloud Scan
-        uses: SonarSource/sonarqube-scan-action@v4
+        uses: SonarSource/sonarqube-scan-action@v8 # https://github.com/SonarSource/sonarqube-scan-action/tags
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
