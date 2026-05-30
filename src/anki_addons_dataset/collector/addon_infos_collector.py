@@ -10,7 +10,7 @@ from anki_addons_dataset.collector.ankiweb.ankiweb_service import AnkiWebService
 log: Logger = logging.getLogger(__name__)
 
 
-class AddonCollector:
+class AddonInfosCollector:
     def __init__(self, ankiweb_service: AnkiWebService, github_enricher: GithubEnricher,
                  anki_forum_enricher: AnkiForumEnricher, overrider: Overrider):
         self.__ankiweb_service: AnkiWebService = ankiweb_service

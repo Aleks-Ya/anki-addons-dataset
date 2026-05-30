@@ -7,7 +7,7 @@ from typing import Optional
 from pydiscourse import DiscourseClient
 
 from anki_addons_dataset.collector.aggregator import Aggregator
-from anki_addons_dataset.collector.addon_collector import AddonCollector
+from anki_addons_dataset.collector.addon_infos_collector import AddonInfosCollector
 from anki_addons_dataset.collector.ankiforum.ankiforum_enricher import AnkiForumEnricher
 from anki_addons_dataset.collector.ankiforum.ankiforum_service import AnkiForumService
 from anki_addons_dataset.collector.ankiweb.addon_page_downloader import AddonPageDownloader
@@ -90,5 +90,6 @@ class CollectorFacade:
         anki_forum_service: AnkiForumService = AnkiForumService(discourse_client, version_dir, offline)
         github_enricher: GithubEnricher = GithubEnricher(version_dir, github_service)
         anki_forum_enricher: AnkiForumEnricher = AnkiForumEnricher(version_dir, anki_forum_service)
-        collector: AddonCollector = AddonCollector(ankiweb_service, github_enricher, anki_forum_enricher, overrider)
-        return collector.collect_addons()
+        addon_infos_collector: AddonInfosCollector = AddonInfosCollector(
+            ankiweb_service, github_enricher, anki_forum_enricher, overrider)
+        return addon_infos_collector.collect_addons()
