@@ -24,6 +24,7 @@ def test_parse_addon_page(overrider: Overrider):
     assert addon_info == AddonInfo(
         addon_header,
         AddonPage(
+            content=HtmlStr(addon_html),
             like_number=12,
             dislike_number=0,
             branches=[AddonBranch(min_anki_version=AnkiVersion('24.04.1'),

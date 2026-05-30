@@ -6,7 +6,8 @@ from unittest.mock import Mock
 from anki_addons_dataset.collector.github.github_enricher import GithubEnricher
 from anki_addons_dataset.collector.github.github_service import GithubService
 from anki_addons_dataset.common.data_types import AddonInfo, AddonHeader, AddonId, AddonPage, GithubRepo, \
-    LanguageName, GithubInfo, AddonInfos, AnkiForumInfo, TopicSlug, TopicId, LastPostedAt, PostsCount, AnkiVersion
+    LanguageName, GithubInfo, AddonInfos, AnkiForumInfo, TopicSlug, TopicId, LastPostedAt, PostsCount, AnkiVersion, \
+    HtmlStr
 
 log: Logger = logging.getLogger(__name__)
 
@@ -24,6 +25,7 @@ def test_enrich(github_enricher: GithubEnricher, github_service: GithubService, 
             anki_version=AnkiVersion("1.0.0")
         ),
         page=AddonPage(
+            content=HtmlStr("<html><body><h1>Sample addon page content</h1></body></html>"),
             like_number=0,
             dislike_number=0,
             branches=[],
@@ -69,6 +71,7 @@ def test_enrich(github_enricher: GithubEnricher, github_service: GithubService, 
             anki_version=AnkiVersion("1.0.0")
         ),
         page=AddonPage(
+            content=HtmlStr("<html><body><h1>Sample addon page content</h1></body></html>"),
             like_number=0,
             dislike_number=0,
             branches=[],

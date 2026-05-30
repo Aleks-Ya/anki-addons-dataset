@@ -19,6 +19,7 @@
         "required": [
           "name",
           "addon_page_url",
+          "addon_page_content",
           "rating",
           "update_date",
           "anki_version",
@@ -32,6 +33,9 @@
             "type": "string"
           },
           "addon_page_url": {
+            "type": "string"
+          },
+          "addon_page_content": {
             "type": "string"
           },
           "rating": {

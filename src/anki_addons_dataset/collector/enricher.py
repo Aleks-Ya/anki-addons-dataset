@@ -6,7 +6,7 @@ import logging
 from logging import Logger
 
 from anki_addons_dataset.common.data_types import AddonInfo, AddonHeader, AddonPage, AddonId, \
-    AddonInfos, AnkiVersion
+    AddonInfos, AnkiVersion, HtmlStr
 
 log: Logger = logging.getLogger(__name__)
 
@@ -18,7 +18,7 @@ class Enricher(ABC, Thread):
         self.__name: str = name
         self.__queue: Queue[AddonInfo] = Queue()
         self.__sentinel: AddonInfo = AddonInfo(AddonHeader(AddonId(0), "", "", 0, "", AnkiVersion("")),
-                                               AddonPage(0, 0, [], []), None, None)
+                                               AddonPage(HtmlStr(""), 0, 0, [], []), None, None)
 
     def run(self) -> None:
         log.info(f"Start thread: {self.__name}")

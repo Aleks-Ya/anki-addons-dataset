@@ -74,6 +74,7 @@ class AddonBranch:
 
 @dataclass
 class AddonPage:
+    content: HtmlStr
     like_number: int
     dislike_number: int
     branches: list[AddonBranch]

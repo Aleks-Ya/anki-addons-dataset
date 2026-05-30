@@ -21,7 +21,7 @@ from anki_addons_dataset.collector.github.github_service import GithubService
 from anki_addons_dataset.collector.overrider.overrider import Overrider
 from anki_addons_dataset.common.data_types import AddonId, GithubRepo, GithubUserName, GithubRepoName, LastPostedAt, \
     URL, PostsCount, AddonInfo, AddonHeader, AddonPage, GithubInfo, AnkiForumInfo, LanguageName, AddonInfos, \
-    DatasetVersionMetadata, RawMetadata, AnkiVersion, AddonBranch
+    DatasetVersionMetadata, RawMetadata, AnkiVersion, AddonBranch, HtmlStr
 from anki_addons_dataset.common.working_dir import WorkingDir, VersionDir
 from anki_addons_dataset.exporter.json.json_exporter import JsonExporter
 from anki_addons_dataset.exporter.xlsx.xlsx_exporter import XlsxExporter
@@ -142,6 +142,7 @@ def addon_info(addon_header: AddonHeader, github_repo: GithubRepo, topic_slug: T
     return AddonInfo(
         header=addon_header,
         page=AddonPage(
+            content=HtmlStr("<html><body><h1>Sample addon page content</h1></body></html>"),
             like_number=0,
             dislike_number=0,
             branches=[AddonBranch(min_anki_version=AnkiVersion("24.04.1"),
