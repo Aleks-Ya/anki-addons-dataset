@@ -1,5 +1,5 @@
 import logging
-from datetime import datetime, date
+from datetime import datetime
 from logging import Logger
 from pathlib import Path
 from typing import Optional
@@ -19,7 +19,8 @@ from anki_addons_dataset.collector.github.github_enricher import GithubEnricher
 from anki_addons_dataset.collector.github.github_rest_client import GithubRestClient
 from anki_addons_dataset.collector.github.github_service import GithubService
 from anki_addons_dataset.collector.overrider.overrider import Overrider
-from anki_addons_dataset.common.data_types import Aggregation, AddonInfos, DatasetVersionMetadata, RawMetadata
+from anki_addons_dataset.common.data_types import Aggregation, AddonInfos, DatasetVersionMetadata, RawMetadata, \
+    SnapshotDate
 from anki_addons_dataset.collector.ankiweb.ankiweb_service import AnkiWebService
 from anki_addons_dataset.common.working_dir import VersionDir, WorkingDir
 from anki_addons_dataset.exporter.exporter_facade import ExporterFacade
@@ -32,11 +33,11 @@ class CollectorFacade:
     def __init__(self, working_dir: WorkingDir):
         self.__working_dir: WorkingDir = working_dir
 
-    def download_version(self, creation_date: Optional[date]) -> None:
-        log.info(f"===== Download dataset for {creation_date} =====")
-        if not creation_date:
-            raise ValueError("Creation date is required")
-        version_dir: VersionDir = self.__working_dir.get_version_dir(creation_date).create()
+    def download_version(self, snapshot_date: Optional[SnapshotDate]) -> None:
+        log.info(f"===== Download dataset for {snapshot_date} =====")
+        if not snapshot_date:
+            raise ValueError("Snapshot date is required")
+        version_dir: VersionDir = self.__working_dir.get_version_dir(snapshot_date).create()
         script_version: str = self.__script_version()
         raw_metadata_collector: RawMetadataCollector = RawMetadataCollector(version_dir)
         if not raw_metadata_collector.read_metadata().start_timestamp:
@@ -45,16 +46,16 @@ class CollectorFacade:
         self.__collect(version_dir, False)
         if not raw_metadata_collector.read_metadata().finish_timestamp:
             raw_metadata_collector.set_finish_datetime(datetime.now().replace(microsecond=0))
-        log.info(f"===== Downloaded dataset for {creation_date} =====\n")
+        log.info(f"===== Downloaded snapshot for {snapshot_date} =====\n")
 
     def parse_versions(self, now: datetime) -> None:
         for version_dir in self.__working_dir.list_version_dirs():
-            creation_date: date = version_dir.version_dir_to_creation_date()
-            self.__parse_version(creation_date, now)
+            snapshot_date: SnapshotDate = version_dir.version_dir_to_snapshot_date()
+            self.__parse_version(snapshot_date, now)
 
-    def __parse_version(self, creation_date: date, now: datetime) -> None:
-        log.info(f"===== Parse dataset for {creation_date} =====")
-        version_dir: VersionDir = self.__working_dir.get_version_dir(creation_date).create()
+    def __parse_version(self, snapshot_date: SnapshotDate, now: datetime) -> None:
+        log.info(f"===== Parse snapshot for {snapshot_date} =====")
+        version_dir: VersionDir = self.__working_dir.get_version_dir(snapshot_date).create()
         script_version: str = self.__script_version()
         addon_infos: AddonInfos = self.__collect(version_dir, True)
         aggregation: Aggregation = Aggregator.aggregate(addon_infos)
@@ -65,7 +66,7 @@ class CollectorFacade:
         raw_metadata_collector: RawMetadataCollector = RawMetadataCollector(version_dir)
         raw_metadata: RawMetadata = raw_metadata_collector.read_metadata()
         exporter_facade.export_all(addon_infos, aggregation, dataset_version_metadata, raw_metadata)
-        log.info(f"===== Parsed dataset for {creation_date} =====\n")
+        log.info(f"===== Parsed snapshot for {snapshot_date} =====\n")
 
     @staticmethod
     def __script_version() -> str:

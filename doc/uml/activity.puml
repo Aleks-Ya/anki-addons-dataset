@@ -5,7 +5,7 @@ start
 
 group Configuration {
     :Parse arguments;
-    :Define creation date;
+    :Define snapshot date;
     :Define offline mode;
     :Define working dir;
 }

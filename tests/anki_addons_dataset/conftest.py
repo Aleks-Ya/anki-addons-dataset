@@ -21,7 +21,7 @@ from anki_addons_dataset.collector.github.github_service import GithubService
 from anki_addons_dataset.collector.overrider.overrider import Overrider
 from anki_addons_dataset.common.data_types import AddonId, GithubRepo, GithubUserName, GithubRepoName, LastPostedAt, \
     URL, PostsCount, AddonInfo, AddonHeader, AddonPage, GithubInfo, AnkiForumInfo, LanguageName, AddonInfos, \
-    DatasetVersionMetadata, RawMetadata, AnkiVersion, AddonBranch, HtmlStr
+    DatasetVersionMetadata, RawMetadata, AnkiVersion, AddonBranch, HtmlStr, SnapshotDate
 from anki_addons_dataset.common.working_dir import WorkingDir, VersionDir
 from anki_addons_dataset.exporter.json.json_exporter import JsonExporter
 from anki_addons_dataset.exporter.xlsx.xlsx_exporter import XlsxExporter
@@ -42,8 +42,13 @@ def working_dir(working_dir_path: Path) -> WorkingDir:
 
 
 @fixture
-def version_dir(working_dir: WorkingDir) -> VersionDir:
-    return working_dir.get_version_dir(date.fromisoformat("2025-01-25")).create()
+def snapshot_date() -> SnapshotDate:
+    return SnapshotDate(date.fromisoformat("2025-01-25"))
+
+
+@fixture
+def version_dir(working_dir: WorkingDir, snapshot_date: SnapshotDate) -> VersionDir:
+    return working_dir.get_version_dir(snapshot_date).create()
 
 
 @fixture

@@ -1,10 +1,10 @@
 import logging
 import shutil
-from datetime import date
 from logging import Logger
 from pathlib import Path
 from typing import Optional
 
+from anki_addons_dataset.common.data_types import SnapshotDate
 from anki_addons_dataset.common.working_dir import WorkingDir, VersionDir
 from anki_addons_dataset.huggingface.hugging_face import HuggingFace
 
@@ -27,8 +27,8 @@ class DatasetBundle:
         bundle_history_dir: Path = bundle_dir / "history"
         bundle_history_dir.mkdir(parents=True, exist_ok=True)
         for version_dir in self.__working_dir.list_version_dirs():
-            creation_date: date = version_dir.version_dir_to_creation_date()
-            base_name: str = f"{creation_date}"
+            snapshot_date: SnapshotDate = version_dir.version_dir_to_snapshot_date()
+            base_name: str = f"{snapshot_date}"
             output_dir: Path = bundle_history_dir / base_name
             self.__create_zip(version_dir.get_raw_dir(), output_dir, "raw")
             self.__create_zip(version_dir.get_stage_dir(), output_dir, "stage")

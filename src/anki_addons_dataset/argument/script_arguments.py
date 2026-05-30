@@ -3,6 +3,8 @@ from datetime import date, datetime
 from enum import Enum
 from typing import Optional
 
+from anki_addons_dataset.common.data_types import SnapshotDate
+
 
 class Operation(Enum):
     INIT = "init"
@@ -16,11 +18,11 @@ class ScriptArguments:
     def __init__(self):
         parser: ArgumentParser = ArgumentParser()
         parser.add_argument('operation')
-        parser.add_argument('-d', '--creation-date', type=self.__valid_date)
+        parser.add_argument('-d', '--snapshot-date', type=self.__valid_date)
         self.namespace: Namespace = parser.parse_args()
 
-    def get_creation_date(self) -> Optional[date]:
-        return self.namespace.creation_date
+    def get_snapshot_date(self) -> Optional[SnapshotDate]:
+        return self.namespace.snapshot_date
 
     def get_operation(self) -> Operation:
         return Operation[self.namespace.operation.upper()]

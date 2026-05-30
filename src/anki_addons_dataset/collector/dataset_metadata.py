@@ -18,7 +18,7 @@ class DatasetMetadata:
     def create_dataset_version_metadata(version_dir: VersionDir, script_version: str,
                                         now: datetime) -> DatasetVersionMetadata:
         dataset_version_metadata: DatasetVersionMetadata = DatasetVersionMetadata(
-            data_collection_date=version_dir.version_dir_to_creation_date(),
+            data_collection_date=version_dir.version_dir_to_snapshot_date(),
             report_generation_date=now,
             script_version=script_version
         )

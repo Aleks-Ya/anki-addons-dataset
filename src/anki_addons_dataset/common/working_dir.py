@@ -6,6 +6,8 @@ from typing import Optional
 import logging
 from logging import Logger
 
+from anki_addons_dataset.common.data_types import SnapshotDate
+
 log: Logger = logging.getLogger(__name__)
 
 
@@ -40,8 +42,8 @@ class VersionDir:
     def get_final_dir(self) -> Path:
         return self.__version_dir / "3-final"
 
-    def version_dir_to_creation_date(self) -> date:
-        return date.fromisoformat(self.__version_dir.name)
+    def version_dir_to_snapshot_date(self) -> SnapshotDate:
+        return SnapshotDate(date.fromisoformat(self.__version_dir.name))
 
     def get_metadata_json(self) -> Path:
         return self.__version_dir / "metadata.json"
@@ -52,7 +54,7 @@ class VersionDir:
         shutil.rmtree(directory, ignore_errors=True)
 
     def __lt__(self, other: 'VersionDir') -> bool:
-        return self.version_dir_to_creation_date() < other.version_dir_to_creation_date()
+        return self.version_dir_to_snapshot_date() < other.version_dir_to_snapshot_date()
 
     def __eq__(self, other: object) -> bool:
         if not isinstance(other, VersionDir):
@@ -84,8 +86,8 @@ class WorkingDir:
     def get_bundle_dir(self) -> Path:
         return self.__bundle_dir
 
-    def get_version_dir(self, creation_date: date) -> VersionDir:
-        return VersionDir(self.__history_dir / creation_date.isoformat())
+    def get_version_dir(self, snapshot_date: SnapshotDate) -> VersionDir:
+        return VersionDir(self.__history_dir / snapshot_date.isoformat())
 
     def list_version_dirs(self) -> list[VersionDir]:
         version_dirs: list[VersionDir] = []
