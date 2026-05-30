@@ -7,18 +7,18 @@ from pytest import raises
 from anki_addons_dataset.collector.ankiweb.addon_page_downloader import AddonPageDownloader
 from anki_addons_dataset.collector.ankiweb.page_downloader import PageDownloader
 from anki_addons_dataset.common.data_types import AddonInfo, HtmlStr, AddonHeader, AddonId, AnkiVersion, URL
-from anki_addons_dataset.common.working_dir import VersionDir
+from anki_addons_dataset.common.working_dir import SnapshotDir
 
 
 # Re-download cached files that are empty
 def test_download_empty_files(addon_page_downloader: AddonPageDownloader, page_downloader: PageDownloader,
-                              version_dir: VersionDir):
+                              snapshot_dir: SnapshotDir):
     addon_html_file: Path = Path(__file__).parent / "1188705668.html"
     addon_html: HtmlStr = HtmlStr(addon_html_file.read_text())
     page_downloader.load_page = Mock(return_value=addon_html)
 
     addon_id: AddonId = AddonId(1188705668)
-    addon_file: Path = version_dir.get_raw_dir() / "1-anki-web" / "addon" / f"{addon_id}.html"
+    addon_file: Path = snapshot_dir.get_raw_dir() / "1-anki-web" / "addon" / f"{addon_id}.html"
     addon_file.parent.mkdir(parents=True, exist_ok=True)
     addon_file.write_text("")
 
@@ -35,12 +35,12 @@ def test_download_empty_files(addon_page_downloader: AddonPageDownloader, page_d
 
 
 def test_throws_informative_exception(addon_page_downloader: AddonPageDownloader, page_downloader: PageDownloader,
-                                      version_dir: VersionDir):
+                                      snapshot_dir: SnapshotDir):
     exp_message: str = "'NoneType' object has no attribute 'next_sibling'"
     page_downloader.load_page = Mock(side_effect=AttributeError(exp_message))
 
     addon_id: AddonId = AddonId(1188705668)
-    addon_file: Path = version_dir.get_raw_dir() / "1-anki-web" / "addon" / f"{addon_id}.html"
+    addon_file: Path = snapshot_dir.get_raw_dir() / "1-anki-web" / "addon" / f"{addon_id}.html"
     addon_file.parent.mkdir(parents=True, exist_ok=True)
     addon_file.write_text("")
 

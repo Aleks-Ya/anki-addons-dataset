@@ -28,9 +28,9 @@ class Facade:
                 self.__working_dir, self.__hugging_face_client, working_dir_backup)
             working_dir_initializer.initialize_working_dir()
         elif operation == Operation.DOWNLOAD:
-            self.__collector_facade.download_version(snapshot_date)
+            self.__collector_facade.download_snapshot(snapshot_date)
         elif operation == Operation.PARSE:
-            self.__collector_facade.parse_versions(report_date)
+            self.__collector_facade.parse_snapshots(report_date)
         elif operation == Operation.BUNDLE:
             dataset_bundle: DatasetBundle = DatasetBundle(self.__working_dir)
             dataset_bundle.create_bundle()

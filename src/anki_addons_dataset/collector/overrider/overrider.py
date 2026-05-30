@@ -8,7 +8,7 @@ import yaml
 
 from anki_addons_dataset.collector.url_parser import UrlParser
 from anki_addons_dataset.common.data_types import AddonId, URL, GitHubLink, AddonInfos
-from anki_addons_dataset.common.working_dir import VersionDir
+from anki_addons_dataset.common.working_dir import SnapshotDir
 
 log: Logger = logging.getLogger(__name__)
 
@@ -17,12 +17,12 @@ class Overrider:
     __github_url_key: str = "GitHubUrl"
     __anki_forum_url_key: str = "AnkiForumUrl"
 
-    def __init__(self, version_dir: VersionDir):
+    def __init__(self, snapshot_dir: SnapshotDir):
         override_file: Path = Path(__file__).parent / "overrides.yaml"
         log.info(f"Read override file: {override_file}")
         data: dict[str, dict[AddonId, Any]] = yaml.safe_load(override_file.read_text())
         self.addons_data: dict[AddonId, Any] = data.get("addons", {})
-        dest_file: Path = version_dir.get_stage_dir() / "4-overrider" / "overrides.yaml"
+        dest_file: Path = snapshot_dir.get_stage_dir() / "4-overrider" / "overrides.yaml"
         dest_file.parent.mkdir(parents=True, exist_ok=True)
         shutil.copy(override_file, dest_file)
 

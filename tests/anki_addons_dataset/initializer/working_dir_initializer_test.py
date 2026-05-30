@@ -21,7 +21,7 @@ def test_initialize_working_dir(working_dir: WorkingDir, working_dir_initializer
     with ZipFile(raw_zip, "w") as zw:
         zw.writestr("raw-metadata.json", exp_metadata)
 
-    hugging_face_client.list_version_folders = Mock(return_value=["history/2025-01-01"])
+    hugging_face_client.list_snapshot_folders = Mock(return_value=["history/2025-01-01"])
     hugging_face_client.download_file = Mock(return_value=raw_zip)
 
     working_dir_initializer.initialize_working_dir()

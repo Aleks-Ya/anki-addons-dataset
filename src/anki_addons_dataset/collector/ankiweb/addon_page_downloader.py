@@ -6,18 +6,18 @@ from anki_addons_dataset.collector.ankiweb.addon_page_parser import AddonPagePar
 from anki_addons_dataset.collector.ankiweb.page_downloader import PageDownloader
 from anki_addons_dataset.common.data_types import AddonId, AddonInfo, AddonHeader, HtmlStr
 from anki_addons_dataset.common.json_helper import JsonHelper
-from anki_addons_dataset.common.working_dir import VersionDir
+from anki_addons_dataset.common.working_dir import SnapshotDir
 
 log: Logger = logging.getLogger(__name__)
 
 
 class AddonPageDownloader:
-    def __init__(self, page_downloader: PageDownloader, version_dir: VersionDir, addon_page_parser: AddonPageParser,
+    def __init__(self, page_downloader: PageDownloader, snapshot_dir: SnapshotDir, addon_page_parser: AddonPageParser,
                  offline: bool) -> None:
         self.__addon_page_parser: AddonPageParser = addon_page_parser
         self.__page_downloader: PageDownloader = page_downloader
-        self.__raw_dir: Path = version_dir.get_raw_dir() / "1-anki-web"
-        self.__stage_dir: Path = version_dir.get_stage_dir() / "1-anki-web"
+        self.__raw_dir: Path = snapshot_dir.get_raw_dir() / "1-anki-web"
+        self.__stage_dir: Path = snapshot_dir.get_stage_dir() / "1-anki-web"
         self.__offline: bool = offline
 
     def get_addon_info(self, addon_header: AddonHeader) -> AddonInfo:

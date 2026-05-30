@@ -2,7 +2,7 @@ from xlsxwriter import Workbook
 from xlsxwriter.format import Format
 from xlsxwriter.worksheet import Worksheet
 
-from anki_addons_dataset.common.data_types import Aggregation, DatasetVersionMetadata, RawMetadata
+from anki_addons_dataset.common.data_types import Aggregation, DatasetSnapshotMetadata, RawMetadata
 
 
 class AggregationSheet:
@@ -22,16 +22,16 @@ class AggregationSheet:
     def __init__(self, workbook: Workbook):
         self.__workbook: Workbook = workbook
 
-    def create_sheet(self, aggregation: Aggregation, dataset_version_metadata: DatasetVersionMetadata,
+    def create_sheet(self, aggregation: Aggregation, dataset_snapshot_metadata: DatasetSnapshotMetadata,
                      raw_metadata: RawMetadata) -> None:
         worksheet: Worksheet = self.__workbook.add_worksheet(name="Addons")
-        self.__add_title(self.__workbook, worksheet, dataset_version_metadata, raw_metadata)
+        self.__add_title(self.__workbook, worksheet, dataset_snapshot_metadata, raw_metadata)
         self.__set_column_width(worksheet)
         self.__add_header(self.__workbook, worksheet)
         self.__add_rows(aggregation, worksheet)
 
     def __add_title(self, workbook: Workbook, worksheet: Worksheet,
-                    dataset_version_metadata: DatasetVersionMetadata, raw_metadata: RawMetadata) -> None:
+                    dataset_snapshot_metadata: DatasetSnapshotMetadata, raw_metadata: RawMetadata) -> None:
         title_format: Format = workbook.add_format({"bold": True, 'align': 'left', 'font_size': 18})
         property_name_format: Format = workbook.add_format({'align': 'right', 'valign': 'vcenter'})
         date_format: Format = workbook.add_format({'align': 'left', 'valign': 'vcenter', "num_format": "yyyy-mm-dd"})
@@ -49,7 +49,7 @@ class AggregationSheet:
         worksheet.merge_range(data="Report generated:", cell_format=property_name_format,
                               first_row=self.__title_row_top, last_row=self.__title_row_top,
                               first_col=self.__h_col, last_col=self.__i_col)
-        worksheet.merge_range(data=dataset_version_metadata.report_generation_date,
+        worksheet.merge_range(data=dataset_snapshot_metadata.report_generation_date,
                               cell_format=date_format,
                               first_row=self.__title_row_top, last_row=self.__title_row_top,
                               first_col=self.__j_col, last_col=self.__k_col)

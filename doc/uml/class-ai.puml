@@ -20,7 +20,7 @@ package "anki_addons_dataset" {
   package "common" {
     class Log
     class JsonHelper
-    class VersionDir
+    class SnapshotDir
     class WorkingDir
 
     class AddonHeader <<dataclass>>
@@ -34,7 +34,7 @@ package "anki_addons_dataset" {
     class AddonInfo <<dataclass>>
     class Aggregation <<dataclass>>
     class RawMetadata <<dataclass>>
-    class DatasetVersionMetadata <<dataclass>>
+    class DatasetSnapshotMetadata <<dataclass>>
   }
 
   package "facade" {
@@ -140,10 +140,10 @@ CollectorFacade --> ExporterFacade
 CollectorFacade --> RawMetadataCollector
 
 ' Working directories and initialization
-WorkingDir "1" o-- "*" VersionDir
+WorkingDir "1" o-- "*" SnapshotDir
 WorkingDirBackup --> WorkingDir
 WorkingDirInitializer --> WorkingDir
-WorkingDirInitializer --> VersionDir
+WorkingDirInitializer --> SnapshotDir
 WorkingDirInitializer --> HuggingFaceClient
 WorkingDirInitializer --> WorkingDirBackup
 
@@ -205,11 +205,11 @@ ExporterFacade --> ParquetExporter
 ExporterFacade --> XlsxExporter
 
 ' Metadata and persistence helpers
-DatasetMetadata --> DatasetVersionMetadata
+DatasetMetadata --> DatasetSnapshotMetadata
 DatasetMetadata --> JsonHelper
 RawMetadataCollector --> RawMetadata
-RawMetadataCollector --> VersionDir
-DatasetBundle --> VersionDir
+RawMetadataCollector --> SnapshotDir
+DatasetBundle --> SnapshotDir
 HuggingFace --> HuggingFaceClient
 
 @enduml

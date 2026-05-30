@@ -3,13 +3,13 @@ from pathlib import Path
 from textwrap import dedent
 
 from anki_addons_dataset.common.data_types import SnapshotDate
-from anki_addons_dataset.common.working_dir import WorkingDir, VersionDir
+from anki_addons_dataset.common.working_dir import WorkingDir, SnapshotDir
 from anki_addons_dataset.collector.raw_metadata_collector import RawMetadataCollector
 
 
 def test_set_start_datetime(working_dir: WorkingDir, snapshot_date: SnapshotDate):
-    version_dir: VersionDir = working_dir.get_version_dir(snapshot_date).create()
-    raw_metadata_collector: RawMetadataCollector = RawMetadataCollector(version_dir)
+    snapshot_dir: SnapshotDir = working_dir.get_snapshot_dir(snapshot_date).create()
+    raw_metadata_collector: RawMetadataCollector = RawMetadataCollector(snapshot_dir)
     assert raw_metadata_collector.read_metadata().start_timestamp is None
     assert raw_metadata_collector.read_metadata().finish_timestamp is None
     assert raw_metadata_collector.read_metadata().script_version is None
@@ -21,8 +21,8 @@ def test_set_start_datetime(working_dir: WorkingDir, snapshot_date: SnapshotDate
 
 
 def test_set_finish_datetime(working_dir: WorkingDir, snapshot_date: SnapshotDate):
-    version_dir: VersionDir = working_dir.get_version_dir(snapshot_date).create()
-    raw_metadata_collector: RawMetadataCollector = RawMetadataCollector(version_dir)
+    snapshot_dir: SnapshotDir = working_dir.get_snapshot_dir(snapshot_date).create()
+    raw_metadata_collector: RawMetadataCollector = RawMetadataCollector(snapshot_dir)
     assert raw_metadata_collector.read_metadata().start_timestamp is None
     assert raw_metadata_collector.read_metadata().finish_timestamp is None
     assert raw_metadata_collector.read_metadata().script_version is None
@@ -36,8 +36,8 @@ def test_set_finish_datetime(working_dir: WorkingDir, snapshot_date: SnapshotDat
 
 
 def test_set_script_version(working_dir: WorkingDir, snapshot_date: SnapshotDate):
-    version_dir: VersionDir = working_dir.get_version_dir(snapshot_date).create()
-    raw_metadata_collector: RawMetadataCollector = RawMetadataCollector(version_dir)
+    snapshot_dir: SnapshotDir = working_dir.get_snapshot_dir(snapshot_date).create()
+    raw_metadata_collector: RawMetadataCollector = RawMetadataCollector(snapshot_dir)
     assert raw_metadata_collector.read_metadata().start_timestamp is None
     assert raw_metadata_collector.read_metadata().finish_timestamp is None
     assert raw_metadata_collector.read_metadata().script_version is None
@@ -49,10 +49,10 @@ def test_set_script_version(working_dir: WorkingDir, snapshot_date: SnapshotDate
 
 
 def test_file_content(working_dir: WorkingDir, snapshot_date: SnapshotDate):
-    version_dir: VersionDir = working_dir.get_version_dir(snapshot_date).create()
-    metadata_file: Path = version_dir.get_raw_dir() / "raw-metadata.json"
+    snapshot_dir: SnapshotDir = working_dir.get_snapshot_dir(snapshot_date).create()
+    metadata_file: Path = snapshot_dir.get_raw_dir() / "raw-metadata.json"
     assert not metadata_file.exists()
-    raw_metadata_collector: RawMetadataCollector = RawMetadataCollector(version_dir)
+    raw_metadata_collector: RawMetadataCollector = RawMetadataCollector(snapshot_dir)
     script_version: str = "v0.0.1"
     start_datetime: datetime = datetime.fromisoformat("2025-01-02T15:45:50.385843")
     finish_datetime: datetime = datetime.fromisoformat("2025-01-03T16:46:51")

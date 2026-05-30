@@ -38,7 +38,7 @@ class HuggingFaceClient:
             log.info(f"Latest folder not found for dataset: {self.__repo_id}")
         log.info(f"Deleted dataset: {self.__repo_id}")
 
-    def list_version_folders(self) -> list[HuggingFaceFolder]:
+    def list_snapshot_folders(self) -> list[HuggingFaceFolder]:
         files: list[RepoFile | RepoFolder] = list(self.__api.list_repo_tree(
             self.__repo_id, repo_type="dataset", path_in_repo="history"))
         folders: list[RepoFolder] = [f for f in files if isinstance(f, RepoFolder)]

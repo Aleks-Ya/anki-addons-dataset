@@ -9,7 +9,7 @@ from anki_addons_dataset.collector.enricher import Enricher
 from anki_addons_dataset.common.data_types import AddonInfo, AddonId, \
     AnkiForumInfo, TopicSlug, TopicId, LastPostedAt, AddonInfos, PostsCount, URL
 from anki_addons_dataset.common.json_helper import JsonHelper
-from anki_addons_dataset.common.working_dir import VersionDir
+from anki_addons_dataset.common.working_dir import SnapshotDir
 
 log: Logger = logging.getLogger(__name__)
 
@@ -17,9 +17,9 @@ log: Logger = logging.getLogger(__name__)
 class AnkiForumEnricher(Enricher):
     __name: str = "AnkiForum"
 
-    def __init__(self, version_dir: VersionDir, anki_forum_service: AnkiForumService):
+    def __init__(self, snapshot_dir: SnapshotDir, anki_forum_service: AnkiForumService):
         super().__init__(name=self.__name)
-        self.__stage_dir: Path = version_dir.get_stage_dir() / "3-enricher" / "forum"
+        self.__stage_dir: Path = snapshot_dir.get_stage_dir() / "3-enricher" / "forum"
         self.__anki_forum_service: AnkiForumService = anki_forum_service
         self.__anki_forum_infos: dict[AddonId, Optional[AnkiForumInfo]] = {}
 

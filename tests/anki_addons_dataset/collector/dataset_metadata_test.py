@@ -3,19 +3,19 @@ from pathlib import Path
 from textwrap import dedent
 
 from anki_addons_dataset.collector.dataset_metadata import DatasetMetadata
-from anki_addons_dataset.common.data_types import DatasetVersionMetadata, SnapshotDate, ReportDate
-from anki_addons_dataset.common.working_dir import WorkingDir, VersionDir
+from anki_addons_dataset.common.data_types import DatasetSnapshotMetadata, SnapshotDate, ReportDate
+from anki_addons_dataset.common.working_dir import WorkingDir, SnapshotDir
 
 
-def test_create_dataset_version_metadata(working_dir: WorkingDir, report_date: ReportDate):
+def test_create_dataset_snapshot_metadata(working_dir: WorkingDir, report_date: ReportDate):
     script_version: str = "v0.0.1"
     snapshot_date: SnapshotDate = SnapshotDate(date.fromisoformat("2025-01-25"))
-    version_dir: VersionDir = working_dir.get_version_dir(snapshot_date)
-    exp_file: Path = version_dir.get_path() / "metadata.json"
+    snapshot_dir: SnapshotDir = working_dir.get_snapshot_dir(snapshot_date)
+    exp_file: Path = snapshot_dir.get_path() / "metadata.json"
     assert not exp_file.exists()
-    dataset_version_metadata: DatasetVersionMetadata = DatasetMetadata.create_dataset_version_metadata(
-        version_dir, script_version, report_date)
-    DatasetMetadata.write_version_metadata_to_json(version_dir, dataset_version_metadata)
+    dataset_snapshot_metadata: DatasetSnapshotMetadata = DatasetMetadata.create_dataset_snapshot_metadata(
+        snapshot_dir, script_version, report_date)
+    DatasetMetadata.write_snapshot_metadata_to_json(snapshot_dir, dataset_snapshot_metadata)
     assert exp_file.read_text() == dedent(
         """\
         {

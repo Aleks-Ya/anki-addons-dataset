@@ -24,7 +24,7 @@ folder ~ {
                 folder "2-stage"
                 folder "3-final" as historyFinal
             }
-            file "version-metadata.json"  as versionMetadata
+            file "snapshot-metadata.json"  as snapshotMetadata
             }
         }
     }

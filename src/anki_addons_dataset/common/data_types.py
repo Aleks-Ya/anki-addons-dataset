@@ -119,7 +119,7 @@ class RawMetadata:
 
 
 @dataclass
-class DatasetVersionMetadata:
+class DatasetSnapshotMetadata:
     data_collection_date: SnapshotDate
     report_generation_date: ReportDate
     script_version: str

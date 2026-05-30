@@ -3,16 +3,16 @@ from pathlib import Path
 from typing import Any, Optional
 
 from anki_addons_dataset.common.data_types import Aggregation, AddonInfos, AddonInfo, AnkiForumInfo, PostsCount, \
-    DatasetVersionMetadata, RawMetadata
-from anki_addons_dataset.common.working_dir import VersionDir
+    DatasetSnapshotMetadata, RawMetadata
+from anki_addons_dataset.common.working_dir import SnapshotDir
 from anki_addons_dataset.exporter.json.json_exporter import JsonExporter
 
 
-def test_export_addon_infos(json_exporter: JsonExporter, version_dir: VersionDir, addon_infos: AddonInfos,
-                            dataset_version_metadata: DatasetVersionMetadata, raw_metadata: RawMetadata):
-    json_exporter.export_addon_infos(addon_infos, dataset_version_metadata, raw_metadata)
+def test_export_addon_infos(json_exporter: JsonExporter, snapshot_dir: SnapshotDir, addon_infos: AddonInfos,
+                            dataset_snapshot_metadata: DatasetSnapshotMetadata, raw_metadata: RawMetadata):
+    json_exporter.export_addon_infos(addon_infos, dataset_snapshot_metadata, raw_metadata)
 
-    act_file: Path = version_dir.get_final_dir() / "json" / "data.json"
+    act_file: Path = snapshot_dir.get_final_dir() / "json" / "data.json"
     act_json: dict[str, Any] = json.loads(act_file.read_text())
     assert act_json == [{'id': 1188705668,
                          'anki_web': {'addon_page_url': 'https://ankiweb.net/shared/info/1188705668',
@@ -43,15 +43,15 @@ def test_export_addon_infos(json_exporter: JsonExporter, version_dir: VersionDir
                          }]
 
 
-def test_export_addon_infos_empty_forum(json_exporter: JsonExporter, version_dir: VersionDir, addon_info: AddonInfo,
-                                        dataset_version_metadata: DatasetVersionMetadata, raw_metadata: RawMetadata):
+def test_export_addon_infos_empty_forum(json_exporter: JsonExporter, snapshot_dir: SnapshotDir, addon_info: AddonInfo,
+                                        dataset_snapshot_metadata: DatasetSnapshotMetadata, raw_metadata: RawMetadata):
     forum: Optional[AnkiForumInfo] = None
     addon_info.forum = forum
     addon_infos: AddonInfos = AddonInfos([addon_info])
 
-    json_exporter.export_addon_infos(addon_infos, dataset_version_metadata, raw_metadata)
+    json_exporter.export_addon_infos(addon_infos, dataset_snapshot_metadata, raw_metadata)
 
-    act_file: Path = version_dir.get_final_dir() / "json" / "data.json"
+    act_file: Path = snapshot_dir.get_final_dir() / "json" / "data.json"
     act_json: dict[str, Any] = json.loads(act_file.read_text())
     assert act_json == [{'id': 1188705668,
                          'anki_web': {'addon_page_url': 'https://ankiweb.net/shared/info/1188705668',
@@ -77,16 +77,16 @@ def test_export_addon_infos_empty_forum(json_exporter: JsonExporter, version_dir
                          'forum': None}]
 
 
-def test_export_addon_infos_empty_posts_count(json_exporter: JsonExporter, version_dir: VersionDir,
-                                              addon_info: AddonInfo, dataset_version_metadata: DatasetVersionMetadata,
+def test_export_addon_infos_empty_posts_count(json_exporter: JsonExporter, snapshot_dir: SnapshotDir,
+                                              addon_info: AddonInfo, dataset_snapshot_metadata: DatasetSnapshotMetadata,
                                               raw_metadata: RawMetadata):
     posts_count: Optional[PostsCount] = None
     addon_info.forum.posts_count = posts_count
     addon_infos: AddonInfos = AddonInfos([addon_info])
 
-    json_exporter.export_addon_infos(addon_infos, dataset_version_metadata, raw_metadata)
+    json_exporter.export_addon_infos(addon_infos, dataset_snapshot_metadata, raw_metadata)
 
-    act_file: Path = version_dir.get_final_dir() / "json" / "data.json"
+    act_file: Path = snapshot_dir.get_final_dir() / "json" / "data.json"
     act_json: dict[str, Any] = json.loads(act_file.read_text())
     assert act_json == [{'id': 1188705668,
                          'anki_web': {'addon_page_url': 'https://ankiweb.net/shared/info/1188705668',
@@ -116,15 +116,15 @@ def test_export_addon_infos_empty_posts_count(json_exporter: JsonExporter, versi
                                    'posts_count': None}}]
 
 
-def test_export_aggregation(json_exporter: JsonExporter, version_dir: VersionDir,
-                            dataset_version_metadata: DatasetVersionMetadata, raw_metadata: RawMetadata):
+def test_export_aggregation(json_exporter: JsonExporter, snapshot_dir: SnapshotDir,
+                            dataset_snapshot_metadata: DatasetSnapshotMetadata, raw_metadata: RawMetadata):
     aggregation: Aggregation = Aggregation(addon_number=5,
                                            addon_with_github_number=4,
                                            addon_with_anki_forum_page_number=3,
                                            addon_with_unit_tests_number=2)
-    json_exporter.export_aggregation(aggregation, dataset_version_metadata, raw_metadata)
+    json_exporter.export_aggregation(aggregation, dataset_snapshot_metadata, raw_metadata)
 
-    act_file: Path = version_dir.get_final_dir() / "json" / "aggregation.json"
+    act_file: Path = snapshot_dir.get_final_dir() / "json" / "aggregation.json"
     act_json: dict[str, Any] = json.loads(act_file.read_text())
     assert act_json == {'addon_number': 5,
                         'addon_with_anki_forum_page_number': 3,

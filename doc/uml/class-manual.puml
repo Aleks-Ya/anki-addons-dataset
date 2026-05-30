@@ -10,7 +10,7 @@ package anki_addons_dataset {
     }
     package common {
         class WorkingDir
-        class VersionDir
+        class SnapshotDir
         class AddonInfos
         class AddonHeader
         class GitHubUser
@@ -61,7 +61,7 @@ ScriptArguments --> Operation
 Main --> ScriptArguments
 Main --> WorkingDir
 Main --> Facade
-WorkingDir "1" o-- "*" VersionDir
+WorkingDir "1" o-- "*" SnapshotDir
 Facade --> RawMetadata
 Facade --> CollectorFacade
 CollectorFacade --> AddonCollector

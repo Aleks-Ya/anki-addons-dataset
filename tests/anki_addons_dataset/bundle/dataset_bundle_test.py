@@ -5,21 +5,21 @@ from seedir import seedir
 
 from anki_addons_dataset.bundle.dataset_bundle import DatasetBundle
 from anki_addons_dataset.common.data_types import SnapshotDate
-from anki_addons_dataset.common.working_dir import WorkingDir, VersionDir
+from anki_addons_dataset.common.working_dir import WorkingDir, SnapshotDir
 from anki_addons_dataset.collector.raw_metadata_collector import RawMetadataCollector
 
 
 def test_parse_snapshot_date(working_dir: WorkingDir):
     snapshot_date_1: SnapshotDate = SnapshotDate(date.fromisoformat("2025-01-01"))
-    version_dir_1: VersionDir = working_dir.get_version_dir(snapshot_date_1).create()
-    version_dir_1.get_metadata_json().touch()
-    raw_metadata_collector_1: RawMetadataCollector = RawMetadataCollector(version_dir_1)
+    snapshot_dir_1: SnapshotDir = working_dir.get_snapshot_dir(snapshot_date_1).create()
+    snapshot_dir_1.get_metadata_json().touch()
+    raw_metadata_collector_1: RawMetadataCollector = RawMetadataCollector(snapshot_dir_1)
     raw_metadata_collector_1.set_script_version("v0.0.1")
 
     snapshot_date_2: SnapshotDate = SnapshotDate(date.fromisoformat("2025-01-02"))
-    version_dir_2: VersionDir = working_dir.get_version_dir(snapshot_date_2).create()
-    version_dir_2.get_metadata_json().touch()
-    raw_metadata_collector_2: RawMetadataCollector = RawMetadataCollector(version_dir_2)
+    snapshot_dir_2: SnapshotDir = working_dir.get_snapshot_dir(snapshot_date_2).create()
+    snapshot_dir_2.get_metadata_json().touch()
+    raw_metadata_collector_2: RawMetadataCollector = RawMetadataCollector(snapshot_dir_2)
     raw_metadata_collector_2.set_script_version("v0.0.1")
 
     assert not working_dir.get_bundle_dir().exists()

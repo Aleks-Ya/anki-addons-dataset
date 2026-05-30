@@ -21,8 +21,8 @@ from anki_addons_dataset.collector.github.github_service import GithubService
 from anki_addons_dataset.collector.overrider.overrider import Overrider
 from anki_addons_dataset.common.data_types import AddonId, GithubRepo, GithubUserName, GithubRepoName, LastPostedAt, \
     URL, PostsCount, AddonInfo, AddonHeader, AddonPage, GithubInfo, AnkiForumInfo, LanguageName, AddonInfos, \
-    DatasetVersionMetadata, RawMetadata, AnkiVersion, AddonBranch, HtmlStr, SnapshotDate, ReportDate
-from anki_addons_dataset.common.working_dir import WorkingDir, VersionDir
+    DatasetSnapshotMetadata, RawMetadata, AnkiVersion, AddonBranch, HtmlStr, SnapshotDate, ReportDate
+from anki_addons_dataset.common.working_dir import WorkingDir, SnapshotDir
 from anki_addons_dataset.exporter.json.json_exporter import JsonExporter
 from anki_addons_dataset.exporter.xlsx.xlsx_exporter import XlsxExporter
 from anki_addons_dataset.facade.facade import Facade
@@ -47,13 +47,13 @@ def snapshot_date() -> SnapshotDate:
 
 
 @fixture
-def version_dir(working_dir: WorkingDir, snapshot_date: SnapshotDate) -> VersionDir:
-    return working_dir.get_version_dir(snapshot_date).create()
+def snapshot_dir(working_dir: WorkingDir, snapshot_date: SnapshotDate) -> SnapshotDir:
+    return working_dir.get_snapshot_dir(snapshot_date).create()
 
 
 @fixture
-def overrider(version_dir: VersionDir) -> Overrider:
-    return Overrider(version_dir)
+def overrider(snapshot_dir: SnapshotDir) -> Overrider:
+    return Overrider(snapshot_dir)
 
 
 @fixture
@@ -82,15 +82,15 @@ def offline() -> bool:
 
 
 @fixture
-def addons_page_downloader(page_downloader: PageDownloader, version_dir: VersionDir,
+def addons_page_downloader(page_downloader: PageDownloader, snapshot_dir: SnapshotDir,
                            offline: bool) -> AddonsPageDownloader:
-    return AddonsPageDownloader(page_downloader, version_dir, offline)
+    return AddonsPageDownloader(page_downloader, snapshot_dir, offline)
 
 
 @fixture
-def addon_page_downloader(page_downloader: PageDownloader, version_dir: VersionDir,
+def addon_page_downloader(page_downloader: PageDownloader, snapshot_dir: SnapshotDir,
                           addon_page_parser: AddonPageParser, offline: bool) -> AddonPageDownloader:
-    return AddonPageDownloader(page_downloader, version_dir, addon_page_parser, offline)
+    return AddonPageDownloader(page_downloader, snapshot_dir, addon_page_parser, offline)
 
 
 @fixture
@@ -185,23 +185,23 @@ def discourse_client() -> DiscourseClient:
 
 
 @fixture
-def anki_forum_service(discourse_client: DiscourseClient, version_dir: VersionDir, offline: bool) -> AnkiForumService:
-    return AnkiForumService(discourse_client, version_dir, offline)
+def anki_forum_service(discourse_client: DiscourseClient, snapshot_dir: SnapshotDir, offline: bool) -> AnkiForumService:
+    return AnkiForumService(discourse_client, snapshot_dir, offline)
 
 
 @fixture
-def github_service(version_dir: VersionDir, github_rest_client: GithubRestClient) -> GithubService:
-    return GithubService(version_dir, github_rest_client)
+def github_service(snapshot_dir: SnapshotDir, github_rest_client: GithubRestClient) -> GithubService:
+    return GithubService(snapshot_dir, github_rest_client)
 
 
 @fixture
-def github_enricher(version_dir: VersionDir, github_service: GithubService) -> GithubEnricher:
-    return GithubEnricher(version_dir, github_service)
+def github_enricher(snapshot_dir: SnapshotDir, github_service: GithubService) -> GithubEnricher:
+    return GithubEnricher(snapshot_dir, github_service)
 
 
 @fixture
-def anki_forum_enricher(version_dir: VersionDir, anki_forum_service: AnkiForumService) -> AnkiForumEnricher:
-    return AnkiForumEnricher(version_dir, anki_forum_service)
+def anki_forum_enricher(snapshot_dir: SnapshotDir, anki_forum_service: AnkiForumService) -> AnkiForumEnricher:
+    return AnkiForumEnricher(snapshot_dir, anki_forum_service)
 
 
 @fixture
@@ -215,13 +215,13 @@ def aggregator() -> Aggregator:
 
 
 @fixture
-def json_exporter(version_dir: VersionDir) -> JsonExporter:
-    return JsonExporter(version_dir.get_final_dir())
+def json_exporter(snapshot_dir: SnapshotDir) -> JsonExporter:
+    return JsonExporter(snapshot_dir.get_final_dir())
 
 
 @fixture
-def xlsx_exporter(version_dir: VersionDir) -> XlsxExporter:
-    return XlsxExporter(version_dir.get_final_dir())
+def xlsx_exporter(snapshot_dir: SnapshotDir) -> XlsxExporter:
+    return XlsxExporter(snapshot_dir.get_final_dir())
 
 
 @fixture
@@ -256,9 +256,9 @@ def raw_metadata(script_version) -> RawMetadata:
 
 
 @fixture
-def dataset_version_metadata(version_dir: VersionDir, script_version: str,
-                             report_date: ReportDate) -> DatasetVersionMetadata:
-    return DatasetMetadata.create_dataset_version_metadata(version_dir, script_version, report_date)
+def dataset_snapshot_metadata(snapshot_dir: SnapshotDir, script_version: str,
+                             report_date: ReportDate) -> DatasetSnapshotMetadata:
+    return DatasetMetadata.create_dataset_snapshot_metadata(snapshot_dir, script_version, report_date)
 
 
 @fixture

@@ -5,15 +5,15 @@ from logging import Logger
 from anki_addons_dataset.collector.ankiweb.addons_page_parser import AddonsPageParser
 from anki_addons_dataset.collector.ankiweb.page_downloader import PageDownloader
 from anki_addons_dataset.common.data_types import AddonHeader, HtmlStr
-from anki_addons_dataset.common.working_dir import VersionDir
+from anki_addons_dataset.common.working_dir import SnapshotDir
 
 log: Logger = logging.getLogger(__name__)
 
 
 class AddonsPageDownloader:
-    def __init__(self, page_downloader: PageDownloader, version_dir: VersionDir, offline: bool) -> None:
+    def __init__(self, page_downloader: PageDownloader, snapshot_dir: SnapshotDir, offline: bool) -> None:
         self.__page_downloader: PageDownloader = page_downloader
-        self.__raw_dir: Path = version_dir.get_raw_dir() / "1-anki-web"
+        self.__raw_dir: Path = snapshot_dir.get_raw_dir() / "1-anki-web"
         self.__offline: bool = offline
 
     def get_headers(self) -> list[AddonHeader]:

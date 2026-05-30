@@ -12,14 +12,14 @@ log: Logger = logging.getLogger(__name__)
 
 
 @total_ordering
-class VersionDir:
-    def __init__(self, version_dir: Path):
-        self.__version_dir: Path = version_dir
+class SnapshotDir:
+    def __init__(self, snapshot_dir: Path):
+        self.__snapshot_dir: Path = snapshot_dir
 
     def get_path(self) -> Path:
-        return self.__version_dir
+        return self.__snapshot_dir
 
-    def create(self) -> 'VersionDir':
+    def create(self) -> 'SnapshotDir':
         raw_dir: Path = self.get_raw_dir()
         stage_dir: Path = self.get_stage_dir()
         final_dir: Path = self.get_final_dir()
@@ -34,38 +34,38 @@ class VersionDir:
         return self
 
     def get_raw_dir(self) -> Path:
-        return self.__version_dir / "1-raw"
+        return self.__snapshot_dir / "1-raw"
 
     def get_stage_dir(self) -> Path:
-        return self.__version_dir / "2-stage"
+        return self.__snapshot_dir / "2-stage"
 
     def get_final_dir(self) -> Path:
-        return self.__version_dir / "3-final"
+        return self.__snapshot_dir / "3-final"
 
-    def version_dir_to_snapshot_date(self) -> SnapshotDate:
-        return SnapshotDate(date.fromisoformat(self.__version_dir.name))
+    def snapshot_dir_to_snapshot_date(self) -> SnapshotDate:
+        return SnapshotDate(date.fromisoformat(self.__snapshot_dir.name))
 
     def get_metadata_json(self) -> Path:
-        return self.__version_dir / "metadata.json"
+        return self.__snapshot_dir / "metadata.json"
 
     @staticmethod
     def __delete_dir(directory: Path) -> None:
         log.info(f"Deleting dir: {directory}")
         shutil.rmtree(directory, ignore_errors=True)
 
-    def __lt__(self, other: 'VersionDir') -> bool:
-        return self.version_dir_to_snapshot_date() < other.version_dir_to_snapshot_date()
+    def __lt__(self, other: 'SnapshotDir') -> bool:
+        return self.snapshot_dir_to_snapshot_date() < other.snapshot_dir_to_snapshot_date()
 
     def __eq__(self, other: object) -> bool:
-        if not isinstance(other, VersionDir):
+        if not isinstance(other, SnapshotDir):
             return NotImplemented
-        return self.__version_dir == other.__version_dir
+        return self.__snapshot_dir == other.__snapshot_dir
 
     def __hash__(self) -> int:
-        return hash(self.__version_dir)
+        return hash(self.__snapshot_dir)
 
     def __str__(self) -> str:
-        return str(self.__version_dir)
+        return str(self.__snapshot_dir)
 
     def __repr__(self) -> str:
         return self.__str__()
@@ -86,22 +86,22 @@ class WorkingDir:
     def get_bundle_dir(self) -> Path:
         return self.__bundle_dir
 
-    def get_version_dir(self, snapshot_date: SnapshotDate) -> VersionDir:
-        return VersionDir(self.__history_dir / snapshot_date.isoformat())
+    def get_snapshot_dir(self, snapshot_date: SnapshotDate) -> SnapshotDir:
+        return SnapshotDir(self.__history_dir / snapshot_date.isoformat())
 
-    def list_version_dirs(self) -> list[VersionDir]:
-        version_dirs: list[VersionDir] = []
+    def list_snapshot_dirs(self) -> list[SnapshotDir]:
+        snapshot_dirs: list[SnapshotDir] = []
         if self.__history_dir.exists():
             for sub_dir in self.__history_dir.iterdir():
                 if sub_dir.is_dir():
-                    version_dirs.append(VersionDir(sub_dir))
+                    snapshot_dirs.append(SnapshotDir(sub_dir))
                 else:
                     log.info(f"Skipping {sub_dir}")
-        version_dirs.sort()
-        return version_dirs
+        snapshot_dirs.sort()
+        return snapshot_dirs
 
-    def get_latest_version_dir(self) -> Optional[VersionDir]:
-        version_dirs: list[VersionDir] = self.list_version_dirs()
-        if len(version_dirs) == 0:
+    def get_latest_snapshot_dir(self) -> Optional[SnapshotDir]:
+        snapshot_dirs: list[SnapshotDir] = self.list_snapshot_dirs()
+        if len(snapshot_dirs) == 0:
             return None
-        return version_dirs[len(version_dirs) - 1]
+        return snapshot_dirs[len(snapshot_dirs) - 1]

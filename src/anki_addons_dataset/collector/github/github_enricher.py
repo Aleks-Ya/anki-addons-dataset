@@ -9,7 +9,7 @@ from anki_addons_dataset.common.data_types import AddonInfo, LanguageName, Githu
     AddonInfos, GithubRepo, GitHubLink
 from anki_addons_dataset.collector.github.github_service import GithubService
 from anki_addons_dataset.common.json_helper import JsonHelper
-from anki_addons_dataset.common.working_dir import VersionDir
+from anki_addons_dataset.common.working_dir import SnapshotDir
 
 log: Logger = logging.getLogger(__name__)
 
@@ -17,9 +17,9 @@ log: Logger = logging.getLogger(__name__)
 class GithubEnricher(Enricher):
     __name: str = "GitHub"
 
-    def __init__(self, version_dir: VersionDir, github_service: GithubService):
+    def __init__(self, snapshot_dir: SnapshotDir, github_service: GithubService):
         super().__init__(name=self.__name)
-        self.__stage_dir: Path = version_dir.get_stage_dir() / "3-enricher" / "github"
+        self.__stage_dir: Path = snapshot_dir.get_stage_dir() / "3-enricher" / "github"
         self.__github_service: GithubService = github_service
         self.__github_infos: dict[AddonId, GithubInfo] = {}
 

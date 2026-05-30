@@ -13,8 +13,8 @@ loop each AddonInfo
         AddonCollector -> GitHubEnricher: download AddonInfo
         GitHubEnricher -> GitHubEnricher: enqueue
         GitHubEnricher -> GithubService
-        GithubService -> VersionDir
-        GithubService <-- VersionDir
+        GithubService -> SnapshotDir
+        GithubService <-- SnapshotDir
         GithubService -> GitHub
         GithubService <-- GitHub
         GitHubEnricher <-- GithubService: collect
@@ -23,8 +23,8 @@ loop each AddonInfo
         AddonCollector -> AnkiForumEnricher: download AddonInfo
         AnkiForumEnricher -> AnkiForumEnricher: enqueue
         AnkiForumEnricher -> AnkiForumService
-        AnkiForumService -> VersionDir
-        AnkiForumService <-- VersionDir
+        AnkiForumService -> SnapshotDir
+        AnkiForumService <-- SnapshotDir
         AnkiForumService -> AnkiForum
         AnkiForumService <-- AnkiForum
         AnkiForumEnricher <-- AnkiForumService: collect

@@ -8,16 +8,16 @@ from typing import Optional
 from pydiscourse import DiscourseClient
 
 from anki_addons_dataset.common.data_types import TopicId, TopicSlug, LastPostedAt, PostsCount
-from anki_addons_dataset.common.working_dir import VersionDir
+from anki_addons_dataset.common.working_dir import SnapshotDir
 
 log: Logger = logging.getLogger(__name__)
 
 
 class AnkiForumService:
 
-    def __init__(self, discourse_client: DiscourseClient, version_dir: VersionDir, offline: bool):
+    def __init__(self, discourse_client: DiscourseClient, snapshot_dir: SnapshotDir, offline: bool):
         self.__discourse_client: DiscourseClient = discourse_client
-        raw_dir: Path = version_dir.get_raw_dir() / "3-forum"
+        raw_dir: Path = snapshot_dir.get_raw_dir() / "3-forum"
         self.__topic = raw_dir / "topic"
         self.__topic.mkdir(parents=True, exist_ok=True)
         self.__offline: bool = offline

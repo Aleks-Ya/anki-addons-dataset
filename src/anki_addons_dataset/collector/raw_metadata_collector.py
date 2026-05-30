@@ -5,15 +5,15 @@ from pathlib import Path
 from typing import Any
 
 from anki_addons_dataset.common.data_types import RawMetadata
-from anki_addons_dataset.common.working_dir import VersionDir
+from anki_addons_dataset.common.working_dir import SnapshotDir
 
 
 class RawMetadataCollector:
     __start_datetime_key: str = "start_timestamp"
     __finish_datetime_key: str = "finish_timestamp"
 
-    def __init__(self, version_dir: VersionDir) -> None:
-        self.__metadata_file: Path = version_dir.get_raw_dir() / "raw-metadata.json"
+    def __init__(self, snapshot_dir: SnapshotDir) -> None:
+        self.__metadata_file: Path = snapshot_dir.get_raw_dir() / "raw-metadata.json"
 
     def set_start_datetime(self, start_datetime: datetime) -> None:
         raw_metadata: RawMetadata = self.read_metadata()

@@ -14,16 +14,16 @@ from anki_addons_dataset.collector.github.handler.repo_handler import RepoHandle
 from anki_addons_dataset.collector.github.handler.stars_repo_handler import StarsRepoHandler
 from anki_addons_dataset.collector.github.handler.tests_repo_handler import TestsRepoHandler
 from anki_addons_dataset.common.data_types import GithubRepo, LanguageName
-from anki_addons_dataset.common.working_dir import VersionDir
+from anki_addons_dataset.common.working_dir import SnapshotDir
 
 log: Logger = logging.getLogger(__name__)
 
 
 class GithubService:
 
-    def __init__(self, version_dir: VersionDir, github_rest_client: GithubRestClient):
-        self.__raw_dir: Path = version_dir.get_raw_dir() / "2-github"
-        self.__stage_dir: Path = version_dir.get_stage_dir() / "2-github"
+    def __init__(self, snapshot_dir: SnapshotDir, github_rest_client: GithubRestClient):
+        self.__raw_dir: Path = snapshot_dir.get_raw_dir() / "2-github"
+        self.__stage_dir: Path = snapshot_dir.get_stage_dir() / "2-github"
         self.__github_rest_client: GithubRestClient = github_rest_client
 
     def get_languages(self, repo: GithubRepo) -> dict[LanguageName, int]:

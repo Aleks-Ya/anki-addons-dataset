@@ -10,11 +10,11 @@ create WorkingDir
 Main -> WorkingDir
 create Facade
 Main -> Facade
-Facade -> WorkingDir: list_version_dirs()
-create VersionDirList
-WorkingDir -> VersionDirList
+Facade -> WorkingDir: list_snapshot_dirs()
+create SnapshotDirList
+WorkingDir -> SnapshotDirList
 
-loop each VersionDir
+loop each SnapshotDir
     Facade -> Facade: process()
 end
 

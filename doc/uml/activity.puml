@@ -11,8 +11,8 @@ group Configuration {
 }
 
 group Downloading {
-    :List version dirs in working dir;
-    while (For each Version Dir)
+    :List Snapshot dirs in working dir;
+    while (For each Snapshot Dir)
         :Prepare Raw Metadata;
         group Collect AddonInfos #lightgreen {
             :Download AddonInfos;
@@ -20,7 +20,7 @@ group Downloading {
             :Override AddonInfos;
         }
         :Prepare Aggregation;
-        :Export Version to a directory;
+        :Export Snapshot to a directory;
         :Create HuggingFace metadata;
     endwhile
 }

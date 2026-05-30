@@ -4,7 +4,7 @@ from logging import Logger
 from pathlib import Path
 
 from anki_addons_dataset.common.data_types import HuggingFaceFolder
-from anki_addons_dataset.common.working_dir import WorkingDir, VersionDir
+from anki_addons_dataset.common.working_dir import WorkingDir, SnapshotDir
 from anki_addons_dataset.huggingface.hugging_face_client import HuggingFaceClient
 from anki_addons_dataset.initializer.working_dir_backup import WorkingDirBackup
 
@@ -22,8 +22,8 @@ class WorkingDirInitializer:
         log.info(f"Initializing working directory: {self.__working_dir.get_path()}")
         self.__working_dir_backup.rename_existing_working_dir()
         self.__create_empty_working_dir()
-        versions: dict[VersionDir, HuggingFaceFolder] = self.__find_versions_in_hf()
-        self.__download_raw_zip_files(versions)
+        snapshots: dict[SnapshotDir, HuggingFaceFolder] = self.__find_snapshots_in_hf()
+        self.__download_raw_zip_files(snapshots)
 
     def __create_empty_working_dir(self):
         self.__working_dir.get_path().mkdir(parents=True, exist_ok=True)
@@ -31,25 +31,26 @@ class WorkingDirInitializer:
         self.__working_dir.get_history_dir().mkdir(parents=True, exist_ok=True)
         log.info(f"Created history directory: {self.__working_dir.get_history_dir()}")
 
-    def __find_versions_in_hf(self) -> dict[VersionDir, HuggingFaceFolder]:
-        version_folders: list[HuggingFaceFolder] = self.__hugging_face_client.list_version_folders()
-        log.info(f"Found version folders in HF: {version_folders}")
-        versions: dict[VersionDir, HuggingFaceFolder] = {self.__hf_folder_to_version_dir(f): f for f in version_folders}
-        log.info(f"Target versions in working directory: {versions}")
-        return versions
+    def __find_snapshots_in_hf(self) -> dict[SnapshotDir, HuggingFaceFolder]:
+        snapshot_folders: list[HuggingFaceFolder] = self.__hugging_face_client.list_snapshot_folders()
+        log.info(f"Found snapshot folders in HF: {snapshot_folders}")
+        snapshots: dict[SnapshotDir, HuggingFaceFolder] = {self.__hf_folder_to_snapshot_dir(f): f
+                                                           for f in snapshot_folders}
+        log.info(f"Target snapshots in working directory: {snapshots}")
+        return snapshots
 
-    def __hf_folder_to_version_dir(self, f: HuggingFaceFolder) -> VersionDir:
-        version_name: str = f.split('/')[-1]
-        return VersionDir(self.__working_dir.get_history_dir() / version_name)
+    def __hf_folder_to_snapshot_dir(self, f: HuggingFaceFolder) -> SnapshotDir:
+        snapshot_name: str = f.split('/')[-1]
+        return SnapshotDir(self.__working_dir.get_history_dir() / snapshot_name)
 
-    def __download_raw_zip_files(self, versions: dict[VersionDir, HuggingFaceFolder]):
-        log.info("Downloading versions")
-        for version_dir, hugging_face_folder in versions.items():
-            version_dir.create()
+    def __download_raw_zip_files(self, snapshots: dict[SnapshotDir, HuggingFaceFolder]):
+        log.info("Downloading snapshots")
+        for snapshot_dir, hugging_face_folder in snapshots.items():
+            snapshot_dir.create()
             hf_raw_zip: str = f"{hugging_face_folder}/raw.zip"
             cached_raw_zip: Path = self.__hugging_face_client.download_file(hf_raw_zip)
             log.info(f"Downloaded raw.zip from HF: {cached_raw_zip}")
-            log.info(f"Unzipping {version_dir.get_path()}")
-            shutil.unpack_archive(cached_raw_zip, version_dir.get_raw_dir())
-            log.info(f"Unzipped {version_dir.get_path()}")
-        log.info("Downloaded versions")
+            log.info(f"Unzipping {snapshot_dir.get_path()}")
+            shutil.unpack_archive(cached_raw_zip, snapshot_dir.get_raw_dir())
+            log.info(f"Unzipped {snapshot_dir.get_path()}")
+        log.info("Downloaded snapshots")
