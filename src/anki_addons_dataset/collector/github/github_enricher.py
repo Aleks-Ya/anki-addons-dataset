@@ -6,7 +6,7 @@ from logging import Logger
 
 from anki_addons_dataset.collector.enricher import Enricher
 from anki_addons_dataset.common.data_types import AddonInfo, LanguageName, GithubInfo, AddonId, \
-    AddonInfos
+    AddonInfos, GithubRepo, GitHubLink
 from anki_addons_dataset.collector.github.github_service import GithubService
 from anki_addons_dataset.common.json_helper import JsonHelper
 from anki_addons_dataset.common.working_dir import VersionDir
@@ -28,25 +28,32 @@ class GithubEnricher(Enricher):
                            for addon_info in addon_infos])
 
     def _download(self, addon_info: AddonInfo) -> None:
-        languages: list[LanguageName] = self.__get_languages(addon_info)
-        stars: int = self.__github_service.get_stars_count(addon_info.github.github_repo)
-        last_commit: Optional[datetime] = self.__github_service.get_last_commit(addon_info.github.github_repo)
-        action_count: Optional[int] = self.__github_service.get_action_count(addon_info.github.github_repo)
-        tests_count: Optional[int] = self.__github_service.get_tests_count(addon_info.github.github_repo)
-        github_info: GithubInfo = GithubInfo(addon_info.github.github_links, addon_info.github.github_repo,
-                                             languages, stars, last_commit, action_count, tests_count)
+        if addon_info.github and addon_info.github.github_repo:
+            github_repo: GithubRepo = addon_info.github.github_repo
+            github_links: list[GitHubLink] = addon_info.github.github_links
+            languages: list[LanguageName] = self.__get_languages(github_repo)
+            stars: int = self.__github_service.get_stars_count(github_repo)
+            last_commit: Optional[datetime] = self.__github_service.get_last_commit(github_repo)
+            action_count: Optional[int] = self.__github_service.get_action_count(github_repo)
+            tests_count: Optional[int] = self.__github_service.get_tests_count(github_repo)
+        else:
+            github_repo: Optional[GithubRepo] = None
+            github_links: list[GitHubLink] = []
+            languages: list[LanguageName] = []
+            stars: int = 0
+            last_commit: Optional[datetime] = None
+            action_count: Optional[int] = None
+            tests_count: Optional[int] = None
+        github_info: GithubInfo = GithubInfo(github_links, github_repo, languages, stars, last_commit, action_count,
+                                             tests_count)
         self.__github_infos[addon_info.header.id] = github_info
 
     def _done(self) -> int:
         return len(self.__github_infos)
 
-    def __get_languages(self, addon_info: AddonInfo) -> list[LanguageName]:
-        if addon_info.github.github_repo:
-            language_dict: dict[LanguageName, int] = self.__github_service.get_languages(
-                addon_info.github.github_repo)
-            languages: list[LanguageName] = list(language_dict.keys())
-        else:
-            languages: list[LanguageName] = []
+    def __get_languages(self, github_repo: GithubRepo) -> list[LanguageName]:
+        language_dict: dict[LanguageName, int] = self.__github_service.get_languages(github_repo)
+        languages: list[LanguageName] = list(language_dict.keys())
         return languages
 
     def __enrich(self, addon_info: AddonInfo, github_info: GithubInfo) -> AddonInfo:

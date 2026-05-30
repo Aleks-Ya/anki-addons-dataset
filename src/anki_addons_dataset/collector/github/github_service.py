@@ -26,29 +26,33 @@ class GithubService:
         self.__stage_dir: Path = version_dir.get_stage_dir() / "2-github"
         self.__github_rest_client: GithubRestClient = github_rest_client
 
-    def get_languages(self, repo: Optional[GithubRepo]) -> dict[LanguageName, int]:
+    def get_languages(self, repo: GithubRepo) -> dict[LanguageName, int]:
         handler: RepoHandler = LanguagesRepoHandler(repo, self.__raw_dir, self.__stage_dir)
-        return self.__get_value(handler, repo)
+        languages: Optional[dict[LanguageName, int]] = self.__get_value(handler)
+        if languages is None:
+            return {}
+        return languages
 
-    def get_stars_count(self, repo: Optional[GithubRepo]) -> int:
+    def get_stars_count(self, repo: GithubRepo) -> int:
         handler: RepoHandler = StarsRepoHandler(repo, self.__raw_dir, self.__stage_dir)
-        return self.__get_value(handler, repo)
+        stars_count: Optional[int] = self.__get_value(handler)
+        if stars_count is None:
+            raise ValueError(f"Stars count is None for repo: {repo}")
+        return stars_count
 
-    def get_last_commit(self, repo: Optional[GithubRepo]) -> Optional[datetime]:
+    def get_last_commit(self, repo: GithubRepo) -> Optional[datetime]:
         handler: RepoHandler = LastCommitRepoHandler(repo, self.__raw_dir, self.__stage_dir)
-        return self.__get_value(handler, repo)
+        return self.__get_value(handler)
 
-    def get_action_count(self, repo: Optional[GithubRepo]) -> Optional[int]:
+    def get_action_count(self, repo: GithubRepo) -> Optional[int]:
         handler: RepoHandler = ActionsRepoHandler(repo, self.__raw_dir, self.__stage_dir)
-        return self.__get_value(handler, repo)
+        return self.__get_value(handler)
 
-    def get_tests_count(self, repo: Optional[GithubRepo]) -> Optional[int]:
+    def get_tests_count(self, repo: GithubRepo) -> Optional[int]:
         handler: RepoHandler = TestsRepoHandler(repo, self.__raw_dir, self.__stage_dir)
-        return self.__get_value(handler, repo)
+        return self.__get_value(handler)
 
-    def __get_value(self, handler: RepoHandler, repo: Optional[GithubRepo]) -> Optional[Any]:
-        if not repo:
-            return None
+    def __get_value(self, handler: RepoHandler) -> Optional[Any]:
         if not handler.is_downloaded():
             if handler.is_repo_marked_as_not_found():
                 return handler.get_not_found_return_value()

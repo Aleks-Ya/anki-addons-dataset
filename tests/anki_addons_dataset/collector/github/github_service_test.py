@@ -9,14 +9,6 @@ from anki_addons_dataset.collector.github.github_service import GithubService
 from anki_addons_dataset.common.data_types import GithubRepo, LanguageName
 
 
-def test_repo_none(github_service: GithubService):
-    assert github_service.get_languages(None) is None
-    assert github_service.get_stars_count(None) is None
-    assert github_service.get_last_commit(None) is None
-    assert github_service.get_action_count(None) is None
-    assert github_service.get_tests_count(None) is None
-
-
 def test_get_languages_200(github_service: GithubService, github_rest_client: GithubRestClient,
                            github_repo: GithubRepo):
     content: str = """{"Python":145190,"Shell":1154}"""
