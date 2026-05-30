@@ -20,7 +20,7 @@ from anki_addons_dataset.collector.github.github_rest_client import GithubRestCl
 from anki_addons_dataset.collector.github.github_service import GithubService
 from anki_addons_dataset.collector.overrider.overrider import Overrider
 from anki_addons_dataset.common.data_types import Aggregation, AddonInfos, DatasetSnapshotMetadata, RawMetadata, \
-    SnapshotDate, ReportDate
+    SnapshotDate, ReportDate, ScriptVersion
 from anki_addons_dataset.collector.ankiweb.ankiweb_service import AnkiWebService
 from anki_addons_dataset.common.working_dir import SnapshotDir, WorkingDir
 from anki_addons_dataset.exporter.exporter_facade import ExporterFacade
@@ -38,7 +38,7 @@ class CollectorFacade:
         if not snapshot_date:
             raise ValueError("Snapshot date is required")
         snapshot_dir: SnapshotDir = self.__working_dir.get_snapshot_dir(snapshot_date).create()
-        script_version: str = self.__script_version()
+        script_version: ScriptVersion = self.__script_version()
         raw_metadata_collector: RawMetadataCollector = RawMetadataCollector(snapshot_dir)
         if not raw_metadata_collector.read_metadata().start_timestamp:
             raw_metadata_collector.set_script_version(script_version)
@@ -56,7 +56,7 @@ class CollectorFacade:
     def __parse_snapshot(self, snapshot_date: SnapshotDate, report_date: ReportDate) -> None:
         log.info(f"===== Parse snapshot for {snapshot_date} =====")
         snapshot_dir: SnapshotDir = self.__working_dir.get_snapshot_dir(snapshot_date).create()
-        script_version: str = self.__script_version()
+        script_version: ScriptVersion = self.__script_version()
         addon_infos: AddonInfos = self.__collect(snapshot_dir, True)
         aggregation: Aggregation = Aggregator.aggregate(addon_infos)
         exporter_facade: ExporterFacade = ExporterFacade(snapshot_dir)
@@ -69,9 +69,9 @@ class CollectorFacade:
         log.info(f"===== Parsed snapshot for {snapshot_date} =====\n")
 
     @staticmethod
-    def __script_version() -> str:
+    def __script_version() -> ScriptVersion:
         version_file: Path = Path(__file__).parent.parent / "version.txt"
-        return version_file.read_text().strip()
+        return ScriptVersion(version_file.read_text().strip())
 
     @staticmethod
     def __collect(snapshot_dir: SnapshotDir, offline: bool) -> AddonInfos:

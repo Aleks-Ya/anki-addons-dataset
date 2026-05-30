@@ -2,7 +2,7 @@ from datetime import datetime
 from pathlib import Path
 from textwrap import dedent
 
-from anki_addons_dataset.common.data_types import SnapshotDate
+from anki_addons_dataset.common.data_types import SnapshotDate, ScriptVersion
 from anki_addons_dataset.common.working_dir import WorkingDir, SnapshotDir
 from anki_addons_dataset.collector.raw_metadata_collector import RawMetadataCollector
 
@@ -35,25 +35,23 @@ def test_set_finish_datetime(working_dir: WorkingDir, snapshot_date: SnapshotDat
     assert raw_metadata_collector.read_metadata().script_version is None
 
 
-def test_set_script_version(working_dir: WorkingDir, snapshot_date: SnapshotDate):
+def test_set_script_version(working_dir: WorkingDir, snapshot_date: SnapshotDate, script_version: ScriptVersion):
     snapshot_dir: SnapshotDir = working_dir.get_snapshot_dir(snapshot_date).create()
     raw_metadata_collector: RawMetadataCollector = RawMetadataCollector(snapshot_dir)
     assert raw_metadata_collector.read_metadata().start_timestamp is None
     assert raw_metadata_collector.read_metadata().finish_timestamp is None
     assert raw_metadata_collector.read_metadata().script_version is None
-    script_version: str = "v0.0.1"
     raw_metadata_collector.set_script_version(script_version)
     assert raw_metadata_collector.read_metadata().start_timestamp is None
     assert raw_metadata_collector.read_metadata().finish_timestamp is None
     assert raw_metadata_collector.read_metadata().script_version == script_version
 
 
-def test_file_content(working_dir: WorkingDir, snapshot_date: SnapshotDate):
+def test_file_content(working_dir: WorkingDir, snapshot_date: SnapshotDate, script_version: ScriptVersion):
     snapshot_dir: SnapshotDir = working_dir.get_snapshot_dir(snapshot_date).create()
     metadata_file: Path = snapshot_dir.get_raw_dir() / "raw-metadata.json"
     assert not metadata_file.exists()
     raw_metadata_collector: RawMetadataCollector = RawMetadataCollector(snapshot_dir)
-    script_version: str = "v0.0.1"
     start_datetime: datetime = datetime.fromisoformat("2025-01-02T15:45:50.385843")
     finish_datetime: datetime = datetime.fromisoformat("2025-01-03T16:46:51")
     raw_metadata_collector.set_start_datetime(start_datetime)
@@ -64,5 +62,5 @@ def test_file_content(working_dir: WorkingDir, snapshot_date: SnapshotDate):
     {
       "start_timestamp": "2025-01-02T15:45:50.385843",
       "finish_timestamp": "2025-01-03T16:46:51",
-      "script_version": "v0.0.1"
+      "script_version": "0.12.0"
     }""")

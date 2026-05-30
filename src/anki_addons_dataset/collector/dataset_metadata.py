@@ -4,7 +4,7 @@ from typing import Any
 import logging
 from logging import Logger
 
-from anki_addons_dataset.common.data_types import DatasetSnapshotMetadata, ReportDate
+from anki_addons_dataset.common.data_types import DatasetSnapshotMetadata, ReportDate, ScriptVersion
 from anki_addons_dataset.common.json_helper import JsonHelper
 from anki_addons_dataset.common.working_dir import SnapshotDir
 
@@ -14,7 +14,7 @@ log: Logger = logging.getLogger(__name__)
 class DatasetMetadata:
 
     @staticmethod
-    def create_dataset_snapshot_metadata(snapshot_dir: SnapshotDir, script_version: str,
+    def create_dataset_snapshot_metadata(snapshot_dir: SnapshotDir, script_version: ScriptVersion,
                                          report_date: ReportDate) -> DatasetSnapshotMetadata:
         dataset_snapshot_metadata: DatasetSnapshotMetadata = DatasetSnapshotMetadata(
             data_collection_date=snapshot_dir.snapshot_dir_to_snapshot_date(),

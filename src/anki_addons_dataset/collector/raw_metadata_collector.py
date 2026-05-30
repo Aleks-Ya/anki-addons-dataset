@@ -4,7 +4,7 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any
 
-from anki_addons_dataset.common.data_types import RawMetadata
+from anki_addons_dataset.common.data_types import RawMetadata, ScriptVersion
 from anki_addons_dataset.common.working_dir import SnapshotDir
 
 
@@ -25,7 +25,7 @@ class RawMetadataCollector:
         raw_metadata.finish_timestamp = finish_datetime
         self.__write_metadata(raw_metadata)
 
-    def set_script_version(self, script_version: str) -> None:
+    def set_script_version(self, script_version: ScriptVersion) -> None:
         raw_metadata: RawMetadata = self.read_metadata()
         raw_metadata.script_version = script_version
         self.__write_metadata(raw_metadata)

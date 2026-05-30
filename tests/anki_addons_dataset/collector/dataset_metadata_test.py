@@ -1,14 +1,14 @@
-from datetime import date, datetime
+from datetime import date
 from pathlib import Path
 from textwrap import dedent
 
 from anki_addons_dataset.collector.dataset_metadata import DatasetMetadata
-from anki_addons_dataset.common.data_types import DatasetSnapshotMetadata, SnapshotDate, ReportDate
+from anki_addons_dataset.common.data_types import DatasetSnapshotMetadata, SnapshotDate, ReportDate, ScriptVersion
 from anki_addons_dataset.common.working_dir import WorkingDir, SnapshotDir
 
 
-def test_create_dataset_snapshot_metadata(working_dir: WorkingDir, report_date: ReportDate):
-    script_version: str = "v0.0.1"
+def test_create_dataset_snapshot_metadata(working_dir: WorkingDir, report_date: ReportDate,
+                                          script_version: ScriptVersion):
     snapshot_date: SnapshotDate = SnapshotDate(date.fromisoformat("2025-01-25"))
     snapshot_dir: SnapshotDir = working_dir.get_snapshot_dir(snapshot_date)
     exp_file: Path = snapshot_dir.get_path() / "metadata.json"
@@ -21,6 +21,6 @@ def test_create_dataset_snapshot_metadata(working_dir: WorkingDir, report_date: 
         {
           "data_collection_date": "2025-01-25",
           "report_generation_date": "2026-04-25T14:25:45",
-          "script_version": "v0.0.1"
+          "script_version": "0.12.0"
         }"""
     )

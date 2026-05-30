@@ -4,6 +4,7 @@ from dataclasses import dataclass
 
 SnapshotDate = NewType("SnapshotDate", date)
 ReportDate = NewType("ReportDate", datetime)
+ScriptVersion = NewType("ScriptVersion", str)
 AddonId = NewType("AddonId", int)
 URL = NewType("URL", str)
 GithubRepoName = NewType("GithubRepoName", str)
@@ -115,11 +116,11 @@ class Aggregation:
 class RawMetadata:
     start_timestamp: Optional[datetime] = None
     finish_timestamp: Optional[datetime] = None
-    script_version: Optional[str] = None
+    script_version: Optional[ScriptVersion] = None
 
 
 @dataclass
 class DatasetSnapshotMetadata:
     data_collection_date: SnapshotDate
     report_generation_date: ReportDate
-    script_version: str
+    script_version: ScriptVersion

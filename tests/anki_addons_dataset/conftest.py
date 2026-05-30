@@ -21,7 +21,7 @@ from anki_addons_dataset.collector.github.github_service import GithubService
 from anki_addons_dataset.collector.overrider.overrider import Overrider
 from anki_addons_dataset.common.data_types import AddonId, GithubRepo, GithubUserName, GithubRepoName, LastPostedAt, \
     URL, PostsCount, AddonInfo, AddonHeader, AddonPage, GithubInfo, AnkiForumInfo, LanguageName, AddonInfos, \
-    DatasetSnapshotMetadata, RawMetadata, AnkiVersion, AddonBranch, HtmlStr, SnapshotDate, ReportDate
+    DatasetSnapshotMetadata, RawMetadata, AnkiVersion, AddonBranch, HtmlStr, SnapshotDate, ReportDate, ScriptVersion
 from anki_addons_dataset.common.working_dir import WorkingDir, SnapshotDir
 from anki_addons_dataset.exporter.json.json_exporter import JsonExporter
 from anki_addons_dataset.exporter.xlsx.xlsx_exporter import XlsxExporter
@@ -246,18 +246,18 @@ def facade(working_dir: WorkingDir, hugging_face_client: HuggingFaceClient) -> F
 
 
 @fixture
-def script_version() -> str:
-    return "0.12.0"
+def script_version() -> ScriptVersion:
+    return ScriptVersion("0.12.0")
 
 
 @fixture
-def raw_metadata(script_version) -> RawMetadata:
+def raw_metadata(script_version: ScriptVersion) -> RawMetadata:
     return RawMetadata(start_timestamp=datetime(2025, 10, 25), script_version=script_version)
 
 
 @fixture
-def dataset_snapshot_metadata(snapshot_dir: SnapshotDir, script_version: str,
-                             report_date: ReportDate) -> DatasetSnapshotMetadata:
+def dataset_snapshot_metadata(snapshot_dir: SnapshotDir, script_version: ScriptVersion,
+                              report_date: ReportDate) -> DatasetSnapshotMetadata:
     return DatasetMetadata.create_dataset_snapshot_metadata(snapshot_dir, script_version, report_date)
 
 
