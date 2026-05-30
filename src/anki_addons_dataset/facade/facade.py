@@ -1,4 +1,3 @@
-from datetime import date, datetime
 import logging
 from logging import Logger
 from typing import Optional
@@ -6,7 +5,7 @@ from typing import Optional
 from anki_addons_dataset.argument.script_arguments import Operation
 from anki_addons_dataset.bundle.dataset_bundle import DatasetBundle
 from anki_addons_dataset.collector.collector_facade import CollectorFacade
-from anki_addons_dataset.common.data_types import SnapshotDate
+from anki_addons_dataset.common.data_types import SnapshotDate, ReportDate
 from anki_addons_dataset.common.working_dir import WorkingDir
 from anki_addons_dataset.huggingface.hugging_face_client import HuggingFaceClient
 from anki_addons_dataset.initializer.working_dir_backup import WorkingDirBackup
@@ -22,7 +21,7 @@ class Facade:
         self.__hugging_face_client: HuggingFaceClient = hugging_face_client
         self.__collector_facade: CollectorFacade = CollectorFacade(working_dir)
 
-    def process(self, operation: Operation, snapshot_date: Optional[SnapshotDate], now: datetime) -> None:
+    def process(self, operation: Operation, snapshot_date: Optional[SnapshotDate], report_date: ReportDate) -> None:
         if operation == Operation.INIT:
             working_dir_backup: WorkingDirBackup = WorkingDirBackup(self.__working_dir)
             working_dir_initializer: WorkingDirInitializer = WorkingDirInitializer(
@@ -31,7 +30,7 @@ class Facade:
         elif operation == Operation.DOWNLOAD:
             self.__collector_facade.download_version(snapshot_date)
         elif operation == Operation.PARSE:
-            self.__collector_facade.parse_versions(now)
+            self.__collector_facade.parse_versions(report_date)
         elif operation == Operation.BUNDLE:
             dataset_bundle: DatasetBundle = DatasetBundle(self.__working_dir)
             dataset_bundle.create_bundle()

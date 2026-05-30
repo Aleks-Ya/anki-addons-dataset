@@ -3,6 +3,7 @@ from typing import NewType, Optional
 from dataclasses import dataclass
 
 SnapshotDate = NewType("SnapshotDate", date)
+ReportDate = NewType("ReportDate", datetime)
 AddonId = NewType("AddonId", int)
 URL = NewType("URL", str)
 GithubRepoName = NewType("GithubRepoName", str)
@@ -120,5 +121,5 @@ class RawMetadata:
 @dataclass
 class DatasetVersionMetadata:
     data_collection_date: SnapshotDate
-    report_generation_date: datetime
+    report_generation_date: ReportDate
     script_version: str

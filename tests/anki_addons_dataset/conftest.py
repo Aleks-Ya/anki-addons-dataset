@@ -21,7 +21,7 @@ from anki_addons_dataset.collector.github.github_service import GithubService
 from anki_addons_dataset.collector.overrider.overrider import Overrider
 from anki_addons_dataset.common.data_types import AddonId, GithubRepo, GithubUserName, GithubRepoName, LastPostedAt, \
     URL, PostsCount, AddonInfo, AddonHeader, AddonPage, GithubInfo, AnkiForumInfo, LanguageName, AddonInfos, \
-    DatasetVersionMetadata, RawMetadata, AnkiVersion, AddonBranch, HtmlStr, SnapshotDate
+    DatasetVersionMetadata, RawMetadata, AnkiVersion, AddonBranch, HtmlStr, SnapshotDate, ReportDate
 from anki_addons_dataset.common.working_dir import WorkingDir, VersionDir
 from anki_addons_dataset.exporter.json.json_exporter import JsonExporter
 from anki_addons_dataset.exporter.xlsx.xlsx_exporter import XlsxExporter
@@ -256,10 +256,11 @@ def raw_metadata(script_version) -> RawMetadata:
 
 
 @fixture
-def dataset_version_metadata(version_dir: VersionDir, script_version: str, now: datetime) -> DatasetVersionMetadata:
-    return DatasetMetadata.create_dataset_version_metadata(version_dir, script_version, now)
+def dataset_version_metadata(version_dir: VersionDir, script_version: str,
+                             report_date: ReportDate) -> DatasetVersionMetadata:
+    return DatasetMetadata.create_dataset_version_metadata(version_dir, script_version, report_date)
 
 
 @fixture
-def now() -> datetime:
-    return datetime(2026, 4, 25, 14, 25, 45)
+def report_date() -> ReportDate:
+    return ReportDate(datetime(2026, 4, 25, 14, 25, 45))

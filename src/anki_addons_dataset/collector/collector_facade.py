@@ -20,7 +20,7 @@ from anki_addons_dataset.collector.github.github_rest_client import GithubRestCl
 from anki_addons_dataset.collector.github.github_service import GithubService
 from anki_addons_dataset.collector.overrider.overrider import Overrider
 from anki_addons_dataset.common.data_types import Aggregation, AddonInfos, DatasetVersionMetadata, RawMetadata, \
-    SnapshotDate
+    SnapshotDate, ReportDate
 from anki_addons_dataset.collector.ankiweb.ankiweb_service import AnkiWebService
 from anki_addons_dataset.common.working_dir import VersionDir, WorkingDir
 from anki_addons_dataset.exporter.exporter_facade import ExporterFacade
@@ -48,12 +48,12 @@ class CollectorFacade:
             raw_metadata_collector.set_finish_datetime(datetime.now().replace(microsecond=0))
         log.info(f"===== Downloaded snapshot for {snapshot_date} =====\n")
 
-    def parse_versions(self, now: datetime) -> None:
+    def parse_versions(self, report_date: ReportDate) -> None:
         for version_dir in self.__working_dir.list_version_dirs():
             snapshot_date: SnapshotDate = version_dir.version_dir_to_snapshot_date()
-            self.__parse_version(snapshot_date, now)
+            self.__parse_version(snapshot_date, report_date)
 
-    def __parse_version(self, snapshot_date: SnapshotDate, now: datetime) -> None:
+    def __parse_version(self, snapshot_date: SnapshotDate, report_date: ReportDate) -> None:
         log.info(f"===== Parse snapshot for {snapshot_date} =====")
         version_dir: VersionDir = self.__working_dir.get_version_dir(snapshot_date).create()
         script_version: str = self.__script_version()
@@ -61,7 +61,7 @@ class CollectorFacade:
         aggregation: Aggregation = Aggregator.aggregate(addon_infos)
         exporter_facade: ExporterFacade = ExporterFacade(version_dir)
         dataset_version_metadata: DatasetVersionMetadata = DatasetMetadata.create_dataset_version_metadata(
-            version_dir, script_version, now)
+            version_dir, script_version, report_date)
         DatasetMetadata.write_version_metadata_to_json(version_dir, dataset_version_metadata)
         raw_metadata_collector: RawMetadataCollector = RawMetadataCollector(version_dir)
         raw_metadata: RawMetadata = raw_metadata_collector.read_metadata()

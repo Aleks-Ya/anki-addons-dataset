@@ -1,11 +1,10 @@
 from dataclasses import asdict
-from datetime import datetime
 from pathlib import Path
 from typing import Any
 import logging
 from logging import Logger
 
-from anki_addons_dataset.common.data_types import DatasetVersionMetadata
+from anki_addons_dataset.common.data_types import DatasetVersionMetadata, ReportDate
 from anki_addons_dataset.common.json_helper import JsonHelper
 from anki_addons_dataset.common.working_dir import VersionDir
 
@@ -16,10 +15,10 @@ class DatasetMetadata:
 
     @staticmethod
     def create_dataset_version_metadata(version_dir: VersionDir, script_version: str,
-                                        now: datetime) -> DatasetVersionMetadata:
+                                        report_date: ReportDate) -> DatasetVersionMetadata:
         dataset_version_metadata: DatasetVersionMetadata = DatasetVersionMetadata(
             data_collection_date=version_dir.version_dir_to_snapshot_date(),
-            report_generation_date=now,
+            report_generation_date=report_date,
             script_version=script_version
         )
         log.info(f"Created dataset version metadata: {dataset_version_metadata}")
