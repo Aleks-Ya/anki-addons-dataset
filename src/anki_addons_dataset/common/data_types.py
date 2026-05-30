@@ -20,7 +20,7 @@ AnkiVersion = NewType("AnkiVersion", str)
 @dataclass
 class AddonHeader:
     id: AddonId
-    name: str
+    title: str
     addon_page_url: str
     rating: int
     update_date: str

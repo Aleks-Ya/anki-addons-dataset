@@ -24,7 +24,7 @@ def test_enrich(anki_forum_enricher: AnkiForumEnricher, anki_forum_service: Anki
     exp_addon_info: AddonInfo = AddonInfo(
         header=AddonHeader(
             id=AddonId(1188705668),
-            name="NoteSize",
+            title="NoteSize",
             addon_page_url="https://ankiweb.net/shared/info/1188705668",
             rating=4,
             update_date="2023-03-15",

@@ -17,7 +17,7 @@
         "type": "object",
         "additionalProperties": false,
         "required": [
-          "name",
+          "title",
           "addon_page_url",
           "addon_page_content",
           "rating",
@@ -28,10 +28,12 @@
           "likes",
           "dislikes"
         ],
-        "properties": {
-          "name": {
+        "patternProperties": {
+          "^title$": {
             "type": "string"
-          },
+          }
+        },
+        "properties": {
           "addon_page_url": {
             "type": "string"
           },

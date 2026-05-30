@@ -41,7 +41,7 @@ class Branch:
 
 @dataclass
 class AnkiWeb:
-    name: str
+    title: str
     addon_page_url: str
     addon_page_content: str
     rating: int
@@ -69,7 +69,7 @@ class JsonAddonInfo:
             github: Optional[GitHub] = JsonAddonInfo.__github(addon)
             forum: Optional[Forum] = JsonAddonInfo.__forum(addon)
             branches: list[Branch] = JsonAddonInfo.__branches(addon)
-            anki_web: AnkiWeb = AnkiWeb(addon.header.name, addon.header.addon_page_url, addon.page.content,
+            anki_web: AnkiWeb = AnkiWeb(addon.header.title, addon.header.addon_page_url, addon.page.content,
                                         addon.header.rating, addon.header.update_date, addon.header.anki_version,
                                         branches, addon.page.other_links, addon.page.like_number,
                                         addon.page.dislike_number)

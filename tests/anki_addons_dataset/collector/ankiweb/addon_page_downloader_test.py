@@ -24,7 +24,7 @@ def test_download_empty_files(addon_page_downloader: AddonPageDownloader, page_d
 
     addon_header: AddonHeader = AddonHeader(
         id=addon_id,
-        name="Note Size - sort notes by size and see collection size",
+        title="Note Size - sort notes by size and see collection size",
         addon_page_url="https://ankiweb.net/shared/info/1188705668",
         rating=12,
         update_date="2025-04-19",
@@ -45,7 +45,7 @@ def test_throws_informative_exception(addon_page_downloader: AddonPageDownloader
 
     addon_header: AddonHeader = AddonHeader(
         id=addon_id,
-        name="Note Size - sort notes by size and see collection size",
+        title="Note Size - sort notes by size and see collection size",
         addon_page_url="https://ankiweb.net/shared/info/1188705668",
         rating=12,
         update_date="2025-04-19",

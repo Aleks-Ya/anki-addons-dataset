@@ -93,7 +93,7 @@ class AddonInfoSheet:
                               first_row=row1, last_row=row1,
                               first_col=self.__id_col, last_col=self.__anki_web_url_col)
         worksheet.write_string(row2, self.__id_col, "ID", header_format)
-        worksheet.write_string(row2, self.__name_col, "Name", header_format)
+        worksheet.write_string(row2, self.__name_col, "Title", header_format)
         worksheet.write_string(row2, self.__updated_col, "Updated", header_format)
         worksheet.write_string(row2, self.__versions_col, "Versions", header_format)
         worksheet.write_string(row2, self.__branches_number_col, "Branches Number", header_format)
@@ -136,7 +136,7 @@ class AddonInfoSheet:
     def __add_row(self, addon: AddonInfo, i: int, worksheet: Worksheet):
         row: int = i + self.__header_row_bottom + 1
         worksheet.write_number(row, self.__id_col, addon.header.id)
-        worksheet.write_string(row, self.__name_col, addon.header.name)
+        worksheet.write_string(row, self.__name_col, addon.header.title)
         worksheet.write_string(row, self.__updated_col, addon.header.update_date)
         worksheet.write_string(row, self.__versions_col, addon.header.anki_version)
         worksheet.write_number(row, self.__branches_number_col, len(addon.page.branches))

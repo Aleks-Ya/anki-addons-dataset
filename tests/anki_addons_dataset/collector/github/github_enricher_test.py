@@ -18,7 +18,7 @@ def test_enrich(github_enricher: GithubEnricher, github_service: GithubService, 
     addon_info: AddonInfo = AddonInfo(
         header=AddonHeader(
             id=note_size_addon_id,
-            name="NoteSize",
+            title="NoteSize",
             addon_page_url="https://ankiweb.net/shared/info/1188705668",
             rating=4,
             update_date="2023-03-15",
@@ -64,7 +64,7 @@ def test_enrich(github_enricher: GithubEnricher, github_service: GithubService, 
     exp_addon_info: AddonInfo = AddonInfo(
         header=AddonHeader(
             id=note_size_addon_id,
-            name="NoteSize",
+            title="NoteSize",
             addon_page_url="https://ankiweb.net/shared/info/1188705668",
             rating=4,
             update_date="2023-03-15",

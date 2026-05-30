@@ -13,7 +13,7 @@ def test_parse_addon_page(overrider: Overrider):
     parser: AddonPageParser = AddonPageParser(overrider)
     addon_header: AddonHeader = AddonHeader(
         id=AddonId(1188705668),
-        name="Note Size - sort notes by size and see collection size",
+        title="Note Size - sort notes by size and see collection size",
         addon_page_url="https://ankiweb.net/shared/info/1188705668",
         rating=12,
         update_date="2025-04-19",
