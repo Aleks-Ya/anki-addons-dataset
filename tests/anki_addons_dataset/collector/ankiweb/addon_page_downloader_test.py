@@ -6,7 +6,7 @@ from pytest import raises
 
 from anki_addons_dataset.collector.ankiweb.addon_page_downloader import AddonPageDownloader
 from anki_addons_dataset.collector.ankiweb.page_downloader import PageDownloader
-from anki_addons_dataset.common.data_types import AddonInfo, HtmlStr, AddonHeader, AddonId, AnkiVersion
+from anki_addons_dataset.common.data_types import AddonInfo, HtmlStr, AddonHeader, AddonId, AnkiVersion, URL
 from anki_addons_dataset.common.working_dir import VersionDir
 
 
@@ -30,7 +30,8 @@ def test_download_empty_files(addon_page_downloader: AddonPageDownloader, page_d
         update_date="2025-04-19",
         anki_version=AnkiVersion("25.09.2~"))
     addon_info: AddonInfo = addon_page_downloader.get_addon_info(addon_header)
-    assert addon_info.forum.anki_forum_url == 'https://forums.ankiweb.net/t/note-size-addon-support/46001'
+    assert addon_info.forum
+    assert addon_info.forum.anki_forum_url == URL('https://forums.ankiweb.net/t/note-size-addon-support/46001')
 
 
 def test_throws_informative_exception(addon_page_downloader: AddonPageDownloader, page_downloader: PageDownloader,
