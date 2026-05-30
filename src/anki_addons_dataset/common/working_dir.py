@@ -1,5 +1,6 @@
 import shutil
 from datetime import date
+from functools import total_ordering
 from pathlib import Path
 from typing import Optional
 import logging
@@ -8,6 +9,7 @@ from logging import Logger
 log: Logger = logging.getLogger(__name__)
 
 
+@total_ordering
 class VersionDir:
     def __init__(self, version_dir: Path):
         self.__version_dir: Path = version_dir
@@ -51,9 +53,6 @@ class VersionDir:
 
     def __lt__(self, other: 'VersionDir') -> bool:
         return self.version_dir_to_creation_date() < other.version_dir_to_creation_date()
-
-    def __gt__(self, other: 'VersionDir') -> bool:
-        return self.version_dir_to_creation_date() > other.version_dir_to_creation_date()
 
     def __eq__(self, other: object) -> bool:
         if not isinstance(other, VersionDir):

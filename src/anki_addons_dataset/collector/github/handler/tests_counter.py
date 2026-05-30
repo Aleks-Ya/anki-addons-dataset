@@ -23,11 +23,11 @@ class TestsCounter:
 
     @staticmethod
     def __is_javascript_test(file: Path) -> bool:
-        return file.name.endswith(".test.js") or file.name.endswith(".spec.js") or file.name.endswith(".spec.ts")
+        return file.name.endswith((".test.js", ".spec.js", ".spec.ts"))
 
     @staticmethod
     def __is_typescript_test(file: Path) -> bool:
-        return file.name.endswith(".test.ts") or file.name.endswith(".spec.ts")
+        return file.name.endswith((".test.ts", ".spec.ts"))
 
     @staticmethod
     def __is_rust_test(file: Path) -> bool:
