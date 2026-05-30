@@ -18,7 +18,7 @@
         "additionalProperties": false,
         "required": [
           "name",
-          "addon_page",
+          "addon_page_url",
           "rating",
           "update_date",
           "anki_version",
@@ -31,7 +31,7 @@
           "name": {
             "type": "string"
           },
-          "addon_page": {
+          "addon_page_url": {
             "type": "string"
           },
           "rating": {

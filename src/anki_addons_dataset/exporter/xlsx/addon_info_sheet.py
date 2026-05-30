@@ -143,7 +143,7 @@ class AddonInfoSheet:
         worksheet.write_number(row, self.__rating_col, addon.header.rating)
         worksheet.write_number(row, self.__likes_col, addon.page.like_number)
         worksheet.write_number(row, self.__dislikes_col, addon.page.dislike_number)
-        worksheet.write_url(row, self.__anki_web_url_col, addon.header.addon_page, string='link')
+        worksheet.write_url(row, self.__anki_web_url_col, addon.header.addon_page_url, string='link')
         self.__fill_anki_forum_row_columns(addon, row, worksheet)
         self.__fill_github_row_columns(addon, row, worksheet)
 

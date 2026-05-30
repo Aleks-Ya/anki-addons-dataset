@@ -21,7 +21,7 @@ AnkiVersion = NewType("AnkiVersion", str)
 class AddonHeader:
     id: AddonId
     name: str
-    addon_page: str
+    addon_page_url: str
     rating: int
     update_date: str
     anki_version: AnkiVersion

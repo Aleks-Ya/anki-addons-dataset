@@ -15,7 +15,7 @@ def test_export_addon_infos(json_exporter: JsonExporter, version_dir: VersionDir
     act_file: Path = version_dir.get_final_dir() / "json" / "data.json"
     act_json: dict[str, Any] = json.loads(act_file.read_text())
     assert act_json == [{'id': 1188705668,
-                         'anki_web': {'addon_page': 'https://ankiweb.net/shared/info/1188705668',
+                         'anki_web': {'addon_page_url': 'https://ankiweb.net/shared/info/1188705668',
                                       'anki_version': '25.09.2~',
                                       'branches': [{'max_version': '25.09.2~',
                                                     'min_version': '24.04.1',
@@ -53,7 +53,7 @@ def test_export_addon_infos_empty_forum(json_exporter: JsonExporter, version_dir
     act_file: Path = version_dir.get_final_dir() / "json" / "data.json"
     act_json: dict[str, Any] = json.loads(act_file.read_text())
     assert act_json == [{'id': 1188705668,
-                         'anki_web': {'addon_page': 'https://ankiweb.net/shared/info/1188705668',
+                         'anki_web': {'addon_page_url': 'https://ankiweb.net/shared/info/1188705668',
                                       'anki_version': '25.09.2~',
                                       'branches': [{'max_version': '25.09.2~',
                                                     'min_version': '24.04.1',
@@ -87,7 +87,7 @@ def test_export_addon_infos_empty_posts_count(json_exporter: JsonExporter, versi
     act_file: Path = version_dir.get_final_dir() / "json" / "data.json"
     act_json: dict[str, Any] = json.loads(act_file.read_text())
     assert act_json == [{'id': 1188705668,
-                         'anki_web': {'addon_page': 'https://ankiweb.net/shared/info/1188705668',
+                         'anki_web': {'addon_page_url': 'https://ankiweb.net/shared/info/1188705668',
                                       'anki_version': '25.09.2~',
                                       'branches': [{'max_version': '25.09.2~',
                                                     'min_version': '24.04.1',

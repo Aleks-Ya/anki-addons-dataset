@@ -129,7 +129,7 @@ def addon_header(note_size_addon_id: AddonId) -> AddonHeader:
     return AddonHeader(
         id=note_size_addon_id,
         name="NoteSize",
-        addon_page="https://ankiweb.net/shared/info/1188705668",
+        addon_page_url="https://ankiweb.net/shared/info/1188705668",
         rating=4,
         update_date="2023-03-15",
         anki_version=AnkiVersion("25.09.2~")

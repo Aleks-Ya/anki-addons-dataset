@@ -20,7 +20,7 @@ def test_export_addon_infos(version_dir: VersionDir, addon_infos: AddonInfos,
     exp_df: DataFrame = DataFrame(
         [{
             'id': 1188705668,
-            'anki_web': {'addon_page': 'https://ankiweb.net/shared/info/1188705668',
+            'anki_web': {'addon_page_url': 'https://ankiweb.net/shared/info/1188705668',
                          'anki_version': '25.09.2~',
                          'branches': [{'max_version': '25.09.2~',
                                        'min_version': '24.04.1',
