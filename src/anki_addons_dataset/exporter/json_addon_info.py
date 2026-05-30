@@ -40,19 +40,24 @@ class Branch:
 
 
 @dataclass
-class Details:
-    id: int
+class AnkiWeb:
     name: str
     addon_page: str
     rating: int
     update_date: str
     anki_version: str
     branches: list[Branch]
-    github: Optional[GitHub]
-    forum: Optional[Forum]
     links: list[str]
     likes: int
     dislikes: int
+
+
+@dataclass
+class Details:
+    id: int
+    anki_web: AnkiWeb
+    github: Optional[GitHub]
+    forum: Optional[Forum]
 
 
 class JsonAddonInfo:
@@ -63,11 +68,10 @@ class JsonAddonInfo:
             github: Optional[GitHub] = JsonAddonInfo.__github(addon)
             forum: Optional[Forum] = JsonAddonInfo.__forum(addon)
             branches: list[Branch] = JsonAddonInfo.__branches(addon)
-            json_obj: Details = Details(addon.header.id, addon.header.name, addon.header.addon_page,
-                                        addon.header.rating, addon.header.update_date, addon.header.anki_version,
-                                        branches,
-                                        github, forum, addon.page.other_links, addon.page.like_number,
-                                        addon.page.dislike_number)
+            anki_web: AnkiWeb = AnkiWeb(addon.header.name, addon.header.addon_page, addon.header.rating,
+                                        addon.header.update_date, addon.header.anki_version, branches,
+                                        addon.page.other_links, addon.page.like_number, addon.page.dislike_number)
+            json_obj: Details = Details(addon.header.id, anki_web, github, forum)
             json_list.append(json_obj)
         return json_list
 

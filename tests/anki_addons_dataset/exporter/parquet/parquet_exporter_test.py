@@ -20,14 +20,17 @@ def test_export_addon_infos(version_dir: VersionDir, addon_infos: AddonInfos,
     exp_df: DataFrame = DataFrame(
         [{
             'id': 1188705668,
-            'name': 'NoteSize',
-            'addon_page': 'https://ankiweb.net/shared/info/1188705668',
-            'rating': 4,
-            'update_date': '2023-03-15',
-            'anki_version': '25.09.2~',
-            'branches': [{'max_version': '25.09.2~',
-                          'min_version': '24.04.1',
-                          'updated': '2023-03-15'}],
+            'anki_web': {'addon_page': 'https://ankiweb.net/shared/info/1188705668',
+                         'anki_version': '25.09.2~',
+                         'branches': [{'max_version': '25.09.2~',
+                                       'min_version': '24.04.1',
+                                       'updated': '2023-03-15'}],
+                         'dislikes': 0,
+                         'likes': 0,
+                         'links': [],
+                         'name': 'NoteSize',
+                         'rating': 4,
+                         'update_date': '2023-03-15'},
             'github': {'action_count': 5,
                        'languages': ['Python', 'Rust'],
                        'last_commit': '2023-03-15T12:00:00',
@@ -40,10 +43,7 @@ def test_export_addon_infos(version_dir: VersionDir, addon_infos: AddonInfos,
                       'topic_slug': 'note-size-addon-support',
                       'topic_id': 46001,
                       'last_posted_at': '2023-09-10 12:00:00+00:00',
-                      'posts_count': 42},
-            'links': [],
-            'likes': 0,
-            'dislikes': 0
+                      'posts_count': 42}
         }]
     )
     pdt.assert_frame_equal(act_df, exp_df)

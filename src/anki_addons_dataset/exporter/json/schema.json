@@ -5,60 +5,81 @@
     "type": "object",
     "additionalProperties": false,
     "required": [
-      "addon_page",
-      "dislikes",
-      "github",
       "id",
-      "likes",
-      "links",
-      "rating",
-      "name",
-      "update_date",
-      "branches",
-      "anki_version"
+      "anki_web",
+      "github"
     ],
     "properties": {
       "id": {
         "type": "integer"
       },
-      "name": {
-        "type": "string"
-      },
-      "addon_page": {
-        "type": "string"
-      },
-      "rating": {
-        "type": "integer"
-      },
-      "update_date": {
-        "type": "string"
-      },
-      "anki_version": {
-        "type": "string"
-      },
-      "branches": {
-        "type": "array",
-        "items": {
-          "type": "object",
-          "properties": {
-            "min_version": {
-              "type": "string"
-            },
-            "max_version": {
-              "type": [
-                "null",
-                "string"
+      "anki_web": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "name",
+          "addon_page",
+          "rating",
+          "update_date",
+          "anki_version",
+          "branches",
+          "links",
+          "likes",
+          "dislikes"
+        ],
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "addon_page": {
+            "type": "string"
+          },
+          "rating": {
+            "type": "integer"
+          },
+          "update_date": {
+            "type": "string"
+          },
+          "anki_version": {
+            "type": "string"
+          },
+          "branches": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "min_version": {
+                  "type": "string"
+                },
+                "max_version": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                },
+                "updated": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "max_version",
+                "min_version",
+                "updated"
               ]
-            },
-            "updated": {
+            }
+          },
+          "links": {
+            "type": "array",
+            "items": {
               "type": "string"
             }
           },
-          "required": [
-            "max_version",
-            "min_version",
-            "updated"
-          ]
+          "likes": {
+            "type": "integer"
+          },
+          "dislikes": {
+            "type": "integer"
+          }
         }
       },
       "github": {
@@ -141,18 +162,6 @@
             }
           }
         ]
-      },
-      "links": {
-        "type": "array",
-        "items": {
-          "type": "string"
-        }
-      },
-      "likes": {
-        "type": "integer"
-      },
-      "dislikes": {
-        "type": "integer"
       },
       "forum": {
         "type": [
