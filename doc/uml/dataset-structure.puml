@@ -1,0 +1,28 @@
+@startuml
+
+left to right direction
+
+title Structure of Anki Addons Dataset
+
+object Dataset
+object History
+object Latest
+object Snapshot1 {
+    date: 2026-01-01
+}
+object Snapshot2 {
+    date: 2026-02-01
+}
+object Snapshot3 {
+    date: 2026-03-01
+}
+
+Dataset -- History
+Dataset -- Latest
+
+History -- Snapshot1
+History -- Snapshot2
+History -- Snapshot3
+Latest -- Snapshot3
+
+@enduml
