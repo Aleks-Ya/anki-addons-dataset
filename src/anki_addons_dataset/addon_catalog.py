@@ -19,6 +19,8 @@ if __name__ == "__main__":
     Log.configure_logging()
 
     arguments: ScriptArguments = ScriptArguments()
+
+    Log.set_log_level(arguments.get_log_level())
     operation: Operation = arguments.get_operation()
     snapshot_date: Optional[SnapshotDate] = arguments.get_snapshot_date()
     log.info(f"Snapshot date: {snapshot_date}")

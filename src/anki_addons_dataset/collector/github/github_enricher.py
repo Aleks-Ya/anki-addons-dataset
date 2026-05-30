@@ -60,5 +60,5 @@ class GithubEnricher(Enricher):
         enriched_addon_info: AddonInfo = AddonInfo(addon_info.header, addon_info.page, github_info, addon_info.forum)
         addon_json_file: Path = self.__stage_dir / f"{addon_info.header.id}.json"
         JsonHelper.write_addon_info_to_file(addon_info, addon_json_file)
-        log.info(f"Enriched: {addon_info.header.id}")
+        log.info(f"Enriched ({self.__name}): {addon_info.header.id}")
         return enriched_addon_info

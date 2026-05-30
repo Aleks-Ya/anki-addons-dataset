@@ -25,6 +25,10 @@ Sonar report is automatically updated in GitHub Actions.
 1. Login: `hf auth login`
 2. Verify: `hf auth whoami`
 
+## Logging
+Default log level: DEBUG
+Set log level: `PYTHONPATH=src python -m anki_addons_dataset.addon_catalog parse -l INFO`
+
 ## Create a new version of HuggingFace dataset
 1. Upgrade Python packages: `./pip_update.sh`
 2. Check out the latest Git tag: `git checkout v0.8.0`

@@ -38,7 +38,7 @@ class Enricher(ABC, Thread):
         log.info("Exit run")
 
     def download_in_background(self, addon_info: AddonInfo) -> None:
-        log.info(f"Enqueue for enriching ({self.__name}): {addon_info.header.id}")
+        log.debug(f"Enqueue for enriching ({self.__name}): {addon_info.header.id}")
         self.__queue.put(addon_info)
 
     def wait_download_finish(self) -> None:
