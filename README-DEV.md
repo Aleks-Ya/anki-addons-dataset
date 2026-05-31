@@ -31,7 +31,7 @@ Set log level: `PYTHONPATH=src python -m anki_addons_dataset.addon_catalog parse
 
 ## Create a new version of HuggingFace dataset
 1. Upgrade Python packages: `./pip_update.sh`
-2. Check out the latest Git tag: `git checkout v0.8.0`
+2. Check out the latest Git tag: `git checkout v1.2.0`
 3. Initialize working directory (once): `PYTHONPATH=src python -m anki_addons_dataset.addon_catalog init` (creates dir `~/anki-addons-dataset`)
 4. Download dataset: `PYTHONPATH=src python -m anki_addons_dataset.addon_catalog download -d 2026-01-01` (creates dir `~/anki-addons-dataset/history/2026-01-01`)
 5. Parse dataset: `PYTHONPATH=src python -m anki_addons_dataset.addon_catalog parse` (enriches all snapshots in `~/anki-addons-dataset/history`)
@@ -53,5 +53,5 @@ On branch `main`:
     2. Switch SNAPSHOT version to RELEASE (`0.1.1-SNAPSHOT` -> `0.1.1`): `bump-my-version bump release --tag`
     3. Switch RELEASE version to SNAPSHOT (`0.1.1` -> `0.2.0-SNAPSHOT`): `bump-my-version bump minor`
 5. Create a GitHub release:
-    1. Push tags: `git push --tags`
+    1. Push branch and tags: `git push origin HEAD --tags`
     2. Create a release from the tag: https://github.com/Aleks-Ya/anki-addons-dataset/releases
