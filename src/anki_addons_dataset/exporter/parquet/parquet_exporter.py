@@ -20,12 +20,12 @@ class ParquetExporter(Exporter):
                            raw_metadata: RawMetadata) -> None:
         json_list: list[Details] = JsonAddonInfo.addon_infos_to_json(addon_infos)
         output_file: Path = self._final_dir / "data.parquet"
-        DataFrame(json_list).to_parquet(output_file)
+        DataFrame(json_list).to_parquet(output_file, compression="zstd")
         log.info(f"Write Parquet to file: {output_file}")
 
     def export_aggregation(self, aggregation: Aggregation, dataset_snapshot_metadata: DatasetSnapshotMetadata,
                            raw_metadata: RawMetadata) -> None:
         aggregation_dict: dict[str, int] = dataclasses.asdict(aggregation)
         output_file: Path = self._final_dir / "aggregation.parquet"
-        DataFrame([aggregation_dict]).to_parquet(output_file)
+        DataFrame([aggregation_dict]).to_parquet(output_file, compression="zstd")
         log.info(f"Write Parquet to file: {output_file}")
