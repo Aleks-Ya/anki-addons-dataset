@@ -4,7 +4,7 @@ from logging import Logger
 from shutil import rmtree
 
 from huggingface_hub import HfApi, RepoFolder, RepoFile
-from huggingface_hub.errors import EntryNotFoundError
+from huggingface_hub.errors import EntryNotFoundError, RepositoryNotFoundError
 
 from anki_addons_dataset.common.data_types import HuggingFaceFolder
 
@@ -32,6 +32,10 @@ class HuggingFaceClient:
             self.__api.delete_folder(path_in_repo="history", repo_id=self.__repo_id, repo_type="dataset")
         except EntryNotFoundError:
             log.info(f"History folder not found for dataset: {self.__repo_id}")
+        except RepositoryNotFoundError as e:
+            if e.response.status_code == 401:
+                raise PermissionError(f"HaggingFace unauthorized: {self.__repo_id}") from e
+            raise e
         try:
             self.__api.delete_folder(path_in_repo="latest", repo_id=self.__repo_id, repo_type="dataset")
         except EntryNotFoundError:
