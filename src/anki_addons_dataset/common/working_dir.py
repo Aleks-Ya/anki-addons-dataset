@@ -21,16 +21,14 @@ class SnapshotDir:
 
     def create(self) -> 'SnapshotDir':
         raw_dir: Path = self.get_raw_dir()
-        stage_dir: Path = self.get_stage_dir()
-        final_dir: Path = self.get_final_dir()
-        self.__delete_dir(stage_dir)
-        self.__delete_dir(final_dir)
-        raw_dir.mkdir(parents=True, exist_ok=True)
-        stage_dir.mkdir(parents=True, exist_ok=True)
-        final_dir.mkdir(parents=True, exist_ok=True)
+        raw_dir.mkdir(parents=True, exist_ok=True)  # 1-raw is the durable cache: ensured, never wiped
         log.info(f"Create raw dir: {raw_dir}")
-        log.info(f"Create stage dir: {stage_dir}")
-        log.info(f"Create final dir: {final_dir}")
+        self.__recreate_dir(self.get_stage_dir())
+        self.create_final_dir()
+        return self
+
+    def create_final_dir(self) -> 'SnapshotDir':
+        self.__recreate_dir(self.get_final_dir())
         return self
 
     def get_raw_dir(self) -> Path:
@@ -42,6 +40,9 @@ class SnapshotDir:
     def get_final_dir(self) -> Path:
         return self.__snapshot_dir / "3-final"
 
+    def get_addon_infos_dump(self) -> Path:
+        return self.__snapshot_dir / "addon-infos.json"
+
     def snapshot_dir_to_snapshot_date(self) -> SnapshotDate:
         return SnapshotDate(date.fromisoformat(self.__snapshot_dir.name))
 
@@ -49,9 +50,11 @@ class SnapshotDir:
         return self.__snapshot_dir / "metadata.json"
 
     @staticmethod
-    def __delete_dir(directory: Path) -> None:
+    def __recreate_dir(directory: Path) -> None:
         log.info(f"Deleting dir: {directory}")
         shutil.rmtree(directory, ignore_errors=True)
+        directory.mkdir(parents=True, exist_ok=True)
+        log.info(f"Created dir: {directory}")
 
     def __lt__(self, other: 'SnapshotDir') -> bool:
         return self.snapshot_dir_to_snapshot_date() < other.snapshot_dir_to_snapshot_date()

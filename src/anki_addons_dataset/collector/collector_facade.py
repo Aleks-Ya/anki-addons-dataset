@@ -22,6 +22,7 @@ from anki_addons_dataset.collector.overrider.overrider import Overrider
 from anki_addons_dataset.common.data_types import Aggregation, AddonInfos, DatasetSnapshotMetadata, RawMetadata, \
     SnapshotDate, ReportDate, ScriptVersion
 from anki_addons_dataset.collector.ankiweb.ankiweb_service import AnkiWebService
+from anki_addons_dataset.common.json_helper import JsonHelper
 from anki_addons_dataset.common.working_dir import SnapshotDir, WorkingDir
 from anki_addons_dataset.exporter.exporter_facade import ExporterFacade
 from anki_addons_dataset.collector.raw_metadata_collector import RawMetadataCollector
@@ -48,16 +49,35 @@ class CollectorFacade:
             raw_metadata_collector.set_finish_datetime(datetime.now().replace(microsecond=0))
         log.info(f"===== Downloaded snapshot for {snapshot_date} =====\n")
 
-    def parse_snapshots(self, report_date: ReportDate) -> None:
+    def parse_snapshots(self) -> None:
         for snapshot_dir in self.__working_dir.list_snapshot_dirs():
             snapshot_date: SnapshotDate = snapshot_dir.snapshot_dir_to_snapshot_date()
-            self.__parse_snapshot(snapshot_date, report_date)
+            self.__parse_snapshot(snapshot_date)
 
-    def __parse_snapshot(self, snapshot_date: SnapshotDate, report_date: ReportDate) -> None:
+    def __parse_snapshot(self, snapshot_date: SnapshotDate) -> None:
         log.info(f"===== Parse snapshot for {snapshot_date} =====")
         snapshot_dir: SnapshotDir = self.__working_dir.get_snapshot_dir(snapshot_date).create()
         script_version: ScriptVersion = self.__script_version()
         addon_infos: AddonInfos = self.__collect(snapshot_dir, True)
+        JsonHelper.write_addon_infos_dump(addon_infos, script_version, snapshot_dir.get_addon_infos_dump())
+        log.info(f"===== Parsed snapshot for {snapshot_date} =====\n")
+
+    def report_snapshots(self, report_date: ReportDate) -> None:
+        for snapshot_dir in self.__working_dir.list_snapshot_dirs():
+            snapshot_date: SnapshotDate = snapshot_dir.snapshot_dir_to_snapshot_date()
+            self.__report_snapshot(snapshot_date, report_date)
+
+    def __report_snapshot(self, snapshot_date: SnapshotDate, report_date: ReportDate) -> None:
+        log.info(f"===== Report snapshot for {snapshot_date} =====")
+        snapshot_dir: SnapshotDir = self.__working_dir.get_snapshot_dir(snapshot_date).create_final_dir()
+        dump_file: Path = snapshot_dir.get_addon_infos_dump()
+        if not dump_file.exists():
+            raise FileNotFoundError(f"Missing parsed dump {dump_file}. Run the 'parse' operation first.")
+        script_version, addon_infos = JsonHelper.read_addon_infos_dump(dump_file)
+        current_script_version: ScriptVersion = self.__script_version()
+        if script_version != current_script_version:
+            log.warning(f"Dump was parsed with script version {script_version}, "
+                        f"current version is {current_script_version}. Re-run 'parse' if the parsing logic changed.")
         aggregation: Aggregation = Aggregator.aggregate(addon_infos)
         exporter_facade: ExporterFacade = ExporterFacade(snapshot_dir)
         dataset_snapshot_metadata: DatasetSnapshotMetadata = DatasetMetadata.create_dataset_snapshot_metadata(
@@ -66,7 +86,7 @@ class CollectorFacade:
         raw_metadata_collector: RawMetadataCollector = RawMetadataCollector(snapshot_dir)
         raw_metadata: RawMetadata = raw_metadata_collector.read_metadata()
         exporter_facade.export_all(addon_infos, aggregation, dataset_snapshot_metadata, raw_metadata)
-        log.info(f"===== Parsed snapshot for {snapshot_date} =====\n")
+        log.info(f"===== Reported snapshot for {snapshot_date} =====\n")
 
     @staticmethod
     def __script_version() -> ScriptVersion:

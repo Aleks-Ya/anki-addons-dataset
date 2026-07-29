@@ -11,6 +11,7 @@ class Operation(Enum):
     INIT = "init"
     DOWNLOAD = "download"
     PARSE = "parse"
+    REPORT = "report"
     BUNDLE = "bundle"
     UPLOAD = "upload"
 

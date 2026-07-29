@@ -32,13 +32,14 @@ Set log level: `PYTHONPATH=src python -m anki_addons_dataset.addon_catalog parse
 ## Create a new version of HuggingFace dataset
 1. Upgrade Python packages: `./pip_update.sh`
 2. Check out the latest Git tag: `git checkout v1.2.0`
-3. Initialize working directory (once): `PYTHONPATH=src python -m anki_addons_dataset.addon_catalog init` (creates dir `~/anki-addons-dataset`)
-4. Download dataset: `PYTHONPATH=src python -m anki_addons_dataset.addon_catalog download -d 2026-01-01` (creates dir `~/anki-addons-dataset/history/2026-01-01`)
-5. Parse dataset: `PYTHONPATH=src python -m anki_addons_dataset.addon_catalog parse` (enriches all snapshots in `~/anki-addons-dataset/history`)
-6. Create a bundle: `PYTHONPATH=src python -m anki_addons_dataset.addon_catalog bundle` (creates dir `~/anki-addons-dataset/bundle`)
-7. Upload the bundle: `PYTHONPATH=src python -m anki_addons_dataset.addon_catalog upload` (syncs dir `~/anki-addons-dataset/bundle` to HuggingFace)
-8. Restart the visualization space: https://huggingface.co/spaces/Ya-Alex/anki-addons
-9. Post on Anki Forum: https://forums.ankiweb.net/t/anki-addons-dataset-a-detailed-list-of-addons/63090
+3. Initialize a working directory: `PYTHONPATH=src python -m anki_addons_dataset.addon_catalog init` (creates `~/anki-addons-dataset`)
+4. Download new snapshot: `PYTHONPATH=src python -m anki_addons_dataset.addon_catalog download -d 2026-01-01` (creates `~/anki-addons-dataset/history/2026-01-01/1-raw`)
+5. Parse dataset: `PYTHONPATH=src python -m anki_addons_dataset.addon_catalog parse` (enriches `~/anki-addons-dataset/history/YYYY-MM-DD/2-stage`)
+6. Generate reports: `PYTHONPATH=src python -m anki_addons_dataset.addon_catalog report` (creates `~/anki-addons-dataset/history/YYYY-MM-DD/3-final`)
+7. Create a bundle: `PYTHONPATH=src python -m anki_addons_dataset.addon_catalog bundle` (creates `~/anki-addons-dataset/bundle`)
+8. Upload the bundle: `PYTHONPATH=src python -m anki_addons_dataset.addon_catalog upload` (syncs `~/anki-addons-dataset/bundle` to HuggingFace)
+9. Restart the visualization space: https://huggingface.co/spaces/Ya-Alex/anki-addons
+10. Post on Anki Forum: https://forums.ankiweb.net/t/anki-addons-dataset-a-detailed-list-of-addons/63090
 
 ## Release a new version of this repository
 On branch `main`:

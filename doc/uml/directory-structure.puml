@@ -1,6 +1,7 @@
 @startuml
 skinparam linetype ortho
 skinparam ArrowColor red
+left to right direction
 
 folder ~ {
     folder anki-addons-dataset {
@@ -11,17 +12,18 @@ folder ~ {
             file "bundle-metadata.json" as metadataJsonHistory
         }
         folder history as datasetHistory {
-            file "2025-06-22.zip" as zip
+            file "2025-06-22.zip" <<Snapshot>> as zip
         }
         folder latest
         }
         folder history {
-            folder "2025-06-22" as historyDate {
+            folder "2025-06-22" <<Snapshot>> as historyDate {
             together {
-                folder "1-raw" {
+                folder "1-raw" as historyRaw {
                     file "raw-metadata.json"
                 }
-                folder "2-stage"
+                folder "2-stage" as historyStage
+                file "addon-infos.json" as addonInfosDump
                 folder "3-final" as historyFinal
             }
             file "snapshot-metadata.json"  as snapshotMetadata
@@ -30,10 +32,18 @@ folder ~ {
     }
 }
 
+cloud Internet
+
 cloud HuggingFace {
     artifact "Ya-Alex/anki-addons" as dataset <<Dataset>>
 }
 
+Internet --> historyRaw
+
+historyRaw --> historyStage
+historyStage --> addonInfosDump
+
+addonInfosDump --> historyFinal
 historyFinal --> latest
 historyDate --> zip
 bundle --> dataset
