@@ -1,5 +1,6 @@
 import logging
 from logging import Logger
+from pathlib import Path
 from typing import Optional
 
 from anki_addons_dataset.argument.script_arguments import Operation
@@ -35,7 +36,8 @@ class Facade:
             dataset_bundle: DatasetBundle = DatasetBundle(self.__working_dir)
             dataset_bundle.create_bundle()
         elif operation == Operation.UPLOAD:
-            self.__hugging_face_client.delete_dataset()
-            self.__hugging_face_client.upload_dataset(self.__working_dir.get_bundle_dir())
+            bundle_dir: Path = self.__working_dir.get_bundle_dir()
+            self.__hugging_face_client.upload_dataset(bundle_dir)
+            self.__hugging_face_client.prune_orphans(bundle_dir)
         else:
             raise ValueError(f"Unsupported operation: {operation}")

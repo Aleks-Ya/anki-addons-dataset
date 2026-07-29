@@ -36,7 +36,7 @@ Set log level: `PYTHONPATH=src python -m anki_addons_dataset.addon_catalog parse
 4. Download dataset: `PYTHONPATH=src python -m anki_addons_dataset.addon_catalog download -d 2026-01-01` (creates dir `~/anki-addons-dataset/history/2026-01-01`)
 5. Parse dataset: `PYTHONPATH=src python -m anki_addons_dataset.addon_catalog parse` (enriches all snapshots in `~/anki-addons-dataset/history`)
 6. Create a bundle: `PYTHONPATH=src python -m anki_addons_dataset.addon_catalog bundle` (creates dir `~/anki-addons-dataset/bundle`)
-7. Upload the bundle: `PYTHONPATH=src python -m anki_addons_dataset.addon_catalog upload` (upload dir `~/anki-addons-dataset/bundle` to HuggingFace)
+7. Upload the bundle: `PYTHONPATH=src python -m anki_addons_dataset.addon_catalog upload` (syncs dir `~/anki-addons-dataset/bundle` to HuggingFace)
 8. Restart the visualization space: https://huggingface.co/spaces/Ya-Alex/anki-addons
 9. Post on Anki Forum: https://forums.ankiweb.net/t/anki-addons-dataset-a-detailed-list-of-addons/63090
 
