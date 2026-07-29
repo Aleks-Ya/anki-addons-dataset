@@ -2,3 +2,7 @@
 __pycache__
 .coverage
 coverage.xml
+build/
+dist/
+*.egg-info/
+.eggs/

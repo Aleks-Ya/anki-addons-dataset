@@ -15,7 +15,7 @@ from anki_addons_dataset.common.log import Log
 
 log: Logger = logging.getLogger(__name__)
 
-if __name__ == "__main__":
+def main() -> None:
     Log.configure_logging()
 
     arguments: ScriptArguments = ScriptArguments()
@@ -32,3 +32,7 @@ if __name__ == "__main__":
     working_dir: WorkingDir = WorkingDir(Path.home() / "anki-addons-dataset")
     facade: Facade = Facade(working_dir, hugging_face_client)
     facade.process(operation, snapshot_date, report_date)
+
+
+if __name__ == "__main__":
+    main()

@@ -1,0 +1,70 @@
+[build-system]
+requires = ["setuptools>=77"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "anki-addons-dataset"
+dynamic = ["version"]
+description = "Collects, processes, and publishes structured data about Anki flashcard addons to HuggingFace."
+readme = "README.md"
+requires-python = ">=3.11"
+license = "MIT"
+license-files = ["LICENSE"]
+authors = [{ name = "Aleksey Yablokov", email = "alex_ya@mailbox.org" }]
+keywords = ["anki", "addons", "dataset", "ankiweb", "huggingface"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Topic :: Education",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+]
+dependencies = [
+    "requests",
+    "bs4",
+    "mdutils",
+    "pyyaml",
+    "XlsxWriter",
+    "jsonschema",
+    "selenium",
+    "huggingface-hub",
+    "pandas",
+    "pyarrow",
+    "seedir",
+    "openpyxl",
+    "pydiscourse",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest",
+    "pytest-cov",
+    "pytest-mock",
+    "freezegun",
+    "bump-my-version",
+    "build",
+    "twine",
+]
+
+[project.urls]
+Homepage = "https://github.com/Aleks-Ya/anki-addons-dataset"
+Repository = "https://github.com/Aleks-Ya/anki-addons-dataset"
+Dataset = "https://huggingface.co/datasets/Ya-Alex/anki-addons"
+Visualizations = "https://huggingface.co/spaces/Ya-Alex/anki-addons"
+
+[project.scripts]
+anki-addons-dataset = "anki_addons_dataset.addon_catalog:main"
+
+[tool.setuptools]
+package-dir = { "" = "src" }
+
+[tool.setuptools.packages.find]
+where = ["src"]
+namespaces = true
+
+[tool.setuptools.package-data]
+"*" = ["*.txt", "*.yaml", "*.json", "*.md"]
+
+[tool.setuptools.dynamic]
+version = { attr = "anki_addons_dataset.__version__" }

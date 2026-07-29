@@ -1,18 +1,1 @@
-requests
-bs4
-mdutils
-pyyaml
-XlsxWriter
-pytest
-pytest-cov
-pytest-mock
-jsonschema
-selenium
-huggingface-hub
-pandas
-pyarrow
-bump-my-version
-seedir
-openpyxl
-pydiscourse
-freezegun
+-e .[dev]

@@ -34,8 +34,8 @@ PYTHONPATH=src python -m anki_addons_dataset.addon_catalog upload
 ./pip_update.sh
 
 # Version bumping
-bump-my-version bump release --tag   # SNAPSHOT → release
-bump-my-version bump minor            # release → next SNAPSHOT
+bump-my-version bump release --tag   # dev → release (1.3.0.dev0 → 1.3.0)
+bump-my-version bump minor            # release → next dev (1.3.0 → 1.4.0.dev0)
 git push origin HEAD --tags
 ```
 

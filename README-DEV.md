@@ -51,8 +51,28 @@ On branch `main`:
     3. Review Sonar Qube report: https://sonarcloud.io/summary/overall?id=Aleks-Ya_anki-addons-dataset&branch=main
 4. Increment version:
     1. Show the next versions: `bump-my-version show-bump`
-    2. Switch SNAPSHOT version to RELEASE (`0.1.1-SNAPSHOT` -> `0.1.1`): `bump-my-version bump release --tag`
-    3. Switch RELEASE version to SNAPSHOT (`0.1.1` -> `0.2.0-SNAPSHOT`): `bump-my-version bump minor`
+    2. Switch dev version to RELEASE (`0.1.1.dev0` -> `0.1.1`): `bump-my-version bump release --tag`
+    3. Switch RELEASE version to next dev (`0.1.1` -> `0.2.0.dev0`): `bump-my-version bump minor`
 5. Create a GitHub release:
     1. Push branch and tags: `git push origin HEAD --tags`
     2. Create a release from the tag: https://github.com/Aleks-Ya/anki-addons-dataset/releases
+    3. Publishing the release triggers `.github/workflows/publish.yml`, which builds and uploads the
+       package to PyPI via Trusted Publishing (OIDC).
+
+## Publish to PyPI
+Publishing is automated: creating a GitHub release runs `.github/workflows/publish.yml`
+(PyPI Trusted Publishing, no API tokens).
+
+One-time setup on [pypi.org](https://pypi.org/manage/account/publishing/): add a Trusted Publisher for
+this project pointing at repo `Aleks-Ya/anki-addons-dataset`, workflow `publish.yml`, environment
+`pypi` (add it as a "pending publisher" before the first release).
+
+Manual build/publish (fallback):
+```bash
+pip install build twine
+python -m build            # creates dist/*.whl and dist/*.tar.gz
+twine check dist/*
+twine upload dist/*        # requires a PyPI API token
+```
+Note: builds from a `.dev0` checkout produce a development version; only released (non-`.dev`) tags
+yield a clean PyPI version.

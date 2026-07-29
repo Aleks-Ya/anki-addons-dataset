@@ -2,6 +2,23 @@
 
 A HuggingFace dataset of addons for the [Anki](https://apps.ankiweb.net) flashcard program.
 
+## Install
+
+```bash
+pip install anki-addons-dataset
+```
+
+This installs the `anki-addons-dataset` command. The pipeline runs as a sequence of operations:
+
+```bash
+anki-addons-dataset init
+anki-addons-dataset download -d 2026-01-01
+anki-addons-dataset parse
+anki-addons-dataset report
+anki-addons-dataset bundle
+anki-addons-dataset upload
+```
+
 ## Links
 - [Visualizations](https://huggingface.co/spaces/Ya-Alex/anki-addons) in HuggingFace Spaces
 - [HuggingFace Dataset](https://huggingface.co/datasets/Ya-Alex/anki-addons)
