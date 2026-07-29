@@ -80,15 +80,21 @@ class AddonPageParser:
 
     @staticmethod
     def __extract_likes(soup: BeautifulSoup) -> int:
-        like_image: Optional[Tag] = soup.find('img', alt='thumbs up')
-        likes: int = int(like_image.next_sibling.get_text()) if like_image and like_image.next_sibling else 0
-        return likes
+        return AddonPageParser.__extract_vote_count(soup, 'thumbs up')
 
     @staticmethod
     def __extract_dislikes(soup: BeautifulSoup) -> int:
-        like_image: Optional[Tag] = soup.find('img', alt='thumbs down')
-        dislikes: int = int(like_image.next_sibling.get_text()) if like_image and like_image.next_sibling else 0
-        return dislikes
+        return AddonPageParser.__extract_vote_count(soup, 'thumbs down')
+
+    @staticmethod
+    def __extract_vote_count(soup: BeautifulSoup, alt: str) -> int:
+        vote_image: Optional[Tag] = soup.find('img', alt=alt)
+        if vote_image is None:
+            return 0
+        sibling = vote_image.next_sibling
+        if sibling is None:
+            return 0
+        return int(sibling.get_text())
 
     @staticmethod
     def __extract_addon_branches(soup: BeautifulSoup) -> list[AddonBranch]:

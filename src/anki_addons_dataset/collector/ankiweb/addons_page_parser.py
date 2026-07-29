@@ -1,3 +1,5 @@
+from typing import Optional
+
 from bs4 import ResultSet, Tag, BeautifulSoup
 
 from anki_addons_dataset.common.data_types import AddonHeader, AddonId, HtmlStr, AnkiVersion
@@ -9,7 +11,13 @@ class AddonsPageParser:
     def parse_addons_page(html: HtmlStr) -> list[AddonHeader]:
         soup: BeautifulSoup = BeautifulSoup(html, 'html.parser')
         addon_rows: list[AddonHeader] = []
-        table_rows: ResultSet[Tag] = soup.find("main").find("table").find_all("tr")
+        main: Optional[Tag] = soup.find("main")
+        if main is None:
+            return addon_rows
+        table: Optional[Tag] = main.find("table")
+        if table is None:
+            return addon_rows
+        table_rows: ResultSet[Tag] = table.find_all("tr")
         table_rows.pop(0)  # remove header
         for row in table_rows:
             cells: ResultSet[Tag] = row.find_all("td")

@@ -26,8 +26,9 @@ def test_report_snapshots_generates_final_from_dump_without_raw(
 
 def test_report_snapshots_missing_dump_raises(
         working_dir: WorkingDir, snapshot_dir: SnapshotDir, report_date: ReportDate):
+    facade = CollectorFacade(working_dir)
     with pytest.raises(FileNotFoundError, match="Run the 'parse' operation first"):
-        CollectorFacade(working_dir).report_snapshots(report_date)
+        facade.report_snapshots(report_date)
 
 
 def test_report_snapshots_no_snapshots_is_noop(working_dir: WorkingDir, report_date: ReportDate):
