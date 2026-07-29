@@ -19,16 +19,16 @@ class Operation(Enum):
 class ScriptArguments:
     def __init__(self):
         parser: ArgumentParser = ArgumentParser()
-        parser.add_argument('operation')
+        parser.add_argument('operations', nargs='+')
         parser.add_argument('-d', '--snapshot-date', type=self.__valid_date)
         parser.add_argument('-l', '--log-level', type=self.__valid_log_level, default='INFO')
-        self.namespace: Namespace = parser.parse_args()
+        self.namespace: Namespace = parser.parse_intermixed_args()
 
     def get_snapshot_date(self) -> Optional[SnapshotDate]:
         return self.namespace.snapshot_date
 
-    def get_operation(self) -> Operation:
-        return Operation[self.namespace.operation.upper()]
+    def get_operations(self) -> list[Operation]:
+        return [Operation[operation.upper()] for operation in self.namespace.operations]
 
     def get_log_level(self) -> int:
         return self.namespace.log_level

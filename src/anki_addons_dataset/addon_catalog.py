@@ -21,7 +21,8 @@ def main() -> None:
     arguments: ScriptArguments = ScriptArguments()
 
     Log.set_log_level(arguments.get_log_level())
-    operation: Operation = arguments.get_operation()
+    operations: list[Operation] = arguments.get_operations()
+    log.info(f"Operations: {[operation.value for operation in operations]}")
     snapshot_date: Optional[SnapshotDate] = arguments.get_snapshot_date()
     log.info(f"Snapshot date: {snapshot_date}")
     report_date: ReportDate = ReportDate(datetime.now().replace(microsecond=0))
@@ -31,7 +32,8 @@ def main() -> None:
     hugging_face_client: HuggingFaceClient = HuggingFaceClient(hf_api)
     working_dir: WorkingDir = WorkingDir(Path.home() / "anki-addons-dataset")
     facade: Facade = Facade(working_dir, hugging_face_client)
-    facade.process(operation, snapshot_date, report_date)
+    for operation in operations:
+        facade.process(operation, snapshot_date, report_date)
 
 
 if __name__ == "__main__":

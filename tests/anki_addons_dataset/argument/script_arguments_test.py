@@ -13,8 +13,8 @@ def test_download_operation(monkeypatch: MonkeyPatch):
     arguments: ScriptArguments = ScriptArguments()
     snapshot_date: Optional[SnapshotDate] = arguments.get_snapshot_date()
     assert snapshot_date == date(2025, 6, 10)
-    operation: Operation = arguments.get_operation()
-    assert operation == Operation.DOWNLOAD
+    operations: list[Operation] = arguments.get_operations()
+    assert operations == [Operation.DOWNLOAD]
 
 
 def test_parse_operation(monkeypatch: MonkeyPatch):
@@ -22,12 +22,21 @@ def test_parse_operation(monkeypatch: MonkeyPatch):
     arguments: ScriptArguments = ScriptArguments()
     snapshot_date: Optional[SnapshotDate] = arguments.get_snapshot_date()
     assert snapshot_date is None
-    operation: Operation = arguments.get_operation()
-    assert operation == Operation.PARSE
+    operations: list[Operation] = arguments.get_operations()
+    assert operations == [Operation.PARSE]
+
+
+def test_chained_operations(monkeypatch: MonkeyPatch):
+    monkeypatch.setattr('sys.argv', ['addon_catalog.py', 'init', 'download', '-d', '2026-01-01', 'parse'])
+    arguments: ScriptArguments = ScriptArguments()
+    snapshot_date: Optional[SnapshotDate] = arguments.get_snapshot_date()
+    assert snapshot_date == date(2026, 1, 1)
+    operations: list[Operation] = arguments.get_operations()
+    assert operations == [Operation.INIT, Operation.DOWNLOAD, Operation.PARSE]
 
 
 def test_invalid_operation(monkeypatch: MonkeyPatch):
     monkeypatch.setattr('sys.argv', ['addon_catalog.py', 'invalid', '-d', '2025-06-10'])
     arguments: ScriptArguments = ScriptArguments()
     with raises(KeyError):
-        arguments.get_operation()
+        arguments.get_operations()

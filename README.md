@@ -19,6 +19,12 @@ anki-addons-dataset bundle
 anki-addons-dataset upload
 ```
 
+Operations can also be chained in a single command, running in the given order:
+
+```bash
+anki-addons-dataset init download -d 2026-01-01 parse
+```
+
 ## Links
 - [Visualizations](https://huggingface.co/spaces/Ya-Alex/anki-addons) in HuggingFace Spaces
 - [HuggingFace Dataset](https://huggingface.co/datasets/Ya-Alex/anki-addons)
