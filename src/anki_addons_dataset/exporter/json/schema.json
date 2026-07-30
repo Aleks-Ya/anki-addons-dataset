@@ -20,6 +20,7 @@
           "title",
           "addon_page_url",
           "addon_page_content",
+          "description",
           "rating",
           "update_date",
           "anki_version",
@@ -38,6 +39,9 @@
             "type": "string"
           },
           "addon_page_content": {
+            "type": "string"
+          },
+          "description": {
             "type": "string"
           },
           "rating": {

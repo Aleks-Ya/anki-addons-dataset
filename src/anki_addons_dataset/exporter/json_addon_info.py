@@ -44,6 +44,7 @@ class AnkiWeb:
     title: str
     addon_page_url: str
     addon_page_content: str
+    description: str
     rating: int
     update_date: str
     anki_version: str
@@ -70,9 +71,9 @@ class JsonAddonInfo:
             forum: Optional[Forum] = JsonAddonInfo.__forum(addon)
             branches: list[Branch] = JsonAddonInfo.__branches(addon)
             anki_web: AnkiWeb = AnkiWeb(addon.header.title, addon.header.addon_page_url, addon.page.content,
-                                        addon.header.rating, addon.header.update_date, addon.header.anki_version,
-                                        branches, addon.page.other_links, addon.page.like_number,
-                                        addon.page.dislike_number)
+                                        addon.page.description, addon.header.rating, addon.header.update_date,
+                                        addon.header.anki_version, branches, addon.page.other_links,
+                                        addon.page.like_number, addon.page.dislike_number)
             json_obj: Details = Details(addon.header.id, anki_web, github, forum)
             json_list.append(json_obj)
         return json_list

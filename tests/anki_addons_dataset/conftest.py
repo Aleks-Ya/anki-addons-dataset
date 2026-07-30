@@ -153,7 +153,8 @@ def addon_info(addon_header: AddonHeader, github_repo: GithubRepo, topic_slug: T
             branches=[AddonBranch(min_anki_version=AnkiVersion("24.04.1"),
                                   max_anki_version=AnkiVersion("25.09.2~"),
                                   updated=date(2023, 3, 15))],
-            other_links=[]
+            other_links=[],
+            description="Sample addon description for full text search"
         ),
         github=GithubInfo(
             github_links=[],

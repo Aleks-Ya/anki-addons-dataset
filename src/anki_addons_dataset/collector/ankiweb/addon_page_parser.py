@@ -26,7 +26,8 @@ class AddonPageParser:
         likes: int = self.__extract_likes(soup)
         dislikes: int = self.__extract_dislikes(soup)
         addon_branches: list[AddonBranch] = self.__extract_addon_branches(soup)
-        addon_page: AddonPage = AddonPage(html, likes, dislikes, addon_branches, other_links)
+        description: str = self.__extract_description(soup)
+        addon_page: AddonPage = AddonPage(html, likes, dislikes, addon_branches, other_links, description)
         anki_forum_info: AnkiForumInfo = AnkiForumInfo(anki_forum_url, None, None, None, None)
         addon_info: AddonInfo = AddonInfo(addon_header, addon_page, github_info, anki_forum_info)
         return addon_info
@@ -95,6 +96,13 @@ class AddonPageParser:
         if sibling is None:
             return 0
         return int(sibling.get_text())
+
+    @staticmethod
+    def __extract_description(soup: BeautifulSoup) -> str:
+        description_tag: Optional[Tag] = soup.find('div', class_='shared-item-description')
+        if description_tag is None:
+            return ""
+        return " ".join(description_tag.get_text(separator=' ', strip=True).split())
 
     @staticmethod
     def __extract_addon_branches(soup: BeautifulSoup) -> list[AddonBranch]:

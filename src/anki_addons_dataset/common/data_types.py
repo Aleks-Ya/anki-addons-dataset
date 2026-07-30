@@ -82,6 +82,7 @@ class AddonPage:
     dislike_number: int
     branches: list[AddonBranch]
     other_links: list[URL]
+    description: str = ""
 
 
 @dataclass

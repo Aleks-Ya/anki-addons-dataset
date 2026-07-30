@@ -77,7 +77,15 @@ def test_parse_addon_page(overrider: Overrider):
                 URL('https://ankiweb.net/shared/info/1151815987'),
                 URL('https://github.com/Aleks-Ya/note-size-anki-addon/blob/main/description/configuration.md#logging-level'),
                 URL('https://apps.ankiweb.net')
-            ]
+            ],
+            description='"Note Size" addon displays detailed information about size ("in bytes") of your collection '
+                        'and individual notes including attachments. Screenshots Size of collection, media files, '
+                        'unused media files, trash files, revision log Size of a note Sort notes by size Size of '
+                        'found notes Size of a deck Size when adding a new note Open configuration dialog Contacts '
+                        'If you have a question , please, reply at Support page at Anki Forum . If you met a bug , '
+                        'create an issue at GitHub bug tracker or reply at Support page at Anki Forum . If you have a '
+                        'feature request or another idea, reply at Support page at Anki Forum . For more details see '
+                        'User Manual . Links Support page at Anki Forum GitHub project Bug tracker Changelog'
         ),
         GithubInfo(
             github_links=[
@@ -115,3 +123,17 @@ def test_parse_addon_page(overrider: Overrider):
             posts_count=None
         )
     )
+
+
+def test_parse_addon_page_without_description(overrider: Overrider):
+    parser: AddonPageParser = AddonPageParser(overrider)
+    addon_header: AddonHeader = AddonHeader(
+        id=AddonId(1),
+        title="No description addon",
+        addon_page_url="https://ankiweb.net/shared/info/1",
+        rating=0,
+        update_date="2025-04-19",
+        anki_version=AnkiVersion("25.09.2~"))
+    html: HtmlStr = HtmlStr("<html><body><main><h1>No description</h1></main></body></html>")
+    addon_info: AddonInfo = parser.parse_addon_page(addon_header, html)
+    assert addon_info.page.description == ""

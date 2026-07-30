@@ -65,6 +65,7 @@ class JsonHelper:
             dislike_number=data["dislike_number"],
             branches=[JsonHelper.__addon_branch_from_dict(branch) for branch in data["branches"]],
             other_links=[URL(link) for link in data["other_links"]],
+            description=data.get("description", ""),
         )
 
     @staticmethod
