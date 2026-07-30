@@ -19,7 +19,7 @@ def test_addon_infos_dump_round_trip(addon_infos: AddonInfos, script_version: Sc
 
 def test_addon_infos_dump_round_trip_with_none_fields(script_version: ScriptVersion, working_dir_path: Path):
     addon_info: AddonInfo = AddonInfo(
-        header=AddonHeader(id=AddonId(1), title="No GitHub", addon_page_url="https://ankiweb.net/shared/info/1",
+        header=AddonHeader(id=AddonId(1), title="No GitHub", addon_page_url=URL("https://ankiweb.net/shared/info/1"),
                            rating=0, update_date="2024-01-01", anki_version=AnkiVersion("24.04.1")),
         page=AddonPage(
             content=HtmlStr("<html></html>"), like_number=0, dislike_number=0,

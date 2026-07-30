@@ -51,7 +51,7 @@ class JsonHelper:
         return AddonHeader(
             id=AddonId(data["id"]),
             title=data["title"],
-            addon_page_url=data["addon_page_url"],
+            addon_page_url=URL(data["addon_page_url"]),
             rating=data["rating"],
             update_date=data["update_date"],
             anki_version=AnkiVersion(data["anki_version"]),

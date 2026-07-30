@@ -2,7 +2,7 @@ from typing import Optional
 
 from bs4 import ResultSet, Tag, BeautifulSoup
 
-from anki_addons_dataset.common.data_types import AddonHeader, AddonId, HtmlStr, AnkiVersion
+from anki_addons_dataset.common.data_types import AddonHeader, AddonId, HtmlStr, AnkiVersion, URL
 
 
 class AddonsPageParser:
@@ -22,7 +22,7 @@ class AddonsPageParser:
         for row in table_rows:
             cells: ResultSet[Tag] = row.find_all("td")
             addon_name: str = cells[0].text
-            addon_page: str = f"""https://ankiweb.net{cells[0].find("a")["href"]}"""
+            addon_page: URL = URL(f"""https://ankiweb.net{cells[0].find("a")["href"]}""")
             addon_id: AddonId = AddonId(int(addon_page.split("/")[-1]))
             rating: int = int(cells[1].text)
             update_date: str = cells[2].text
