@@ -7,7 +7,7 @@ from anki_addons_dataset.collector.github.github_enricher import GithubEnricher
 from anki_addons_dataset.collector.github.github_service import GithubService
 from anki_addons_dataset.common.data_types import AddonInfo, AddonHeader, AddonId, AddonPage, GithubRepo, \
     LanguageName, GithubInfo, AddonInfos, AnkiForumInfo, TopicSlug, TopicId, LastPostedAt, PostsCount, AnkiVersion, \
-    HtmlStr, URL, Rating, UpdateDate
+    HtmlStr, URL, Rating, UpdateDate, AddonTitle
 
 log: Logger = logging.getLogger(__name__)
 
@@ -18,7 +18,7 @@ def test_enrich(github_enricher: GithubEnricher, github_service: GithubService, 
     addon_info: AddonInfo = AddonInfo(
         header=AddonHeader(
             id=note_size_addon_id,
-            title="NoteSize",
+            title=AddonTitle("NoteSize"),
             addon_page_url=URL("https://ankiweb.net/shared/info/1188705668"),
             rating=Rating(4),
             update_date=UpdateDate("2023-03-15"),
@@ -64,7 +64,7 @@ def test_enrich(github_enricher: GithubEnricher, github_service: GithubService, 
     exp_addon_info: AddonInfo = AddonInfo(
         header=AddonHeader(
             id=note_size_addon_id,
-            title="NoteSize",
+            title=AddonTitle("NoteSize"),
             addon_page_url=URL("https://ankiweb.net/shared/info/1188705668"),
             rating=Rating(4),
             update_date=UpdateDate("2023-03-15"),

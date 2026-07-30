@@ -5,7 +5,7 @@ from anki_addons_dataset.collector.ankiweb.addon_page_parser import AddonPagePar
 from anki_addons_dataset.collector.overrider.overrider import Overrider
 from anki_addons_dataset.common.data_types import AddonHeader, AddonInfo, AddonPage, GithubInfo, AddonId, GitHubLink, \
     URL, GitHubUser, GithubRepo, GithubUserName, GithubRepoName, AddonBranch, HtmlStr, AnkiForumInfo, AnkiVersion, \
-    Rating, UpdateDate
+    Rating, UpdateDate, AddonTitle
 
 
 def test_parse_addon_page(overrider: Overrider):
@@ -14,7 +14,7 @@ def test_parse_addon_page(overrider: Overrider):
     parser: AddonPageParser = AddonPageParser(overrider)
     addon_header: AddonHeader = AddonHeader(
         id=AddonId(1188705668),
-        title="Note Size - sort notes by size and see collection size",
+        title=AddonTitle("Note Size - sort notes by size and see collection size"),
         addon_page_url=URL("https://ankiweb.net/shared/info/1188705668"),
         rating=Rating(12),
         update_date=UpdateDate("2025-04-19"),
@@ -130,7 +130,7 @@ def test_parse_addon_page_without_description(overrider: Overrider):
     parser: AddonPageParser = AddonPageParser(overrider)
     addon_header: AddonHeader = AddonHeader(
         id=AddonId(1),
-        title="No description addon",
+        title=AddonTitle("No description addon"),
         addon_page_url=URL("https://ankiweb.net/shared/info/1"),
         rating=Rating(0),
         update_date=UpdateDate("2025-04-19"),

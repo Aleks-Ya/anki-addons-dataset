@@ -6,6 +6,7 @@ SnapshotDate = NewType("SnapshotDate", date)
 ReportDate = NewType("ReportDate", datetime)
 ScriptVersion = NewType("ScriptVersion", str)
 AddonId = NewType("AddonId", int)
+AddonTitle = NewType("AddonTitle", str)
 Rating = NewType("Rating", int)
 UpdateDate = NewType("UpdateDate", str)
 URL = NewType("URL", str)
@@ -25,7 +26,7 @@ AnkiVersion = NewType("AnkiVersion", str)
 @dataclass
 class AddonHeader:
     id: AddonId
-    title: str
+    title: AddonTitle
     addon_page_url: URL
     rating: Rating
     update_date: UpdateDate

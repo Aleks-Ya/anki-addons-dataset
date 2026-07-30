@@ -7,7 +7,7 @@ from typing import Any, Optional
 from anki_addons_dataset.common.data_types import AddonInfo, AddonInfos, AddonHeader, AddonPage, AddonBranch, \
     GithubInfo, GitHubLink, GitHubUser, GithubRepo, AnkiForumInfo, AddonId, AnkiVersion, HtmlStr, URL, \
     GithubUserName, GithubRepoName, LanguageName, TopicSlug, TopicId, LastPostedAt, PostsCount, ScriptVersion, Rating, \
-    UpdateDate
+    UpdateDate, AddonTitle
 
 
 class JsonHelper:
@@ -51,7 +51,7 @@ class JsonHelper:
     def __addon_header_from_dict(data: dict[str, Any]) -> AddonHeader:
         return AddonHeader(
             id=AddonId(data["id"]),
-            title=data["title"],
+            title=AddonTitle(data["title"]),
             addon_page_url=URL(data["addon_page_url"]),
             rating=Rating(data["rating"]),
             update_date=UpdateDate(data["update_date"]),

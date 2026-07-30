@@ -2,7 +2,8 @@ from typing import Optional
 
 from bs4 import ResultSet, Tag, BeautifulSoup
 
-from anki_addons_dataset.common.data_types import AddonHeader, AddonId, HtmlStr, AnkiVersion, URL, Rating, UpdateDate
+from anki_addons_dataset.common.data_types import AddonHeader, AddonId, HtmlStr, AnkiVersion, URL, Rating, UpdateDate, \
+    AddonTitle
 
 
 class AddonsPageParser:
@@ -21,7 +22,7 @@ class AddonsPageParser:
         table_rows.pop(0)  # remove header
         for row in table_rows:
             cells: ResultSet[Tag] = row.find_all("td")
-            addon_name: str = cells[0].text
+            addon_name: AddonTitle = AddonTitle(cells[0].text)
             addon_page: URL = URL(f"""https://ankiweb.net{cells[0].find("a")["href"]}""")
             addon_id: AddonId = AddonId(int(addon_page.split("/")[-1]))
             rating: Rating = Rating(int(cells[1].text))
