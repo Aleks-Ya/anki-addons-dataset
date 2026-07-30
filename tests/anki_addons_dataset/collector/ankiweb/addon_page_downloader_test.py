@@ -6,7 +6,8 @@ from pytest import raises
 
 from anki_addons_dataset.collector.ankiweb.addon_page_downloader import AddonPageDownloader
 from anki_addons_dataset.collector.ankiweb.page_downloader import PageDownloader
-from anki_addons_dataset.common.data_types import AddonInfo, HtmlStr, AddonHeader, AddonId, AnkiVersion, URL, Rating
+from anki_addons_dataset.common.data_types import AddonInfo, HtmlStr, AddonHeader, AddonId, AnkiVersion, URL, Rating, \
+    UpdateDate
 from anki_addons_dataset.common.working_dir import SnapshotDir
 
 
@@ -27,7 +28,7 @@ def test_download_empty_files(addon_page_downloader: AddonPageDownloader, page_d
         title="Note Size - sort notes by size and see collection size",
         addon_page_url=URL("https://ankiweb.net/shared/info/1188705668"),
         rating=Rating(12),
-        update_date="2025-04-19",
+        update_date=UpdateDate("2025-04-19"),
         anki_version=AnkiVersion("25.09.2~"))
     addon_info: AddonInfo = addon_page_downloader.get_addon_info(addon_header)
     assert addon_info.forum
@@ -49,7 +50,7 @@ def test_throws_informative_exception(addon_page_downloader: AddonPageDownloader
         title="Note Size - sort notes by size and see collection size",
         addon_page_url=URL("https://ankiweb.net/shared/info/1188705668"),
         rating=Rating(12),
-        update_date="2025-04-19",
+        update_date=UpdateDate("2025-04-19"),
         anki_version=AnkiVersion("25.09.2~"))
     with raises(RuntimeError, match="Cannot get addon info: 1188705668") as ex_info:
         addon_page_downloader.get_addon_info(addon_header)

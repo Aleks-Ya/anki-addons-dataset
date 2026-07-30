@@ -7,6 +7,7 @@ ReportDate = NewType("ReportDate", datetime)
 ScriptVersion = NewType("ScriptVersion", str)
 AddonId = NewType("AddonId", int)
 Rating = NewType("Rating", int)
+UpdateDate = NewType("UpdateDate", str)
 URL = NewType("URL", str)
 GithubRepoName = NewType("GithubRepoName", str)
 GithubUserName = NewType("GithubUserName", str)
@@ -27,7 +28,7 @@ class AddonHeader:
     title: str
     addon_page_url: URL
     rating: Rating
-    update_date: str
+    update_date: UpdateDate
     anki_version: AnkiVersion
 
 
