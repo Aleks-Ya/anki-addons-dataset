@@ -21,5 +21,12 @@ def test_override_anki_forum_url(overrider: Overrider, note_size_addon_id: Addon
         "https://forums.ankiweb.net/t/hypertts-spirtual-successor-to-awesometts/17143")
 
 
+def test_is_excluded_github_repo(overrider: Overrider):
+    assert overrider.is_excluded_github_repo(URL("https://github.com/ankitects/anki")) is True
+    assert overrider.is_excluded_github_repo(URL("https://github.com/ankitects/anki/issues")) is True
+    assert overrider.is_excluded_github_repo(URL("https://GitHub.com/MPV-player/mpv")) is True
+    assert overrider.is_excluded_github_repo(URL("https://github.com/Aleks-Ya/note-size-anki-addon")) is False
+
+
 def test_copy_override_yaml_to_dataset(overrider: Overrider, snapshot_dir: SnapshotDir):
     assert (snapshot_dir.get_stage_dir() / "4-overrider" / "overrides.yaml").exists()

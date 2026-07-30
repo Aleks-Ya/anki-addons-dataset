@@ -37,7 +37,7 @@ class AddonPageParser:
         if override_link:
             return override_link.repo
         not_null_urls: list[GitHubLink] = [link for link in github_urls if link.repo is not None]
-        filtered_urls: list[GitHubLink] = AddonPageParser.__exclude_links(not_null_urls)
+        filtered_urls: list[GitHubLink] = self.__exclude_links(not_null_urls)
         filtered_urls.sort(key=lambda link: link.repo.get_id())
         grouped: groupby[GithubRepo, GitHubLink] = groupby(filtered_urls, key=lambda link: link.repo)
         counts: dict[GithubRepo, int] = {k: len(list(v)) for k, v in grouped}
@@ -60,24 +60,8 @@ class AddonPageParser:
         max_tuple: tuple[URL, int] = max(counts.items(), key=lambda item: item[1])
         return max_tuple[0]
 
-    @staticmethod
-    def __exclude_links(links: list[GitHubLink]) -> list[GitHubLink]:
-        exclude_urls: list[str] = [
-            'https://github.com/ankitects/anki',
-            'https://github.com/ankidroid/anki-android',
-            'https://github.com/tesseract-ocr/tesseract',
-            'https://github.com/mpv-player/mpv',
-            'https://github.com/dae/anki',
-            'https://github.com/rhasspy/piper',
-            'https://github.com/btbn/ffmpeg-builds',
-            'https://github.com/beautify-web/js-beautify',
-            'https://github.com/tesseract-ocr/tessdata'
-        ]
-        filtered_links: list[GitHubLink] = []
-        for link in links:
-            if all(not link.url.lower().startswith(prefix.lower()) for prefix in exclude_urls):
-                filtered_links.append(link)
-        return filtered_links
+    def __exclude_links(self, links: list[GitHubLink]) -> list[GitHubLink]:
+        return [link for link in links if not self.overrider.is_excluded_github_repo(link.url)]
 
     @staticmethod
     def __extract_likes(soup: BeautifulSoup) -> int:

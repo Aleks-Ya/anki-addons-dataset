@@ -20,8 +20,9 @@ class Overrider:
     def __init__(self, snapshot_dir: SnapshotDir):
         override_file: Path = Path(__file__).parent / "overrides.yaml"
         log.info(f"Read override file: {override_file}")
-        data: dict[str, dict[AddonId, Any]] = yaml.safe_load(override_file.read_text())
+        data: dict[str, Any] = yaml.safe_load(override_file.read_text())
         self.addons_data: dict[AddonId, Any] = data.get("addons", {})
+        self.__excluded_github_repos: list[URL] = data.get("excluded_github_repos", [])
         dest_file: Path = snapshot_dir.get_stage_dir() / "4-overrider" / "overrides.yaml"
         dest_file.parent.mkdir(parents=True, exist_ok=True)
         shutil.copy(override_file, dest_file)
@@ -40,3 +41,6 @@ class Overrider:
             if self.__anki_forum_url_key in addon_data:
                 return addon_data[self.__anki_forum_url_key]
         return None
+
+    def is_excluded_github_repo(self, url: URL) -> bool:
+        return any(url.lower().startswith(prefix.lower()) for prefix in self.__excluded_github_repos)
