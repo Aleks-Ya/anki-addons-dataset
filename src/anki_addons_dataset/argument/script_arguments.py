@@ -8,6 +8,7 @@ from anki_addons_dataset.common.data_types import SnapshotDate
 
 
 class Operation(Enum):
+    INFO = "info"
     INIT = "init"
     DOWNLOAD = "download"
     PARSE = "parse"

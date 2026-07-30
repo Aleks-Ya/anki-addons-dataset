@@ -9,6 +9,7 @@ from anki_addons_dataset.collector.collector_facade import CollectorFacade
 from anki_addons_dataset.common.data_types import SnapshotDate, ReportDate
 from anki_addons_dataset.common.working_dir import WorkingDir
 from anki_addons_dataset.huggingface.hugging_face_client import HuggingFaceClient
+from anki_addons_dataset.info.app_info import AppInfo
 from anki_addons_dataset.initializer.working_dir_backup import WorkingDirBackup
 from anki_addons_dataset.initializer.working_dir_initializer import WorkingDirInitializer
 
@@ -23,7 +24,10 @@ class Facade:
         self.__collector_facade: CollectorFacade = CollectorFacade(working_dir)
 
     def process(self, operation: Operation, snapshot_date: Optional[SnapshotDate], report_date: ReportDate) -> None:
-        if operation == Operation.INIT:
+        if operation == Operation.INFO:
+            app_info: AppInfo = AppInfo(self.__working_dir, self.__hugging_face_client)
+            app_info.print_info(snapshot_date, report_date)
+        elif operation == Operation.INIT:
             working_dir_backup: WorkingDirBackup = WorkingDirBackup(self.__working_dir)
             working_dir_initializer: WorkingDirInitializer = WorkingDirInitializer(
                 self.__working_dir, self.__hugging_face_client, working_dir_backup)

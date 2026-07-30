@@ -22,8 +22,10 @@ pytest tests/anki_addons_dataset/path/to/test_file.py
 pytest -v
 
 # CLI operations (INIT → DOWNLOAD → PARSE → REPORT → BUNDLE → UPLOAD)
-# A single invocation accepts any subset of steps; `all` expands to the full six-step sequence.
-PYTHONPATH=src python -m anki_addons_dataset.addon_catalog all -d 2026-01-01  # full pipeline
+# A single invocation accepts any subset of steps; `all` expands to `info` + the full six-step sequence.
+# `info` is a side-effect-free step that logs the app version and runtime configuration.
+PYTHONPATH=src python -m anki_addons_dataset.addon_catalog all -d 2026-01-01  # full pipeline (info first)
+PYTHONPATH=src python -m anki_addons_dataset.addon_catalog info               # print version + config only
 PYTHONPATH=src python -m anki_addons_dataset.addon_catalog init
 PYTHONPATH=src python -m anki_addons_dataset.addon_catalog download -d 2026-01-01
 PYTHONPATH=src python -m anki_addons_dataset.addon_catalog parse

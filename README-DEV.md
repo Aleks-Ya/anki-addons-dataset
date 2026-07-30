@@ -32,12 +32,15 @@ Set log level: `PYTHONPATH=src python -m anki_addons_dataset.addon_catalog parse
 ## Running the pipeline
 
 The pipeline has six steps run in order: `init download parse report bundle upload`.
+There is also an `info` step that just logs the app version and runtime configuration (working dir, HuggingFace dataset, Python/platform, snapshot/report dates) without side effects.
+
 A single invocation accepts any subset of steps (space-separated), or the shorthand `all`,
-which expands to the full six-step sequence in pipeline order:
+which expands to `info` followed by the full six-step sequence in pipeline order:
 
 ```bash
-anki-addons-dataset all -d 2026-01-01          # equivalent to: init download parse report bundle upload
+anki-addons-dataset all -d 2026-01-01          # equivalent to: info init download parse report bundle upload
 anki-addons-dataset parse report               # run only the given steps
+anki-addons-dataset info                        # just print version and configuration
 ```
 
 There are three ways to run it, depending on which version you need:
@@ -79,14 +82,15 @@ PYTHONPATH=src python -m anki_addons_dataset.addon_catalog parse report
 
 ## Create a new version of HuggingFace dataset **from sources** by steps
 1. Upgrade Python packages: `./pip_update.sh`
-2. Initialize a working directory: `PYTHONPATH=src python -m anki_addons_dataset.addon_catalog init` (creates `~/anki-addons-dataset`)
-3. Download new snapshot: `PYTHONPATH=src python -m anki_addons_dataset.addon_catalog download -d 2026-01-01` (creates `~/anki-addons-dataset/history/2026-01-01/1-raw`)
-4. Parse dataset: `PYTHONPATH=src python -m anki_addons_dataset.addon_catalog parse` (enriches `~/anki-addons-dataset/history/YYYY-MM-DD/2-stage`)
-5. Generate reports: `PYTHONPATH=src python -m anki_addons_dataset.addon_catalog report` (creates `~/anki-addons-dataset/history/YYYY-MM-DD/3-final`)
-6. Create a bundle: `PYTHONPATH=src python -m anki_addons_dataset.addon_catalog bundle` (creates `~/anki-addons-dataset/bundle`)
-7. Upload the bundle: `PYTHONPATH=src python -m anki_addons_dataset.addon_catalog upload` (syncs `~/anki-addons-dataset/bundle` to HuggingFace)
-8. Restart the visualization space: https://huggingface.co/spaces/Ya-Alex/anki-addons
-9. Post on Anki Forum: https://forums.ankiweb.net/t/anki-addons-dataset-a-detailed-list-of-addons/63090
+2. Check version: `PYTHONPATH=src python -m anki_addons_dataset.addon_catalog info`
+3. Initialize a working directory: `PYTHONPATH=src python -m anki_addons_dataset.addon_catalog init` (creates `~/anki-addons-dataset`)
+4. Download new snapshot: `PYTHONPATH=src python -m anki_addons_dataset.addon_catalog download -d 2026-01-01` (creates `~/anki-addons-dataset/history/2026-01-01/1-raw`)
+5. Parse dataset: `PYTHONPATH=src python -m anki_addons_dataset.addon_catalog parse` (enriches `~/anki-addons-dataset/history/YYYY-MM-DD/2-stage`)
+6. Generate reports: `PYTHONPATH=src python -m anki_addons_dataset.addon_catalog report` (creates `~/anki-addons-dataset/history/YYYY-MM-DD/3-final`)
+7. Create a bundle: `PYTHONPATH=src python -m anki_addons_dataset.addon_catalog bundle` (creates `~/anki-addons-dataset/bundle`)
+8. Upload the bundle: `PYTHONPATH=src python -m anki_addons_dataset.addon_catalog upload` (syncs `~/anki-addons-dataset/bundle` to HuggingFace)
+9. Restart the visualization space: https://huggingface.co/spaces/Ya-Alex/anki-addons
+10. Post on Anki Forum: https://forums.ankiweb.net/t/anki-addons-dataset-a-detailed-list-of-addons/63090
 
 ## Release a new version of this repository
 1. Checkout branch `main`

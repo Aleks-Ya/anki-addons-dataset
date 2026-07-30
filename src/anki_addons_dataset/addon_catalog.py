@@ -6,7 +6,6 @@ from typing import Optional
 
 from huggingface_hub import HfApi
 
-from anki_addons_dataset import __version__
 from anki_addons_dataset.argument.script_arguments import ScriptArguments, Operation
 from anki_addons_dataset.common.data_types import SnapshotDate, ReportDate
 from anki_addons_dataset.common.working_dir import WorkingDir
@@ -23,13 +22,10 @@ def main() -> None:
     arguments: ScriptArguments = ScriptArguments()
 
     Log.set_log_level(arguments.get_log_level())
-    log.info(f"anki-addons-dataset version: {__version__}")
     operations: list[Operation] = arguments.get_operations()
     log.info(f"Operations: {[operation.value for operation in operations]}")
     snapshot_date: Optional[SnapshotDate] = arguments.get_snapshot_date()
-    log.info(f"Snapshot date: {snapshot_date}")
     report_date: ReportDate = ReportDate(datetime.now().replace(microsecond=0))
-    log.info(f"Report date: {report_date}")
 
     hf_api: HfApi = HfApi()
     hugging_face_client: HuggingFaceClient = HuggingFaceClient(hf_api)

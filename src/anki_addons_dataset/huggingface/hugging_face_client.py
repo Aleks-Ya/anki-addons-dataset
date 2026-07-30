@@ -19,6 +19,9 @@ class HuggingFaceClient:
     def __init__(self, hf_api: HfApi):
         self.__api: HfApi = hf_api
 
+    def get_repo_id(self) -> str:
+        return self.__repo_id
+
     def upload_dataset(self, bundle_dir: Path) -> None:
         self.__verify_write_access()
         hf_cache_dir: Path = bundle_dir / ".cache"
