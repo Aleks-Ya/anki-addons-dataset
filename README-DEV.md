@@ -43,21 +43,21 @@ Set log level: `PYTHONPATH=src python -m anki_addons_dataset.addon_catalog parse
 
 ## Release a new version of this repository
 On branch `main`:
-1. Upgrade Python packages: `./pip_update.sh`
-2. Execute unit-tests: `pytest`
-3. Pass Sonar Qube analysis:
-    1. Push changes: `git push`
-    2. Review GitHub Actions: https://github.com/Aleks-Ya/anki-addons-dataset/actions
-    3. Review Sonar Qube report: https://sonarcloud.io/summary/overall?id=Aleks-Ya_anki-addons-dataset&branch=main
-4. Increment version:
+1. Pass Sonar Qube analysis (skill `/push`):
+    1. Upgrade Python packages: `./pip_update.sh`
+    2. Execute unit-tests: `pytest`
+    3. Push changes: `git push`
+    4. Review GitHub Actions: https://github.com/Aleks-Ya/anki-addons-dataset/actions
+    5. Review Sonar Qube report: https://sonarcloud.io/summary/overall?id=Aleks-Ya_anki-addons-dataset&branch=main
+2. Increment version:
     1. Show the next versions: `bump-my-version show-bump`
     2. Switch dev version to RELEASE (`0.1.1.dev0` -> `0.1.1`): `bump-my-version bump release --tag`
-    3. Switch RELEASE version to next dev (`0.1.1` -> `0.2.0.dev0`): `bump-my-version bump minor`
-5. Create a GitHub release:
+    3. Switch the RELEASE version to the next dev (`0.1.1` -> `0.2.0.dev0`): `bump-my-version bump minor`
+3. Create a GitHub release:
     1. Push branch and tags: `git push origin HEAD --tags`
     2. Create a release from the tag: https://github.com/Aleks-Ya/anki-addons-dataset/releases
-    3. Publishing the release triggers `.github/workflows/publish.yml`, which builds and uploads the
-       package to PyPI via Trusted Publishing (OIDC).
+    3. Wait for GitHub Actions to finish publishing to PyPI: https://github.com/Aleks-Ya/anki-addons-dataset/actions
+    4. Update: `pip install -U anki-addons-dataset`
 
 ## Publish to PyPI
 Publishing is automated: creating a GitHub release runs `.github/workflows/publish.yml`
