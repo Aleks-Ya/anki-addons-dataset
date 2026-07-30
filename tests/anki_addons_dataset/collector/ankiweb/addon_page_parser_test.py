@@ -91,7 +91,6 @@ def test_parse_addon_page(overrider: Overrider):
         GithubInfo(
             github_links=[
                 GitHubLink(URL('https://github.com/Aleks-Ya/note-size-anki-addon/issues'), github_user, github_repo),
-                GitHubLink(URL('https://github.com/Aleks-Ya/note-size-anki-addon/issues'), github_user, github_repo),
                 GitHubLink(URL('https://github.com/Aleks-Ya/note-size-anki-addon/blob/main/docs/user-manual.md'),
                            github_user, github_repo),
                 GitHubLink(URL('https://github.com/Aleks-Ya/note-size-anki-addon'), github_user, github_repo),
@@ -103,10 +102,6 @@ def test_parse_addon_page(overrider: Overrider):
                     github_user, github_repo),
                 GitHubLink(
                     URL('https://github.com/Aleks-Ya/note-size-anki-addon/actions/workflows/unit-tests-linux.yml/badge.svg'),
-                    github_user, github_repo),
-                GitHubLink(URL('https://github.com/Aleks-Ya/note-size-anki-addon/issues'), github_user, github_repo),
-                GitHubLink(
-                    URL('https://github.com/Aleks-Ya/note-size-anki-addon/blob/main/description/configuration.md#logging-level'),
                     github_user, github_repo)
             ],
             github_repo=github_repo,
@@ -138,3 +133,31 @@ def test_parse_addon_page_without_description(overrider: Overrider):
     html: HtmlStr = HtmlStr("<html><body><main><h1>No description</h1></main></body></html>")
     addon_info: AddonInfo = parser.parse_addon_page(addon_header, html)
     assert addon_info.page.description == ""
+
+
+def test_comment_github_url_does_not_override_description_repo(overrider: Overrider):
+    """A repo linked (repeatedly) in a user comment must not outvote the repo from the description."""
+    parser: AddonPageParser = AddonPageParser(overrider)
+    addon_header: AddonHeader = AddonHeader(
+        id=AddonId(2),
+        title=AddonTitle("Comment pollution addon"),
+        addon_page_url=URL("https://ankiweb.net/shared/info/2"),
+        rating=AddonRating(0),
+        update_date=UpdateDate("2025-04-19"),
+        anki_version=AnkiVersion("25.09.2~"))
+    html: HtmlStr = HtmlStr(
+        '<html><body><main>'
+        '<h2>Description</h2>'
+        '<div class="shared-item-description">'
+        '<a href="https://github.com/real-author/real-addon">Source</a>'
+        '</div>'
+        '<h2>Reviews</h2>'
+        '<div class="mb-3"><a href="https://github.com/spammer/other-repo">see this</a></div>'
+        '<div class="mb-3"><a href="https://github.com/spammer/other-repo">and this</a></div>'
+        '<div class="mb-3"><a href="https://github.com/spammer/other-repo">and this too</a></div>'
+        '</main></body></html>')
+    addon_info: AddonInfo = parser.parse_addon_page(addon_header, html)
+    expected_repo: GithubRepo = GithubRepo(GithubUserName("real-author"), GithubRepoName("real-addon"))
+    assert addon_info.github.github_repo == expected_repo
+    assert [link.url for link in addon_info.github.github_links] == [
+        URL("https://github.com/real-author/real-addon")]

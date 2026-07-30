@@ -16,17 +16,20 @@ class AddonPageParser:
 
     def parse_addon_page(self, addon_header: AddonHeader, html: HtmlStr) -> AddonInfo:
         soup: BeautifulSoup = BeautifulSoup(html, 'html.parser')
+        description_tag: Optional[Tag] = soup.find('div', class_='shared-item-description')
         all_links: list[URL] = UrlParser.extract_all_links(html)
-        github_links: list[GitHubLink] = UrlParser.find_github_links(all_links)
+        description_links: list[URL] = (
+            UrlParser.extract_all_links(HtmlStr(str(description_tag))) if description_tag is not None else [])
+        github_links: list[GitHubLink] = UrlParser.find_github_links(description_links)
         other_links: list[URL] = [link for link in all_links if link not in github_links]
         github_repo: Optional[GithubRepo] = self.__deduct_github_repo_name(addon_header.id, github_links)
-        anki_forum_links: list[URL] = UrlParser.find_anki_forum_links(all_links)
+        anki_forum_links: list[URL] = UrlParser.find_anki_forum_links(description_links)
         anki_forum_url: Optional[URL] = self.__deduct_anki_forum_url(addon_header.id, anki_forum_links)
         github_info: GithubInfo = GithubInfo(github_links, github_repo, [], 0, None, 0, 0)
         likes: int = self.__extract_likes(soup)
         dislikes: int = self.__extract_dislikes(soup)
         addon_branches: list[AddonBranch] = self.__extract_addon_branches(soup)
-        description: str = self.__extract_description(soup)
+        description: str = self.__extract_description(description_tag)
         addon_page: AddonPage = AddonPage(html, likes, dislikes, addon_branches, other_links, description)
         anki_forum_info: AnkiForumInfo = AnkiForumInfo(anki_forum_url, None, None, None, None)
         addon_info: AddonInfo = AddonInfo(addon_header, addon_page, github_info, anki_forum_info)
@@ -82,8 +85,7 @@ class AddonPageParser:
         return int(sibling.get_text())
 
     @staticmethod
-    def __extract_description(soup: BeautifulSoup) -> str:
-        description_tag: Optional[Tag] = soup.find('div', class_='shared-item-description')
+    def __extract_description(description_tag: Optional[Tag]) -> str:
         if description_tag is None:
             return ""
         return " ".join(description_tag.get_text(separator=' ', strip=True).split())
