@@ -1,4 +1,5 @@
 from pathlib import Path
+from typing import Optional
 import logging
 from logging import Logger
 
@@ -21,11 +22,14 @@ class GithubRestClient:
         self.__offline: bool = offline
         self.__rate_limit: GithubRateLimit = GithubRateLimit()
 
-    def get_from_url(self, url: str) -> Response:
+    def get_from_url(self, url: str, etag: Optional[str] = None) -> Response:
         log.debug(f"Downloading {url} (limit {self.__rate_limit.get_limit_remaining()})")
         if self.__offline:
             raise RuntimeError("Offline mode is enabled")
         self.__rate_limit.wait_for_reset()
-        response: Response = requests.request("GET", url, headers=self.__headers)
+        headers: dict[str, str] = dict(self.__headers)
+        if etag:
+            headers["If-None-Match"] = etag
+        response: Response = requests.request("GET", url, headers=headers)
         self.__rate_limit.update_rate_limit(response)
         return response

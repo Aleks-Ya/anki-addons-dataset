@@ -39,12 +39,13 @@ class CollectorFacade:
         if not snapshot_date:
             raise ValueError("Snapshot date is required")
         snapshot_dir: SnapshotDir = self.__working_dir.get_snapshot_dir(snapshot_date).create()
+        prev_snapshot_dir: Optional[SnapshotDir] = self.__working_dir.get_previous_snapshot_dir(snapshot_date)
         script_version: ScriptVersion = self.__script_version()
         raw_metadata_collector: RawMetadataCollector = RawMetadataCollector(snapshot_dir)
         if not raw_metadata_collector.read_metadata().start_timestamp:
             raw_metadata_collector.set_script_version(script_version)
             raw_metadata_collector.set_start_datetime(datetime.now().replace(microsecond=0))
-        self.__collect(snapshot_dir, False)
+        self.__collect(snapshot_dir, False, prev_snapshot_dir)
         if not raw_metadata_collector.read_metadata().finish_timestamp:
             raw_metadata_collector.set_finish_datetime(datetime.now().replace(microsecond=0))
         log.info(f"===== Downloaded snapshot for {snapshot_date} =====\n")
@@ -94,7 +95,8 @@ class CollectorFacade:
         return ScriptVersion(version_file.read_text().strip())
 
     @staticmethod
-    def __collect(snapshot_dir: SnapshotDir, offline: bool) -> AddonInfos:
+    def __collect(snapshot_dir: SnapshotDir, offline: bool,
+                  prev_snapshot_dir: Optional[SnapshotDir] = None) -> AddonInfos:
         log.info(f"Offline: {offline}")
         overrider: Overrider = Overrider(snapshot_dir)
         addon_page_parser: AddonPageParser = AddonPageParser(overrider)
@@ -104,7 +106,7 @@ class CollectorFacade:
             page_downloader, snapshot_dir, addon_page_parser, offline)
         ankiweb_service: AnkiWebService = AnkiWebService(addons_page_downloader, addon_page_downloader)
         github_rest_client: GithubRestClient = GithubRestClient(offline)
-        github_service: GithubService = GithubService(snapshot_dir, github_rest_client)
+        github_service: GithubService = GithubService(snapshot_dir, github_rest_client, prev_snapshot_dir)
         discourse_client: DiscourseClient = DiscourseClient(host="https://forums.ankiweb.net",
                                                             api_username=None, api_key=None)
         anki_forum_service: AnkiForumService = AnkiForumService(discourse_client, snapshot_dir, offline)

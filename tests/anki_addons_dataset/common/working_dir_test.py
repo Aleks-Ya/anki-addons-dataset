@@ -28,6 +28,19 @@ def test_get_latest_snapshot_dir(working_dir_path: Path):
     assert working_dir.get_latest_snapshot_dir() == snapshot_dir_2
 
 
+def test_get_previous_snapshot_dir(working_dir_path: Path):
+    working_dir: WorkingDir = WorkingDir(working_dir_path)
+    date_1: SnapshotDate = SnapshotDate(date.fromisoformat("2025-01-01"))
+    date_2: SnapshotDate = SnapshotDate(date.fromisoformat("2025-01-10"))
+    date_3: SnapshotDate = SnapshotDate(date.fromisoformat("2025-01-20"))
+    snapshot_dir_1: SnapshotDir = working_dir.get_snapshot_dir(date_1).create()
+    working_dir.get_snapshot_dir(date_3).create()
+    # nearest earlier date is returned, later dates are ignored (out-of-order backfill)
+    assert working_dir.get_previous_snapshot_dir(date_2) == snapshot_dir_1
+    # no earlier snapshot exists
+    assert working_dir.get_previous_snapshot_dir(date_1) is None
+
+
 def test_get_snapshot_dir(working_dir_path: Path, snapshot_date: SnapshotDate):
     working_dir: WorkingDir = WorkingDir(working_dir_path)
     snapshot_dir: SnapshotDir = working_dir.get_snapshot_dir(snapshot_date)

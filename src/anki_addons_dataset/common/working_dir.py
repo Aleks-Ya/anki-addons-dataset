@@ -108,3 +108,12 @@ class WorkingDir:
         if len(snapshot_dirs) == 0:
             return None
         return snapshot_dirs[len(snapshot_dirs) - 1]
+
+    def get_previous_snapshot_dir(self, snapshot_date: SnapshotDate) -> Optional[SnapshotDir]:
+        previous: Optional[SnapshotDir] = None
+        for snapshot_dir in self.list_snapshot_dirs():  # sorted ascending by date
+            if snapshot_dir.snapshot_dir_to_snapshot_date() < snapshot_date:
+                previous = snapshot_dir
+            else:
+                break
+        return previous

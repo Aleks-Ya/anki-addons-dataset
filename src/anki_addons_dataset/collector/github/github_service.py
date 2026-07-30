@@ -21,35 +21,38 @@ log: Logger = logging.getLogger(__name__)
 
 class GithubService:
 
-    def __init__(self, snapshot_dir: SnapshotDir, github_rest_client: GithubRestClient):
+    def __init__(self, snapshot_dir: SnapshotDir, github_rest_client: GithubRestClient,
+                 prev_snapshot_dir: Optional[SnapshotDir] = None):
         self.__raw_dir: Path = snapshot_dir.get_raw_dir() / "2-github"
         self.__stage_dir: Path = snapshot_dir.get_stage_dir() / "2-github"
+        self.__prev_raw_dir: Optional[Path] = \
+            prev_snapshot_dir.get_raw_dir() / "2-github" if prev_snapshot_dir else None
         self.__github_rest_client: GithubRestClient = github_rest_client
 
     def get_languages(self, repo: GithubRepo) -> dict[LanguageName, int]:
-        handler: RepoHandler = LanguagesRepoHandler(repo, self.__raw_dir, self.__stage_dir)
+        handler: RepoHandler = LanguagesRepoHandler(repo, self.__raw_dir, self.__stage_dir, self.__prev_raw_dir)
         languages: Optional[dict[LanguageName, int]] = self.__get_value(handler)
         if languages is None:
             return {}
         return languages
 
     def get_stars_count(self, repo: GithubRepo) -> int:
-        handler: RepoHandler = StarsRepoHandler(repo, self.__raw_dir, self.__stage_dir)
+        handler: RepoHandler = StarsRepoHandler(repo, self.__raw_dir, self.__stage_dir, self.__prev_raw_dir)
         stars_count: Optional[int] = self.__get_value(handler)
         if stars_count is None:
             raise ValueError(f"Stars count is None for repo: {repo}")
         return stars_count
 
     def get_last_commit(self, repo: GithubRepo) -> Optional[datetime]:
-        handler: RepoHandler = LastCommitRepoHandler(repo, self.__raw_dir, self.__stage_dir)
+        handler: RepoHandler = LastCommitRepoHandler(repo, self.__raw_dir, self.__stage_dir, self.__prev_raw_dir)
         return self.__get_value(handler)
 
     def get_action_count(self, repo: GithubRepo) -> Optional[int]:
-        handler: RepoHandler = ActionsRepoHandler(repo, self.__raw_dir, self.__stage_dir)
+        handler: RepoHandler = ActionsRepoHandler(repo, self.__raw_dir, self.__stage_dir, self.__prev_raw_dir)
         return self.__get_value(handler)
 
     def get_tests_count(self, repo: GithubRepo) -> Optional[int]:
-        handler: RepoHandler = TestsRepoHandler(repo, self.__raw_dir, self.__stage_dir)
+        handler: RepoHandler = TestsRepoHandler(repo, self.__raw_dir, self.__stage_dir, self.__prev_raw_dir)
         return self.__get_value(handler)
 
     def __get_value(self, handler: RepoHandler) -> Optional[Any]:
@@ -57,9 +60,12 @@ class GithubService:
             if handler.is_repo_marked_as_not_found():
                 return handler.get_not_found_return_value()
             url: str = handler.get_url()
-            response: Response = self.__github_rest_client.get_from_url(url)
+            etag: Optional[str] = handler.get_prev_etag()
+            response: Response = self.__github_rest_client.get_from_url(url, etag)
             if response.status_code == 200:
                 handler.status_200(response)
+            elif response.status_code == 304:
+                handler.status_304()
             elif response.status_code == 404:
                 handler.status_404()
             elif response.status_code == 409:

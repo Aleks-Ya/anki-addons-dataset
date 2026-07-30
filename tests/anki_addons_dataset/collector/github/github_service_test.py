@@ -1,4 +1,5 @@
-from datetime import datetime
+from datetime import date, datetime
+from typing import Optional
 from unittest.mock import Mock
 
 from pytest import raises
@@ -6,7 +7,8 @@ from requests import Response
 
 from anki_addons_dataset.collector.github.github_rest_client import GithubRestClient
 from anki_addons_dataset.collector.github.github_service import GithubService
-from anki_addons_dataset.common.data_types import GithubRepo, LanguageName
+from anki_addons_dataset.common.data_types import GithubRepo, LanguageName, SnapshotDate
+from anki_addons_dataset.common.working_dir import SnapshotDir, WorkingDir
 
 
 def test_get_languages_200(github_service: GithubService, github_rest_client: GithubRestClient,
@@ -76,8 +78,32 @@ def test_get_tests_count_200(github_service: GithubService, github_rest_client: 
     github_rest_client.get_from_url.assert_called_once()
 
 
-def __mock_content(content: str, status_code: int = 200) -> Mock:
+def test_conditional_get_304_copies_previous_snapshot(working_dir: WorkingDir,
+                                                       github_rest_client: GithubRestClient, github_repo: GithubRepo):
+    prev_snapshot: SnapshotDir = working_dir.get_snapshot_dir(SnapshotDate(date.fromisoformat("2025-01-01"))).create()
+    curr_snapshot: SnapshotDir = working_dir.get_snapshot_dir(SnapshotDate(date.fromisoformat("2025-01-02"))).create()
+
+    # Previous snapshot: a 200 response carrying an ETag persists an .etag sidecar next to the raw file.
+    prev_service: GithubService = GithubService(prev_snapshot, github_rest_client)
+    github_rest_client.get_from_url = __mock_content("""{"stargazers_count":5}""", etag='W/"abc"')
+    assert prev_service.get_stars_count(github_repo) == 5
+    etag_file = prev_snapshot.get_raw_dir() / "2-github" / github_repo.user / github_repo.repo_name / "info.etag"
+    assert etag_file.read_text() == 'W/"abc"'
+
+    # Current snapshot: the prior ETag is sent, GitHub answers 304, and the value is copied forward.
+    curr_service: GithubService = GithubService(curr_snapshot, github_rest_client, prev_snapshot)
+    mock_304: Mock = __mock_content("", status_code=304)
+    github_rest_client.get_from_url = mock_304
+    assert curr_service.get_stars_count(github_repo) == 5
+    mock_304.assert_called_once_with("https://api.github.com/repos/John/app", 'W/"abc"')
+    curr_raw = curr_snapshot.get_raw_dir() / "2-github" / github_repo.user / github_repo.repo_name / "info.json"
+    assert curr_raw.exists()
+
+
+def __mock_content(content: str, status_code: int = 200, etag: Optional[str] = None) -> Mock:
     response: Response = Response()
     response.status_code = status_code
     response._content = content.encode("utf-8")
+    if etag:
+        response.headers["ETag"] = etag
     return Mock(return_value=response)
