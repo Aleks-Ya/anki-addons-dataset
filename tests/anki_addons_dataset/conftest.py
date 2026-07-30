@@ -21,7 +21,8 @@ from anki_addons_dataset.collector.github.github_service import GithubService
 from anki_addons_dataset.collector.overrider.overrider import Overrider
 from anki_addons_dataset.common.data_types import AddonId, GithubRepo, GithubUserName, GithubRepoName, LastPostedAt, \
     URL, PostsCount, AddonInfo, AddonHeader, AddonPage, GithubInfo, AnkiForumInfo, LanguageName, AddonInfos, \
-    DatasetSnapshotMetadata, RawMetadata, AnkiVersion, AddonBranch, HtmlStr, SnapshotDate, ReportDate, ScriptVersion
+    DatasetSnapshotMetadata, RawMetadata, AnkiVersion, AddonBranch, HtmlStr, SnapshotDate, ReportDate, ScriptVersion, \
+    Rating
 from anki_addons_dataset.common.working_dir import WorkingDir, SnapshotDir
 from anki_addons_dataset.exporter.json.json_exporter import JsonExporter
 from anki_addons_dataset.exporter.xlsx.xlsx_exporter import XlsxExporter
@@ -135,7 +136,7 @@ def addon_header(note_size_addon_id: AddonId) -> AddonHeader:
         id=note_size_addon_id,
         title="NoteSize",
         addon_page_url=URL("https://ankiweb.net/shared/info/1188705668"),
-        rating=4,
+        rating=Rating(4),
         update_date="2023-03-15",
         anki_version=AnkiVersion("25.09.2~")
     )

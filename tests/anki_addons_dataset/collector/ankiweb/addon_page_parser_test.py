@@ -4,7 +4,8 @@ from pathlib import Path
 from anki_addons_dataset.collector.ankiweb.addon_page_parser import AddonPageParser
 from anki_addons_dataset.collector.overrider.overrider import Overrider
 from anki_addons_dataset.common.data_types import AddonHeader, AddonInfo, AddonPage, GithubInfo, AddonId, GitHubLink, \
-    URL, GitHubUser, GithubRepo, GithubUserName, GithubRepoName, AddonBranch, HtmlStr, AnkiForumInfo, AnkiVersion
+    URL, GitHubUser, GithubRepo, GithubUserName, GithubRepoName, AddonBranch, HtmlStr, AnkiForumInfo, AnkiVersion, \
+    Rating
 
 
 def test_parse_addon_page(overrider: Overrider):
@@ -15,7 +16,7 @@ def test_parse_addon_page(overrider: Overrider):
         id=AddonId(1188705668),
         title="Note Size - sort notes by size and see collection size",
         addon_page_url=URL("https://ankiweb.net/shared/info/1188705668"),
-        rating=12,
+        rating=Rating(12),
         update_date="2025-04-19",
         anki_version=AnkiVersion("25.09.2~"))
     addon_info: AddonInfo = parser.parse_addon_page(addon_header, addon_html)
@@ -131,7 +132,7 @@ def test_parse_addon_page_without_description(overrider: Overrider):
         id=AddonId(1),
         title="No description addon",
         addon_page_url=URL("https://ankiweb.net/shared/info/1"),
-        rating=0,
+        rating=Rating(0),
         update_date="2025-04-19",
         anki_version=AnkiVersion("25.09.2~"))
     html: HtmlStr = HtmlStr("<html><body><main><h1>No description</h1></main></body></html>")
