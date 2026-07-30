@@ -3,7 +3,7 @@ from pathlib import Path
 
 from anki_addons_dataset.common.data_types import AddonInfo, AddonInfos, AddonHeader, AddonPage, AddonBranch, \
     GithubInfo, GitHubLink, GitHubUser, GithubRepo, AnkiForumInfo, AddonId, AnkiVersion, HtmlStr, URL, \
-    GithubUserName, GithubRepoName, LanguageName, ScriptVersion, Rating, UpdateDate, AddonTitle
+    GithubUserName, GithubRepoName, LanguageName, ScriptVersion, AddonRating, UpdateDate, AddonTitle
 from anki_addons_dataset.common.json_helper import JsonHelper
 
 
@@ -20,7 +20,7 @@ def test_addon_infos_dump_round_trip(addon_infos: AddonInfos, script_version: Sc
 def test_addon_infos_dump_round_trip_with_none_fields(script_version: ScriptVersion, working_dir_path: Path):
     addon_info: AddonInfo = AddonInfo(
         header=AddonHeader(id=AddonId(1), title=AddonTitle("No GitHub"), addon_page_url=URL("https://ankiweb.net/shared/info/1"),
-                           rating=Rating(0), update_date=UpdateDate("2024-01-01"), anki_version=AnkiVersion("24.04.1")),
+                           rating=AddonRating(0), update_date=UpdateDate("2024-01-01"), anki_version=AnkiVersion("24.04.1")),
         page=AddonPage(
             content=HtmlStr("<html></html>"), like_number=0, dislike_number=0,
             branches=[AddonBranch(min_anki_version=AnkiVersion("24.04.1"), max_anki_version=None,
