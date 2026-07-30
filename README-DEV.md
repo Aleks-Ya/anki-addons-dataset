@@ -108,7 +108,7 @@ PYTHONPATH=src python -m anki_addons_dataset.addon_catalog parse report
     1. Push branch and tags: `git push origin HEAD --tags`
     2. Create a release from the tag: https://github.com/Aleks-Ya/anki-addons-dataset/releases
     3. Wait for GitHub Actions to finish publishing to PyPI: https://github.com/Aleks-Ya/anki-addons-dataset/actions
-    4. Update: `pip install -U anki-addons-dataset`
+    4. Verify the version: `uvx --refresh anki-addons-dataset info`
 
 ## Publish to PyPI
 PyPi package: https://pypi.org/project/anki-addons-dataset
