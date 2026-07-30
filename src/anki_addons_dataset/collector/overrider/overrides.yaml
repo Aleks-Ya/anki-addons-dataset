@@ -14,3 +14,11 @@ excluded_github_repos:
   - https://github.com/btbn/ffmpeg-builds
   - https://github.com/beautify-web/js-beautify
   - https://github.com/tesseract-ocr/tessdata
+  - https://github.com/user-attachments/assets
+  - https://github.com/yourusername/hinabi-aniki
+  - https://github.com/yourusername/hanziviet-addon
+  - https://github.com/yourusername/word_ai_validator
+  - https://github.com/pygments/pygments
+  - https://github.com/jaseg/python-mpv
+  - https://github.com/iwalton3/python-mpv-jsonipc
+  - https://github.com/cvsuser-chromium/third_party_hunspell_dictionaries
