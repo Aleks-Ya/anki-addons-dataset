@@ -78,6 +78,19 @@ def test_get_tests_count_200(github_service: GithubService, github_rest_client: 
     github_rest_client.get_from_url.assert_called_once()
 
 
+def test_offline_returns_empties_without_downloading(snapshot_dir: SnapshotDir,
+                                                     github_rest_client: GithubRestClient, github_repo: GithubRepo):
+    github_rest_client.get_from_url = Mock()
+    offline_service: GithubService = GithubService(snapshot_dir, github_rest_client, offline=True)
+
+    assert offline_service.get_stars_count(github_repo) == 0
+    assert offline_service.get_languages(github_repo) == {}
+    assert offline_service.get_last_commit(github_repo) is None
+    assert offline_service.get_action_count(github_repo) is None
+    assert offline_service.get_tests_count(github_repo) is None
+    github_rest_client.get_from_url.assert_not_called()
+
+
 def test_conditional_get_304_copies_previous_snapshot(working_dir: WorkingDir,
                                                        github_rest_client: GithubRestClient, github_repo: GithubRepo):
     prev_snapshot: SnapshotDir = working_dir.get_snapshot_dir(SnapshotDate(date.fromisoformat("2025-01-01"))).create()

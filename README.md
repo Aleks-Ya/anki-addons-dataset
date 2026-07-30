@@ -11,6 +11,7 @@ pip install anki-addons-dataset
 This installs the `anki-addons-dataset` command. The pipeline runs as a sequence of operations:
 
 ```bash
+anki-addons-dataset info
 anki-addons-dataset init
 anki-addons-dataset download -d 2026-01-01
 anki-addons-dataset parse

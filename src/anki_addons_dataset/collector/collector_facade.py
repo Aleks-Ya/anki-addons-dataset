@@ -106,7 +106,7 @@ class CollectorFacade:
             page_downloader, snapshot_dir, addon_page_parser, offline)
         ankiweb_service: AnkiWebService = AnkiWebService(addons_page_downloader, addon_page_downloader)
         github_rest_client: GithubRestClient = GithubRestClient(offline)
-        github_service: GithubService = GithubService(snapshot_dir, github_rest_client, prev_snapshot_dir)
+        github_service: GithubService = GithubService(snapshot_dir, github_rest_client, prev_snapshot_dir, offline)
         discourse_client: DiscourseClient = DiscourseClient(host="https://forums.ankiweb.net",
                                                             api_username=None, api_key=None)
         anki_forum_service: AnkiForumService = AnkiForumService(discourse_client, snapshot_dir, offline)

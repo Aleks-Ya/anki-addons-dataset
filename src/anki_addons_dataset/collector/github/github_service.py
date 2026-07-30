@@ -22,12 +22,13 @@ log: Logger = logging.getLogger(__name__)
 class GithubService:
 
     def __init__(self, snapshot_dir: SnapshotDir, github_rest_client: GithubRestClient,
-                 prev_snapshot_dir: Optional[SnapshotDir] = None):
+                 prev_snapshot_dir: Optional[SnapshotDir] = None, offline: bool = False):
         self.__raw_dir: Path = snapshot_dir.get_raw_dir() / "2-github"
         self.__stage_dir: Path = snapshot_dir.get_stage_dir() / "2-github"
         self.__prev_raw_dir: Optional[Path] = \
             prev_snapshot_dir.get_raw_dir() / "2-github" if prev_snapshot_dir else None
         self.__github_rest_client: GithubRestClient = github_rest_client
+        self.__offline: bool = offline
 
     def get_languages(self, repo: GithubRepo) -> dict[LanguageName, int]:
         handler: RepoHandler = LanguagesRepoHandler(repo, self.__raw_dir, self.__stage_dir, self.__prev_raw_dir)
@@ -58,6 +59,9 @@ class GithubService:
     def __get_value(self, handler: RepoHandler) -> Optional[Any]:
         if not handler.is_downloaded():
             if handler.is_repo_marked_as_not_found():
+                return handler.get_not_found_return_value()
+            if self.__offline:
+                log.debug(f"Offline mode is enabled. Skip fetching {handler.get_url()}")
                 return handler.get_not_found_return_value()
             url: str = handler.get_url()
             etag: Optional[str] = handler.get_prev_etag()

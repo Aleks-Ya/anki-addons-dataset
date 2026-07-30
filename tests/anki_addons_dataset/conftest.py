@@ -192,8 +192,9 @@ def anki_forum_service(discourse_client: DiscourseClient, snapshot_dir: Snapshot
 
 
 @fixture
-def github_service(snapshot_dir: SnapshotDir, github_rest_client: GithubRestClient) -> GithubService:
-    return GithubService(snapshot_dir, github_rest_client)
+def github_service(snapshot_dir: SnapshotDir, github_rest_client: GithubRestClient,
+                   offline: bool) -> GithubService:
+    return GithubService(snapshot_dir, github_rest_client, offline=offline)
 
 
 @fixture
