@@ -25,7 +25,7 @@ jobs:
         with:
           python-version: "3.14"
       - name: Install dependencies
-        run: pip install --root-user-action=ignore -U -r requirements.txt pip
+        run: pip install --root-user-action=ignore -U -e '.[dev]' pip
       - name: PyTest
         run: pytest -v --cov=anki_addons_dataset --cov-report=xml --cov-branch
       - name: SonarCloud Scan
