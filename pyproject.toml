@@ -34,6 +34,7 @@ dependencies = [
     "seedir",
     "openpyxl",
     "pydiscourse",
+    "humanize",
 ]
 
 [project.optional-dependencies]
