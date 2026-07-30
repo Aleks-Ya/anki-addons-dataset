@@ -77,37 +77,38 @@ Or run the source explicitly without relying on the install:
 PYTHONPATH=src python -m anki_addons_dataset.addon_catalog parse report
 ```
 
-## Create a new version of HuggingFace dataset
+## Create a new version of HuggingFace dataset **from sources** by steps
 1. Upgrade Python packages: `./pip_update.sh`
-2. Check out the latest Git tag: `git checkout v1.2.0`
-3. Initialize a working directory: `PYTHONPATH=src python -m anki_addons_dataset.addon_catalog init` (creates `~/anki-addons-dataset`)
-4. Download new snapshot: `PYTHONPATH=src python -m anki_addons_dataset.addon_catalog download -d 2026-01-01` (creates `~/anki-addons-dataset/history/2026-01-01/1-raw`)
-5. Parse dataset: `PYTHONPATH=src python -m anki_addons_dataset.addon_catalog parse` (enriches `~/anki-addons-dataset/history/YYYY-MM-DD/2-stage`)
-6. Generate reports: `PYTHONPATH=src python -m anki_addons_dataset.addon_catalog report` (creates `~/anki-addons-dataset/history/YYYY-MM-DD/3-final`)
-7. Create a bundle: `PYTHONPATH=src python -m anki_addons_dataset.addon_catalog bundle` (creates `~/anki-addons-dataset/bundle`)
-8. Upload the bundle: `PYTHONPATH=src python -m anki_addons_dataset.addon_catalog upload` (syncs `~/anki-addons-dataset/bundle` to HuggingFace)
-9. Restart the visualization space: https://huggingface.co/spaces/Ya-Alex/anki-addons
-10. Post on Anki Forum: https://forums.ankiweb.net/t/anki-addons-dataset-a-detailed-list-of-addons/63090
+2. Initialize a working directory: `PYTHONPATH=src python -m anki_addons_dataset.addon_catalog init` (creates `~/anki-addons-dataset`)
+3. Download new snapshot: `PYTHONPATH=src python -m anki_addons_dataset.addon_catalog download -d 2026-01-01` (creates `~/anki-addons-dataset/history/2026-01-01/1-raw`)
+4. Parse dataset: `PYTHONPATH=src python -m anki_addons_dataset.addon_catalog parse` (enriches `~/anki-addons-dataset/history/YYYY-MM-DD/2-stage`)
+5. Generate reports: `PYTHONPATH=src python -m anki_addons_dataset.addon_catalog report` (creates `~/anki-addons-dataset/history/YYYY-MM-DD/3-final`)
+6. Create a bundle: `PYTHONPATH=src python -m anki_addons_dataset.addon_catalog bundle` (creates `~/anki-addons-dataset/bundle`)
+7. Upload the bundle: `PYTHONPATH=src python -m anki_addons_dataset.addon_catalog upload` (syncs `~/anki-addons-dataset/bundle` to HuggingFace)
+8. Restart the visualization space: https://huggingface.co/spaces/Ya-Alex/anki-addons
+9. Post on Anki Forum: https://forums.ankiweb.net/t/anki-addons-dataset-a-detailed-list-of-addons/63090
 
 ## Release a new version of this repository
-On branch `main`:
-1. Pass Sonar Qube analysis (skill `/push`):
+1. Checkout branch `main`
+2. Pass Sonar Qube analysis (skill `/push`):
     1. Upgrade Python packages: `./pip_update.sh`
     2. Execute unit-tests: `pytest`
     3. Push changes: `git push`
     4. Review GitHub Actions: https://github.com/Aleks-Ya/anki-addons-dataset/actions
     5. Review Sonar Qube report: https://sonarcloud.io/summary/overall?id=Aleks-Ya_anki-addons-dataset&branch=main
-2. Increment version:
+3. Increment version:
     1. Show the next versions: `bump-my-version show-bump`
     2. Switch dev version to RELEASE (`0.1.1.dev0` -> `0.1.1`): `bump-my-version bump release --tag`
     3. Switch the RELEASE version to the next dev (`0.1.1` -> `0.2.0.dev0`): `bump-my-version bump minor`
-3. Create a GitHub release:
+4. Create a GitHub release:
     1. Push branch and tags: `git push origin HEAD --tags`
     2. Create a release from the tag: https://github.com/Aleks-Ya/anki-addons-dataset/releases
     3. Wait for GitHub Actions to finish publishing to PyPI: https://github.com/Aleks-Ya/anki-addons-dataset/actions
     4. Update: `pip install -U anki-addons-dataset`
 
 ## Publish to PyPI
+PyPi package: https://pypi.org/project/anki-addons-dataset
+
 Publishing is automated: creating a GitHub release runs `.github/workflows/publish.yml`
 (PyPI Trusted Publishing, no API tokens).
 
