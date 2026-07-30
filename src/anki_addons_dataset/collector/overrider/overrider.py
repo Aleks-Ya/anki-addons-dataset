@@ -7,7 +7,7 @@ from logging import Logger
 import yaml
 
 from anki_addons_dataset.collector.url_parser import UrlParser
-from anki_addons_dataset.common.data_types import AddonId, URL, GitHubLink, AddonInfos
+from anki_addons_dataset.common.data_types import AddonId, URL, GitHubLink
 from anki_addons_dataset.common.working_dir import SnapshotDir
 
 log: Logger = logging.getLogger(__name__)
@@ -25,13 +25,6 @@ class Overrider:
         dest_file: Path = snapshot_dir.get_stage_dir() / "4-overrider" / "overrides.yaml"
         dest_file.parent.mkdir(parents=True, exist_ok=True)
         shutil.copy(override_file, dest_file)
-
-    def override(self, addon_infos: AddonInfos) -> AddonInfos:
-        for addon_info in addon_infos:
-            if addon_info.header.id in self.addons_data:
-                for key, value in self.addons_data[addon_info.header.id].items():
-                    setattr(addon_info.header, key, value)
-        return addon_infos
 
     def override_github_link(self, addon_id: AddonId) -> Optional[GitHubLink]:
         if addon_id in self.addons_data:

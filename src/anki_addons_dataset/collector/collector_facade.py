@@ -113,5 +113,5 @@ class CollectorFacade:
         github_enricher: GithubEnricher = GithubEnricher(snapshot_dir, github_service)
         anki_forum_enricher: AnkiForumEnricher = AnkiForumEnricher(snapshot_dir, anki_forum_service)
         addon_infos_collector: AddonInfosCollector = AddonInfosCollector(
-            ankiweb_service, github_enricher, anki_forum_enricher, overrider)
+            ankiweb_service, github_enricher, anki_forum_enricher)
         return addon_infos_collector.collect_addons()
