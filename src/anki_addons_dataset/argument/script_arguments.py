@@ -28,7 +28,13 @@ class ScriptArguments:
         return self.namespace.snapshot_date
 
     def get_operations(self) -> list[Operation]:
-        return [Operation[operation.upper()] for operation in self.namespace.operations]
+        operations: list[Operation] = []
+        for operation in self.namespace.operations:
+            if operation.lower() == "all":
+                operations.extend(Operation)
+            else:
+                operations.append(Operation[operation.upper()])
+        return operations
 
     def get_log_level(self) -> int:
         return self.namespace.log_level

@@ -29,6 +29,54 @@ Sonar report is automatically updated in GitHub Actions.
 Default log level: DEBUG
 Set log level: `PYTHONPATH=src python -m anki_addons_dataset.addon_catalog parse -l INFO`
 
+## Running the pipeline
+
+The pipeline has six steps run in order: `init download parse report bundle upload`.
+A single invocation accepts any subset of steps (space-separated), or the shorthand `all`,
+which expands to the full six-step sequence in pipeline order:
+
+```bash
+anki-addons-dataset all -d 2026-01-01          # equivalent to: init download parse report bundle upload
+anki-addons-dataset parse report               # run only the given steps
+```
+
+There are three ways to run it, depending on which version you need:
+
+### 1. Full run on a release version (from PyPI)
+
+Latest release (default):
+```bash
+uvx anki-addons-dataset all -d 2026-01-01
+```
+
+A specific release:
+```bash
+uvx --from anki-addons-dataset==1.3.0 anki-addons-dataset all -d 2026-01-01
+```
+
+`uvx` runs the released package in an isolated, cached environment — it never touches the
+editable dev install. If a brand-new release is not picked up, add `--refresh` once.
+
+### 2. Given steps on a release version (from PyPI)
+
+```bash
+uvx anki-addons-dataset parse report                                   # latest release
+uvx --from anki-addons-dataset==1.3.0 anki-addons-dataset parse report  # pinned release
+```
+
+### 3. Given steps on the current working source
+
+Activate the editable dev env and the same command runs your working tree:
+```bash
+pyenv activate anki-addons-dataset
+anki-addons-dataset parse report
+```
+
+Or run the source explicitly without relying on the install:
+```bash
+PYTHONPATH=src python -m anki_addons_dataset.addon_catalog parse report
+```
+
 ## Create a new version of HuggingFace dataset
 1. Upgrade Python packages: `./pip_update.sh`
 2. Check out the latest Git tag: `git checkout v1.2.0`
