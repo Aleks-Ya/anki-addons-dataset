@@ -175,6 +175,154 @@
                   "integer",
                   "null"
                 ]
+              },
+              "license": {
+                "type": [
+                  "null",
+                  "string"
+                ]
+              },
+              "forks": {
+                "type": [
+                  "integer",
+                  "null"
+                ]
+              },
+              "open_issues": {
+                "type": [
+                  "integer",
+                  "null"
+                ]
+              },
+              "size_kb": {
+                "type": [
+                  "integer",
+                  "null"
+                ]
+              },
+              "topics": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "repo_description": {
+                "type": [
+                  "null",
+                  "string"
+                ]
+              },
+              "homepage": {
+                "type": [
+                  "null",
+                  "string"
+                ]
+              },
+              "archived": {
+                "type": [
+                  "boolean",
+                  "null"
+                ]
+              },
+              "pushed_at": {
+                "type": [
+                  "null",
+                  "string"
+                ]
+              },
+              "created_at": {
+                "type": [
+                  "null",
+                  "string"
+                ]
+              },
+              "primary_language": {
+                "type": [
+                  "null",
+                  "string"
+                ]
+              },
+              "language_bytes": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "name": {
+                      "type": "string"
+                    },
+                    "bytes": {
+                      "type": "integer"
+                    }
+                  }
+                }
+              },
+              "manifest": {
+                "anyOf": [
+                  {
+                    "type": "null"
+                  },
+                  {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                      "package": {
+                        "type": [
+                          "null",
+                          "string"
+                        ]
+                      },
+                      "name": {
+                        "type": [
+                          "null",
+                          "string"
+                        ]
+                      },
+                      "conflicts": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        }
+                      },
+                      "min_point_version": {
+                        "type": [
+                          "integer",
+                          "null"
+                        ]
+                      },
+                      "max_point_version": {
+                        "type": [
+                          "integer",
+                          "null"
+                        ]
+                      },
+                      "homepage": {
+                        "type": [
+                          "null",
+                          "string"
+                        ]
+                      },
+                      "mod": {
+                        "type": [
+                          "integer",
+                          "null"
+                        ]
+                      }
+                    }
+                  }
+                ]
+              },
+              "dependencies": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "readme": {
+                "type": [
+                  "null",
+                  "string"
+                ]
               }
             }
           }

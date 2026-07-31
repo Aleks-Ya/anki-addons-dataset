@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from typing import Optional
 
-from anki_addons_dataset.common.data_types import AddonInfos, AddonInfo, PlainStr
+from anki_addons_dataset.common.data_types import AddonInfos, AddonInfo, PlainStr, GithubInfo, AddonManifest
 
 
 @dataclass
@@ -9,6 +9,23 @@ class Link:
     url: str
     user: Optional[str]
     repo: Optional[str]
+
+
+@dataclass
+class LanguageBytes:
+    name: str
+    bytes: int
+
+
+@dataclass
+class Manifest:
+    package: Optional[str]
+    name: Optional[str]
+    conflicts: list[str]
+    min_point_version: Optional[int]
+    max_point_version: Optional[int]
+    homepage: Optional[str]
+    mod: Optional[int]
 
 
 @dataclass
@@ -21,6 +38,21 @@ class GitHub:
     links: list[Link]
     action_count: Optional[int]
     tests_count: Optional[int]
+    license: Optional[str]
+    forks: Optional[int]
+    open_issues: Optional[int]
+    size_kb: Optional[int]
+    topics: list[str]
+    repo_description: Optional[str]
+    homepage: Optional[str]
+    archived: Optional[bool]
+    pushed_at: Optional[str]
+    created_at: Optional[str]
+    primary_language: Optional[str]
+    language_bytes: list[LanguageBytes]
+    manifest: Optional[Manifest]
+    dependencies: list[str]
+    readme: Optional[str]
 
 
 @dataclass
@@ -83,14 +115,29 @@ class JsonAddonInfo:
     def __github(addon: AddonInfo) -> Optional[GitHub]:
         if not addon.github or not addon.github.github_repo:
             return None
-        user: str = addon.github.github_repo.user
-        repo_str: str = addon.github.github_repo.repo_name
+        github: GithubInfo = addon.github
+        user: str = github.github_repo.user
+        repo_str: str = github.github_repo.repo_name
         links: list[Link] = [Link(link.url, link.user.user_name, link.repo.repo_name if link.repo else None)
-                             for link in addon.github.github_links]
-        last_commit_str: Optional[str] = addon.github.last_commit.isoformat() if addon.github.last_commit else None
-        return GitHub(user, repo_str, addon.github.languages, addon.github.stars,
-                      last_commit_str, links, addon.github.action_count,
-                      addon.github.tests_count)
+                             for link in github.github_links]
+        last_commit_str: Optional[str] = github.last_commit.isoformat() if github.last_commit else None
+        pushed_at_str: Optional[str] = github.pushed_at.isoformat() if github.pushed_at else None
+        created_at_str: Optional[str] = github.created_at.isoformat() if github.created_at else None
+        manifest: Optional[Manifest] = JsonAddonInfo.__manifest(github.manifest)
+        language_bytes: list[LanguageBytes] = [LanguageBytes(name, count)
+                                               for name, count in github.language_bytes.items()]
+        return GitHub(user, repo_str, github.languages, github.stars, last_commit_str, links, github.action_count,
+                      github.tests_count, github.license, github.forks, github.open_issues, github.size_kb,
+                      list(github.topics), github.repo_description, github.homepage, github.archived, pushed_at_str,
+                      created_at_str, github.primary_language, language_bytes, manifest,
+                      list(github.dependencies), github.readme)
+
+    @staticmethod
+    def __manifest(manifest: Optional[AddonManifest]) -> Optional[Manifest]:
+        if manifest is None:
+            return None
+        return Manifest(manifest.package, manifest.name, list(manifest.conflicts), manifest.min_point_version,
+                        manifest.max_point_version, manifest.homepage, manifest.mod)
 
     @staticmethod
     def __forum(addon: AddonInfo) -> Optional[Forum]:

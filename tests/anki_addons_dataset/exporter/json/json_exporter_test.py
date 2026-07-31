@@ -3,7 +3,7 @@ from pathlib import Path
 from typing import Any, Optional
 
 from anki_addons_dataset.common.data_types import Aggregation, AddonInfos, AddonInfo, AnkiForumInfo, PostsCount, \
-    DatasetSnapshotMetadata, RawMetadata
+    DatasetSnapshotMetadata, RawMetadata, AddonManifest, SpdxLicense, Topic, DependencyName, LanguageName, URL
 from anki_addons_dataset.common.working_dir import SnapshotDir
 from anki_addons_dataset.exporter.json.json_exporter import JsonExporter
 
@@ -36,7 +36,22 @@ def test_export_addon_infos(json_exporter: JsonExporter, snapshot_dir: SnapshotD
                                     'repo': 'app',
                                     'stars': 3,
                                     'tests_count': 7,
-                                    'user': 'John'},
+                                    'user': 'John',
+                                    'license': None,
+                                    'forks': None,
+                                    'open_issues': None,
+                                    'size_kb': None,
+                                    'topics': [],
+                                    'repo_description': None,
+                                    'homepage': None,
+                                    'archived': None,
+                                    'pushed_at': None,
+                                    'created_at': None,
+                                    'primary_language': None,
+                                    'language_bytes': [],
+                                    'manifest': None,
+                                    'dependencies': [],
+                                    'readme': None},
                          'forum': {'anki_forum_url': 'https://forums.ankiweb.net/t/note-size-addon-support/46001',
                                    'topic_slug': 'note-size-addon-support',
                                    'topic_id': 46001,
@@ -77,7 +92,22 @@ def test_export_addon_infos_empty_forum(json_exporter: JsonExporter, snapshot_di
                                     'repo': 'app',
                                     'stars': 3,
                                     'tests_count': 7,
-                                    'user': 'John'},
+                                    'user': 'John',
+                                    'license': None,
+                                    'forks': None,
+                                    'open_issues': None,
+                                    'size_kb': None,
+                                    'topics': [],
+                                    'repo_description': None,
+                                    'homepage': None,
+                                    'archived': None,
+                                    'pushed_at': None,
+                                    'created_at': None,
+                                    'primary_language': None,
+                                    'language_bytes': [],
+                                    'manifest': None,
+                                    'dependencies': [],
+                                    'readme': None},
                          'forum': None}]
 
 
@@ -114,7 +144,22 @@ def test_export_addon_infos_empty_posts_count(json_exporter: JsonExporter, snaps
                                     'repo': 'app',
                                     'stars': 3,
                                     'tests_count': 7,
-                                    'user': 'John'},
+                                    'user': 'John',
+                                    'license': None,
+                                    'forks': None,
+                                    'open_issues': None,
+                                    'size_kb': None,
+                                    'topics': [],
+                                    'repo_description': None,
+                                    'homepage': None,
+                                    'archived': None,
+                                    'pushed_at': None,
+                                    'created_at': None,
+                                    'primary_language': None,
+                                    'language_bytes': [],
+                                    'manifest': None,
+                                    'dependencies': [],
+                                    'readme': None},
                          'forum': {'anki_forum_url': 'https://forums.ankiweb.net/t/note-size-addon-support/46001',
                                    'topic_slug': 'note-size-addon-support',
                                    'topic_id': 46001,
@@ -138,6 +183,37 @@ def test_export_addon_infos_empty_last_posted_at(json_exporter: JsonExporter, sn
                                     'topic_id': 46001,
                                     'last_posted_at': None,
                                     'posts_count': 42}
+
+
+def test_export_addon_infos_with_enrichment_fields(json_exporter: JsonExporter, snapshot_dir: SnapshotDir,
+                                                   addon_info: AddonInfo,
+                                                   dataset_snapshot_metadata: DatasetSnapshotMetadata,
+                                                   raw_metadata: RawMetadata):
+    # Populates every enrichment field so the exported JSON is validated against schema.json with real data.
+    assert addon_info.github is not None
+    addon_info.github.license = SpdxLicense("MIT")
+    addon_info.github.forks = 4
+    addon_info.github.topics = [Topic("anki")]
+    addon_info.github.homepage = URL("https://example.com")
+    addon_info.github.archived = False
+    addon_info.github.language_bytes = {LanguageName("Python"): 5, LanguageName("Rust"): 2}
+    addon_info.github.primary_language = LanguageName("Python")
+    addon_info.github.manifest = AddonManifest(package="note_size", name="Note Size", conflicts=["123"],
+                                               min_point_version=45, homepage="https://example.com", mod=1678900000)
+    addon_info.github.dependencies = [DependencyName("requests")]
+    addon_info.github.readme = "# NoteSize"
+
+    json_exporter.export_addon_infos(AddonInfos([addon_info]), dataset_snapshot_metadata, raw_metadata)
+
+    act_file: Path = snapshot_dir.get_final_dir() / "json" / "data.json"
+    github: dict[str, Any] = json.loads(act_file.read_text())[0]["github"]
+    assert github["license"] == "MIT"
+    assert github["topics"] == ["anki"]
+    assert github["primary_language"] == "Python"
+    assert github["language_bytes"] == [{"name": "Python", "bytes": 5}, {"name": "Rust", "bytes": 2}]
+    assert github["manifest"]["package"] == "note_size"
+    assert github["dependencies"] == ["requests"]
+    assert github["readme"] == "# NoteSize"
 
 
 def test_export_aggregation(json_exporter: JsonExporter, snapshot_dir: SnapshotDir,

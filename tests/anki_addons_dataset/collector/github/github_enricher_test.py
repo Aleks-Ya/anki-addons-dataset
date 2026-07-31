@@ -5,9 +5,10 @@ from unittest.mock import Mock
 
 from anki_addons_dataset.collector.github.github_enricher import GithubEnricher
 from anki_addons_dataset.collector.github.github_service import GithubService
+from anki_addons_dataset.collector.github.handler.repo_info_repo_handler import GithubRepoMeta
 from anki_addons_dataset.common.data_types import AddonInfo, AddonHeader, AddonId, AddonPage, GithubRepo, \
     LanguageName, GithubInfo, AddonInfos, AnkiForumInfo, TopicSlug, TopicId, LastPostedAt, PostsCount, AnkiVersion, \
-    HtmlStr, URL, AddonRating, UpdateDate, AddonTitle
+    HtmlStr, URL, AddonRating, UpdateDate, AddonTitle, AddonManifest, SpdxLicense, Topic, DependencyName
 
 log: Logger = logging.getLogger(__name__)
 
@@ -50,11 +51,23 @@ def test_enrich(github_enricher: GithubEnricher, github_service: GithubService, 
     )
 
     last_commit: datetime = datetime(2023, 3, 15, 12, 0, 0, 0)
+    pushed_at: datetime = datetime(2023, 3, 16, 10, 0, 0)
+    created_at: datetime = datetime(2020, 1, 1, 9, 0, 0)
+    manifest: AddonManifest = AddonManifest(package="note_size", name="Note Size", conflicts=["1234567"],
+                                             min_point_version=45, max_point_version=None,
+                                             homepage="https://example.com", mod=1678900000)
     github_service.get_languages = Mock(return_value={LanguageName("Python"): 5, LanguageName("Rust"): 2})
     github_service.get_stars_count = Mock(return_value=3)
     github_service.get_last_commit = Mock(return_value=last_commit)
     github_service.get_action_count = Mock(return_value=5)
     github_service.get_tests_count = Mock(return_value=7)
+    github_service.get_repo_info = Mock(return_value=GithubRepoMeta(
+        license=SpdxLicense("MIT"), forks=4, open_issues=2, size_kb=128, topics=[Topic("anki")],
+        repo_description="A NoteSize addon", homepage=URL("https://example.com"), archived=False,
+        pushed_at=pushed_at, created_at=created_at))
+    github_service.get_manifest = Mock(return_value=manifest)
+    github_service.get_dependencies = Mock(return_value=[DependencyName("requests"), DependencyName("beautifulsoup4")])
+    github_service.get_readme = Mock(return_value="# NoteSize\nExample readme")
 
     github_enricher.start()
     github_enricher.download_in_background(addon_info)
@@ -84,7 +97,22 @@ def test_enrich(github_enricher: GithubEnricher, github_service: GithubService, 
             stars=3,
             last_commit=last_commit,
             action_count=5,
-            tests_count=7
+            tests_count=7,
+            license=SpdxLicense("MIT"),
+            forks=4,
+            open_issues=2,
+            size_kb=128,
+            topics=[Topic("anki")],
+            repo_description="A NoteSize addon",
+            homepage=URL("https://example.com"),
+            archived=False,
+            pushed_at=pushed_at,
+            created_at=created_at,
+            primary_language=LanguageName("Python"),
+            language_bytes={LanguageName("Python"): 5, LanguageName("Rust"): 2},
+            manifest=manifest,
+            dependencies=[DependencyName("requests"), DependencyName("beautifulsoup4")],
+            readme="# NoteSize\nExample readme"
         ),
         forum=AnkiForumInfo(
             anki_forum_url=None,

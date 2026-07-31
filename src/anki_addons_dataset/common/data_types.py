@@ -1,6 +1,6 @@
 from datetime import datetime, date
 from typing import NewType, Optional
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 SnapshotDate = NewType("SnapshotDate", date)
 ReportDate = NewType("ReportDate", datetime)
@@ -22,6 +22,9 @@ LastPostedAt = NewType("LastPostedAt", datetime)
 PostsCount = NewType("PostsCount", int)
 HuggingFaceFolder = NewType("HuggingFaceFolder", str)
 AnkiVersion = NewType("AnkiVersion", str)
+SpdxLicense = NewType("SpdxLicense", str)
+DependencyName = NewType("DependencyName", str)
+Topic = NewType("Topic", str)
 
 
 @dataclass
@@ -62,6 +65,18 @@ class GitHubLink:
 
 
 @dataclass
+class AddonManifest:
+    """Parsed Anki addon `manifest.json` (the metadata Anki ships inside each add-on package)."""
+    package: Optional[str] = None
+    name: Optional[str] = None
+    conflicts: list[str] = field(default_factory=list)
+    min_point_version: Optional[int] = None
+    max_point_version: Optional[int] = None
+    homepage: Optional[str] = None
+    mod: Optional[int] = None
+
+
+@dataclass
 class GithubInfo:
     github_links: list[GitHubLink]
     github_repo: Optional[GithubRepo]
@@ -70,6 +85,22 @@ class GithubInfo:
     last_commit: Optional[datetime]
     action_count: Optional[int]
     tests_count: Optional[int]
+    # Developer-facing enrichment (all optional; populated by GithubEnricher, default-empty elsewhere).
+    license: Optional[SpdxLicense] = None
+    forks: Optional[int] = None
+    open_issues: Optional[int] = None
+    size_kb: Optional[int] = None
+    topics: list[Topic] = field(default_factory=list)
+    repo_description: Optional[str] = None
+    homepage: Optional[URL] = None
+    archived: Optional[bool] = None
+    pushed_at: Optional[datetime] = None
+    created_at: Optional[datetime] = None
+    primary_language: Optional[LanguageName] = None
+    language_bytes: dict[LanguageName, int] = field(default_factory=dict)
+    manifest: Optional[AddonManifest] = None
+    dependencies: list[DependencyName] = field(default_factory=list)
+    readme: Optional[str] = None
 
 
 @dataclass

@@ -7,6 +7,7 @@ from requests import Response
 
 from anki_addons_dataset.collector.github.handler.repo_handler import RepoHandler
 from anki_addons_dataset.collector.github.handler.tests_counter import TestsCounter
+from anki_addons_dataset.collector.github.handler.tree_reader import TreeReader
 from anki_addons_dataset.common.json_helper import JsonHelper
 
 log: Logger = logging.getLogger(__name__)
@@ -27,9 +28,7 @@ class TestsRepoHandler(RepoHandler):
         is_truncated: bool = bool(content_obj.get("truncated"))
         if is_truncated:
             raise RuntimeError(f"Repo tree is truncated: {content_obj['url']}")
-        if "tree" not in content_obj:
-            return 0
-        files: list[str] = [file["path"] for file in content_obj["tree"]]
+        files: list[str] = TreeReader.extract_file_paths(content_obj)
         return TestsCounter.count_tests(files)
 
     def _prepare_stage_dict(self, return_value: int) -> dict[str, Any]:

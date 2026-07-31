@@ -7,7 +7,7 @@ from typing import Any, Optional
 from anki_addons_dataset.common.data_types import AddonInfo, AddonInfos, AddonHeader, AddonPage, AddonBranch, \
     GithubInfo, GitHubLink, GitHubUser, GithubRepo, AnkiForumInfo, AddonId, AnkiVersion, HtmlStr, URL, \
     GithubUserName, GithubRepoName, LanguageName, TopicSlug, TopicId, LastPostedAt, PostsCount, ScriptVersion, AddonRating, \
-    UpdateDate, AddonTitle, PlainStr
+    UpdateDate, AddonTitle, PlainStr, AddonManifest, SpdxLicense, Topic, DependencyName
 
 
 class JsonHelper:
@@ -84,6 +84,9 @@ class JsonHelper:
         if data is None:
             return None
         last_commit: Optional[str] = data["last_commit"]
+        homepage: Optional[str] = data.get("homepage")
+        primary_language: Optional[str] = data.get("primary_language")
+        license_str: Optional[str] = data.get("license")
         return GithubInfo(
             github_links=[JsonHelper.__github_link_from_dict(link) for link in data["github_links"]],
             github_repo=JsonHelper.__github_repo_from_dict(data["github_repo"]),
@@ -92,7 +95,40 @@ class JsonHelper:
             last_commit=datetime.fromisoformat(last_commit) if last_commit is not None else None,
             action_count=data["action_count"],
             tests_count=data["tests_count"],
+            license=SpdxLicense(license_str) if license_str is not None else None,
+            forks=data.get("forks"),
+            open_issues=data.get("open_issues"),
+            size_kb=data.get("size_kb"),
+            topics=[Topic(topic) for topic in data.get("topics", [])],
+            repo_description=data.get("repo_description"),
+            homepage=URL(homepage) if homepage is not None else None,
+            archived=data.get("archived"),
+            pushed_at=JsonHelper.__parse_datetime(data.get("pushed_at")),
+            created_at=JsonHelper.__parse_datetime(data.get("created_at")),
+            primary_language=LanguageName(primary_language) if primary_language is not None else None,
+            language_bytes={LanguageName(name): count for name, count in data.get("language_bytes", {}).items()},
+            manifest=JsonHelper.__manifest_from_dict(data.get("manifest")),
+            dependencies=[DependencyName(dependency) for dependency in data.get("dependencies", [])],
+            readme=data.get("readme"),
         )
+
+    @staticmethod
+    def __manifest_from_dict(data: Optional[dict[str, Any]]) -> Optional[AddonManifest]:
+        if data is None:
+            return None
+        return AddonManifest(
+            package=data.get("package"),
+            name=data.get("name"),
+            conflicts=list(data.get("conflicts", [])),
+            min_point_version=data.get("min_point_version"),
+            max_point_version=data.get("max_point_version"),
+            homepage=data.get("homepage"),
+            mod=data.get("mod"),
+        )
+
+    @staticmethod
+    def __parse_datetime(value: Optional[str]) -> Optional[datetime]:
+        return datetime.fromisoformat(value) if value is not None else None
 
     @staticmethod
     def __github_link_from_dict(data: dict[str, Any]) -> GitHubLink:
