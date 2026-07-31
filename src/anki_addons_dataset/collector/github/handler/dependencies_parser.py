@@ -35,7 +35,7 @@ class DependenciesParser:
             return []
         try:
             data: dict[str, Any] = tomllib.loads(content)
-        except (tomllib.TOMLDecodeError, ValueError):
+        except ValueError:  # tomllib.TOMLDecodeError subclasses ValueError
             log.info("Could not parse pyproject.toml")
             return []
         names: list[DependencyName] = []

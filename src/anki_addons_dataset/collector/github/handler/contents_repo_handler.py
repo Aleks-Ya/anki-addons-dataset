@@ -1,5 +1,4 @@
 import base64
-import binascii
 from pathlib import Path
 from typing import Any, Optional
 import logging
@@ -34,7 +33,7 @@ class ContentsRepoHandler(RepoHandler):
             return None
         try:
             return base64.b64decode(content_obj["content"]).decode("utf-8", errors="replace")
-        except (binascii.Error, ValueError):
+        except ValueError:  # binascii.Error (invalid base64) subclasses ValueError
             log.info(f"Could not decode contents for {self._repo.get_id()}/{self.__path}")
             return None
 

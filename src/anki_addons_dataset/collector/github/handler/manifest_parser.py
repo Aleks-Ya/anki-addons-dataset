@@ -17,7 +17,7 @@ class ManifestParser:
             return None
         try:
             data: dict[str, Any] = json.loads(content)
-        except (json.JSONDecodeError, ValueError):
+        except ValueError:  # json.JSONDecodeError subclasses ValueError
             log.info("Could not parse manifest.json")
             return None
         if not isinstance(data, dict):
