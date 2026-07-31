@@ -3,6 +3,8 @@ addons:
     GitHubUrl: https://github.com/r-appleton/addons
   111623432: #HyperTTS
     AnkiForumUrl: https://forums.ankiweb.net/t/hypertts-spirtual-successor-to-awesometts/17143
+  2055492159: #AnkiConnect
+    GitHubUrl: https://github.com/FooSoft/anki-connect/
 
 excluded_github_repos:
   - https://github.com/ankitects/anki
