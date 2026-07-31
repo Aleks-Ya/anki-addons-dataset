@@ -2,7 +2,7 @@ import logging
 from datetime import datetime
 from unittest.mock import Mock
 
-from pytest import LogCaptureFixture
+import pytest
 
 from anki_addons_dataset import __version__
 from anki_addons_dataset.common.data_types import SnapshotDate, ReportDate
@@ -11,7 +11,7 @@ from anki_addons_dataset.huggingface.hugging_face_client import HuggingFaceClien
 from anki_addons_dataset.info.app_info import AppInfo
 
 
-def test_print_info(working_dir: WorkingDir, caplog: LogCaptureFixture):
+def test_print_info(working_dir: WorkingDir, caplog: pytest.LogCaptureFixture):
     hugging_face_client: HuggingFaceClient = Mock()
     hugging_face_client.get_repo_id.return_value = "Ya-Alex/anki-addons"
     app_info: AppInfo = AppInfo(working_dir, hugging_face_client)

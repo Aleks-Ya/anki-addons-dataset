@@ -2,7 +2,7 @@ from pathlib import Path
 from typing import Optional
 from unittest.mock import Mock
 
-from pytest import raises
+import pytest
 
 from anki_addons_dataset.collector.ankiweb.addon_page_downloader import AddonPageDownloader
 from anki_addons_dataset.collector.ankiweb.page_downloader import PageDownloader
@@ -52,7 +52,7 @@ def test_throws_informative_exception(addon_page_downloader: AddonPageDownloader
         rating=AddonRating(12),
         update_date=UpdateDate("2025-04-19"),
         anki_version=AnkiVersion("25.09.2~"))
-    with raises(RuntimeError, match="Cannot get addon info: 1188705668") as ex_info:
+    with pytest.raises(RuntimeError, match="Cannot get addon info: 1188705668") as ex_info:
         addon_page_downloader.get_addon_info(addon_header)
     cause: Optional[BaseException] = ex_info.value.__cause__
     assert type(cause) is AttributeError

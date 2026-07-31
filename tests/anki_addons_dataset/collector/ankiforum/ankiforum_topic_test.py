@@ -1,6 +1,6 @@
 from typing import Optional
 
-from pytest import raises
+import pytest
 
 from anki_addons_dataset.collector.ankiforum.ankiforum_topic import AnkiForumTopic
 from anki_addons_dataset.common.data_types import URL, TopicId, TopicSlug
@@ -27,7 +27,7 @@ def test_extract_topic_slug_none():
 
 def test_extract_topic_slug_invalid():
     anki_forum_url: URL = URL("https://www.linux.org/threads/system-will-not-boot.62847/")
-    with raises(ValueError) as ex_info:
+    with pytest.raises(ValueError) as ex_info:
         AnkiForumTopic.extract_topic_slug(anki_forum_url)
     e: ValueError = ex_info.value
     assert "Cannot extract Topic Slug from Anki Forum Topic URL: 'https://www.linux.org/threads/system-will-not-boot.62847/'" in e.args
@@ -46,7 +46,7 @@ def test_extract_topic_id_none():
 
 def test_extract_topic_id_invalid():
     anki_forum_url: URL = URL("https://www.linux.org/threads/system-will-not-boot.62847/")
-    with raises(ValueError) as ex_info:
+    with pytest.raises(ValueError) as ex_info:
         AnkiForumTopic.extract_topic_id(anki_forum_url)
     e: ValueError = ex_info.value
     assert "Cannot extract Topic ID from Anki Forum Topic URL: 'https://www.linux.org/threads/system-will-not-boot.62847/'" in e.args

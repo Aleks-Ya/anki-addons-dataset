@@ -56,6 +56,8 @@ def test_addon_infos_dump_parses_datetimes(addon_infos: AddonInfos, script_versi
     _, read_addon_infos = JsonHelper.read_addon_infos_dump(dump_file)
 
     github = read_addon_infos[0].github
-    assert github is not None and isinstance(github.last_commit, datetime)
+    assert github is not None
+    assert isinstance(github.last_commit, datetime)
     forum = read_addon_infos[0].forum
-    assert forum is not None and isinstance(forum.last_posted_at, datetime)
+    assert forum is not None
+    assert isinstance(forum.last_posted_at, datetime)

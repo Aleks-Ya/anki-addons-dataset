@@ -1,7 +1,7 @@
 from datetime import date
 from typing import Optional
 
-from pytest import raises
+import pytest
 from _pytest.monkeypatch import MonkeyPatch
 
 from anki_addons_dataset.argument.script_arguments import ScriptArguments, Operation
@@ -63,5 +63,5 @@ def test_all_operation_expands_in_pipeline_order(monkeypatch: MonkeyPatch):
 def test_invalid_operation(monkeypatch: MonkeyPatch):
     monkeypatch.setattr('sys.argv', ['addon_catalog.py', 'invalid', '-d', '2025-06-10'])
     arguments: ScriptArguments = ScriptArguments()
-    with raises(KeyError):
+    with pytest.raises(KeyError):
         arguments.get_operations()

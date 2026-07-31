@@ -2,7 +2,7 @@ from datetime import date, datetime
 from typing import Optional
 from unittest.mock import Mock
 
-from pytest import raises
+import pytest
 from requests import Response
 
 from anki_addons_dataset.collector.github.github_rest_client import GithubRestClient
@@ -33,7 +33,7 @@ def test_get_languages_404(github_service: GithubService, github_rest_client: Gi
 def test_get_languages_409(github_service: GithubService, github_rest_client: GithubRestClient,
                            github_repo: GithubRepo):
     github_rest_client.get_from_url = __mock_content("", status_code=409)
-    with raises(RuntimeError) as ex_info:
+    with pytest.raises(RuntimeError) as ex_info:
         github_service.get_languages(github_repo)
     assert "Error status 409 for John/app: " in ex_info.value.args
     github_rest_client.get_from_url.assert_called_once()

@@ -3,8 +3,8 @@ from datetime import date, datetime, timezone
 from pathlib import Path
 from unittest.mock import Mock
 
+import pytest
 from pydiscourse import DiscourseClient
-from pytest import fixture
 
 from anki_addons_dataset.collector.aggregator import Aggregator
 from anki_addons_dataset.collector.ankiforum.ankiforum_enricher import AnkiForumEnricher
@@ -32,105 +32,105 @@ from anki_addons_dataset.initializer.working_dir_backup import WorkingDirBackup
 from anki_addons_dataset.initializer.working_dir_initializer import WorkingDirInitializer
 
 
-@fixture
+@pytest.fixture
 def working_dir_path() -> Path:
     return Path(tempfile.mkdtemp())
 
 
-@fixture
+@pytest.fixture
 def working_dir(working_dir_path: Path) -> WorkingDir:
     return WorkingDir(working_dir_path)
 
 
-@fixture
+@pytest.fixture
 def snapshot_date() -> SnapshotDate:
     return SnapshotDate(date.fromisoformat("2025-01-25"))
 
 
-@fixture
+@pytest.fixture
 def snapshot_dir(working_dir: WorkingDir, snapshot_date: SnapshotDate) -> SnapshotDir:
     return working_dir.get_snapshot_dir(snapshot_date).create()
 
 
-@fixture
+@pytest.fixture
 def overrider(snapshot_dir: SnapshotDir) -> Overrider:
     return Overrider(snapshot_dir)
 
 
-@fixture
+@pytest.fixture
 def note_size_addon_id() -> AddonId:
     return AddonId(1188705668)
 
 
-@fixture
+@pytest.fixture
 def hyper_tts_addon_id() -> AddonId:
     return AddonId(111623432)
 
 
-@fixture
+@pytest.fixture
 def page_downloader() -> PageDownloader:
     return Mock()
 
 
-@fixture
+@pytest.fixture
 def addon_page_parser(overrider: Overrider) -> AddonPageParser:
     return AddonPageParser(overrider)
 
 
-@fixture
+@pytest.fixture
 def offline() -> bool:
     return False
 
 
-@fixture
+@pytest.fixture
 def addons_page_downloader(page_downloader: PageDownloader, snapshot_dir: SnapshotDir,
                            offline: bool) -> AddonsPageDownloader:
     return AddonsPageDownloader(page_downloader, snapshot_dir, offline)
 
 
-@fixture
+@pytest.fixture
 def addon_page_downloader(page_downloader: PageDownloader, snapshot_dir: SnapshotDir,
                           addon_page_parser: AddonPageParser, offline: bool) -> AddonPageDownloader:
     return AddonPageDownloader(page_downloader, snapshot_dir, addon_page_parser, offline)
 
 
-@fixture
+@pytest.fixture
 def ankiweb_service(addons_page_downloader: AddonsPageDownloader,
                     addon_page_downloader: AddonPageDownloader) -> AnkiWebService:
     return AnkiWebService(addons_page_downloader, addon_page_downloader)
 
 
-@fixture
+@pytest.fixture
 def github_rest_client() -> GithubRestClient:
     return Mock()
 
 
-@fixture
+@pytest.fixture
 def topic_slug() -> TopicSlug:
     return TopicSlug("note-size-addon-support")
 
 
-@fixture
+@pytest.fixture
 def topic_id() -> TopicId:
     return TopicId(46001)
 
 
-@fixture
+@pytest.fixture
 def anki_forum_url(topic_slug: TopicSlug, topic_id: TopicId) -> URL:
     return URL(f"https://forums.ankiweb.net/t/{topic_slug}/{topic_id}")
 
 
-@fixture
+@pytest.fixture
 def last_posted_at() -> LastPostedAt:
     return LastPostedAt(datetime(2023, 9, 10, 12, 0, 0, 0, tzinfo=timezone.utc))
 
 
-@fixture
+@pytest.fixture
 def posts_count() -> PostsCount:
     return PostsCount(42)
 
 
-@fixture
+@pytest.fixture
 def addon_header(note_size_addon_id: AddonId) -> AddonHeader:
     return AddonHeader(
         id=note_size_addon_id,
@@ -142,7 +142,7 @@ def addon_header(note_size_addon_id: AddonId) -> AddonHeader:
     )
 
 
-@fixture
+@pytest.fixture
 def addon_info(addon_header: AddonHeader, github_repo: GithubRepo, topic_slug: TopicSlug, topic_id: TopicId,
                last_posted_at: LastPostedAt, posts_count: PostsCount) -> AddonInfo:
     return AddonInfo(
@@ -176,94 +176,94 @@ def addon_info(addon_header: AddonHeader, github_repo: GithubRepo, topic_slug: T
     )
 
 
-@fixture
+@pytest.fixture
 def addon_infos(addon_info: AddonInfo) -> AddonInfos:
     return AddonInfos([addon_info])
 
 
-@fixture
+@pytest.fixture
 def discourse_client() -> DiscourseClient:
     return DiscourseClient(host="", api_username=None, api_key=None)
 
 
-@fixture
+@pytest.fixture
 def anki_forum_service(discourse_client: DiscourseClient, snapshot_dir: SnapshotDir, offline: bool) -> AnkiForumService:
     return AnkiForumService(discourse_client, snapshot_dir, offline)
 
 
-@fixture
+@pytest.fixture
 def github_service(snapshot_dir: SnapshotDir, github_rest_client: GithubRestClient,
                    offline: bool) -> GithubService:
     return GithubService(snapshot_dir, github_rest_client, offline=offline)
 
 
-@fixture
+@pytest.fixture
 def github_enricher(snapshot_dir: SnapshotDir, github_service: GithubService) -> GithubEnricher:
     return GithubEnricher(snapshot_dir, github_service)
 
 
-@fixture
+@pytest.fixture
 def anki_forum_enricher(snapshot_dir: SnapshotDir, anki_forum_service: AnkiForumService) -> AnkiForumEnricher:
     return AnkiForumEnricher(snapshot_dir, anki_forum_service)
 
 
-@fixture
+@pytest.fixture
 def github_repo() -> GithubRepo:
     return GithubRepo(GithubUserName("John"), GithubRepoName("app"))
 
 
-@fixture
+@pytest.fixture
 def aggregator() -> Aggregator:
     return Aggregator()
 
 
-@fixture
+@pytest.fixture
 def json_exporter(snapshot_dir: SnapshotDir) -> JsonExporter:
     return JsonExporter(snapshot_dir.get_final_dir())
 
 
-@fixture
+@pytest.fixture
 def xlsx_exporter(snapshot_dir: SnapshotDir) -> XlsxExporter:
     return XlsxExporter(snapshot_dir.get_final_dir())
 
 
-@fixture
+@pytest.fixture
 def working_dir_backup(working_dir: WorkingDir) -> WorkingDirBackup:
     return WorkingDirBackup(working_dir)
 
 
-@fixture
+@pytest.fixture
 def hugging_face_client() -> HuggingFaceClient:
     return Mock()
 
 
-@fixture
+@pytest.fixture
 def working_dir_initializer(working_dir: WorkingDir, hugging_face_client: HuggingFaceClient,
                             working_dir_backup: WorkingDirBackup) -> WorkingDirInitializer:
     return WorkingDirInitializer(working_dir, hugging_face_client, working_dir_backup)
 
 
-@fixture
+@pytest.fixture
 def facade(working_dir: WorkingDir, hugging_face_client: HuggingFaceClient) -> Facade:
     return Facade(working_dir, hugging_face_client)
 
 
-@fixture
+@pytest.fixture
 def script_version() -> ScriptVersion:
     return ScriptVersion("0.12.0")
 
 
-@fixture
+@pytest.fixture
 def raw_metadata(script_version: ScriptVersion) -> RawMetadata:
     return RawMetadata(start_timestamp=datetime(2025, 10, 25), script_version=script_version)
 
 
-@fixture
+@pytest.fixture
 def dataset_snapshot_metadata(snapshot_dir: SnapshotDir, script_version: ScriptVersion,
                               report_date: ReportDate) -> DatasetSnapshotMetadata:
     return DatasetMetadata.create_dataset_snapshot_metadata(snapshot_dir, script_version, report_date)
 
 
-@fixture
+@pytest.fixture
 def report_date() -> ReportDate:
     return ReportDate(datetime(2026, 4, 25, 14, 25, 45))
