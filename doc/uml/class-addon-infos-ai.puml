@@ -1,0 +1,96 @@
+@startuml
+' Structure of the AddonInfos domain model (src/anki_addons_dataset/common/data_types.py).
+' https://plantuml.com/class-diagram
+
+skinparam packageStyle rectangle
+
+class AddonInfos <<NewType>> {
+  list[AddonInfo]
+}
+
+class AddonInfo <<dataclass>> {
+  header : AddonHeader
+  page : AddonPage
+  github : Optional[GithubInfo]
+  forum : Optional[AnkiForumInfo]
+}
+
+class AddonHeader <<dataclass>> {
+  id : AddonId
+  title : AddonTitle
+  addon_page_url : URL
+  rating : AddonRating
+  update_date : UpdateDate
+  anki_version : AnkiVersion
+}
+
+class AddonPage <<dataclass>> {
+  content : HtmlStr
+  like_number : int
+  dislike_number : int
+  branches : list[AddonBranch]
+  other_links : list[URL]
+  description : str
+  contact_author_url : Optional[URL]
+}
+
+class AddonBranch <<dataclass>> {
+  min_anki_version : AnkiVersion
+  max_anki_version : Optional[AnkiVersion]
+  updated : date
+}
+
+class GithubInfo <<dataclass>> {
+  github_links : list[GitHubLink]
+  github_repo : Optional[GithubRepo]
+  languages : list[LanguageName]
+  stars : int
+  last_commit : Optional[datetime]
+  action_count : Optional[int]
+  tests_count : Optional[int]
+}
+
+class GitHubLink <<dataclass>> {
+  url : URL
+  user : GitHubUser
+  repo : Optional[GithubRepo]
+}
+
+class GitHubUser <<dataclass>> {
+  user_name : GithubUserName
+  --
+  get_url() : URL
+}
+
+class GithubRepo <<frozen dataclass>> {
+  user : GithubUserName
+  repo_name : GithubRepoName
+  --
+  get_id() : GithubRepoId
+  get_url() : URL
+}
+
+class AnkiForumInfo <<dataclass>> {
+  anki_forum_url : Optional[URL]
+  topic_slug : Optional[TopicSlug]
+  topic_id : Optional[TopicId]
+  last_posted_at : Optional[LastPostedAt]
+  posts_count : Optional[PostsCount]
+}
+
+AddonInfos "1" o-- "*" AddonInfo
+
+AddonInfo *-- "1" AddonHeader
+AddonInfo *-- "1" AddonPage
+AddonInfo o-- "0..1" GithubInfo
+AddonInfo o-- "0..1" AnkiForumInfo
+
+AddonPage "1" o-- "*" AddonBranch
+
+GithubInfo "1" o-- "*" GitHubLink
+GithubInfo o-- "0..1" GithubRepo
+
+GitHubLink *-- "1" GitHubUser
+GitHubLink o-- "0..1" GithubRepo
+
+@enduml
