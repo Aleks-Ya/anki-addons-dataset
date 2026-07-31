@@ -200,7 +200,10 @@
             "type": "integer"
           },
           "last_posted_at": {
-            "type": "string"
+            "type": [
+              "string",
+              "null"
+            ]
           },
           "posts_count": {
             "type": [

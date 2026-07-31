@@ -122,6 +122,24 @@ def test_export_addon_infos_empty_posts_count(json_exporter: JsonExporter, snaps
                                    'posts_count': None}}]
 
 
+def test_export_addon_infos_empty_last_posted_at(json_exporter: JsonExporter, snapshot_dir: SnapshotDir,
+                                                 addon_info: AddonInfo,
+                                                 dataset_snapshot_metadata: DatasetSnapshotMetadata,
+                                                 raw_metadata: RawMetadata):
+    addon_info.forum.last_posted_at = None
+    addon_infos: AddonInfos = AddonInfos([addon_info])
+
+    json_exporter.export_addon_infos(addon_infos, dataset_snapshot_metadata, raw_metadata)
+
+    act_file: Path = snapshot_dir.get_final_dir() / "json" / "data.json"
+    act_json: dict[str, Any] = json.loads(act_file.read_text())
+    assert act_json[0]['forum'] == {'anki_forum_url': 'https://forums.ankiweb.net/t/note-size-addon-support/46001',
+                                    'topic_slug': 'note-size-addon-support',
+                                    'topic_id': 46001,
+                                    'last_posted_at': None,
+                                    'posts_count': 42}
+
+
 def test_export_aggregation(json_exporter: JsonExporter, snapshot_dir: SnapshotDir,
                             dataset_snapshot_metadata: DatasetSnapshotMetadata, raw_metadata: RawMetadata):
     aggregation: Aggregation = Aggregation(addon_number=5,

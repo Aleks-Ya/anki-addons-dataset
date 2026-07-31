@@ -99,7 +99,7 @@ class JsonAddonInfo:
         anki_forum_url: Optional[str] = addon.forum.anki_forum_url
         slug: Optional[str] = addon.forum.topic_slug
         topic_id: Optional[int] = addon.forum.topic_id
-        last_posted_at: str = str(addon.forum.last_posted_at)
+        last_posted_at: Optional[str] = str(addon.forum.last_posted_at) if addon.forum.last_posted_at else None
         posts_count: Optional[int] = addon.forum.posts_count
         return Forum(anki_forum_url, slug, topic_id, last_posted_at, posts_count)
 

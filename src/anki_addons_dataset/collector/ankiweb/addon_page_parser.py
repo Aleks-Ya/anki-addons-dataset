@@ -21,7 +21,8 @@ class AddonPageParser:
         description_links: list[URL] = (
             UrlParser.extract_all_links(HtmlStr(str(description_tag))) if description_tag is not None else [])
         github_links: list[GitHubLink] = UrlParser.find_github_links(description_links)
-        other_links: list[URL] = [link for link in all_links if link not in github_links]
+        github_urls: set[URL] = {link.url for link in github_links}
+        other_links: list[URL] = [link for link in all_links if link not in github_urls]
         contact_author_url: Optional[URL] = self.__extract_contact_author_url(soup)
         github_repo: Optional[GithubRepo] = self.__deduct_github_repo_name(
             addon_header.id, github_links, contact_author_url)
