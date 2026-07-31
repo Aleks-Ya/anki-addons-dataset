@@ -7,7 +7,7 @@ from anki_addons_dataset.collector.url_parser import UrlParser
 from anki_addons_dataset.collector.ankiweb.addon_branch_parser import AddonBranchParser
 from anki_addons_dataset.collector.overrider.overrider import Overrider
 from anki_addons_dataset.common.data_types import AddonHeader, AddonInfo, AddonId, URL, GitHubLink, GithubRepo, \
-    GithubInfo, AddonPage, AddonBranch, HtmlStr, AnkiForumInfo
+    GithubInfo, AddonPage, AddonBranch, HtmlStr, AnkiForumInfo, PlainStr
 
 
 class AddonPageParser:
@@ -32,7 +32,7 @@ class AddonPageParser:
         likes: int = self.__extract_likes(soup)
         dislikes: int = self.__extract_dislikes(soup)
         addon_branches: list[AddonBranch] = self.__extract_addon_branches(soup)
-        description: str = self.__extract_description(description_tag)
+        description: PlainStr = self.__extract_description(description_tag)
         addon_page: AddonPage = AddonPage(
             html, likes, dislikes, addon_branches, other_links, description, contact_author_url)
         anki_forum_info: AnkiForumInfo = AnkiForumInfo(anki_forum_url, None, None, None, None)
@@ -117,10 +117,10 @@ class AddonPageParser:
         return int(sibling.get_text())
 
     @staticmethod
-    def __extract_description(description_tag: Optional[Tag]) -> str:
+    def __extract_description(description_tag: Optional[Tag]) -> PlainStr:
         if description_tag is None:
-            return ""
-        return " ".join(description_tag.get_text(separator=' ', strip=True).split())
+            return PlainStr("")
+        return PlainStr(" ".join(description_tag.get_text(separator=' ', strip=True).split()))
 
     @staticmethod
     def __extract_addon_branches(soup: BeautifulSoup) -> list[AddonBranch]:

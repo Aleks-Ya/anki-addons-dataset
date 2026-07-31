@@ -5,7 +5,7 @@ from anki_addons_dataset.collector.ankiweb.addon_page_parser import AddonPagePar
 from anki_addons_dataset.collector.overrider.overrider import Overrider
 from anki_addons_dataset.common.data_types import AddonHeader, AddonInfo, AddonPage, GithubInfo, AddonId, GitHubLink, \
     URL, GitHubUser, GithubRepo, GithubUserName, GithubRepoName, AddonBranch, HtmlStr, AnkiForumInfo, AnkiVersion, \
-    AddonRating, UpdateDate, AddonTitle
+    AddonRating, UpdateDate, AddonTitle, PlainStr
 
 
 def test_parse_addon_page(overrider: Overrider):
@@ -79,14 +79,14 @@ def test_parse_addon_page(overrider: Overrider):
                 URL('https://github.com/Aleks-Ya/note-size-anki-addon/blob/main/description/configuration.md#logging-level'),
                 URL('https://apps.ankiweb.net')
             ],
-            description='"Note Size" addon displays detailed information about size ("in bytes") of your collection '
-                        'and individual notes including attachments. Screenshots Size of collection, media files, '
-                        'unused media files, trash files, revision log Size of a note Sort notes by size Size of '
-                        'found notes Size of a deck Size when adding a new note Open configuration dialog Contacts '
+            description=PlainStr('"Note Size" addon displays detailed information about size ("in bytes") of your '
+                        'collection and individual notes including attachments. Screenshots Size of collection, media '
+                        'files, unused media files, trash files, revision log Size of a note Sort notes by size Size '
+                        'of found notes Size of a deck Size when adding a new note Open configuration dialog Contacts '
                         'If you have a question , please, reply at Support page at Anki Forum . If you met a bug , '
                         'create an issue at GitHub bug tracker or reply at Support page at Anki Forum . If you have a '
                         'feature request or another idea, reply at Support page at Anki Forum . For more details see '
-                        'User Manual . Links Support page at Anki Forum GitHub project Bug tracker Changelog',
+                        'User Manual . Links Support page at Anki Forum GitHub project Bug tracker Changelog'),
             contact_author_url=URL('https://github.com/Aleks-Ya/note-size-anki-addon/issues')
         ),
         GithubInfo(

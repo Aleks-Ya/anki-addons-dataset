@@ -15,6 +15,7 @@ GithubUserName = NewType("GithubUserName", str)
 GithubRepoId = NewType("GithubRepoId", str)
 LanguageName = NewType("LanguageName", str)
 HtmlStr = NewType("HtmlStr", str)
+PlainStr = NewType("PlainStr", str)
 TopicSlug = NewType("TopicSlug", str)
 TopicId = NewType("TopicId", int)
 LastPostedAt = NewType("LastPostedAt", datetime)
@@ -85,7 +86,7 @@ class AddonPage:
     dislike_number: int
     branches: list[AddonBranch]
     other_links: list[URL]
-    description: str = ""
+    description: PlainStr = PlainStr("")
     contact_author_url: Optional[URL] = None
 
 

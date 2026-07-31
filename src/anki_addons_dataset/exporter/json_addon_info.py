@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from typing import Optional
 
-from anki_addons_dataset.common.data_types import AddonInfos, AddonInfo
+from anki_addons_dataset.common.data_types import AddonInfos, AddonInfo, PlainStr
 
 
 @dataclass
@@ -45,7 +45,7 @@ class AnkiWeb:
     addon_page_url: str
     addon_page_content: str
     contact_author_url: Optional[str]
-    description: str
+    description: PlainStr
     rating: int
     update_date: str
     anki_version: str

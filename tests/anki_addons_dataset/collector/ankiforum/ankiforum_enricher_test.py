@@ -7,7 +7,7 @@ from anki_addons_dataset.collector.ankiforum.ankiforum_enricher import AnkiForum
 from anki_addons_dataset.collector.ankiforum.ankiforum_service import AnkiForumService
 from anki_addons_dataset.common.data_types import AddonInfo, AddonHeader, AddonId, AddonPage, GithubInfo, AddonInfos, \
     AnkiForumInfo, TopicSlug, TopicId, LastPostedAt, URL, PostsCount, LanguageName, GithubRepo, GithubUserName, \
-    GithubRepoName, AnkiVersion, AddonBranch, HtmlStr, AddonRating, UpdateDate, AddonTitle
+    GithubRepoName, AnkiVersion, AddonBranch, HtmlStr, AddonRating, UpdateDate, AddonTitle, PlainStr
 
 log: Logger = logging.getLogger(__name__)
 
@@ -38,7 +38,7 @@ def test_enrich(anki_forum_enricher: AnkiForumEnricher, anki_forum_service: Anki
                                   max_anki_version=AnkiVersion("25.09.2~"),
                                   updated=date(2023, 3, 15))],
             other_links=[],
-            description="Sample addon description for full text search"
+            description=PlainStr("Sample addon description for full text search")
         ),
         github=GithubInfo(
             github_links=[],

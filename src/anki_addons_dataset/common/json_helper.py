@@ -7,7 +7,7 @@ from typing import Any, Optional
 from anki_addons_dataset.common.data_types import AddonInfo, AddonInfos, AddonHeader, AddonPage, AddonBranch, \
     GithubInfo, GitHubLink, GitHubUser, GithubRepo, AnkiForumInfo, AddonId, AnkiVersion, HtmlStr, URL, \
     GithubUserName, GithubRepoName, LanguageName, TopicSlug, TopicId, LastPostedAt, PostsCount, ScriptVersion, AddonRating, \
-    UpdateDate, AddonTitle
+    UpdateDate, AddonTitle, PlainStr
 
 
 class JsonHelper:
@@ -66,7 +66,7 @@ class JsonHelper:
             dislike_number=data["dislike_number"],
             branches=[JsonHelper.__addon_branch_from_dict(branch) for branch in data["branches"]],
             other_links=[URL(link) for link in data["other_links"]],
-            description=data.get("description", ""),
+            description=PlainStr(data.get("description", "")),
             contact_author_url=URL(data["contact_author_url"]) if data.get("contact_author_url") is not None else None,
         )
 

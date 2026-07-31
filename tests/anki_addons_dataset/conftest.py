@@ -22,7 +22,7 @@ from anki_addons_dataset.collector.overrider.overrider import Overrider
 from anki_addons_dataset.common.data_types import AddonId, GithubRepo, GithubUserName, GithubRepoName, LastPostedAt, \
     URL, PostsCount, AddonInfo, AddonHeader, AddonPage, GithubInfo, AnkiForumInfo, LanguageName, AddonInfos, \
     DatasetSnapshotMetadata, RawMetadata, AnkiVersion, AddonBranch, HtmlStr, SnapshotDate, ReportDate, ScriptVersion, \
-    AddonRating, UpdateDate, AddonTitle
+    AddonRating, UpdateDate, AddonTitle, PlainStr
 from anki_addons_dataset.common.working_dir import WorkingDir, SnapshotDir
 from anki_addons_dataset.exporter.json.json_exporter import JsonExporter
 from anki_addons_dataset.exporter.xlsx.xlsx_exporter import XlsxExporter
@@ -155,7 +155,7 @@ def addon_info(addon_header: AddonHeader, github_repo: GithubRepo, topic_slug: T
                                   max_anki_version=AnkiVersion("25.09.2~"),
                                   updated=date(2023, 3, 15))],
             other_links=[],
-            description="Sample addon description for full text search"
+            description=PlainStr("Sample addon description for full text search")
         ),
         github=GithubInfo(
             github_links=[],
