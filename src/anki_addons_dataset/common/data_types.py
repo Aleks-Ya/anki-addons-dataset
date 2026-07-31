@@ -86,6 +86,7 @@ class AddonPage:
     branches: list[AddonBranch]
     other_links: list[URL]
     description: str = ""
+    contact_author_url: Optional[URL] = None
 
 
 @dataclass

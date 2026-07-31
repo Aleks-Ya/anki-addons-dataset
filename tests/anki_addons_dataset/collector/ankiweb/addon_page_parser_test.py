@@ -86,7 +86,8 @@ def test_parse_addon_page(overrider: Overrider):
                         'If you have a question , please, reply at Support page at Anki Forum . If you met a bug , '
                         'create an issue at GitHub bug tracker or reply at Support page at Anki Forum . If you have a '
                         'feature request or another idea, reply at Support page at Anki Forum . For more details see '
-                        'User Manual . Links Support page at Anki Forum GitHub project Bug tracker Changelog'
+                        'User Manual . Links Support page at Anki Forum GitHub project Bug tracker Changelog',
+            contact_author_url=URL('https://github.com/Aleks-Ya/note-size-anki-addon/issues')
         ),
         GithubInfo(
             github_links=[

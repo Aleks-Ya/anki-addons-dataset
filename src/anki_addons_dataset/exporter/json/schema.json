@@ -20,6 +20,7 @@
           "title",
           "addon_page_url",
           "addon_page_content",
+          "contact_author_url",
           "description",
           "rating",
           "update_date",
@@ -40,6 +41,12 @@
           },
           "addon_page_content": {
             "type": "string"
+          },
+          "contact_author_url": {
+            "type": [
+              "null",
+              "string"
+            ]
           },
           "description": {
             "type": "string"

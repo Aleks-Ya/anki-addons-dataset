@@ -33,7 +33,8 @@ class AddonPageParser:
         dislikes: int = self.__extract_dislikes(soup)
         addon_branches: list[AddonBranch] = self.__extract_addon_branches(soup)
         description: str = self.__extract_description(description_tag)
-        addon_page: AddonPage = AddonPage(html, likes, dislikes, addon_branches, other_links, description)
+        addon_page: AddonPage = AddonPage(
+            html, likes, dislikes, addon_branches, other_links, description, contact_author_url)
         anki_forum_info: AnkiForumInfo = AnkiForumInfo(anki_forum_url, None, None, None, None)
         addon_info: AddonInfo = AddonInfo(addon_header, addon_page, github_info, anki_forum_info)
         return addon_info

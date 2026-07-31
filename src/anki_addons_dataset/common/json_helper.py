@@ -67,6 +67,7 @@ class JsonHelper:
             branches=[JsonHelper.__addon_branch_from_dict(branch) for branch in data["branches"]],
             other_links=[URL(link) for link in data["other_links"]],
             description=data.get("description", ""),
+            contact_author_url=URL(data["contact_author_url"]) if data.get("contact_author_url") is not None else None,
         )
 
     @staticmethod
