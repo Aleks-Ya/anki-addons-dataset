@@ -161,3 +161,74 @@ def test_comment_github_url_does_not_override_description_repo(overrider: Overri
     assert addon_info.github.github_repo == expected_repo
     assert [link.url for link in addon_info.github.github_links] == [
         URL("https://github.com/real-author/real-addon")]
+
+
+def __header(addon_id: int) -> AddonHeader:
+    return AddonHeader(
+        id=AddonId(addon_id),
+        title=AddonTitle("Some addon"),
+        addon_page_url=URL(f"https://ankiweb.net/shared/info/{addon_id}"),
+        rating=AddonRating(0),
+        update_date=UpdateDate("2025-04-19"),
+        anki_version=AnkiVersion("25.09.2~"))
+
+
+def test_contact_author_forum_link_wins_over_description_vote(overrider: Overrider):
+    """The Contact Author button's forum URL beats a differently-voted forum URL in the description."""
+    parser: AddonPageParser = AddonPageParser(overrider)
+    html: HtmlStr = HtmlStr(
+        '<html><body><main>'
+        '<a class="btn btn-outline-primary" '
+        'href="https://forums.ankiweb.net/t/review-heatmap-official-support-thread/928/1">Contact Author</a>'
+        '<div class="shared-item-description">'
+        '<a href="https://forums.ankiweb.net/t/some-other-thread/1">A</a>'
+        '<a href="https://forums.ankiweb.net/t/some-other-thread/1">B</a>'
+        '<a href="https://forums.ankiweb.net/t/some-other-thread/1">C</a>'
+        '</div>'
+        '</main></body></html>')
+    addon_info: AddonInfo = parser.parse_addon_page(__header(3), html)
+    assert addon_info.forum.anki_forum_url == URL(
+        "https://forums.ankiweb.net/t/review-heatmap-official-support-thread/928/1")
+
+
+def test_contact_author_github_link_wins_over_description_vote(overrider: Overrider):
+    """The Contact Author button's GitHub repo beats a differently-voted repo in the description."""
+    parser: AddonPageParser = AddonPageParser(overrider)
+    html: HtmlStr = HtmlStr(
+        '<html><body><main>'
+        '<a class="btn btn-outline-primary" '
+        'href="https://github.com/real-author/real-addon/issues">Contact Author</a>'
+        '<div class="shared-item-description">'
+        '<a href="https://github.com/other/other-repo">A</a>'
+        '<a href="https://github.com/other/other-repo">B</a>'
+        '<a href="https://github.com/other/other-repo">C</a>'
+        '</div>'
+        '</main></body></html>')
+    addon_info: AddonInfo = parser.parse_addon_page(__header(4), html)
+    assert addon_info.github.github_repo == GithubRepo(GithubUserName("real-author"), GithubRepoName("real-addon"))
+
+
+def test_manual_override_beats_contact_author_forum_link(overrider: Overrider):
+    """An overrides.yaml forum URL (addon 111623432) still wins over the Contact Author button."""
+    parser: AddonPageParser = AddonPageParser(overrider)
+    html: HtmlStr = HtmlStr(
+        '<html><body><main>'
+        '<a class="btn btn-outline-primary" '
+        'href="https://forums.ankiweb.net/t/wrong-thread/999">Contact Author</a>'
+        '</main></body></html>')
+    addon_info: AddonInfo = parser.parse_addon_page(__header(111623432), html)
+    assert addon_info.forum.anki_forum_url == URL(
+        "https://forums.ankiweb.net/t/hypertts-spirtual-successor-to-awesometts/17143")
+
+
+def test_no_contact_author_button_falls_back_to_description_vote(overrider: Overrider):
+    """Without a Contact Author button the forum URL still comes from the description majority vote."""
+    parser: AddonPageParser = AddonPageParser(overrider)
+    html: HtmlStr = HtmlStr(
+        '<html><body><main>'
+        '<div class="shared-item-description">'
+        '<a href="https://forums.ankiweb.net/t/the-only-thread/42">Support</a>'
+        '</div>'
+        '</main></body></html>')
+    addon_info: AddonInfo = parser.parse_addon_page(__header(5), html)
+    assert addon_info.forum.anki_forum_url == URL("https://forums.ankiweb.net/t/the-only-thread/42")

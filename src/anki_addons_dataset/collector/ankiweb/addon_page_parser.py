@@ -22,9 +22,12 @@ class AddonPageParser:
             UrlParser.extract_all_links(HtmlStr(str(description_tag))) if description_tag is not None else [])
         github_links: list[GitHubLink] = UrlParser.find_github_links(description_links)
         other_links: list[URL] = [link for link in all_links if link not in github_links]
-        github_repo: Optional[GithubRepo] = self.__deduct_github_repo_name(addon_header.id, github_links)
+        contact_author_url: Optional[URL] = self.__extract_contact_author_url(soup)
+        github_repo: Optional[GithubRepo] = self.__deduct_github_repo_name(
+            addon_header.id, github_links, contact_author_url)
         anki_forum_links: list[URL] = UrlParser.find_anki_forum_links(description_links)
-        anki_forum_url: Optional[URL] = self.__deduct_anki_forum_url(addon_header.id, anki_forum_links)
+        anki_forum_url: Optional[URL] = self.__deduct_anki_forum_url(
+            addon_header.id, anki_forum_links, contact_author_url)
         github_info: GithubInfo = GithubInfo(github_links, github_repo, [], 0, None, 0, 0)
         likes: int = self.__extract_likes(soup)
         dislikes: int = self.__extract_dislikes(soup)
@@ -35,10 +38,14 @@ class AddonPageParser:
         addon_info: AddonInfo = AddonInfo(addon_header, addon_page, github_info, anki_forum_info)
         return addon_info
 
-    def __deduct_github_repo_name(self, addon_id: AddonId, github_urls: list[GitHubLink]) -> Optional[GithubRepo]:
+    def __deduct_github_repo_name(self, addon_id: AddonId, github_urls: list[GitHubLink],
+                                  contact_author_url: Optional[URL]) -> Optional[GithubRepo]:
         override_link: Optional[GitHubLink] = self.overrider.override_github_link(addon_id)
         if override_link:
             return override_link.repo
+        contact_repo: Optional[GithubRepo] = self.__contact_author_github_repo(contact_author_url)
+        if contact_repo is not None:
+            return contact_repo
         not_null_urls: list[GitHubLink] = [link for link in github_urls if link.repo is not None]
         filtered_urls: list[GitHubLink] = self.__exclude_links(not_null_urls)
         filtered_urls.sort(key=lambda link: link.repo.get_id())
@@ -50,10 +57,15 @@ class AddonPageParser:
         github_repo: GithubRepo = max_tuple[0]
         return github_repo
 
-    def __deduct_anki_forum_url(self, addon_id: AddonId, anki_forum_urls: list[URL]) -> Optional[URL]:
+    def __deduct_anki_forum_url(self, addon_id: AddonId, anki_forum_urls: list[URL],
+                                contact_author_url: Optional[URL]) -> Optional[URL]:
         override_url: Optional[URL] = self.overrider.override_anki_forum_url(addon_id)
         if override_url:
             return override_url
+        if contact_author_url is not None:
+            contact_forum_urls: list[URL] = UrlParser.find_anki_forum_links([contact_author_url])
+            if contact_forum_urls:
+                return contact_forum_urls[0]
         urls_sorted: list[URL] = list(anki_forum_urls)
         urls_sorted.sort()
         grouped: groupby[URL, URL] = groupby(urls_sorted)
@@ -63,8 +75,27 @@ class AddonPageParser:
         max_tuple: tuple[URL, int] = max(counts.items(), key=lambda item: item[1])
         return max_tuple[0]
 
+    def __contact_author_github_repo(self, contact_author_url: Optional[URL]) -> Optional[GithubRepo]:
+        if contact_author_url is None:
+            return None
+        contact_links: list[GitHubLink] = UrlParser.find_github_links([contact_author_url])
+        allowed_links: list[GitHubLink] = self.__exclude_links(contact_links)
+        for link in allowed_links:
+            if link.repo is not None:
+                return link.repo
+        return None
+
     def __exclude_links(self, links: list[GitHubLink]) -> list[GitHubLink]:
         return [link for link in links if not self.overrider.is_excluded_github_repo(link.url)]
+
+    @staticmethod
+    def __extract_contact_author_url(soup: BeautifulSoup) -> Optional[URL]:
+        for anchor in soup.find_all('a'):
+            if anchor.get_text(strip=True) == 'Contact Author':
+                href: Optional[str] = anchor.get('href')
+                if href:
+                    return URL(href)
+        return None
 
     @staticmethod
     def __extract_likes(soup: BeautifulSoup) -> int:
