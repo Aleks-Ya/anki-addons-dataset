@@ -53,6 +53,7 @@ class GitHub:
     manifest: Optional[Manifest]
     dependencies: list[str]
     readme: Optional[str]
+    ai_tooling_markers: list[str]
 
 
 @dataclass
@@ -130,7 +131,7 @@ class JsonAddonInfo:
                       github.tests_count, github.license, github.forks, github.open_issues, github.size_kb,
                       list(github.topics), github.repo_description, github.homepage, github.archived, pushed_at_str,
                       created_at_str, github.primary_language, language_bytes, manifest,
-                      list(github.dependencies), github.readme)
+                      list(github.dependencies), github.readme, list(github.ai_tooling_markers))
 
     @staticmethod
     def __manifest(manifest: Optional[AddonManifest]) -> Optional[Manifest]:

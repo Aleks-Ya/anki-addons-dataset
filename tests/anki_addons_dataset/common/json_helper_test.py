@@ -82,6 +82,7 @@ def test_addon_infos_dump_round_trip_with_enrichment_fields(addon_info: AddonInf
                                                homepage="https://example.com", mod=1678900000)
     addon_info.github.dependencies = [DependencyName("requests"), DependencyName("beautifulsoup4")]
     addon_info.github.readme = "# NoteSize"
+    addon_info.github.ai_tooling_markers = ["claude-code", "cursor"]
     addon_infos: AddonInfos = AddonInfos([addon_info])
     dump_file: Path = working_dir_path / "addon-infos.json"
 
@@ -100,7 +101,7 @@ def test_addon_infos_dump_reads_legacy_dump_without_enrichment_fields(addon_info
     envelope: dict = json.loads(dump_file.read_text())
     legacy_keys = ["license", "forks", "open_issues", "size_kb", "topics", "repo_description", "homepage",
                    "archived", "pushed_at", "created_at", "primary_language", "language_bytes", "manifest",
-                   "dependencies", "readme"]
+                   "dependencies", "readme", "ai_tooling_markers"]
     for key in legacy_keys:
         envelope["addon_infos"][0]["github"].pop(key, None)
     dump_file.write_text(json.dumps(envelope))
@@ -115,6 +116,7 @@ def test_addon_infos_dump_reads_legacy_dump_without_enrichment_fields(addon_info
     assert github.manifest is None
     assert github.dependencies == []
     assert github.readme is None
+    assert github.ai_tooling_markers == []
     forum = read_addon_infos[0].forum
     assert forum is not None
     assert isinstance(forum.last_posted_at, datetime)

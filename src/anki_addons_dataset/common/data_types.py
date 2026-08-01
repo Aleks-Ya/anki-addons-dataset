@@ -101,6 +101,7 @@ class GithubInfo:
     manifest: Optional[AddonManifest] = None
     dependencies: list[DependencyName] = field(default_factory=list)
     readme: Optional[str] = None
+    ai_tooling_markers: list[str] = field(default_factory=list)
 
 
 @dataclass

@@ -110,6 +110,7 @@ class JsonHelper:
             manifest=JsonHelper.__manifest_from_dict(data.get("manifest")),
             dependencies=[DependencyName(dependency) for dependency in data.get("dependencies", [])],
             readme=data.get("readme"),
+            ai_tooling_markers=list(data.get("ai_tooling_markers", [])),
         )
 
     @staticmethod

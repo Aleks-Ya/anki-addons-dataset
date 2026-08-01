@@ -68,6 +68,7 @@ def test_enrich(github_enricher: GithubEnricher, github_service: GithubService, 
     github_service.get_manifest = Mock(return_value=manifest)
     github_service.get_dependencies = Mock(return_value=[DependencyName("requests"), DependencyName("beautifulsoup4")])
     github_service.get_readme = Mock(return_value="# NoteSize\nExample readme")
+    github_service.get_ai_tooling_markers = Mock(return_value=["claude-code"])
 
     github_enricher.start()
     github_enricher.download_in_background(addon_info)
@@ -112,7 +113,8 @@ def test_enrich(github_enricher: GithubEnricher, github_service: GithubService, 
             language_bytes={LanguageName("Python"): 5, LanguageName("Rust"): 2},
             manifest=manifest,
             dependencies=[DependencyName("requests"), DependencyName("beautifulsoup4")],
-            readme="# NoteSize\nExample readme"
+            readme="# NoteSize\nExample readme",
+            ai_tooling_markers=["claude-code"]
         ),
         forum=AnkiForumInfo(
             anki_forum_url=None,

@@ -323,6 +323,12 @@
                   "null",
                   "string"
                 ]
+              },
+              "ai_tooling_markers": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
               }
             }
           }

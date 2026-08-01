@@ -8,6 +8,7 @@ from requests import Response
 
 from anki_addons_dataset.collector.github.github_rest_client import GithubRestClient
 from anki_addons_dataset.collector.github.handler.actions_repo_handler import ActionsRepoHandler
+from anki_addons_dataset.collector.github.handler.ai_tooling_detector import AiToolingDetector
 from anki_addons_dataset.collector.github.handler.contents_repo_handler import ContentsRepoHandler
 from anki_addons_dataset.collector.github.handler.dependencies_parser import DependenciesParser
 from anki_addons_dataset.collector.github.handler.languages_repo_handler import LanguagesRepoHandler
@@ -90,10 +91,17 @@ class GithubService:
             dependencies.extend(DependenciesParser.parse_pyproject(pyproject_content))
         return list(dict.fromkeys(dependencies))
 
+    def get_ai_tooling_markers(self, repo: GithubRepo, readme: Optional[str]) -> list[str]:
+        # Reuses the cached repo tree (shared with tests/manifest lookup, no extra call) plus the fetched README.
+        return AiToolingDetector.detect(self.__get_file_paths(repo), readme)
+
+    def __get_file_paths(self, repo: GithubRepo) -> list[str]:
+        handler: RepoHandler = TreeEntriesRepoHandler(repo, self.__raw_dir, self.__stage_dir, self.__prev_raw_dir)
+        return self.__get_value(handler) or []
+
     def __find_file(self, repo: GithubRepo, basename: str) -> Optional[str]:
         # Locates the shallowest file with the given basename in the cached repo tree (root-most wins).
-        handler: RepoHandler = TreeEntriesRepoHandler(repo, self.__raw_dir, self.__stage_dir, self.__prev_raw_dir)
-        paths: list[str] = self.__get_value(handler) or []
+        paths: list[str] = self.__get_file_paths(repo)
         candidates: list[str] = [path for path in paths if path.rsplit("/", 1)[-1] == basename]
         if not candidates:
             return None

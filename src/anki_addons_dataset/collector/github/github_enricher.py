@@ -43,6 +43,7 @@ class GithubEnricher(Enricher):
             manifest: Optional[AddonManifest] = self.__github_service.get_manifest(github_repo)
             dependencies: list[DependencyName] = self.__github_service.get_dependencies(github_repo)
             readme: Optional[str] = self.__github_service.get_readme(github_repo)
+            ai_tooling_markers: list[str] = self.__github_service.get_ai_tooling_markers(github_repo, readme)
         else:
             github_repo: Optional[GithubRepo] = None
             github_links: list[GitHubLink] = []
@@ -55,13 +56,15 @@ class GithubEnricher(Enricher):
             manifest: Optional[AddonManifest] = None
             dependencies: list[DependencyName] = []
             readme: Optional[str] = None
+            ai_tooling_markers: list[str] = []
         github_info: GithubInfo = GithubInfo(
             github_links, github_repo, list(language_bytes.keys()), stars, last_commit, action_count, tests_count,
             license=repo_meta.license, forks=repo_meta.forks, open_issues=repo_meta.open_issues,
             size_kb=repo_meta.size_kb, topics=repo_meta.topics, repo_description=repo_meta.repo_description,
             homepage=repo_meta.homepage, archived=repo_meta.archived, pushed_at=repo_meta.pushed_at,
             created_at=repo_meta.created_at, primary_language=self.__primary_language(language_bytes),
-            language_bytes=language_bytes, manifest=manifest, dependencies=dependencies, readme=readme)
+            language_bytes=language_bytes, manifest=manifest, dependencies=dependencies, readme=readme,
+            ai_tooling_markers=ai_tooling_markers)
         self.__github_infos[addon_info.header.id] = github_info
 
     def _done(self) -> int:

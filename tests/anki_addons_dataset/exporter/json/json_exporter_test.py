@@ -51,7 +51,8 @@ def test_export_addon_infos(json_exporter: JsonExporter, snapshot_dir: SnapshotD
                                     'language_bytes': [],
                                     'manifest': None,
                                     'dependencies': [],
-                                    'readme': None},
+                                    'readme': None,
+                                    'ai_tooling_markers': []},
                          'forum': {'anki_forum_url': 'https://forums.ankiweb.net/t/note-size-addon-support/46001',
                                    'topic_slug': 'note-size-addon-support',
                                    'topic_id': 46001,
@@ -107,7 +108,8 @@ def test_export_addon_infos_empty_forum(json_exporter: JsonExporter, snapshot_di
                                     'language_bytes': [],
                                     'manifest': None,
                                     'dependencies': [],
-                                    'readme': None},
+                                    'readme': None,
+                                    'ai_tooling_markers': []},
                          'forum': None}]
 
 
@@ -159,7 +161,8 @@ def test_export_addon_infos_empty_posts_count(json_exporter: JsonExporter, snaps
                                     'language_bytes': [],
                                     'manifest': None,
                                     'dependencies': [],
-                                    'readme': None},
+                                    'readme': None,
+                                    'ai_tooling_markers': []},
                          'forum': {'anki_forum_url': 'https://forums.ankiweb.net/t/note-size-addon-support/46001',
                                    'topic_slug': 'note-size-addon-support',
                                    'topic_id': 46001,
