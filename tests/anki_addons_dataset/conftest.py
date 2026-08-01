@@ -164,7 +164,8 @@ def addon_info(addon_header: AddonHeader, github_repo: GithubRepo, topic_slug: T
             stars=3,
             last_commit=datetime(2023, 3, 15, 12, 0, 0, 0),
             action_count=5,
-            tests_count=7
+            tests_count=7,
+            ai_tooling_markers=["claude-code", "cursor"]
         ),
         forum=AnkiForumInfo(
             anki_forum_url=URL("https://forums.ankiweb.net/t/note-size-addon-support/46001"),

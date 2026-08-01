@@ -28,6 +28,7 @@ class AddonInfoSheet:
     __languages_col: int = 15
     __actions_count_col: int = 16
     __tests_count_col: int = 17
+    __ai_tools_col: int = 18
 
     def __init__(self, workbook: Workbook):
         self.__workbook: Workbook = workbook
@@ -83,6 +84,7 @@ class AddonInfoSheet:
         worksheet.set_column(self.__languages_col, self.__languages_col, 50)
         worksheet.set_column(self.__actions_count_col, self.__actions_count_col, 10)
         worksheet.set_column(self.__tests_count_col, self.__tests_count_col, 8)
+        worksheet.set_column(self.__ai_tools_col, self.__ai_tools_col, 20)
 
     def __add_header(self, workbook: Workbook, worksheet: Worksheet) -> None:
         header_format: Format = workbook.add_format({"bold": True, 'align': 'center'})
@@ -115,7 +117,7 @@ class AddonInfoSheet:
 
         worksheet.merge_range(data="GitHub", cell_format=header_format,
                               first_row=row1, last_row=row1,
-                              first_col=self.__github_url_col, last_col=self.__tests_count_col)
+                              first_col=self.__github_url_col, last_col=self.__ai_tools_col)
         worksheet.write_string(row2, self.__github_url_col, "Repo", header_format)
         worksheet.write_string(row2, self.__stars_col, "Stars", header_format)
         worksheet.write_string(row2, self.__last_commit_col, "Last commit", header_format)
@@ -124,10 +126,15 @@ class AddonInfoSheet:
         worksheet.write_comment(row2, self.__actions_count_col, "Number of GitHub Actions in the repo")
         worksheet.write_string(row2, self.__tests_count_col, "Tests", header_format)
         worksheet.write_comment(row2, self.__tests_count_col, "Number of unit-tests in the repo")
+        worksheet.write_string(row2, self.__ai_tools_col, "AI Tools", header_format)
+        worksheet.write_comment(row2, self.__ai_tools_col,
+                                "AI coding tools whose fingerprints were detected in the repo "
+                                "(config files / README markers). "
+                                "Blank = no evidence detected, not proof AI was unused.")
 
         worksheet.freeze_panes(row2 + 1, self.__id_col)
         worksheet.autofilter(first_row=row2, last_row=row2,
-                             first_col=self.__id_col, last_col=self.__tests_count_col)
+                             first_col=self.__id_col, last_col=self.__ai_tools_col)
 
     def __add_rows(self, addon_infos: AddonInfos, worksheet: Worksheet) -> None:
         for i, addon in enumerate(addon_infos):
@@ -171,3 +178,4 @@ class AddonInfoSheet:
                 worksheet.write_number(row, self.__actions_count_col, addon.github.action_count)
             if addon.github.tests_count:
                 worksheet.write_number(row, self.__tests_count_col, addon.github.tests_count)
+            worksheet.write_string(row, self.__ai_tools_col, ", ".join(addon.github.ai_tooling_markers))
