@@ -43,6 +43,7 @@ class Facade:
             dataset_bundle.create_bundle()
         elif operation == Operation.UPLOAD:
             bundle_dir: Path = self.__working_dir.get_bundle_dir()
+            self.__hugging_face_client.tag_backup()
             self.__hugging_face_client.upload_dataset(bundle_dir)
             self.__hugging_face_client.prune_orphans(bundle_dir)
         else:

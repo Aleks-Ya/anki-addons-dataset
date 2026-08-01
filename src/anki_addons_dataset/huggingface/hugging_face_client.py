@@ -1,3 +1,4 @@
+from datetime import datetime, timezone
 from pathlib import Path
 import logging
 from logging import Logger
@@ -21,6 +22,22 @@ class HuggingFaceClient:
 
     def get_repo_id(self) -> str:
         return self.__repo_id
+
+    def tag_backup(self) -> None:
+        """Tag the current remote head as a recovery point before an upload.
+
+        The tag pins the pre-upload commit so it stays reachable and immune to LFS
+        garbage collection, giving a named point to reset back to if the upload
+        corrupts the dataset. Tagging failures are non-fatal: the upload still
+        proceeds, since Git history alone remains recoverable."""
+        tag: str = f"backup-{datetime.now(timezone.utc).strftime('%Y-%m-%d-%H%M%S')}"
+        try:
+            self.__api.create_tag(
+                repo_id=self.__repo_id, repo_type="dataset", tag=tag,
+                tag_message="Automatic pre-upload backup")
+            log.info(f"Created pre-upload backup tag: {tag}")
+        except (RepositoryNotFoundError, HfHubHTTPError) as e:
+            log.warning(f"Could not create pre-upload backup tag {tag}: {e}")
 
     def upload_dataset(self, bundle_dir: Path) -> None:
         self.__verify_write_access()

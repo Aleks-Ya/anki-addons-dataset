@@ -3,7 +3,7 @@ from unittest.mock import Mock
 
 import pytest
 from huggingface_hub import HfApi, RepoFile, RepoFolder
-from huggingface_hub.errors import RepositoryNotFoundError
+from huggingface_hub.errors import HfHubHTTPError, RepositoryNotFoundError
 
 from anki_addons_dataset.huggingface.hugging_face_client import HuggingFaceClient
 
@@ -48,6 +48,28 @@ def test_upload_dataset_raises_permission_error_when_unauthorized(tmp_path: Path
         client.upload_dataset(tmp_path)
 
     api.upload_large_folder.assert_not_called()
+
+
+def test_tag_backup_tags_remote_head_as_dataset():
+    api: HfApi = Mock(spec=HfApi)
+    client: HuggingFaceClient = HuggingFaceClient(api)
+
+    client.tag_backup()
+
+    api.create_tag.assert_called_once()
+    kwargs = api.create_tag.call_args.kwargs
+    assert kwargs["repo_type"] == "dataset"
+    assert kwargs["tag"].startswith("backup-")
+
+
+def test_tag_backup_swallows_errors_so_upload_can_proceed():
+    api: HfApi = Mock(spec=HfApi)
+    api.create_tag.side_effect = HfHubHTTPError("boom", response=Mock())
+    client: HuggingFaceClient = HuggingFaceClient(api)
+
+    client.tag_backup()  # does not raise
+
+    api.create_tag.assert_called_once()
 
 
 def test_prune_orphans_deletes_only_files_absent_locally(tmp_path: Path):
