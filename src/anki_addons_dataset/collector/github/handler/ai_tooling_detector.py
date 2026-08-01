@@ -46,19 +46,27 @@ class AiToolingDetector:
     def detect(file_paths: list[str], readme: Optional[str]) -> list[str]:
         markers: set[str] = set()
         for path in file_paths:
-            segments: list[str] = path.split("/")
-            basename: str = segments[-1]
-            if basename in _BASENAME_MARKERS:
-                markers.add(_BASENAME_MARKERS[basename])
-            if basename.startswith(".aider"):
-                markers.add("aider")
-            for segment in segments[:-1]:
-                if segment in _DIR_MARKERS:
-                    markers.add(_DIR_MARKERS[segment])
+            AiToolingDetector._scan_path(path, markers)
         if readme:
-            for pattern, slug in _README_MARKERS:
-                if pattern.search(readme):
-                    markers.add(slug)
-            for tool in _MADE_WITH.findall(readme):
-                markers.add(_MADE_WITH_SLUGS.get(tool.lower(), tool.lower()))
+            AiToolingDetector._scan_readme(readme, markers)
         return sorted(markers)
+
+    @staticmethod
+    def _scan_path(path: str, markers: set[str]) -> None:
+        segments: list[str] = path.split("/")
+        basename: str = segments[-1]
+        if basename in _BASENAME_MARKERS:
+            markers.add(_BASENAME_MARKERS[basename])
+        if basename.startswith(".aider"):
+            markers.add("aider")
+        for segment in segments[:-1]:
+            if segment in _DIR_MARKERS:
+                markers.add(_DIR_MARKERS[segment])
+
+    @staticmethod
+    def _scan_readme(readme: str, markers: set[str]) -> None:
+        for pattern, slug in _README_MARKERS:
+            if pattern.search(readme):
+                markers.add(slug)
+        for tool in _MADE_WITH.findall(readme):
+            markers.add(_MADE_WITH_SLUGS.get(tool.lower(), tool.lower()))
