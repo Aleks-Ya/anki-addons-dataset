@@ -35,6 +35,7 @@ def main() -> None:
     facade: Facade = Facade(working_dir, hugging_face_client)
     timings: list[tuple[str, float]] = []
     for operation in operations:
+        log.info(f"Step '{operation.value}' started")
         start: float = time.perf_counter()
         facade.process(operation, snapshot_date, report_date)
         elapsed: float = time.perf_counter() - start
