@@ -33,4 +33,6 @@ def test_detects_spanish():
 
 def test_is_deterministic():
     text: str = "This addon adds spaced repetition review shortcuts to your Anki collection."
-    assert DescriptionLanguageDetector.detect(text) == DescriptionLanguageDetector.detect(text)
+    first = DescriptionLanguageDetector.detect(text)
+    second = DescriptionLanguageDetector.detect(text)
+    assert first == second
