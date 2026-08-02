@@ -32,7 +32,7 @@ def test_upload_dataset_verifies_access_then_uploads(tmp_path: Path):
 
     api.auth_check.assert_called_once()
     assert api.auth_check.call_args.kwargs["write"] is True
-    api.upload_large_folder.assert_called_once()
+    api.upload_folder.assert_called_once()
     # Access is verified before any upload happens.
     assert api.method_calls[0][0] == "auth_check"
 
@@ -47,7 +47,7 @@ def test_upload_dataset_raises_permission_error_when_unauthorized(tmp_path: Path
     with pytest.raises(PermissionError):
         client.upload_dataset(tmp_path)
 
-    api.upload_large_folder.assert_not_called()
+    api.upload_folder.assert_not_called()
 
 
 def test_tag_backup_tags_remote_head_as_dataset():

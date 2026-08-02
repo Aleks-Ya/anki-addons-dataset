@@ -46,7 +46,7 @@ class HuggingFaceClient:
             log.info(f"Deleting HF cache folder: {hf_cache_dir}")
             rmtree(hf_cache_dir)
         log.info(f"Uploading dataset: {self.__repo_id}")
-        self.__api.upload_large_folder(folder_path=bundle_dir, repo_id=self.__repo_id, repo_type="dataset")
+        self.__api.upload_folder(folder_path=bundle_dir, repo_id=self.__repo_id, repo_type="dataset")
         log.info(f"Uploaded dataset: {self.__repo_id}")
 
     def prune_orphans(self, bundle_dir: Path) -> None:
