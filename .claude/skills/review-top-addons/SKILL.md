@@ -2,6 +2,7 @@
 name: review-top-addons
 description: Download the latest published anki-addons dataset from HuggingFace, take the top N highest-rated addons, cross-check every field (AnkiWeb links, GitHub, Anki Forum) against the live sources, and write a markdown report of discrepancies. Focuses especially on whether the GitHub repo and Anki Forum URL were correctly extracted from the addon page. Use when the user says "review top addons", "/review-top-addons", or asks to verify the top-rated addons' data for correctness.
 allowed-tools: Bash(python3 *) Bash(gh api *) Bash(curl *) Bash(grep *) Bash(pip install *)
+disable-model-invocation: true
 ---
 
 # review-top-addons

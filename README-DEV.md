@@ -104,7 +104,7 @@ PYTHONPATH=src python -m anki_addons_dataset.addon_catalog parse report
     1. Show the next versions: `bump-my-version show-bump`
     2. Switch dev version to RELEASE (`0.1.1.dev0` -> `0.1.1`): `bump-my-version bump release --tag`
     3. Switch the RELEASE version to the next dev (`0.1.1` -> `0.2.0.dev0`): `bump-my-version bump minor`
-4. Create a GitHub release:
+4. Create a GitHub release (skill `/release`):
     1. Push branch and tags: `git push origin HEAD --tags`
     2. Create a release from the tag: https://github.com/Aleks-Ya/anki-addons-dataset/releases
     3. Wait for GitHub Actions to finish publishing to PyPI: https://github.com/Aleks-Ya/anki-addons-dataset/actions

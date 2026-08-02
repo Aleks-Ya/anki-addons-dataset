@@ -2,6 +2,7 @@
 name: push
 description: Push the main branch and see it through green — verify a clean tree, install deps and run pytest locally, push, wait for the GitHub Actions "Unit-tests" workflow and fix any failures, then review SonarCloud issues on the new code and fix them. Use when the user says "push", "/push", or asks to push and make sure CI/Sonar are clean.
 allowed-tools: Bash(./pip_update.sh *) Bash(gh run *) Bash(git *) Bash(curl *)
+disable-model-invocation: true
 ---
 
 # push
