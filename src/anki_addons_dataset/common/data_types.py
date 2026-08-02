@@ -120,6 +120,7 @@ class AddonPage:
     other_links: list[URL]
     description: PlainStr = PlainStr("")
     contact_author_url: Optional[URL] = None
+    ai_declaration_markers: list[str] = field(default_factory=list)
 
 
 @dataclass

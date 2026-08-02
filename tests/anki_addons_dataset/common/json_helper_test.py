@@ -92,6 +92,32 @@ def test_addon_infos_dump_round_trip_with_enrichment_fields(addon_info: AddonInf
     assert read_addon_infos == addon_infos
 
 
+def test_addon_infos_dump_round_trip_preserves_ai_declaration_markers(addon_infos: AddonInfos,
+                                                                      script_version: ScriptVersion,
+                                                                      working_dir_path: Path):
+    addon_infos[0].page.ai_declaration_markers = ["claude", "vibe-coded"]
+    dump_file: Path = working_dir_path / "addon-infos.json"
+
+    JsonHelper.write_addon_infos_dump(addon_infos, script_version, dump_file)
+    _, read_addon_infos = JsonHelper.read_addon_infos_dump(dump_file)
+
+    assert read_addon_infos[0].page.ai_declaration_markers == ["claude", "vibe-coded"]
+
+
+def test_addon_infos_dump_reads_legacy_dump_without_page_ai_declaration_markers(
+        addon_infos: AddonInfos, script_version: ScriptVersion, working_dir_path: Path):
+    # An older dump has no `ai_declaration_markers` key in `page`; reading must default it to [].
+    dump_file: Path = working_dir_path / "addon-infos.json"
+    JsonHelper.write_addon_infos_dump(addon_infos, script_version, dump_file)
+    envelope: dict = json.loads(dump_file.read_text())
+    envelope["addon_infos"][0]["page"].pop("ai_declaration_markers", None)
+    dump_file.write_text(json.dumps(envelope))
+
+    _, read_addon_infos = JsonHelper.read_addon_infos_dump(dump_file)
+
+    assert read_addon_infos[0].page.ai_declaration_markers == []
+
+
 def test_addon_infos_dump_reads_legacy_dump_without_enrichment_fields(addon_infos: AddonInfos,
                                                                      script_version: ScriptVersion,
                                                                      working_dir_path: Path):

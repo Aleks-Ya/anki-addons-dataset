@@ -28,7 +28,8 @@
           "branches",
           "links",
           "likes",
-          "dislikes"
+          "dislikes",
+          "ai_declaration_markers"
         ],
         "patternProperties": {
           "^title$": {
@@ -96,6 +97,12 @@
           },
           "dislikes": {
             "type": "integer"
+          },
+          "ai_declaration_markers": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
           }
         }
       },

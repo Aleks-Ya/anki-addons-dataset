@@ -68,6 +68,7 @@ class JsonHelper:
             other_links=[URL(link) for link in data["other_links"]],
             description=PlainStr(data.get("description", "")),
             contact_author_url=URL(data["contact_author_url"]) if data.get("contact_author_url") is not None else None,
+            ai_declaration_markers=list(data.get("ai_declaration_markers", [])),
         )
 
     @staticmethod

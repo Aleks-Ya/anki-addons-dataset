@@ -213,6 +213,30 @@ def test_manual_override_beats_contact_author_forum_link(overrider: Overrider):
         "https://forums.ankiweb.net/t/hypertts-spirtual-successor-to-awesometts/17143")
 
 
+def test_ai_declaration_detected_without_github_repo(overrider: Overrider):
+    """A repo-less addon that declares AI in its description still gets ai_declaration_markers."""
+    parser: AddonPageParser = AddonPageParser(overrider)
+    html: HtmlStr = HtmlStr(
+        '<html><body><main>'
+        '<div class="shared-item-description">'
+        'A simple addon that was built with ChatGPT. It has no source repository.'
+        '</div>'
+        '</main></body></html>')
+    addon_info: AddonInfo = parser.parse_addon_page(__header(6), html)
+    assert addon_info.github.github_repo is None
+    assert addon_info.page.ai_declaration_markers == ["chatgpt"]
+
+
+def test_plain_description_has_no_ai_declaration_markers(overrider: Overrider):
+    parser: AddonPageParser = AddonPageParser(overrider)
+    html: HtmlStr = HtmlStr(
+        '<html><body><main>'
+        '<div class="shared-item-description">A handy addon for reviewing cards.</div>'
+        '</main></body></html>')
+    addon_info: AddonInfo = parser.parse_addon_page(__header(7), html)
+    assert addon_info.page.ai_declaration_markers == []
+
+
 def test_no_contact_author_button_falls_back_to_description_vote(overrider: Overrider):
     """Without a Contact Author button the forum URL still comes from the description majority vote."""
     parser: AddonPageParser = AddonPageParser(overrider)

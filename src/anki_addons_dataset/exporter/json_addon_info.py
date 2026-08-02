@@ -86,6 +86,7 @@ class AnkiWeb:
     links: list[str]
     likes: int
     dislikes: int
+    ai_declaration_markers: list[str]
 
 
 @dataclass
@@ -107,7 +108,8 @@ class JsonAddonInfo:
             anki_web: AnkiWeb = AnkiWeb(addon.header.title, addon.header.addon_page_url, addon.page.content,
                                         addon.page.contact_author_url, addon.page.description, addon.header.rating,
                                         addon.header.update_date, addon.header.anki_version, branches,
-                                        addon.page.other_links, addon.page.like_number, addon.page.dislike_number)
+                                        addon.page.other_links, addon.page.like_number, addon.page.dislike_number,
+                                        list(addon.page.ai_declaration_markers))
             json_obj: Details = Details(addon.header.id, anki_web, github, forum)
             json_list.append(json_obj)
         return json_list

@@ -5,6 +5,7 @@ from bs4 import Tag, BeautifulSoup
 
 from anki_addons_dataset.collector.url_parser import UrlParser
 from anki_addons_dataset.collector.ankiweb.addon_branch_parser import AddonBranchParser
+from anki_addons_dataset.collector.ankiweb.ai_declaration_detector import AiDeclarationDetector
 from anki_addons_dataset.collector.overrider.overrider import Overrider
 from anki_addons_dataset.common.data_types import AddonHeader, AddonInfo, AddonId, URL, GitHubLink, GithubRepo, \
     GithubInfo, AddonPage, AddonBranch, HtmlStr, AnkiForumInfo, PlainStr
@@ -34,8 +35,10 @@ class AddonPageParser:
         dislikes: int = self.__extract_dislikes(soup)
         addon_branches: list[AddonBranch] = self.__extract_addon_branches(soup)
         description: PlainStr = self.__extract_description(description_tag)
+        ai_declaration_markers: list[str] = AiDeclarationDetector.detect(description)
         addon_page: AddonPage = AddonPage(
-            html, likes, dislikes, addon_branches, other_links, description, contact_author_url)
+            html, likes, dislikes, addon_branches, other_links, description, contact_author_url,
+            ai_declaration_markers)
         anki_forum_info: AnkiForumInfo = AnkiForumInfo(anki_forum_url, None, None, None, None)
         addon_info: AddonInfo = AddonInfo(addon_header, addon_page, github_info, anki_forum_info)
         return addon_info
