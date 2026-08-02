@@ -43,3 +43,38 @@ def test_feature_mention_is_not_a_declaration():
 def test_results_are_sorted_and_deduplicated():
     description: str = "Vibe-coded and made with Cursor, then refined with Cursor again."
     assert AiDeclarationDetector.detect(description) == ["cursor", "vibe-coded"]
+
+
+def test_build_declaration_with_tool_pt():
+    assert AiDeclarationDetector.detect("Este addon foi feito com ChatGPT.") == ["chatgpt"]
+    assert AiDeclarationDetector.detect("Desenvolvido usando Claude.") == ["claude"]
+    assert AiDeclarationDetector.detect("Escrito com a ajuda do Copilot.") == ["copilot"]
+
+
+def test_build_declaration_generic_ai_maps_to_slug_pt():
+    assert AiDeclarationDetector.detect("Feito com IA.") == ["ai-generated"]
+    assert AiDeclarationDetector.detect("Desenvolvido usando um LLM.") == ["ai-generated"]
+
+
+def test_made_with_branded_tools_pt():
+    assert AiDeclarationDetector.detect("Feito com Cursor") == ["cursor"]
+    assert AiDeclarationDetector.detect("feito com bolt.new") == ["bolt"]
+    assert AiDeclarationDetector.detect("Feito com Lovable") == ["lovable"]
+
+
+def test_standalone_markers_pt():
+    assert AiDeclarationDetector.detect("Este projeto foi vibe-codado.") == ["vibe-coded"]
+    assert AiDeclarationDetector.detect("Gerado por IA.") == ["ai-generated"]
+    assert AiDeclarationDetector.detect("Assistido por IA durante todo o desenvolvimento.") == ["ai-assisted"]
+    assert AiDeclarationDetector.detect("O código foi revisado com assistência de IA.") == ["ai-assisted"]
+
+
+def test_feature_mention_is_not_a_declaration_pt():
+    assert AiDeclarationDetector.detect("Gere flashcards com ChatGPT diretamente do Anki.") == []
+    assert AiDeclarationDetector.detect("Sugestões de cartões com tecnologia de IA para o seu baralho.") == []
+    assert AiDeclarationDetector.detect("Pergunte ao Claude sobre suas notas.") == []
+
+
+def test_results_are_sorted_and_deduplicated_mixed_languages():
+    description: str = "Vibe-coded and also feito com Cursor, then refined usando Claude."
+    assert AiDeclarationDetector.detect(description) == ["claude", "cursor", "vibe-coded"]
