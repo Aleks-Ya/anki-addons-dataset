@@ -3,6 +3,7 @@ from xlsxwriter.format import Format
 from xlsxwriter.worksheet import Worksheet
 
 from anki_addons_dataset.common.data_types import AddonInfos, DatasetSnapshotMetadata, RawMetadata, AddonInfo
+from anki_addons_dataset.exporter.xlsx.language_name_formatter import LanguageNameFormatter
 
 
 class AddonInfoSheet:
@@ -19,17 +20,18 @@ class AddonInfoSheet:
     __likes_col: int = 6
     __dislikes_col: int = 7
     __anki_web_url_col: int = 8
-    __ai_declaration_col: int = 9
-    __anki_forum_url_col: int = 10
-    __anki_forum_posts_count_col: int = 11
-    __anki_forum_last_posted_at_col: int = 12
-    __github_url_col: int = 13
-    __stars_col: int = 14
-    __last_commit_col: int = 15
-    __languages_col: int = 16
-    __actions_count_col: int = 17
-    __tests_count_col: int = 18
-    __ai_tools_col: int = 19
+    __language_col: int = 9
+    __ai_declaration_col: int = 10
+    __anki_forum_url_col: int = 11
+    __anki_forum_posts_count_col: int = 12
+    __anki_forum_last_posted_at_col: int = 13
+    __github_url_col: int = 14
+    __stars_col: int = 15
+    __last_commit_col: int = 16
+    __languages_col: int = 17
+    __actions_count_col: int = 18
+    __tests_count_col: int = 19
+    __ai_tools_col: int = 20
 
     def __init__(self, workbook: Workbook):
         self.__workbook: Workbook = workbook
@@ -76,6 +78,7 @@ class AddonInfoSheet:
         worksheet.set_column(self.__likes_col, self.__likes_col, 6)
         worksheet.set_column(self.__dislikes_col, self.__dislikes_col, 7)
         worksheet.set_column(self.__anki_web_url_col, self.__anki_web_url_col, 8)
+        worksheet.set_column(self.__language_col, self.__language_col, 10)
         worksheet.set_column(self.__anki_forum_url_col, self.__anki_forum_url_col, 8)
         worksheet.set_column(self.__anki_forum_posts_count_col, self.__anki_forum_posts_count_col, 8)
         worksheet.set_column(self.__anki_forum_last_posted_at_col, self.__anki_forum_last_posted_at_col, 10)
@@ -109,6 +112,11 @@ class AddonInfoSheet:
         worksheet.write_string(row2, self.__likes_col, "Likes", header_format)
         worksheet.write_string(row2, self.__dislikes_col, "Dislikes", header_format)
         worksheet.write_string(row2, self.__anki_web_url_col, "Page", header_format)
+        worksheet.write_string(row2, self.__language_col, "Language", header_format)
+        worksheet.write_comment(row2, self.__language_col,
+                                "Human (natural) language of the AnkiWeb add-on description, "
+                                "auto-detected. Blank when the description is empty or too short "
+                                "to classify.")
         worksheet.write_string(row2, self.__ai_declaration_col, "Declared AI", header_format)
         worksheet.write_comment(row2, self.__ai_declaration_col,
                                 "AI tools the author declared building the add-on with, detected in the "
@@ -158,6 +166,8 @@ class AddonInfoSheet:
         worksheet.write_number(row, self.__likes_col, addon.page.like_number)
         worksheet.write_number(row, self.__dislikes_col, addon.page.dislike_number)
         worksheet.write_url(row, self.__anki_web_url_col, addon.header.addon_page_url, string='link')
+        worksheet.write_string(row, self.__language_col,
+                               LanguageNameFormatter.name_of(addon.page.description_language) or "")
         worksheet.write_string(row, self.__ai_declaration_col, ", ".join(addon.page.ai_declaration_markers))
         self.__fill_anki_forum_row_columns(addon, row, worksheet)
         self.__fill_github_row_columns(addon, row, worksheet)
