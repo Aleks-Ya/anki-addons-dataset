@@ -6,8 +6,8 @@ from typing import Any, Optional
 
 from anki_addons_dataset.common.data_types import AddonInfo, AddonInfos, AddonHeader, AddonPage, AddonBranch, \
     GithubInfo, GitHubLink, GitHubUser, GithubRepo, AnkiForumInfo, AddonId, AnkiVersion, HtmlStr, URL, \
-    GithubUserName, GithubRepoName, LanguageName, TopicSlug, TopicId, LastPostedAt, PostsCount, ScriptVersion, AddonRating, \
-    UpdateDate, AddonTitle, PlainStr, AddonManifest, SpdxLicense, Topic, DependencyName
+    GithubUserName, GithubRepoName, LanguageName, LanguageCode, TopicSlug, TopicId, LastPostedAt, PostsCount, \
+    ScriptVersion, AddonRating, UpdateDate, AddonTitle, PlainStr, AddonManifest, SpdxLicense, Topic, DependencyName
 
 
 class JsonHelper:
@@ -69,6 +69,9 @@ class JsonHelper:
             description=PlainStr(data.get("description", "")),
             contact_author_url=URL(data["contact_author_url"]) if data.get("contact_author_url") is not None else None,
             ai_declaration_markers=list(data.get("ai_declaration_markers", [])),
+            description_language=LanguageCode(data["description_language"])
+            if data.get("description_language") is not None else None,
+            description_language_confidence=data.get("description_language_confidence"),
         )
 
     @staticmethod

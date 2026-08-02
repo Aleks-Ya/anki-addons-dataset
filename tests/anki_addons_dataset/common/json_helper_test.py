@@ -4,7 +4,7 @@ from pathlib import Path
 
 from anki_addons_dataset.common.data_types import AddonInfo, AddonInfos, AddonHeader, AddonPage, AddonBranch, \
     GithubInfo, GitHubLink, GitHubUser, GithubRepo, AnkiForumInfo, AddonId, AnkiVersion, HtmlStr, URL, \
-    GithubUserName, GithubRepoName, LanguageName, ScriptVersion, AddonRating, UpdateDate, AddonTitle, \
+    GithubUserName, GithubRepoName, LanguageName, LanguageCode, ScriptVersion, AddonRating, UpdateDate, AddonTitle, \
     AddonManifest, SpdxLicense, Topic, DependencyName
 from anki_addons_dataset.common.json_helper import JsonHelper
 
@@ -102,6 +102,36 @@ def test_addon_infos_dump_round_trip_preserves_ai_declaration_markers(addon_info
     _, read_addon_infos = JsonHelper.read_addon_infos_dump(dump_file)
 
     assert read_addon_infos[0].page.ai_declaration_markers == ["claude", "vibe-coded"]
+
+
+def test_addon_infos_dump_round_trip_preserves_description_language(addon_infos: AddonInfos,
+                                                                    script_version: ScriptVersion,
+                                                                    working_dir_path: Path):
+    addon_infos[0].page.description_language = LanguageCode("es")
+    addon_infos[0].page.description_language_confidence = 0.87
+    dump_file: Path = working_dir_path / "addon-infos.json"
+
+    JsonHelper.write_addon_infos_dump(addon_infos, script_version, dump_file)
+    _, read_addon_infos = JsonHelper.read_addon_infos_dump(dump_file)
+
+    assert read_addon_infos[0].page.description_language == "es"
+    assert read_addon_infos[0].page.description_language_confidence == 0.87
+
+
+def test_addon_infos_dump_reads_legacy_dump_without_description_language(
+        addon_infos: AddonInfos, script_version: ScriptVersion, working_dir_path: Path):
+    # An older dump has no description-language keys in `page`; reading must default them to None.
+    dump_file: Path = working_dir_path / "addon-infos.json"
+    JsonHelper.write_addon_infos_dump(addon_infos, script_version, dump_file)
+    envelope: dict = json.loads(dump_file.read_text())
+    envelope["addon_infos"][0]["page"].pop("description_language", None)
+    envelope["addon_infos"][0]["page"].pop("description_language_confidence", None)
+    dump_file.write_text(json.dumps(envelope))
+
+    _, read_addon_infos = JsonHelper.read_addon_infos_dump(dump_file)
+
+    assert read_addon_infos[0].page.description_language is None
+    assert read_addon_infos[0].page.description_language_confidence is None
 
 
 def test_addon_infos_dump_reads_legacy_dump_without_page_ai_declaration_markers(

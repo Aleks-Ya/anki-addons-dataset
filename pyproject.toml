@@ -35,6 +35,7 @@ dependencies = [
     "openpyxl",
     "pydiscourse",
     "humanize",
+    "lingua-language-detector",
 ]
 
 [project.optional-dependencies]

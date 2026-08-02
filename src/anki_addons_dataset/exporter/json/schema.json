@@ -29,7 +29,9 @@
           "links",
           "likes",
           "dislikes",
-          "ai_declaration_markers"
+          "ai_declaration_markers",
+          "description_language",
+          "description_language_confidence"
         ],
         "patternProperties": {
           "^title$": {
@@ -103,6 +105,18 @@
             "items": {
               "type": "string"
             }
+          },
+          "description_language": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "description_language_confidence": {
+            "type": [
+              "null",
+              "number"
+            ]
           }
         }
       },

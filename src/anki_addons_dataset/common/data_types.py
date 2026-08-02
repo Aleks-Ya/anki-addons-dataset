@@ -14,6 +14,7 @@ GithubRepoName = NewType("GithubRepoName", str)
 GithubUserName = NewType("GithubUserName", str)
 GithubRepoId = NewType("GithubRepoId", str)
 LanguageName = NewType("LanguageName", str)
+LanguageCode = NewType("LanguageCode", str)
 HtmlStr = NewType("HtmlStr", str)
 PlainStr = NewType("PlainStr", str)
 TopicSlug = NewType("TopicSlug", str)
@@ -121,6 +122,8 @@ class AddonPage:
     description: PlainStr = PlainStr("")
     contact_author_url: Optional[URL] = None
     ai_declaration_markers: list[str] = field(default_factory=list)
+    description_language: Optional[LanguageCode] = None
+    description_language_confidence: Optional[float] = None
 
 
 @dataclass

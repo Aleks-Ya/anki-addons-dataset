@@ -20,6 +20,12 @@ def test_parse_addon_page(overrider: Overrider):
         update_date=UpdateDate("2025-04-19"),
         anki_version=AnkiVersion("25.09.2~"))
     addon_info: AddonInfo = parser.parse_addon_page(addon_header, addon_html)
+    assert addon_info.page.description_language == "en"
+    assert addon_info.page.description_language_confidence is not None
+    assert 0.0 < addon_info.page.description_language_confidence <= 1.0
+    # Null the (deterministic but verbose) language fields so the structural comparison below stays focused.
+    addon_info.page.description_language = None
+    addon_info.page.description_language_confidence = None
     github_user: GitHubUser = GitHubUser(GithubUserName("aleks-ya"))
     github_repo: GithubRepo = GithubRepo(GithubUserName("aleks-ya"), GithubRepoName("note-size-anki-addon"))
     assert addon_info == AddonInfo(
@@ -125,6 +131,22 @@ def test_parse_addon_page_without_description(overrider: Overrider):
     html: HtmlStr = HtmlStr("<html><body><main><h1>No description</h1></main></body></html>")
     addon_info: AddonInfo = parser.parse_addon_page(addon_header, html)
     assert addon_info.page.description == ""
+    assert addon_info.page.description_language is None
+    assert addon_info.page.description_language_confidence is None
+
+
+def test_parse_addon_page_detects_non_english_description(overrider: Overrider):
+    """The Spanish description is tagged with the ISO-639-1 code 'es' and a confidence value."""
+    parser: AddonPageParser = AddonPageParser(overrider)
+    html: HtmlStr = HtmlStr(
+        '<html><body><main>'
+        '<div class="shared-item-description">'
+        'Este complemento muestra el tamaño de tu colección y de cada nota, incluyendo los archivos adjuntos.'
+        '</div>'
+        '</main></body></html>')
+    addon_info: AddonInfo = parser.parse_addon_page(__header(8), html)
+    assert addon_info.page.description_language == "es"
+    assert addon_info.page.description_language_confidence is not None
 
 
 def test_comment_github_url_does_not_override_description_repo(overrider: Overrider):
