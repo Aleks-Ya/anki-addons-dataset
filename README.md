@@ -8,6 +8,13 @@ A HuggingFace dataset of addons for the [Anki](https://apps.ankiweb.net) flashca
 pip install anki-addons-dataset
 ```
 
+Or with [uv](https://docs.astral.sh/uv/):
+
+```bash
+uv tool install anki-addons-dataset   # install the command
+uvx anki-addons-dataset info          # or run it once, without installing
+```
+
 This installs the `anki-addons-dataset` command. The pipeline runs as a sequence of operations:
 
 ```bash

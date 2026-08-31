@@ -20,14 +20,14 @@ jobs:
         uses: trufflesecurity/trufflehog@main # https://github.com/trufflesecurity/trufflehog/tags
         with:
           extra_args: --results=verified,unknown --debug
-      - name: Set up Python
-        uses: actions/setup-python@v6 # https://github.com/actions/setup-python/tags
+      - name: Install uv
+        uses: astral-sh/setup-uv@v7 # https://github.com/astral-sh/setup-uv/tags
         with:
-          python-version: "3.14"
+          enable-cache: true
       - name: Install dependencies
-        run: pip install --root-user-action=ignore -U -e '.[dev]' pip
+        run: uv sync --locked
       - name: PyTest
-        run: pytest -v --cov=anki_addons_dataset --cov-report=xml --cov-branch
+        run: uv run pytest -v --cov=anki_addons_dataset --cov-report=xml --cov-branch
       - name: SonarCloud Scan
         uses: SonarSource/sonarqube-scan-action@v8 # https://github.com/SonarSource/sonarqube-scan-action/tags
         env:

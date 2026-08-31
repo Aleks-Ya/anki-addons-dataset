@@ -1,17 +1,22 @@
 # Developer Guide
 
 ## Set up a Python virtual environment
-1. Install PyEnv: `brew install pyenv pyenv-virtualenv`
-2. Create a virtual environment:
-    1. `pyenv install 3.14.5`
-    2. Delete old virtual environment (optional): `pyenv virtualenv-delete anki-addons-dataset`
-    3. `pyenv virtualenv 3.14.5 anki-addons-dataset`
-3. Install Anki packages
-    1. Activate virtual environment: `pyenv activate anki-addons-dataset`
-    2. Install packages: `./pip_update.sh`
+The project is managed by [uv](https://docs.astral.sh/uv/).
+
+1. Install uv: `brew install uv`
+2. Create the virtual environment and install all dependencies: `uv sync`
+
+`uv sync` creates `.venv/` using the Python version pinned in `.python-version` (downloading that
+interpreter if needed), installs the project in editable mode, and installs the `dev` dependency
+group — all resolved from the committed `uv.lock`, so every machine gets identical versions.
+
+Prefix commands with `uv run` (e.g. `uv run pytest`) to use that environment without activating it,
+or activate it the usual way with `source .venv/bin/activate`.
+
+Upgrade all dependencies to their latest allowed versions (refreshes `uv.lock`): `./uv_update.sh`
 
 ## Unit-test
-Run locally: `pytest`  
+Run locally: `uv run pytest`  
 Unit-tests are automatically executed in GitHub Actions.
 
 ## GitHub
@@ -27,7 +32,7 @@ Sonar report is automatically updated in GitHub Actions.
 
 ## Logging
 Default log level: DEBUG
-Set log level: `PYTHONPATH=src python -m anki_addons_dataset.addon_catalog parse -l INFO`
+Set log level: `uv run anki-addons-dataset parse -l INFO`
 
 ## Running the pipeline
 
@@ -69,10 +74,9 @@ uvx --from anki-addons-dataset==1.3.0 anki-addons-dataset parse report  # pinned
 
 ### 3. Given steps on the current working source
 
-Activate the editable dev env and the same command runs your working tree:
+`uv sync` installs the project in editable mode, so `uv run` executes your working tree:
 ```bash
-pyenv activate anki-addons-dataset
-anki-addons-dataset parse report
+uv run anki-addons-dataset parse report
 ```
 
 Or run the source explicitly without relying on the install:
@@ -81,29 +85,29 @@ PYTHONPATH=src python -m anki_addons_dataset.addon_catalog parse report
 ```
 
 ## Create a new version of HuggingFace dataset **from sources** by steps
-1. Upgrade Python packages: `./pip_update.sh`
-2. Check version: `PYTHONPATH=src python -m anki_addons_dataset.addon_catalog info`
-3. Initialize a working directory: `PYTHONPATH=src python -m anki_addons_dataset.addon_catalog init` (creates `~/anki-addons-dataset`)
-4. Download new snapshot: `PYTHONPATH=src python -m anki_addons_dataset.addon_catalog download -d 2026-01-01` (creates `~/anki-addons-dataset/history/2026-01-01/1-raw`)
-5. Parse dataset: `PYTHONPATH=src python -m anki_addons_dataset.addon_catalog parse` (enriches `~/anki-addons-dataset/history/YYYY-MM-DD/2-stage`)
-6. Generate reports: `PYTHONPATH=src python -m anki_addons_dataset.addon_catalog report` (creates `~/anki-addons-dataset/history/YYYY-MM-DD/3-final`)
-7. Create a bundle: `PYTHONPATH=src python -m anki_addons_dataset.addon_catalog bundle` (creates `~/anki-addons-dataset/bundle`)
-8. Upload the bundle: `PYTHONPATH=src python -m anki_addons_dataset.addon_catalog upload` (syncs `~/anki-addons-dataset/bundle` to HuggingFace)
+1. Upgrade Python packages: `./uv_update.sh`
+2. Check version: `uv run anki-addons-dataset info`
+3. Initialize a working directory: `uv run anki-addons-dataset init` (creates `~/anki-addons-dataset`)
+4. Download new snapshot: `uv run anki-addons-dataset download -d 2026-01-01` (creates `~/anki-addons-dataset/history/2026-01-01/1-raw`)
+5. Parse dataset: `uv run anki-addons-dataset parse` (enriches `~/anki-addons-dataset/history/YYYY-MM-DD/2-stage`)
+6. Generate reports: `uv run anki-addons-dataset report` (creates `~/anki-addons-dataset/history/YYYY-MM-DD/3-final`)
+7. Create a bundle: `uv run anki-addons-dataset bundle` (creates `~/anki-addons-dataset/bundle`)
+8. Upload the bundle: `uv run anki-addons-dataset upload` (syncs `~/anki-addons-dataset/bundle` to HuggingFace)
 9. Restart the visualization space: https://huggingface.co/spaces/Ya-Alex/anki-addons
 10. Post on Anki Forum: https://forums.ankiweb.net/t/anki-addons-dataset-a-detailed-list-of-addons/63090
 
 ## Release a new version of this repository
 1. Checkout branch `main`
 2. Pass Sonar Qube analysis (skill `/push`):
-    1. Upgrade Python packages: `./pip_update.sh`
-    2. Execute unit-tests: `pytest`
+    1. Upgrade Python packages: `./uv_update.sh`
+    2. Execute unit-tests: `uv run pytest`
     3. Push changes: `git push`
     4. Review GitHub Actions: https://github.com/Aleks-Ya/anki-addons-dataset/actions
     5. Review Sonar Qube report: https://sonarcloud.io/summary/overall?id=Aleks-Ya_anki-addons-dataset&branch=main
 3. Increment version:
-    1. Show the next versions: `bump-my-version show-bump`
-    2. Switch dev version to RELEASE (`0.1.1.dev0` -> `0.1.1`): `bump-my-version bump release --tag`
-    3. Switch the RELEASE version to the next dev (`0.1.1` -> `0.2.0.dev0`): `bump-my-version bump minor`
+    1. Show the next versions: `uv run bump-my-version show-bump`
+    2. Switch dev version to RELEASE (`0.1.1.dev0` -> `0.1.1`): `uv run bump-my-version bump release --tag`
+    3. Switch the RELEASE version to the next dev (`0.1.1` -> `0.2.0.dev0`): `uv run bump-my-version bump minor`
 4. Create a GitHub release (skill `/release`):
     1. Push branch and tags: `git push origin HEAD --tags`
     2. Create a release from the tag: https://github.com/Aleks-Ya/anki-addons-dataset/releases
@@ -122,10 +126,8 @@ this project pointing at repo `Aleks-Ya/anki-addons-dataset`, workflow `publish.
 
 Manual build/publish (fallback):
 ```bash
-pip install build twine
-python -m build            # creates dist/*.whl and dist/*.tar.gz
-twine check dist/*
-twine upload dist/*        # requires a PyPI API token
+uv build                   # creates dist/*.whl and dist/*.tar.gz
+uv publish                 # requires a PyPI API token (UV_PUBLISH_TOKEN)
 ```
 Note: builds from a `.dev0` checkout produce a development version; only released (non-`.dev`) tags
 yield a clean PyPI version.

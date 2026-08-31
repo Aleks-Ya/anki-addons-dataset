@@ -38,17 +38,6 @@ dependencies = [
     "lingua-language-detector",
 ]
 
-[project.optional-dependencies]
-dev = [
-    "pytest",
-    "pytest-cov",
-    "pytest-mock",
-    "freezegun",
-    "bump-my-version",
-    "build",
-    "twine",
-]
-
 [project.urls]
 Homepage = "https://github.com/Aleks-Ya/anki-addons-dataset"
 Repository = "https://github.com/Aleks-Ya/anki-addons-dataset"
@@ -70,3 +59,12 @@ namespaces = true
 
 [tool.setuptools.dynamic]
 version = { attr = "anki_addons_dataset.__version__" }
+
+[dependency-groups]
+dev = [
+    "pytest",
+    "pytest-cov",
+    "pytest-mock",
+    "freezegun",
+    "bump-my-version",
+]

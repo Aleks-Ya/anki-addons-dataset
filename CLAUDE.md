@@ -12,34 +12,37 @@ Collects, processes, and publishes structured data about Anki flashcard addons t
 ## Commands
 
 ```bash
-# Run all tests (with coverage)
-pytest
+# Run all tests (coverage is opt-in; pytest.ini sets no addopts)
+uv run pytest
 
 # Run a single test file
-pytest tests/anki_addons_dataset/path/to/test_file.py
+uv run pytest tests/anki_addons_dataset/path/to/test_file.py
 
-# Run with verbose output
-pytest -v
+# Run with verbose output and coverage (as CI does)
+uv run pytest -v --cov=anki_addons_dataset --cov-report=xml --cov-branch
 
 # CLI operations (INIT → DOWNLOAD → PARSE → REPORT → BUNDLE → UPLOAD)
 # A single invocation accepts any subset of steps; `all` expands to `info` + the full six-step sequence.
 # `info` is a side-effect-free step that logs the app version and runtime configuration.
-PYTHONPATH=src python -m anki_addons_dataset.addon_catalog all -d 2026-01-01  # full pipeline (info first)
-PYTHONPATH=src python -m anki_addons_dataset.addon_catalog info               # print version + config only
-PYTHONPATH=src python -m anki_addons_dataset.addon_catalog init
-PYTHONPATH=src python -m anki_addons_dataset.addon_catalog download -d 2026-01-01
-PYTHONPATH=src python -m anki_addons_dataset.addon_catalog parse
-PYTHONPATH=src python -m anki_addons_dataset.addon_catalog parse -l INFO  # change log level
-PYTHONPATH=src python -m anki_addons_dataset.addon_catalog report
-PYTHONPATH=src python -m anki_addons_dataset.addon_catalog bundle
-PYTHONPATH=src python -m anki_addons_dataset.addon_catalog upload
+uv run anki-addons-dataset all -d 2026-01-01  # full pipeline (info first)
+uv run anki-addons-dataset info               # print version + config only
+uv run anki-addons-dataset init
+uv run anki-addons-dataset download -d 2026-01-01
+uv run anki-addons-dataset parse
+uv run anki-addons-dataset parse -l INFO  # change log level
+uv run anki-addons-dataset report
+uv run anki-addons-dataset bundle
+uv run anki-addons-dataset upload
 
-# Install/update dependencies
-./pip_update.sh
+# Create/refresh the venv from the committed lock file
+uv sync
+
+# Upgrade all dependencies (refreshes uv.lock)
+./uv_update.sh
 
 # Version bumping
-bump-my-version bump release --tag   # dev → release (1.3.0.dev0 → 1.3.0)
-bump-my-version bump minor            # release → next dev (1.3.0 → 1.4.0.dev0)
+uv run bump-my-version bump release --tag   # dev → release (1.3.0.dev0 → 1.3.0)
+uv run bump-my-version bump minor            # release → next dev (1.3.0 → 1.4.0.dev0)
 git push origin HEAD --tags
 ```
 

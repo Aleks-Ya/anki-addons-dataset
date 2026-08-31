@@ -1,7 +1,7 @@
 ---
 name: push
 description: Push the main branch and see it through green — verify a clean tree, install deps and run pytest locally, push, wait for the GitHub Actions "Unit-tests" workflow and fix any failures, then review SonarCloud issues on the new code and fix them. Use when the user says "push", "/push", or asks to push and make sure CI/Sonar are clean.
-allowed-tools: Bash(./pip_update.sh *) Bash(gh run *) Bash(git *) Bash(curl *)
+allowed-tools: Bash(./uv_update.sh *) Bash(uv *) Bash(gh run *) Bash(git *) Bash(curl *)
 disable-model-invocation: true
 ---
 
@@ -31,12 +31,12 @@ If not on `main`, stop and ask the user before pushing.
 Before pushing, sync the environment and run the test suite so failures are caught locally rather than in CI.
 
 ```bash
-./pip_update.sh   # pip install -U pip -e '.[dev]'
-pytest
+./uv_update.sh   # uv lock --upgrade && uv sync
+uv run pytest
 ```
 
-- `./pip_update.sh` upgrades pip and installs the project (editable) with its `dev` extras, so `pytest` and the rest of the toolchain are present and up to date.
-- If `pytest` **fails**, **stop.** Do not push. Fix the failing tests in the working tree first (and, per step 1, don't commit on the user's behalf unless they ask). Re-run `pytest` until green, then continue.
+- `./uv_update.sh` upgrades every dependency to its latest allowed version, refreshes `uv.lock`, and syncs `.venv` with the project (editable) plus its `dev` dependency group, so `pytest` and the rest of the toolchain are present and up to date. If it changes `uv.lock`, that change must be committed (CI runs `uv sync --locked` and fails on a stale lock).
+- If `uv run pytest` **fails**, **stop.** Do not push. Fix the failing tests in the working tree first (and, per step 1, don't commit on the user's behalf unless they ask). Re-run `pytest` until green, then continue.
 
 ## 3. Push the main branch
 
@@ -92,7 +92,7 @@ Focus on issues touching the code just pushed (recent `creationDate`, or files i
 
 - Read the `rule`, `message`, `component` (file), and `line`.
 - Fix the underlying code — don't just silence it. Only suppress (e.g. `# NOSONAR`) when the rule is a genuine false positive, and say so.
-- Re-run tests locally (`pytest`) before pushing the fix.
+- Re-run tests locally (`uv run pytest`) before pushing the fix.
 
 Commit and push the fixes, then loop back through steps 4–5 (CI runs again, Sonar re-analyzes) until CI is green and there are no new/open Sonar issues on the changed code.
 

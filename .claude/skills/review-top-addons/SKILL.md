@@ -1,7 +1,7 @@
 ---
 name: review-top-addons
 description: Download the latest published anki-addons dataset from HuggingFace, take the top N highest-rated addons, cross-check every field (AnkiWeb links, GitHub, Anki Forum) against the live sources, and write a markdown report of discrepancies. Focuses especially on whether the GitHub repo and Anki Forum URL were correctly extracted from the addon page. Use when the user says "review top addons", "/review-top-addons", or asks to verify the top-rated addons' data for correctness.
-allowed-tools: Bash(python3 *) Bash(gh api *) Bash(curl *) Bash(grep *) Bash(pip install *)
+allowed-tools: Bash(python3 *) Bash(uv *) Bash(./uv_update.sh *) Bash(gh api *) Bash(curl *) Bash(grep *)
 disable-model-invocation: true
 ---
 
@@ -14,7 +14,7 @@ Pull the latest published `Ya-Alex/anki-addons` dataset, take the top N highest-
 ## 1. Fetch the dataset and select the top N addons
 
 ```bash
-python3 .claude/skills/review-top-addons/select_top_addons.py <N>   # N defaults to 10
+uv run python .claude/skills/review-top-addons/select_top_addons.py <N>   # N defaults to 10
 ```
 
 This downloads `latest/parquet/data.parquet` (the canonical default config on HuggingFace) and `latest/metadata.json`, sorts by `anki_web.rating` descending, and writes to `~/anki-addons-dataset/reviews/`:
@@ -22,7 +22,7 @@ This downloads `latest/parquet/data.parquet` (the canonical default config on Hu
 - `top-<N>-selected.json` — the selected records. Each record has `id`, `anki_web{title, addon_page_url, rating, update_date, anki_version, branches, links, likes, dislikes, ...}`, `github` (nullable), `forum` (nullable), **plus two derived helper fields** the script pre-extracts from the addon page HTML: `_page_github_urls` and `_page_forum_urls` (every `github.com` / `forums.ankiweb.net` URL actually present on the page).
 - `pages/<id>.html` — the exact rendered page HTML the parser saw (the extraction ground truth).
 
-Note the printed **snapshot date** — the dataset is a point-in-time snapshot, so counts will have drifted since then (see step 2). If the script fails because `huggingface_hub`/`pandas`/`pyarrow` are missing, `pip install huggingface_hub pandas pyarrow` and retry (or run `./pip_update.sh`). Read `top-<N>-selected.json` to drive the rest of the review.
+Note the printed **snapshot date** — the dataset is a point-in-time snapshot, so counts will have drifted since then (see step 2). `uv run` supplies the project environment, so `huggingface_hub`/`pandas`/`pyarrow` are available; if they are missing, run `uv sync` first (or `./uv_update.sh` to upgrade everything). Read `top-<N>-selected.json` to drive the rest of the review.
 
 ## 2. Cross-check each addon against the live sources
 
