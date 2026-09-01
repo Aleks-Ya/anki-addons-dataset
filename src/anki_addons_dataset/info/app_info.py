@@ -5,6 +5,7 @@ from logging import Logger
 from typing import Optional
 
 from anki_addons_dataset import __version__
+from anki_addons_dataset.collector.github.github_rest_client import GithubRestClient
 from anki_addons_dataset.common.data_types import SnapshotDate, ReportDate
 from anki_addons_dataset.common.working_dir import WorkingDir
 from anki_addons_dataset.huggingface.hugging_face_client import HuggingFaceClient
@@ -28,6 +29,12 @@ class AppInfo:
         log.info(f"History directory: {self.__working_dir.get_history_dir()}")
         log.info(f"Bundle directory: {self.__working_dir.get_bundle_dir()}")
         log.info(f"HuggingFace dataset: {self.__hugging_face_client.get_repo_id()}")
+        log.info(f"GitHub token file: {GithubRestClient.get_token_file()}")
         log.info(f"Snapshot date: {snapshot_date}")
         log.info(f"Report date: {report_date}")
         log.info("========================")
+        self.__verify_github_token()
+
+    @staticmethod
+    def __verify_github_token() -> None:
+        GithubRestClient.read_token()

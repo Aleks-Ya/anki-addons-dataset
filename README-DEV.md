@@ -30,6 +30,18 @@ Sonar report is automatically updated in GitHub Actions.
 1. Login: `hf auth login`
 2. Verify: `hf auth whoami`
 
+## GitHub token
+The `download` and `parse` steps call the GitHub REST API and need a personal access token
+(no scopes required for public repositories) in `~/.github/token.txt`:
+
+```bash
+mkdir -p ~/.github
+echo '<personal-access-token>' > ~/.github/token.txt
+```
+
+The `info` step verifies the token file is present and non-empty, so `all` aborts immediately
+instead of failing minutes later during `download`.
+
 ## Logging
 Default log level: DEBUG
 Set log level: `uv run anki-addons-dataset parse -l INFO`
@@ -37,7 +49,7 @@ Set log level: `uv run anki-addons-dataset parse -l INFO`
 ## Running the pipeline
 
 The pipeline has six steps run in order: `init download parse report bundle upload`.
-There is also an `info` step that just logs the app version and runtime configuration (working dir, HuggingFace dataset, Python/platform, snapshot/report dates) without side effects.
+There is also an `info` step that logs the app version and runtime configuration (working dir, HuggingFace dataset, GitHub token file, Python/platform, snapshot/report dates) without side effects. It fails fast if the GitHub token file is missing or empty.
 
 A single invocation accepts any subset of steps (space-separated), or the shorthand `all`,
 which expands to `info` followed by the full six-step sequence in pipeline order:

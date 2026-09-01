@@ -23,7 +23,8 @@ uv run pytest -v --cov=anki_addons_dataset --cov-report=xml --cov-branch
 
 # CLI operations (INIT → DOWNLOAD → PARSE → REPORT → BUNDLE → UPLOAD)
 # A single invocation accepts any subset of steps; `all` expands to `info` + the full six-step sequence.
-# `info` is a side-effect-free step that logs the app version and runtime configuration.
+# `info` is a side-effect-free step that logs the app version and runtime configuration,
+# and fails fast if the GitHub token file (~/.github/token.txt) is missing or empty.
 uv run anki-addons-dataset all -d 2026-01-01  # full pipeline (info first)
 uv run anki-addons-dataset info               # print version + config only
 uv run anki-addons-dataset init
