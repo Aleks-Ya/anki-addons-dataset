@@ -30,6 +30,22 @@ Sonar report is automatically updated in GitHub Actions.
 1. Login: `hf auth login`
 2. Verify: `hf auth whoami`
 
+## HuggingFace Spaces
+Visualizations: https://huggingface.co/spaces/Ya-Alex/anki-addons
+
+The Space downloads the dataset parquet files from the Hub on startup and logs:
+
+```
+Warning: You are sending unauthenticated requests to the HF Hub.
+Please set a HF_TOKEN to enable higher rate limits and faster downloads.
+```
+
+It is harmless: the dataset is public, so anonymous downloads work. The warning only means the Space
+container has no `HF_TOKEN`, hence per-IP rate limits and no accelerated downloads. To silence it, add a
+read-only token as a Space secret named `HF_TOKEN` (Space -> Settings -> Variables and secrets);
+`huggingface_hub` reads it from the environment, no code change needed. This is unrelated to the
+credentials `upload` uses (`hf auth login`).
+
 ## GitHub token
 The `download` and `parse` steps call the GitHub REST API and need a personal access token
 (no scopes required for public repositories) in `~/.github/token.txt`:
@@ -121,6 +137,7 @@ PYTHONPATH=src python -m anki_addons_dataset.addon_catalog parse report
 7. Create a bundle: `uv run anki-addons-dataset bundle` (creates `~/anki-addons-dataset/bundle`)
 8. Upload the bundle: `uv run anki-addons-dataset upload` (syncs `~/anki-addons-dataset/bundle` to HuggingFace)
 9. Restart the visualization space: https://huggingface.co/spaces/Ya-Alex/anki-addons
+   (its startup log warns about `HF_TOKEN`, see [HuggingFace Spaces](#huggingface-spaces))
 10. Post on Anki Forum: https://forums.ankiweb.net/t/anki-addons-dataset-a-detailed-list-of-addons/63090
 
 ## Release a new version of this repository
