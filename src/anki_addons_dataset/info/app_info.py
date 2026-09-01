@@ -34,7 +34,13 @@ class AppInfo:
         log.info(f"Report date: {report_date}")
         log.info("========================")
         self.__verify_github_token()
+        self.__verify_hugging_face_access()
 
     @staticmethod
     def __verify_github_token() -> None:
         GithubRestClient.read_token()
+        log.info(f"GitHub token: OK ({GithubRestClient.get_token_file()})")
+
+    def __verify_hugging_face_access(self) -> None:
+        self.__hugging_face_client.verify_write_access()
+        log.info(f"HuggingFace write access: OK ({self.__hugging_face_client.get_repo_id()})")

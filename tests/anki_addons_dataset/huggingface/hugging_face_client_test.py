@@ -112,3 +112,23 @@ def test_prune_orphans_no_op_when_nothing_stale(tmp_path: Path):
     client.prune_orphans(tmp_path)
 
     api.delete_files.assert_not_called()
+
+
+def test_verify_write_access_checks_dataset_write_permission():
+    api: HfApi = Mock(spec=HfApi)
+    client: HuggingFaceClient = HuggingFaceClient(api)
+
+    client.verify_write_access()
+
+    api.auth_check.assert_called_once_with("Ya-Alex/anki-addons", repo_type="dataset", write=True)
+
+
+def test_verify_write_access_raises_permission_error_when_forbidden():
+    api: HfApi = Mock(spec=HfApi)
+    response: Mock = Mock()
+    response.status_code = 403
+    api.auth_check.side_effect = HfHubHTTPError("nope", response=response)
+    client: HuggingFaceClient = HuggingFaceClient(api)
+
+    with pytest.raises(PermissionError, match="HuggingFace unauthorized"):
+        client.verify_write_access()

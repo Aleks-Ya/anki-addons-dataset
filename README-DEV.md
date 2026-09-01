@@ -40,7 +40,8 @@ echo '<personal-access-token>' > ~/.github/token.txt
 ```
 
 The `info` step verifies the token file is present and non-empty, so `all` aborts immediately
-instead of failing minutes later during `download`.
+instead of failing minutes later during `download`. It also verifies HuggingFace write access
+to the dataset (the same check `upload` runs), so both credentials are validated up front.
 
 ## Logging
 Default log level: DEBUG
@@ -49,7 +50,8 @@ Set log level: `uv run anki-addons-dataset parse -l INFO`
 ## Running the pipeline
 
 The pipeline has six steps run in order: `init download parse report bundle upload`.
-There is also an `info` step that logs the app version and runtime configuration (working dir, HuggingFace dataset, GitHub token file, Python/platform, snapshot/report dates) without side effects. It fails fast if the GitHub token file is missing or empty.
+There is also an `info` step that logs the app version and runtime configuration (working dir, HuggingFace dataset, GitHub token file, Python/platform, snapshot/report dates) without side effects. It fails fast on missing credentials: an absent or empty GitHub token file,
+or missing HuggingFace write access. The HuggingFace check needs network access.
 
 A single invocation accepts any subset of steps (space-separated), or the shorthand `all`,
 which expands to `info` followed by the full six-step sequence in pipeline order:

@@ -40,7 +40,7 @@ class HuggingFaceClient:
             log.warning(f"Could not create pre-upload backup tag {tag}: {e}")
 
     def upload_dataset(self, bundle_dir: Path) -> None:
-        self.__verify_write_access()
+        self.verify_write_access()
         hf_cache_dir: Path = bundle_dir / ".cache"
         if hf_cache_dir.exists():
             log.info(f"Deleting HF cache folder: {hf_cache_dir}")
@@ -72,7 +72,11 @@ class HuggingFaceClient:
     def download_file(self, file_path: str) -> Path:
         return Path(self.__api.hf_hub_download(repo_id=self.__repo_id, filename=file_path, repo_type="dataset"))
 
-    def __verify_write_access(self) -> None:
+    def verify_write_access(self) -> None:
+        """Fail fast if the configured credentials cannot write to the dataset.
+
+        Called by the `info` step as a preflight check and again by `upload_dataset`
+        before it pushes anything."""
         try:
             self.__api.auth_check(self.__repo_id, repo_type="dataset", write=True)
         except (RepositoryNotFoundError, HfHubHTTPError) as e:
