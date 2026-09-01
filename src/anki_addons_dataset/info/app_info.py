@@ -38,8 +38,10 @@ class AppInfo:
 
     @staticmethod
     def __verify_github_token() -> None:
-        GithubRestClient.read_token()
-        log.info(f"GitHub token: OK ({GithubRestClient.get_token_file()})")
+        github_rest_client: GithubRestClient = GithubRestClient(offline=False)
+        limit_remaining: Optional[int] = github_rest_client.verify_token()
+        log.info(f"GitHub token: OK ({GithubRestClient.get_token_file()}, "
+                 f"{limit_remaining} API requests remaining)")
 
     def __verify_hugging_face_access(self) -> None:
         self.__hugging_face_client.verify_write_access()

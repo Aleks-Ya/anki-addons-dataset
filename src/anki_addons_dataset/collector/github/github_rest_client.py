@@ -36,6 +36,19 @@ class GithubRestClient:
             raise ValueError(f"Empty GitHub token file {token_file}")
         return token
 
+    def verify_token(self) -> Optional[int]:
+        """Verify the token against the GitHub API and return the remaining request quota.
+
+        Called by the `info` step as a preflight check. Queries `/rate_limit`, which GitHub
+        does not count against the quota it reports."""
+        url: str = "https://api.github.com/rate_limit"
+        response: Response = self.get_from_url(url)
+        if response.status_code in (401, 403):
+            raise PermissionError(f"GitHub rejected the token (HTTP {response.status_code}) at {url}. "
+                                  f"Check the token in {self.get_token_file()}")
+        response.raise_for_status()
+        return self.__rate_limit.get_limit_remaining()
+
     def get_from_url(self, url: str, etag: Optional[str] = None) -> Response:
         log.debug(f"Downloading {url} (limit {self.__rate_limit.get_limit_remaining()})")
         if self.__offline:

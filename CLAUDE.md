@@ -24,8 +24,8 @@ uv run pytest -v --cov=anki_addons_dataset --cov-report=xml --cov-branch
 # CLI operations (INIT → DOWNLOAD → PARSE → REPORT → BUNDLE → UPLOAD)
 # A single invocation accepts any subset of steps; `all` expands to `info` + the full six-step sequence.
 # `info` is a side-effect-free step that logs the app version and runtime configuration,
-# then fails fast on missing credentials: the GitHub token file (~/.github/token.txt)
-# and HuggingFace write access to the dataset (needs network).
+# then fails fast on bad credentials: it validates the GitHub token (~/.github/token.txt)
+# against the API and checks HuggingFace write access. Both are network calls.
 uv run anki-addons-dataset all -d 2026-01-01  # full pipeline (info first)
 uv run anki-addons-dataset info               # print version + config only
 uv run anki-addons-dataset init
