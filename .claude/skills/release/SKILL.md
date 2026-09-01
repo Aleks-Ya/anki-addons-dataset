@@ -1,7 +1,7 @@
 ---
 name: release
 description: Create the GitHub release for the just-bumped version and see it published — push the release tag, create a GitHub release with auto-generated notes, wait for the PyPI publish workflow, and verify the released version with uvx. Use when the user says "release", "/release", or asks to create/publish the GitHub release.
-allowed-tools: Bash(git *) Bash(gh *) Bash(uvx *) Bash(curl *)
+allowed-tools: Bash(git *) Bash(gh *) Bash(uv *) Bash(uvx *) Bash(curl *) Bash(python3 *) Bash(grep *)
 disable-model-invocation: true
 ---
 
@@ -119,16 +119,49 @@ isn't visible on PyPI yet, and stop.
 ### 5b. Pull it to this machine and verify end-to-end
 
 Only after 5a returns `200`, run the README's check so the just-published package is actually fetched and
-executed here:
+executed here. First make sure a satisfying interpreter exists locally — derive it from the release's own
+`requires-python` rather than assuming, and install it if missing (`uv python install` is a no-op when it
+is already there):
 
 ```bash
-uvx --refresh anki-addons-dataset info
+REQ=$(curl -s https://pypi.org/pypi/anki-addons-dataset/<version>/json \
+  | python3 -c 'import sys,json; print(json.load(sys.stdin)["info"]["requires_python"] or "")')
+PYMIN=$(printf '%s' "$REQ" | grep -oE '[0-9]+\.[0-9]+' | head -1)
+echo "requires-python: $REQ (installing $PYMIN)"
+uv python install "$PYMIN"
 ```
 
-`--refresh` bypasses uvx's cache so it fetches the newly published version. Confirm the version it prints
-equals `<version>`.
+Then run the pinned check:
+
+```bash
+uvx --refresh -p "$PYMIN" "anki-addons-dataset@<version>" info 2>&1 | grep "Version: <version>$" \
+  || { echo "FAILED: uvx did not run <version>"; exit 1; }
+```
+
+`--refresh` bypasses uvx's cache so it fetches the newly published version; `@<version>` pins the release
+and `-p "$PYMIN"` picks an interpreter that release's `requires-python` accepts — without them, uv picks
+an interpreter first and silently falls back to an older release. The `grep` makes the app's own `info`
+output the pass condition, so the step cannot succeed on the wrong version.
+
+### 5c. Check the bare command users actually type
+
+The pinned check proves the release works; it does *not* prove a plain `uvx anki-addons-dataset` resolves
+to it. uvx selects an interpreter first and then the newest release compatible with it, so after a
+`requires-python` bump a machine whose default interpreter is older silently keeps running the previous
+version:
+
+```bash
+uvx anki-addons-dataset info 2>&1 | grep -E '^.*Version: ' | head -1
+```
+
+This step is **informational — never fail the release on it.** If the reported version is not
+`<version>`, say so explicitly in the final report, name the cause (compare the release's
+`requires-python` against the Python uvx chose, printed on the `Python:` line), and give the workaround
+(`uvx -p <PYMIN> anki-addons-dataset info`, or pin `anki-addons-dataset@<version>`). A `requires-python`
+bump makes this expected, not a defect — but it must be surfaced, not discovered later.
 
 ## Done
 
-Report the final state: the pushed tag, the release URL, the publish-workflow result, and the verified
-`uvx` version — or the first step that failed and why.
+Report the final state: the pushed tag, the release URL, the publish-workflow result, the verified pinned
+`uvx` version, and what the bare `uvx anki-addons-dataset info` resolves to (with the cause if it is not
+the new release) — or the first step that failed and why.
