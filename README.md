@@ -33,6 +33,18 @@ Operations can also be chained in a single command, running in the given order:
 anki-addons-dataset init download -d 2026-01-01 parse
 ```
 
+`download` scrapes AnkiWeb with a headless browser. Two timeouts (in seconds) can be raised on a slow
+network:
+
+```bash
+anki-addons-dataset download -d 2026-01-01 --page-load-timeout 120 --element-wait-timeout 30
+```
+
+| Option | Default | Meaning |
+| --- | --- | --- |
+| `--page-load-timeout` | 60 | how long a single page may take to load before the browser gives up |
+| `--element-wait-timeout` | 10 | how long to wait for the page content to appear after loading |
+
 ## Links
 - [Visualizations](https://huggingface.co/spaces/Ya-Alex/anki-addons) in HuggingFace Spaces
 - [HuggingFace Dataset](https://huggingface.co/datasets/Ya-Alex/anki-addons)

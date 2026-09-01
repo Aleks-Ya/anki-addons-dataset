@@ -20,7 +20,7 @@ from anki_addons_dataset.collector.github.github_rest_client import GithubRestCl
 from anki_addons_dataset.collector.github.github_service import GithubService
 from anki_addons_dataset.collector.overrider.overrider import Overrider
 from anki_addons_dataset.common.data_types import Aggregation, AddonInfos, DatasetSnapshotMetadata, RawMetadata, \
-    SnapshotDate, ReportDate, ScriptVersion
+    SnapshotDate, ReportDate, ScriptVersion, PageLoadTimeout, ElementWaitTimeout
 from anki_addons_dataset.collector.ankiweb.ankiweb_service import AnkiWebService
 from anki_addons_dataset.common.json_helper import JsonHelper
 from anki_addons_dataset.common.working_dir import SnapshotDir, WorkingDir
@@ -31,8 +31,11 @@ log: Logger = logging.getLogger(__name__)
 
 
 class CollectorFacade:
-    def __init__(self, working_dir: WorkingDir):
+    def __init__(self, working_dir: WorkingDir, page_load_timeout: PageLoadTimeout,
+                 element_wait_timeout: ElementWaitTimeout):
         self.__working_dir: WorkingDir = working_dir
+        self.__page_load_timeout: PageLoadTimeout = page_load_timeout
+        self.__element_wait_timeout: ElementWaitTimeout = element_wait_timeout
 
     def download_snapshot(self, snapshot_date: Optional[SnapshotDate]) -> None:
         log.info(f"===== Download dataset for {snapshot_date} =====")
@@ -94,13 +97,12 @@ class CollectorFacade:
         version_file: Path = Path(__file__).parent.parent / "version.txt"
         return ScriptVersion(version_file.read_text().strip())
 
-    @staticmethod
-    def __collect(snapshot_dir: SnapshotDir, offline: bool,
+    def __collect(self, snapshot_dir: SnapshotDir, offline: bool,
                   prev_snapshot_dir: Optional[SnapshotDir] = None) -> AddonInfos:
         log.info(f"Offline: {offline}")
         overrider: Overrider = Overrider(snapshot_dir)
         addon_page_parser: AddonPageParser = AddonPageParser(overrider)
-        page_downloader: PageDownloader = PageDownloader()
+        page_downloader: PageDownloader = PageDownloader(self.__page_load_timeout, self.__element_wait_timeout)
         addons_page_downloader: AddonsPageDownloader = AddonsPageDownloader(page_downloader, snapshot_dir, offline)
         addon_page_downloader: AddonPageDownloader = AddonPageDownloader(
             page_downloader, snapshot_dir, addon_page_parser, offline)

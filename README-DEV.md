@@ -49,10 +49,21 @@ up front.
 Default log level: DEBUG
 Set log level: `uv run anki-addons-dataset parse -l INFO`
 
+## Browser timeouts
+`download` drives a headless Chrome via Selenium. Both of its timeouts (seconds) are configurable and
+are printed by the `info` step:
+
+- `--page-load-timeout` (default 60): passed to `driver.set_page_load_timeout()`, aborts a hung page load
+- `--element-wait-timeout` (default 10): passed to `WebDriverWait`, waits for the page content to appear
+
+```bash
+uv run anki-addons-dataset download -d 2026-01-01 --page-load-timeout 120 --element-wait-timeout 30
+```
+
 ## Running the pipeline
 
 The pipeline has six steps run in order: `init download parse report bundle upload`.
-There is also an `info` step that logs the app version and runtime configuration (working dir, HuggingFace dataset, GitHub token file, Python/platform, snapshot/report dates) without side effects. It fails fast on bad credentials: a GitHub token that is absent, empty or
+There is also an `info` step that logs the app version and runtime configuration (working dir, HuggingFace dataset, GitHub token file, Python/platform, snapshot/report dates, browser timeouts) without side effects. It fails fast on bad credentials: a GitHub token that is absent, empty or
 rejected by the API, or missing HuggingFace write access. Both checks need network access.
 
 A single invocation accepts any subset of steps (space-separated), or the shorthand `all`,

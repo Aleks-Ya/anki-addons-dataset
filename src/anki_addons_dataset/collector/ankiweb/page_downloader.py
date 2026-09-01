@@ -5,15 +5,16 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions
 from selenium.webdriver.support.wait import WebDriverWait
 
-from anki_addons_dataset.common.data_types import HtmlStr
+from anki_addons_dataset.common.data_types import HtmlStr, PageLoadTimeout, ElementWaitTimeout
 
 
 class PageDownloader:
-    def __init__(self) -> None:
+    def __init__(self, page_load_timeout: PageLoadTimeout, element_wait_timeout: ElementWaitTimeout) -> None:
         options: Options = Options()
         options.add_argument('--headless')
         self.__driver: WebDriver = webdriver.Chrome(options=options)
-        self.__wait: WebDriverWait = WebDriverWait(self.__driver, 10)
+        self.__driver.set_page_load_timeout(page_load_timeout)
+        self.__wait: WebDriverWait = WebDriverWait(self.__driver, element_wait_timeout)
 
     def __del__(self) -> None:
         self.__driver.quit()

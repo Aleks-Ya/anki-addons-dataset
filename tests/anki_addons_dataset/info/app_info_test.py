@@ -7,7 +7,7 @@ import pytest
 from requests import Response
 
 from anki_addons_dataset import __version__
-from anki_addons_dataset.common.data_types import SnapshotDate, ReportDate
+from anki_addons_dataset.common.data_types import SnapshotDate, ReportDate, PageLoadTimeout, ElementWaitTimeout
 from anki_addons_dataset.common.working_dir import WorkingDir
 from anki_addons_dataset.huggingface.hugging_face_client import HuggingFaceClient
 from anki_addons_dataset.info.app_info import AppInfo
@@ -36,7 +36,7 @@ def __patch_github_api(status_code: int = 200):
 def __make_app_info(working_dir: WorkingDir) -> AppInfo:
     hugging_face_client: HuggingFaceClient = Mock()
     hugging_face_client.get_repo_id.return_value = "Ya-Alex/anki-addons"
-    return AppInfo(working_dir, hugging_face_client)
+    return AppInfo(working_dir, hugging_face_client, PageLoadTimeout(90), ElementWaitTimeout(20))
 
 
 def test_print_info(working_dir: WorkingDir, tmp_path: Path, caplog: pytest.LogCaptureFixture):
@@ -57,6 +57,8 @@ def test_print_info(working_dir: WorkingDir, tmp_path: Path, caplog: pytest.LogC
     assert "secret-token" not in messages  # the token value itself is never logged
     assert "Snapshot date: 2026-01-01" in messages
     assert "Report date: 2026-01-02 03:04:05" in messages
+    assert "Page load timeout: 90s" in messages
+    assert "Element wait timeout: 20s" in messages
     assert f"GitHub token: OK ({token_file}, 4999 API requests remaining)" in messages
     assert "HuggingFace write access: OK (Ya-Alex/anki-addons)" in messages
 
@@ -100,7 +102,7 @@ def test_print_info_fails_without_hugging_face_access(working_dir: WorkingDir, t
     hugging_face_client.get_repo_id.return_value = "Ya-Alex/anki-addons"
     hugging_face_client.verify_write_access.side_effect = PermissionError(
         "HuggingFace unauthorized: Ya-Alex/anki-addons")
-    app_info: AppInfo = AppInfo(working_dir, hugging_face_client)
+    app_info: AppInfo = AppInfo(working_dir, hugging_face_client, PageLoadTimeout(90), ElementWaitTimeout(20))
     snapshot_date: SnapshotDate = SnapshotDate(datetime(2026, 1, 1).date())
     report_date: ReportDate = ReportDate(datetime(2026, 1, 2, 3, 4, 5))
     __write_token(tmp_path)
@@ -118,7 +120,7 @@ def test_print_info_fails_without_hugging_face_access(working_dir: WorkingDir, t
 def test_print_info_skips_hugging_face_check_when_github_token_missing(working_dir: WorkingDir, tmp_path: Path):
     hugging_face_client: HuggingFaceClient = Mock()
     hugging_face_client.get_repo_id.return_value = "Ya-Alex/anki-addons"
-    app_info: AppInfo = AppInfo(working_dir, hugging_face_client)
+    app_info: AppInfo = AppInfo(working_dir, hugging_face_client, PageLoadTimeout(90), ElementWaitTimeout(20))
     snapshot_date: SnapshotDate = SnapshotDate(datetime(2026, 1, 1).date())
     report_date: ReportDate = ReportDate(datetime(2026, 1, 2, 3, 4, 5))
 

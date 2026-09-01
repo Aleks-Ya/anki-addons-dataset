@@ -8,7 +8,7 @@ from typing import Optional
 from huggingface_hub import HfApi
 
 from anki_addons_dataset.argument.script_arguments import ScriptArguments, Operation
-from anki_addons_dataset.common.data_types import SnapshotDate, ReportDate
+from anki_addons_dataset.common.data_types import SnapshotDate, ReportDate, PageLoadTimeout, ElementWaitTimeout
 from anki_addons_dataset.common.duration import format_duration
 from anki_addons_dataset.common.working_dir import WorkingDir
 from anki_addons_dataset.facade.facade import Facade
@@ -28,11 +28,13 @@ def main() -> None:
     log.info(f"Operations: {[operation.value for operation in operations]}")
     snapshot_date: Optional[SnapshotDate] = arguments.get_snapshot_date()
     report_date: ReportDate = ReportDate(datetime.now().replace(microsecond=0))
+    page_load_timeout: PageLoadTimeout = arguments.get_page_load_timeout()
+    element_wait_timeout: ElementWaitTimeout = arguments.get_element_wait_timeout()
 
     hf_api: HfApi = HfApi()
     hugging_face_client: HuggingFaceClient = HuggingFaceClient(hf_api)
     working_dir: WorkingDir = WorkingDir(Path.home() / "anki-addons-dataset")
-    facade: Facade = Facade(working_dir, hugging_face_client)
+    facade: Facade = Facade(working_dir, hugging_face_client, page_load_timeout, element_wait_timeout)
     timings: list[tuple[str, float]] = []
     for operation in operations:
         log.info(f"Step '{operation.value}' started")

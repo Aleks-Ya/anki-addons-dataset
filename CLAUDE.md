@@ -32,6 +32,8 @@ uv run anki-addons-dataset init
 uv run anki-addons-dataset download -d 2026-01-01
 uv run anki-addons-dataset parse
 uv run anki-addons-dataset parse -l INFO  # change log level
+# Selenium timeouts for DOWNLOAD, in seconds (defaults: 60 and 10)
+uv run anki-addons-dataset download -d 2026-01-01 --page-load-timeout 120 --element-wait-timeout 30
 uv run anki-addons-dataset report
 uv run anki-addons-dataset bundle
 uv run anki-addons-dataset upload

@@ -26,6 +26,8 @@ AnkiVersion = NewType("AnkiVersion", str)
 SpdxLicense = NewType("SpdxLicense", str)
 DependencyName = NewType("DependencyName", str)
 Topic = NewType("Topic", str)
+PageLoadTimeout = NewType("PageLoadTimeout", int)
+ElementWaitTimeout = NewType("ElementWaitTimeout", int)
 
 
 @dataclass

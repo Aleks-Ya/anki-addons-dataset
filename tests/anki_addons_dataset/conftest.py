@@ -14,6 +14,7 @@ from anki_addons_dataset.collector.ankiweb.addon_page_parser import AddonPagePar
 from anki_addons_dataset.collector.ankiweb.addons_page_downloader import AddonsPageDownloader
 from anki_addons_dataset.collector.ankiweb.ankiweb_service import AnkiWebService
 from anki_addons_dataset.collector.ankiweb.page_downloader import PageDownloader
+from anki_addons_dataset.collector.collector_facade import CollectorFacade
 from anki_addons_dataset.collector.dataset_metadata import DatasetMetadata
 from anki_addons_dataset.collector.github.github_enricher import GithubEnricher
 from anki_addons_dataset.collector.github.github_rest_client import GithubRestClient
@@ -22,7 +23,7 @@ from anki_addons_dataset.collector.overrider.overrider import Overrider
 from anki_addons_dataset.common.data_types import AddonId, GithubRepo, GithubUserName, GithubRepoName, LastPostedAt, \
     URL, PostsCount, AddonInfo, AddonHeader, AddonPage, GithubInfo, AnkiForumInfo, LanguageName, AddonInfos, \
     DatasetSnapshotMetadata, RawMetadata, AnkiVersion, AddonBranch, HtmlStr, SnapshotDate, ReportDate, ScriptVersion, \
-    AddonRating, UpdateDate, AddonTitle, PlainStr
+    AddonRating, UpdateDate, AddonTitle, PlainStr, PageLoadTimeout, ElementWaitTimeout
 from anki_addons_dataset.common.working_dir import WorkingDir, SnapshotDir
 from anki_addons_dataset.exporter.json.json_exporter import JsonExporter
 from anki_addons_dataset.exporter.xlsx.xlsx_exporter import XlsxExporter
@@ -68,6 +69,16 @@ def hyper_tts_addon_id() -> AddonId:
 
 
 @pytest.fixture
+def page_load_timeout() -> PageLoadTimeout:
+    return PageLoadTimeout(60)
+
+
+@pytest.fixture
+def element_wait_timeout() -> ElementWaitTimeout:
+    return ElementWaitTimeout(10)
+
+
+@pytest.fixture
 def page_downloader() -> PageDownloader:
     return Mock()
 
@@ -98,6 +109,12 @@ def addon_page_downloader(page_downloader: PageDownloader, snapshot_dir: Snapsho
 def ankiweb_service(addons_page_downloader: AddonsPageDownloader,
                     addon_page_downloader: AddonPageDownloader) -> AnkiWebService:
     return AnkiWebService(addons_page_downloader, addon_page_downloader)
+
+
+@pytest.fixture
+def collector_facade(working_dir: WorkingDir, page_load_timeout: PageLoadTimeout,
+                     element_wait_timeout: ElementWaitTimeout) -> CollectorFacade:
+    return CollectorFacade(working_dir, page_load_timeout, element_wait_timeout)
 
 
 @pytest.fixture
@@ -246,8 +263,9 @@ def working_dir_initializer(working_dir: WorkingDir, hugging_face_client: Huggin
 
 
 @pytest.fixture
-def facade(working_dir: WorkingDir, hugging_face_client: HuggingFaceClient) -> Facade:
-    return Facade(working_dir, hugging_face_client)
+def facade(working_dir: WorkingDir, hugging_face_client: HuggingFaceClient, page_load_timeout: PageLoadTimeout,
+           element_wait_timeout: ElementWaitTimeout) -> Facade:
+    return Facade(working_dir, hugging_face_client, page_load_timeout, element_wait_timeout)
 
 
 @pytest.fixture

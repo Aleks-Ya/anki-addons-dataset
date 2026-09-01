@@ -6,7 +6,7 @@ from typing import Optional
 
 from anki_addons_dataset import __version__
 from anki_addons_dataset.collector.github.github_rest_client import GithubRestClient
-from anki_addons_dataset.common.data_types import SnapshotDate, ReportDate
+from anki_addons_dataset.common.data_types import SnapshotDate, ReportDate, PageLoadTimeout, ElementWaitTimeout
 from anki_addons_dataset.common.working_dir import WorkingDir
 from anki_addons_dataset.huggingface.hugging_face_client import HuggingFaceClient
 
@@ -16,9 +16,12 @@ log: Logger = logging.getLogger(__name__)
 class AppInfo:
     """Logs the app version and runtime configuration. Run first by the `all` operation."""
 
-    def __init__(self, working_dir: WorkingDir, hugging_face_client: HuggingFaceClient):
+    def __init__(self, working_dir: WorkingDir, hugging_face_client: HuggingFaceClient,
+                 page_load_timeout: PageLoadTimeout, element_wait_timeout: ElementWaitTimeout):
         self.__working_dir: WorkingDir = working_dir
         self.__hugging_face_client: HuggingFaceClient = hugging_face_client
+        self.__page_load_timeout: PageLoadTimeout = page_load_timeout
+        self.__element_wait_timeout: ElementWaitTimeout = element_wait_timeout
 
     def print_info(self, snapshot_date: Optional[SnapshotDate], report_date: ReportDate) -> None:
         log.info("=== Application info ===")
@@ -32,6 +35,8 @@ class AppInfo:
         log.info(f"GitHub token file: {GithubRestClient.get_token_file()}")
         log.info(f"Snapshot date: {snapshot_date}")
         log.info(f"Report date: {report_date}")
+        log.info(f"Page load timeout: {self.__page_load_timeout}s")
+        log.info(f"Element wait timeout: {self.__element_wait_timeout}s")
         log.info("========================")
         self.__verify_github_token()
         self.__verify_hugging_face_access()

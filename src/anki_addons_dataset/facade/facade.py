@@ -6,7 +6,7 @@ from typing import Optional
 from anki_addons_dataset.argument.script_arguments import Operation
 from anki_addons_dataset.bundle.dataset_bundle import DatasetBundle
 from anki_addons_dataset.collector.collector_facade import CollectorFacade
-from anki_addons_dataset.common.data_types import SnapshotDate, ReportDate
+from anki_addons_dataset.common.data_types import SnapshotDate, ReportDate, PageLoadTimeout, ElementWaitTimeout
 from anki_addons_dataset.common.working_dir import WorkingDir
 from anki_addons_dataset.huggingface.hugging_face_client import HuggingFaceClient
 from anki_addons_dataset.info.app_info import AppInfo
@@ -18,14 +18,19 @@ log: Logger = logging.getLogger(__name__)
 
 class Facade:
 
-    def __init__(self, working_dir: WorkingDir, hugging_face_client: HuggingFaceClient):
+    def __init__(self, working_dir: WorkingDir, hugging_face_client: HuggingFaceClient,
+                 page_load_timeout: PageLoadTimeout, element_wait_timeout: ElementWaitTimeout):
         self.__working_dir: WorkingDir = working_dir
         self.__hugging_face_client: HuggingFaceClient = hugging_face_client
-        self.__collector_facade: CollectorFacade = CollectorFacade(working_dir)
+        self.__page_load_timeout: PageLoadTimeout = page_load_timeout
+        self.__element_wait_timeout: ElementWaitTimeout = element_wait_timeout
+        self.__collector_facade: CollectorFacade = CollectorFacade(
+            working_dir, page_load_timeout, element_wait_timeout)
 
     def process(self, operation: Operation, snapshot_date: Optional[SnapshotDate], report_date: ReportDate) -> None:
         if operation == Operation.INFO:
-            app_info: AppInfo = AppInfo(self.__working_dir, self.__hugging_face_client)
+            app_info: AppInfo = AppInfo(self.__working_dir, self.__hugging_face_client,
+                                        self.__page_load_timeout, self.__element_wait_timeout)
             app_info.print_info(snapshot_date, report_date)
         elif operation == Operation.INIT:
             working_dir_backup: WorkingDirBackup = WorkingDirBackup(self.__working_dir)

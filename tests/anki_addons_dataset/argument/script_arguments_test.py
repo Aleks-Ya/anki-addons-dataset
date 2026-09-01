@@ -65,3 +65,25 @@ def test_invalid_operation(monkeypatch: MonkeyPatch):
     arguments: ScriptArguments = ScriptArguments()
     with pytest.raises(KeyError):
         arguments.get_operations()
+
+
+def test_default_timeouts(monkeypatch: MonkeyPatch):
+    monkeypatch.setattr('sys.argv', ['addon_catalog.py', 'download', '-d', '2025-06-10'])
+    arguments: ScriptArguments = ScriptArguments()
+    assert arguments.get_page_load_timeout() == 60
+    assert arguments.get_element_wait_timeout() == 10
+
+
+def test_custom_timeouts(monkeypatch: MonkeyPatch):
+    monkeypatch.setattr('sys.argv', ['addon_catalog.py', 'download', '-d', '2025-06-10',
+                                     '--page-load-timeout', '90', '--element-wait-timeout', '20'])
+    arguments: ScriptArguments = ScriptArguments()
+    assert arguments.get_page_load_timeout() == 90
+    assert arguments.get_element_wait_timeout() == 20
+
+
+@pytest.mark.parametrize("timeout", ['abc', '0', '-5'])
+def test_invalid_timeout(monkeypatch: MonkeyPatch, timeout: str):
+    monkeypatch.setattr('sys.argv', ['addon_catalog.py', 'download', '--page-load-timeout', timeout])
+    with pytest.raises(SystemExit):
+        ScriptArguments()
