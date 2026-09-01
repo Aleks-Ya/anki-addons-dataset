@@ -53,11 +53,11 @@ Set log level: `uv run anki-addons-dataset parse -l INFO`
 `download` drives a headless Chrome via Selenium. Both of its timeouts (seconds) are configurable and
 are printed by the `info` step:
 
-- `--page-load-timeout` (default 60): passed to `driver.set_page_load_timeout()`, aborts a hung page load
-- `--element-wait-timeout` (default 10): passed to `WebDriverWait`, waits for the page content to appear
+- `--page-load-timeout` (default 120): passed to `driver.set_page_load_timeout()`, aborts a hung page load
+- `--element-wait-timeout` (default 120): passed to `WebDriverWait`, waits for the page content to appear
 
 ```bash
-uv run anki-addons-dataset download -d 2026-01-01 --page-load-timeout 120 --element-wait-timeout 30
+uv run anki-addons-dataset download -d 2026-01-01 --page-load-timeout 180 --element-wait-timeout 30
 ```
 
 ## Running the pipeline

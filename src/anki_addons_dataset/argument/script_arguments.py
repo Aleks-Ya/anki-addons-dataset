@@ -23,8 +23,8 @@ class ScriptArguments:
         parser.add_argument('operations', nargs='+')
         parser.add_argument('-d', '--snapshot-date', type=self.__valid_date)
         parser.add_argument('-l', '--log-level', type=self.__valid_log_level, default='INFO')
-        parser.add_argument('--page-load-timeout', type=self.__valid_timeout, default=60)
-        parser.add_argument('--element-wait-timeout', type=self.__valid_timeout, default=10)
+        parser.add_argument('--page-load-timeout', type=self.__valid_timeout, default=120)
+        parser.add_argument('--element-wait-timeout', type=self.__valid_timeout, default=120)
         self.namespace: Namespace = parser.parse_intermixed_args()
 
     def get_snapshot_date(self) -> Optional[SnapshotDate]:

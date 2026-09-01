@@ -37,13 +37,13 @@ anki-addons-dataset init download -d 2026-01-01 parse
 network:
 
 ```bash
-anki-addons-dataset download -d 2026-01-01 --page-load-timeout 120 --element-wait-timeout 30
+anki-addons-dataset download -d 2026-01-01 --page-load-timeout 180 --element-wait-timeout 30
 ```
 
 | Option | Default | Meaning |
 | --- | --- | --- |
-| `--page-load-timeout` | 60 | how long a single page may take to load before the browser gives up |
-| `--element-wait-timeout` | 10 | how long to wait for the page content to appear after loading |
+| `--page-load-timeout` | 120 | how long a single page may take to load before the browser gives up |
+| `--element-wait-timeout` | 120 | how long to wait for the page content to appear after loading |
 
 ## Links
 - [Visualizations](https://huggingface.co/spaces/Ya-Alex/anki-addons) in HuggingFace Spaces

@@ -70,8 +70,8 @@ def test_invalid_operation(monkeypatch: MonkeyPatch):
 def test_default_timeouts(monkeypatch: MonkeyPatch):
     monkeypatch.setattr('sys.argv', ['addon_catalog.py', 'download', '-d', '2025-06-10'])
     arguments: ScriptArguments = ScriptArguments()
-    assert arguments.get_page_load_timeout() == 60
-    assert arguments.get_element_wait_timeout() == 10
+    assert arguments.get_page_load_timeout() == 120
+    assert arguments.get_element_wait_timeout() == 120
 
 
 def test_custom_timeouts(monkeypatch: MonkeyPatch):
