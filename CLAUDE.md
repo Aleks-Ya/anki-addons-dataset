@@ -82,6 +82,10 @@ Six sequential CLI operations form the pipeline:
 - **Manual overrides** — `history/YYYY-MM-DD/2-stage/4-overrider/overrides.yaml` lets you fix parsing errors without re-downloading
 - Frozen dataclasses used for immutability (e.g., `GithubRepo`)
 
+### Code Style
+
+- Add comments only when unavoidable — when the code cannot be made self-explanatory through naming and structure, or when a non-obvious decision needs its rationale recorded. Do not restate what the code already says.
+
 ### Testing
 
 Tests mirror `src/` structure under `tests/`. HTML fixtures for AnkiWeb parser tests are in `src/collector/ankiweb/`. Tests use `conftest.py` with `tmp_path`-based working directories and mocked external APIs. `freezegun` is used for time-sensitive tests. The whole suite runs without network access.
