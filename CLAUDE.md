@@ -84,4 +84,6 @@ Six sequential CLI operations form the pipeline:
 
 ### Testing
 
-Tests mirror `src/` structure under `tests/`. HTML fixtures for AnkiWeb parser tests are in `src/collector/ankiweb/`. Tests use `conftest.py` with `tmp_path`-based working directories and mocked external APIs. `freezegun` is used for time-sensitive tests.
+Tests mirror `src/` structure under `tests/`. HTML fixtures for AnkiWeb parser tests are in `src/collector/ankiweb/`. Tests use `conftest.py` with `tmp_path`-based working directories and mocked external APIs. `freezegun` is used for time-sensitive tests. The whole suite runs without network access.
+
+Live integration tests live in `tests_integration/` (same mirrored layout, `*_integration_test.py` names, its own `conftest.py` with *real* clients). They are outside `pytest.ini`'s `testpaths`, so the bare `uv run pytest` that CI runs never collects them; run them on demand with `uv run pytest tests_integration` or the `Integration tests` PyCharm run config. They are read-only, write only under `tmp_path`, and fail rather than skip when credentials are missing. See README-DEV.md for requirements.
