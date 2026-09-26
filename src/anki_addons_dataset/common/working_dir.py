@@ -40,6 +40,9 @@ class SnapshotDir:
     def get_final_dir(self) -> Path:
         return self.__snapshot_dir / "3-final"
 
+    def get_ai_cache_file(self) -> Path:
+        return self.get_raw_dir() / "4-ai" / "ai-cache.jsonl"
+
     def get_addon_infos_dump(self) -> Path:
         return self.__snapshot_dir / "addon-infos.json"
 

@@ -36,6 +36,7 @@ dependencies = [
     "pydiscourse",
     "humanize",
     "lingua-language-detector",
+    "openai",
 ]
 
 [project.urls]

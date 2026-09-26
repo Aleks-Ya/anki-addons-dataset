@@ -29,6 +29,8 @@ DependencyName = NewType("DependencyName", str)
 Topic = NewType("Topic", str)
 PageLoadTimeout = NewType("PageLoadTimeout", int)
 ElementWaitTimeout = NewType("ElementWaitTimeout", int)
+AiSummary = NewType("AiSummary", str)
+AiModel = NewType("AiModel", str)
 
 
 @dataclass
@@ -139,11 +141,18 @@ class AnkiForumInfo:
 
 
 @dataclass
+class AiInfo:
+    summary: Optional[AiSummary] = None
+    model: Optional[AiModel] = None
+
+
+@dataclass
 class AddonInfo:
     header: AddonHeader
     page: AddonPage
     github: Optional[GithubInfo]
     forum: Optional[AnkiForumInfo]
+    ai: Optional[AiInfo] = None
 
 
 AddonInfos = NewType("AddonInfos", list[AddonInfo])
