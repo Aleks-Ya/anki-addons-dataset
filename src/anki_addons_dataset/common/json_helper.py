@@ -7,7 +7,7 @@ from typing import Any, Optional
 from anki_addons_dataset.common.data_types import AddonInfo, AddonInfos, AddonHeader, AddonPage, AddonBranch, \
     GithubInfo, GitHubLink, GitHubUser, GithubRepo, AnkiForumInfo, AddonId, AnkiVersion, HtmlStr, URL, \
     GithubUserName, GithubRepoName, LanguageName, LanguageCode, TopicSlug, TopicId, LastPostedAt, PostsCount, \
-    ScriptVersion, AddonRating, UpdateDate, AddonTitle, PlainStr, AddonManifest, SpdxLicense, Topic, DependencyName
+    ScriptVersion, AddonRating, UpdateDate, AddonTitle, AddonDescription, AddonManifest, SpdxLicense, Topic, DependencyName
 
 
 class JsonHelper:
@@ -66,7 +66,7 @@ class JsonHelper:
             dislike_number=data["dislike_number"],
             branches=[JsonHelper.__addon_branch_from_dict(branch) for branch in data["branches"]],
             other_links=[URL(link) for link in data["other_links"]],
-            description=PlainStr(data.get("description", "")),
+            description=AddonDescription(data.get("description", "")),
             contact_author_url=URL(data["contact_author_url"]) if data.get("contact_author_url") is not None else None,
             ai_declaration_markers=list(data.get("ai_declaration_markers", [])),
             description_language=LanguageCode(data["description_language"])

@@ -9,7 +9,7 @@ from anki_addons_dataset.collector.ankiweb.ai_declaration_detector import AiDecl
 from anki_addons_dataset.collector.ankiweb.description_language_detector import DescriptionLanguageDetector
 from anki_addons_dataset.collector.overrider.overrider import Overrider
 from anki_addons_dataset.common.data_types import AddonHeader, AddonInfo, AddonId, URL, GitHubLink, GithubRepo, \
-    GithubInfo, AddonPage, AddonBranch, HtmlStr, AnkiForumInfo, PlainStr, LanguageCode
+    GithubInfo, AddonPage, AddonBranch, HtmlStr, AnkiForumInfo, AddonDescription, LanguageCode
 
 
 class AddonPageParser:
@@ -35,7 +35,7 @@ class AddonPageParser:
         likes: int = self.__extract_likes(soup)
         dislikes: int = self.__extract_dislikes(soup)
         addon_branches: list[AddonBranch] = self.__extract_addon_branches(soup)
-        description: PlainStr = self.__extract_description(description_tag)
+        description: AddonDescription = self.__extract_description(description_tag)
         ai_declaration_markers: list[str] = AiDeclarationDetector.detect(description)
         description_language: Optional[LanguageCode]
         description_language_confidence: Optional[float]
@@ -125,10 +125,10 @@ class AddonPageParser:
         return int(sibling.get_text())
 
     @staticmethod
-    def __extract_description(description_tag: Optional[Tag]) -> PlainStr:
+    def __extract_description(description_tag: Optional[Tag]) -> AddonDescription:
         if description_tag is None:
-            return PlainStr("")
-        return PlainStr(" ".join(description_tag.get_text(separator=' ', strip=True).split()))
+            return AddonDescription("")
+        return AddonDescription(" ".join(description_tag.get_text(separator=' ', strip=True).split()))
 
     @staticmethod
     def __extract_addon_branches(soup: BeautifulSoup) -> list[AddonBranch]:

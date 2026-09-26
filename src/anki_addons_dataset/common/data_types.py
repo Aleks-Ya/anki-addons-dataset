@@ -8,6 +8,7 @@ ScriptVersion = NewType("ScriptVersion", str)
 AddonId = NewType("AddonId", int)
 AddonTitle = NewType("AddonTitle", str)
 AddonRating = NewType("AddonRating", int)
+AddonDescription = NewType("AddonDescription", str)
 UpdateDate = NewType("UpdateDate", str)
 URL = NewType("URL", str)
 GithubRepoName = NewType("GithubRepoName", str)
@@ -16,7 +17,6 @@ GithubRepoId = NewType("GithubRepoId", str)
 LanguageName = NewType("LanguageName", str)
 LanguageCode = NewType("LanguageCode", str)
 HtmlStr = NewType("HtmlStr", str)
-PlainStr = NewType("PlainStr", str)
 TopicSlug = NewType("TopicSlug", str)
 TopicId = NewType("TopicId", int)
 LastPostedAt = NewType("LastPostedAt", datetime)
@@ -121,7 +121,7 @@ class AddonPage:
     dislike_number: int
     branches: list[AddonBranch]
     other_links: list[URL]
-    description: PlainStr = PlainStr("")
+    description: AddonDescription = AddonDescription("")
     contact_author_url: Optional[URL] = None
     ai_declaration_markers: list[str] = field(default_factory=list)
     description_language: Optional[LanguageCode] = None

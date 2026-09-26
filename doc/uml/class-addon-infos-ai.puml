@@ -30,7 +30,7 @@ class AddonPage <<dataclass>> {
   dislike_number : int
   branches : list[AddonBranch]
   other_links : list[URL]
-  description : PlainStr
+  description : AddonDescription
   contact_author_url : Optional[URL]
 }
 

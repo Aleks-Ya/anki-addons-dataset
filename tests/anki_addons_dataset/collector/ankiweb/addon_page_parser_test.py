@@ -5,7 +5,7 @@ from anki_addons_dataset.collector.ankiweb.addon_page_parser import AddonPagePar
 from anki_addons_dataset.collector.overrider.overrider import Overrider
 from anki_addons_dataset.common.data_types import AddonHeader, AddonInfo, AddonPage, GithubInfo, AddonId, GitHubLink, \
     URL, GitHubUser, GithubRepo, GithubUserName, GithubRepoName, AddonBranch, HtmlStr, AnkiForumInfo, AnkiVersion, \
-    AddonRating, UpdateDate, AddonTitle, PlainStr
+    AddonRating, UpdateDate, AddonTitle, AddonDescription
 
 
 def test_parse_addon_page(overrider: Overrider):
@@ -76,7 +76,7 @@ def test_parse_addon_page(overrider: Overrider):
                 URL('https://github.com/Aleks-Ya/note-size-anki-addon/blob/main/description/configuration.md#logging-level'),
                 URL('https://apps.ankiweb.net')
             ],
-            description=PlainStr('"Note Size" addon displays detailed information about size ("in bytes") of your '
+            description=AddonDescription('"Note Size" addon displays detailed information about size ("in bytes") of your '
                         'collection and individual notes including attachments. Screenshots Size of collection, media '
                         'files, unused media files, trash files, revision log Size of a note Sort notes by size Size '
                         'of found notes Size of a deck Size when adding a new note Open configuration dialog Contacts '
