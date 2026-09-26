@@ -11,6 +11,7 @@ from anki_addons_dataset.argument.script_arguments import ScriptArguments, Opera
 from anki_addons_dataset.common.data_types import SnapshotDate, ReportDate, PageLoadTimeout, ElementWaitTimeout
 from anki_addons_dataset.common.duration import format_duration
 from anki_addons_dataset.common.working_dir import WorkingDir
+from anki_addons_dataset.config.app_config import AppConfig, ConfigLoader
 from anki_addons_dataset.facade.facade import Facade
 from anki_addons_dataset.huggingface.hugging_face_client import HuggingFaceClient
 from anki_addons_dataset.common.log import Log
@@ -23,7 +24,12 @@ def main() -> None:
 
     arguments: ScriptArguments = ScriptArguments()
 
-    Log.set_log_level(arguments.get_log_level())
+    config_file: Path = arguments.get_config_file()
+    config: AppConfig = ConfigLoader.load(config_file)
+    Log.apply(config.logging, arguments.get_log_level())
+    log.info(f"Config file: {config_file}" if config_file.is_file()
+             else f"Config file: {config_file} (not found, using defaults)")
+
     operations: list[Operation] = arguments.get_operations()
     log.info(f"Operations: {[operation.value for operation in operations]}")
     snapshot_date: Optional[SnapshotDate] = arguments.get_snapshot_date()
@@ -32,9 +38,9 @@ def main() -> None:
     element_wait_timeout: ElementWaitTimeout = arguments.get_element_wait_timeout()
 
     hf_api: HfApi = HfApi()
-    hugging_face_client: HuggingFaceClient = HuggingFaceClient(hf_api)
-    working_dir: WorkingDir = WorkingDir(Path.home() / "anki-addons-dataset")
-    facade: Facade = Facade(working_dir, hugging_face_client, page_load_timeout, element_wait_timeout)
+    hugging_face_client: HuggingFaceClient = HuggingFaceClient(hf_api, config.huggingface)
+    working_dir: WorkingDir = WorkingDir(config.working_dir)
+    facade: Facade = Facade(working_dir, hugging_face_client, config, page_load_timeout, element_wait_timeout)
     timings: list[tuple[str, float]] = []
     for operation in operations:
         log.info(f"Step '{operation.value}' started")

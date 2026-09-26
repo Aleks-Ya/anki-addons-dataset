@@ -5,7 +5,12 @@ import pytest
 from huggingface_hub import HfApi, RepoFile, RepoFolder
 from huggingface_hub.errors import HfHubHTTPError, RepositoryNotFoundError
 
+from anki_addons_dataset.config.app_config import AppConfig, HuggingFaceConfig
 from anki_addons_dataset.huggingface.hugging_face_client import HuggingFaceClient
+
+
+def __config() -> HuggingFaceConfig:
+    return AppConfig.defaults().huggingface
 
 
 def __repo_file(path: str) -> RepoFile:
@@ -26,7 +31,7 @@ def __build_bundle(bundle_dir: Path) -> None:
 
 def test_upload_dataset_verifies_access_then_uploads(tmp_path: Path):
     api: HfApi = Mock(spec=HfApi)
-    client: HuggingFaceClient = HuggingFaceClient(api)
+    client: HuggingFaceClient = HuggingFaceClient(api, __config())
 
     client.upload_dataset(tmp_path)
 
@@ -42,7 +47,7 @@ def test_upload_dataset_raises_permission_error_when_unauthorized(tmp_path: Path
     response: Mock = Mock()
     response.status_code = 401
     api.auth_check.side_effect = RepositoryNotFoundError("nope", response=response)
-    client: HuggingFaceClient = HuggingFaceClient(api)
+    client: HuggingFaceClient = HuggingFaceClient(api, __config())
 
     with pytest.raises(PermissionError):
         client.upload_dataset(tmp_path)
@@ -52,7 +57,7 @@ def test_upload_dataset_raises_permission_error_when_unauthorized(tmp_path: Path
 
 def test_tag_backup_tags_remote_head_as_dataset():
     api: HfApi = Mock(spec=HfApi)
-    client: HuggingFaceClient = HuggingFaceClient(api)
+    client: HuggingFaceClient = HuggingFaceClient(api, __config())
 
     client.tag_backup()
 
@@ -65,7 +70,7 @@ def test_tag_backup_tags_remote_head_as_dataset():
 def test_tag_backup_swallows_errors_so_upload_can_proceed():
     api: HfApi = Mock(spec=HfApi)
     api.create_tag.side_effect = HfHubHTTPError("boom", response=Mock())
-    client: HuggingFaceClient = HuggingFaceClient(api)
+    client: HuggingFaceClient = HuggingFaceClient(api, __config())
 
     client.tag_backup()  # does not raise
 
@@ -87,7 +92,7 @@ def test_prune_orphans_deletes_only_files_absent_locally(tmp_path: Path):
         __repo_file("latest/addons.xlsx"),      # orphan: removed locally
     ]
     api.list_repo_tree.side_effect = [history_tree, latest_tree]
-    client: HuggingFaceClient = HuggingFaceClient(api)
+    client: HuggingFaceClient = HuggingFaceClient(api, __config())
 
     client.prune_orphans(tmp_path)
 
@@ -107,7 +112,7 @@ def test_prune_orphans_no_op_when_nothing_stale(tmp_path: Path):
         [__repo_file("history/2026-01-01/raw.zip"), __repo_file("history/2026-01-01/addons.parquet")],
         [__repo_file("latest/addons.parquet")],
     ]
-    client: HuggingFaceClient = HuggingFaceClient(api)
+    client: HuggingFaceClient = HuggingFaceClient(api, __config())
 
     client.prune_orphans(tmp_path)
 
@@ -116,11 +121,29 @@ def test_prune_orphans_no_op_when_nothing_stale(tmp_path: Path):
 
 def test_verify_write_access_checks_dataset_write_permission():
     api: HfApi = Mock(spec=HfApi)
-    client: HuggingFaceClient = HuggingFaceClient(api)
+    client: HuggingFaceClient = HuggingFaceClient(api, __config())
 
     client.verify_write_access()
 
     api.auth_check.assert_called_once_with("Ya-Alex/anki-addons", repo_type="dataset", write=True)
+
+
+def test_repo_id_and_synced_dirs_come_from_the_config(tmp_path: Path):
+    __build_bundle(tmp_path)
+    api: HfApi = Mock(spec=HfApi)
+    api.list_repo_tree.return_value = [__repo_file("history/2026-01-01/gone.xlsx")]
+    config: HuggingFaceConfig = HuggingFaceConfig(repo_id="Someone/scratch", synced_dirs=["history"])
+    client: HuggingFaceClient = HuggingFaceClient(api, config)
+
+    assert client.get_repo_id() == "Someone/scratch"
+
+    client.prune_orphans(tmp_path)
+
+    # Only "history" is synced, so "latest" is neither scanned remotely nor pruned.
+    assert api.list_repo_tree.call_count == 1
+    assert api.list_repo_tree.call_args.kwargs["path_in_repo"] == "history"
+    assert api.delete_files.call_args.kwargs["repo_id"] == "Someone/scratch"
+    assert api.delete_files.call_args.kwargs["delete_patterns"] == ["history/2026-01-01/gone.xlsx"]
 
 
 def test_verify_write_access_raises_permission_error_when_forbidden():
@@ -128,7 +151,7 @@ def test_verify_write_access_raises_permission_error_when_forbidden():
     response: Mock = Mock()
     response.status_code = 403
     api.auth_check.side_effect = HfHubHTTPError("nope", response=response)
-    client: HuggingFaceClient = HuggingFaceClient(api)
+    client: HuggingFaceClient = HuggingFaceClient(api, __config())
 
     with pytest.raises(PermissionError, match="HuggingFace unauthorized"):
         client.verify_write_access()

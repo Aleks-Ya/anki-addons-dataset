@@ -25,6 +25,7 @@ from anki_addons_dataset.common.data_types import AddonId, GithubRepo, GithubUse
     DatasetSnapshotMetadata, RawMetadata, AnkiVersion, AddonBranch, HtmlStr, SnapshotDate, ReportDate, ScriptVersion, \
     AddonRating, UpdateDate, AddonTitle, PlainStr, PageLoadTimeout, ElementWaitTimeout
 from anki_addons_dataset.common.working_dir import WorkingDir, SnapshotDir
+from anki_addons_dataset.config.app_config import AppConfig, GithubConfig, HuggingFaceConfig
 from anki_addons_dataset.exporter.json.json_exporter import JsonExporter
 from anki_addons_dataset.exporter.xlsx.xlsx_exporter import XlsxExporter
 from anki_addons_dataset.facade.facade import Facade
@@ -41,6 +42,25 @@ def working_dir_path() -> Path:
 @pytest.fixture
 def working_dir(working_dir_path: Path) -> WorkingDir:
     return WorkingDir(working_dir_path)
+
+
+@pytest.fixture
+def github_token_file(working_dir_path: Path) -> Path:
+    token_file: Path = working_dir_path / ".github" / "token.txt"
+    token_file.parent.mkdir(parents=True, exist_ok=True)
+    token_file.write_text("secret-token\n")
+    return token_file
+
+
+@pytest.fixture
+def app_config(working_dir_path: Path, github_token_file: Path) -> AppConfig:
+    defaults: AppConfig = AppConfig.defaults()
+    return AppConfig(
+        working_dir=working_dir_path,
+        github=GithubConfig(token_file=github_token_file),
+        huggingface=HuggingFaceConfig(repo_id=defaults.huggingface.repo_id,
+                                      synced_dirs=defaults.huggingface.synced_dirs),
+        logging=defaults.logging)
 
 
 @pytest.fixture
@@ -112,9 +132,9 @@ def ankiweb_service(addons_page_downloader: AddonsPageDownloader,
 
 
 @pytest.fixture
-def collector_facade(working_dir: WorkingDir, page_load_timeout: PageLoadTimeout,
+def collector_facade(working_dir: WorkingDir, app_config: AppConfig, page_load_timeout: PageLoadTimeout,
                      element_wait_timeout: ElementWaitTimeout) -> CollectorFacade:
-    return CollectorFacade(working_dir, page_load_timeout, element_wait_timeout)
+    return CollectorFacade(working_dir, app_config, page_load_timeout, element_wait_timeout)
 
 
 @pytest.fixture
@@ -263,9 +283,9 @@ def working_dir_initializer(working_dir: WorkingDir, hugging_face_client: Huggin
 
 
 @pytest.fixture
-def facade(working_dir: WorkingDir, hugging_face_client: HuggingFaceClient, page_load_timeout: PageLoadTimeout,
-           element_wait_timeout: ElementWaitTimeout) -> Facade:
-    return Facade(working_dir, hugging_face_client, page_load_timeout, element_wait_timeout)
+def facade(working_dir: WorkingDir, hugging_face_client: HuggingFaceClient, app_config: AppConfig,
+           page_load_timeout: PageLoadTimeout, element_wait_timeout: ElementWaitTimeout) -> Facade:
+    return Facade(working_dir, hugging_face_client, app_config, page_load_timeout, element_wait_timeout)
 
 
 @pytest.fixture

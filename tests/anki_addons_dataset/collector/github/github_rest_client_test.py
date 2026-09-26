@@ -9,12 +9,16 @@ from requests.exceptions import HTTPError
 from anki_addons_dataset.collector.github.github_rest_client import GithubRestClient
 
 
-def __make_client(tmp_path: Path) -> GithubRestClient:
+def __token_file(tmp_path: Path) -> Path:
     token_dir: Path = tmp_path / ".github"
     token_dir.mkdir(parents=True)
-    (token_dir / "token.txt").write_text("secret-token\n")
-    with patch.object(Path, "home", return_value=tmp_path):
-        return GithubRestClient(offline=False)
+    return token_dir / "token.txt"
+
+
+def __make_client(tmp_path: Path) -> GithubRestClient:
+    token_file: Path = __token_file(tmp_path)
+    token_file.write_text("secret-token\n")
+    return GithubRestClient(offline=False, token_file=token_file)
 
 
 def __response(status_code: int, limit_remaining: Optional[str] = None) -> Response:
@@ -46,18 +50,24 @@ def test_no_if_none_match_without_etag_and_shared_headers_untouched(tmp_path: Pa
 
 
 def test_missing_token_file(tmp_path: Path):
-    with patch.object(Path, "home", return_value=tmp_path):
-        with pytest.raises(FileNotFoundError, match="Missing GitHub token file"):
-            GithubRestClient(offline=False)
+    with pytest.raises(FileNotFoundError, match="Missing GitHub token file"):
+        GithubRestClient(offline=False, token_file=__token_file(tmp_path))
 
 
 def test_empty_token_file(tmp_path: Path):
-    token_dir: Path = tmp_path / ".github"
-    token_dir.mkdir(parents=True)
-    (token_dir / "token.txt").write_text("  \n")
-    with patch.object(Path, "home", return_value=tmp_path):
-        with pytest.raises(ValueError, match="Empty GitHub token file"):
-            GithubRestClient(offline=False)
+    token_file: Path = __token_file(tmp_path)
+    token_file.write_text("  \n")
+    with pytest.raises(ValueError, match="Empty GitHub token file"):
+        GithubRestClient(offline=False, token_file=token_file)
+
+
+def test_token_file_path_is_injected_not_assumed(tmp_path: Path):
+    token_file: Path = tmp_path / "custom" / "gh.token"
+    token_file.parent.mkdir(parents=True)
+    token_file.write_text("other-token\n")
+    client: GithubRestClient = GithubRestClient(offline=False, token_file=token_file)
+    assert client.get_token_file() == token_file
+    assert client.read_token() == "other-token"
 
 
 def test_verify_token_returns_remaining_quota(tmp_path: Path):

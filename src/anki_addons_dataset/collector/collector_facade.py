@@ -24,6 +24,7 @@ from anki_addons_dataset.common.data_types import Aggregation, AddonInfos, Datas
 from anki_addons_dataset.collector.ankiweb.ankiweb_service import AnkiWebService
 from anki_addons_dataset.common.json_helper import JsonHelper
 from anki_addons_dataset.common.working_dir import SnapshotDir, WorkingDir
+from anki_addons_dataset.config.app_config import AppConfig
 from anki_addons_dataset.exporter.exporter_facade import ExporterFacade
 from anki_addons_dataset.collector.raw_metadata_collector import RawMetadataCollector
 
@@ -31,9 +32,10 @@ log: Logger = logging.getLogger(__name__)
 
 
 class CollectorFacade:
-    def __init__(self, working_dir: WorkingDir, page_load_timeout: PageLoadTimeout,
+    def __init__(self, working_dir: WorkingDir, config: AppConfig, page_load_timeout: PageLoadTimeout,
                  element_wait_timeout: ElementWaitTimeout):
         self.__working_dir: WorkingDir = working_dir
+        self.__config: AppConfig = config
         self.__page_load_timeout: PageLoadTimeout = page_load_timeout
         self.__element_wait_timeout: ElementWaitTimeout = element_wait_timeout
 
@@ -107,7 +109,7 @@ class CollectorFacade:
         addon_page_downloader: AddonPageDownloader = AddonPageDownloader(
             page_downloader, snapshot_dir, addon_page_parser, offline)
         ankiweb_service: AnkiWebService = AnkiWebService(addons_page_downloader, addon_page_downloader)
-        github_rest_client: GithubRestClient = GithubRestClient(offline)
+        github_rest_client: GithubRestClient = GithubRestClient(offline, self.__config.github.token_file)
         github_service: GithubService = GithubService(snapshot_dir, github_rest_client, prev_snapshot_dir, offline)
         discourse_client: DiscourseClient = DiscourseClient(host="https://forums.ankiweb.net",
                                                             api_username=None, api_key=None)

@@ -1,4 +1,6 @@
+import logging
 from datetime import date
+from pathlib import Path
 from typing import Optional
 
 import pytest
@@ -80,6 +82,35 @@ def test_custom_timeouts(monkeypatch: MonkeyPatch):
     arguments: ScriptArguments = ScriptArguments()
     assert arguments.get_page_load_timeout() == 90
     assert arguments.get_element_wait_timeout() == 20
+
+
+def test_log_level_is_none_when_not_passed(monkeypatch: MonkeyPatch):
+    monkeypatch.setattr('sys.argv', ['addon_catalog.py', 'parse'])
+    # None means "not passed", which lets the config file's logging.level take over.
+    assert ScriptArguments().get_log_level() is None
+
+
+def test_log_level_from_cli(monkeypatch: MonkeyPatch):
+    monkeypatch.setattr('sys.argv', ['addon_catalog.py', 'parse', '-l', 'warning'])
+    assert ScriptArguments().get_log_level() == logging.WARNING
+
+
+def test_invalid_log_level(monkeypatch: MonkeyPatch):
+    monkeypatch.setattr('sys.argv', ['addon_catalog.py', 'parse', '-l', 'nope'])
+    with pytest.raises(SystemExit):
+        ScriptArguments()
+
+
+def test_default_config_file(monkeypatch: MonkeyPatch, tmp_path: Path):
+    monkeypatch.setattr('sys.argv', ['addon_catalog.py', 'parse'])
+    monkeypatch.setenv("HOME", str(tmp_path))
+    assert ScriptArguments().get_config_file() == tmp_path / ".anki-addons-dataset.yaml"
+
+
+def test_custom_config_file(monkeypatch: MonkeyPatch, tmp_path: Path):
+    monkeypatch.setattr('sys.argv', ['addon_catalog.py', 'parse', '--config', '~/custom.yaml'])
+    monkeypatch.setenv("HOME", str(tmp_path))  # drives both Path.home() and Path.expanduser()
+    assert ScriptArguments().get_config_file() == tmp_path / "custom.yaml"
 
 
 @pytest.mark.parametrize("timeout", ['abc', '0', '-5'])

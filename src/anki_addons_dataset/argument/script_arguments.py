@@ -1,10 +1,12 @@
 from argparse import ArgumentParser, Namespace, ArgumentTypeError
 from datetime import date, datetime
 from enum import Enum
+from pathlib import Path
 from typing import Optional
-import logging
 
 from anki_addons_dataset.common.data_types import SnapshotDate, PageLoadTimeout, ElementWaitTimeout
+from anki_addons_dataset.common.log import Log
+from anki_addons_dataset.config.app_config import default_config_file
 
 
 class Operation(Enum):
@@ -22,7 +24,9 @@ class ScriptArguments:
         parser: ArgumentParser = ArgumentParser()
         parser.add_argument('operations', nargs='+')
         parser.add_argument('-d', '--snapshot-date', type=self.__valid_date)
-        parser.add_argument('-l', '--log-level', type=self.__valid_log_level, default='INFO')
+        parser.add_argument('-c', '--config', type=Path, default=None)
+        # No default: None means "not passed", so the config file's logging.level can take over.
+        parser.add_argument('-l', '--log-level', type=self.__valid_log_level, default=None)
         parser.add_argument('--page-load-timeout', type=self.__valid_timeout, default=120)
         parser.add_argument('--element-wait-timeout', type=self.__valid_timeout, default=120)
         self.namespace: Namespace = parser.parse_intermixed_args()
@@ -39,7 +43,12 @@ class ScriptArguments:
                 operations.append(Operation[operation.upper()])
         return operations
 
-    def get_log_level(self) -> int:
+    def get_config_file(self) -> Path:
+        config_file: Optional[Path] = self.namespace.config
+        return config_file.expanduser() if config_file else default_config_file()
+
+    def get_log_level(self) -> Optional[int]:
+        """The level from `-l`, or None when the flag was not passed (the config file then decides)."""
         return self.namespace.log_level
 
     def get_page_load_timeout(self) -> PageLoadTimeout:
@@ -58,13 +67,10 @@ class ScriptArguments:
 
     @staticmethod
     def __valid_log_level(s: str) -> int:
-        level_name: str = s.upper()
-        level_mapping: dict[str, int] = logging.getLevelNamesMapping()
-        if level_name not in level_mapping:
-            valid_levels: list[str] = list(level_mapping.keys())
-            msg: str = f"Not a valid log level: '{s}'. Expected one of: {', '.join(valid_levels)}."
-            raise ArgumentTypeError(msg)
-        return level_mapping[level_name]
+        try:
+            return Log.parse_level(s)
+        except ValueError as e:
+            raise ArgumentTypeError(str(e))
 
     @staticmethod
     def __valid_timeout(s: str) -> int:

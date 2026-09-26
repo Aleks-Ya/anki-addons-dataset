@@ -1,0 +1,32 @@
+# Optional configuration for anki-addons-dataset.
+#
+# Copy to ~/.anki-addons-dataset.yaml, or pass any path with -c/--config.
+# Every key is optional: the values below are the built-in defaults, so an absent
+# file and an empty file both behave exactly like this one.
+#
+# Values resolve as: CLI flag > this file > default.
+# "~" and "$VAR" are expanded in paths. An unknown key is an error, not a no-op.
+
+# Where snapshots (history/) and the upload bundle (bundle/) are kept.
+working_dir: ~/anki-addons-dataset
+
+github:
+  # Personal access token used by the download and parse steps.
+  # No scopes are required for public repositories.
+  token_file: ~/.github/token.txt
+
+huggingface:
+  # The dataset the upload step pushes to. Point this at a scratch dataset of your
+  # own to try the pipeline without touching the published one.
+  repo_id: Ya-Alex/anki-addons
+  # The remote folders upload pushes and prunes.
+  synced_dirs: [history, latest]
+  # Note: the HuggingFace token is NOT configured here. huggingface_hub reads it
+  # from the HF_TOKEN environment variable or from `hf auth login`.
+
+logging:
+  # One of: CRITICAL, ERROR, WARNING, INFO, DEBUG. Overridden by -l/--log-level.
+  level: INFO
+  format: '%(asctime)-15s %(levelname)-8s [%(threadName)-10s] %(message)s'
+  # Set a path to also write the log to a file (parent directories are created).
+  file: null

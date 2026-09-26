@@ -46,9 +46,26 @@ read-only token as a Space secret named `HF_TOKEN` (Space -> Settings -> Variabl
 `huggingface_hub` reads it from the environment, no code change needed. This is unrelated to the
 credentials `upload` uses (`hf auth login`).
 
+## Configuration file
+An optional `~/.anki-addons-dataset.yaml` supplies the working directory, the GitHub token path, the
+HuggingFace target and the logging settings. See the *Configuration* section of [README.md](README.md)
+for the full annotated example; `config.yaml.example` in the repo root is a copy-ready version:
+
+```bash
+cp config.yaml.example ~/.anki-addons-dataset.yaml
+```
+
+Values resolve as **CLI flag > config file > default**, and a different file can be passed with
+`-c/--config`. The file deliberately lives outside the working directory, because the working
+directory is itself one of its keys.
+
+Pointing `working_dir` at a scratch directory and `huggingface.repo_id` at a personal scratch
+dataset is the safe way to try the pipeline without touching the published one.
+
 ## GitHub token
 The `download` and `parse` steps call the GitHub REST API and need a personal access token
-(no scopes required for public repositories) in `~/.github/token.txt`:
+(no scopes required for public repositories) in `~/.github/token.txt` (or wherever
+`github.token_file` points):
 
 ```bash
 mkdir -p ~/.github
@@ -62,8 +79,9 @@ write access to the dataset (the same check `upload` runs), so both credentials 
 up front.
 
 ## Logging
-Default log level: DEBUG
-Set log level: `uv run anki-addons-dataset parse -l INFO`
+Default log level: INFO (`logging.level` in the config file)
+Set log level: `uv run anki-addons-dataset parse -l DEBUG` — the flag wins over the config file.
+The log format and an optional log file are set by `logging.format` and `logging.file`.
 
 ## Browser timeouts
 `download` drives a headless Chrome via Selenium. Both of its timeouts (seconds) are configurable and

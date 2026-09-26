@@ -13,7 +13,8 @@ log: Logger = logging.getLogger(__name__)
 
 class GithubRestClient:
 
-    def __init__(self, offline: bool):
+    def __init__(self, offline: bool, token_file: Path):
+        self.__token_file: Path = token_file
         token: str = self.read_token()
         self.__headers: dict[str, str] = {
             'Authorization': f'Bearer {token}'
@@ -21,13 +22,11 @@ class GithubRestClient:
         self.__offline: bool = offline
         self.__rate_limit: GithubRateLimit = GithubRateLimit()
 
-    @staticmethod
-    def get_token_file() -> Path:
-        return Path.home() / ".github" / "token.txt"
+    def get_token_file(self) -> Path:
+        return self.__token_file
 
-    @staticmethod
-    def read_token() -> str:
-        token_file: Path = GithubRestClient.get_token_file()
+    def read_token(self) -> str:
+        token_file: Path = self.__token_file
         if not token_file.is_file():
             raise FileNotFoundError(f"Missing GitHub token file {token_file}. "
                                     f"Create it with a GitHub personal access token.")

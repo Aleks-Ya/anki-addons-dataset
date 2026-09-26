@@ -9,16 +9,17 @@ from huggingface_hub import HfApi, RepoFolder, RepoFile
 from huggingface_hub.errors import EntryNotFoundError, RepositoryNotFoundError, HfHubHTTPError
 
 from anki_addons_dataset.common.data_types import HuggingFaceFolder
+from anki_addons_dataset.config.app_config import HuggingFaceConfig
 
 log: Logger = logging.getLogger(__name__)
 
 
 class HuggingFaceClient:
-    __repo_id: str = "Ya-Alex/anki-addons"
-    __synced_dirs: list[str] = ["history", "latest"]
 
-    def __init__(self, hf_api: HfApi):
+    def __init__(self, hf_api: HfApi, config: HuggingFaceConfig):
         self.__api: HfApi = hf_api
+        self.__repo_id: str = config.repo_id
+        self.__synced_dirs: list[str] = config.synced_dirs
 
     def get_repo_id(self) -> str:
         return self.__repo_id
@@ -85,10 +86,9 @@ class HuggingFaceClient:
                 raise PermissionError(f"HuggingFace unauthorized: {self.__repo_id}") from e
             raise
 
-    @staticmethod
-    def __local_repo_files(bundle_dir: Path) -> set[str]:
+    def __local_repo_files(self, bundle_dir: Path) -> set[str]:
         local_files: set[str] = set()
-        for top in HuggingFaceClient.__synced_dirs:
+        for top in self.__synced_dirs:
             top_dir: Path = bundle_dir / top
             if not top_dir.exists():
                 continue

@@ -31,7 +31,9 @@ uv run anki-addons-dataset info               # print version + config only
 uv run anki-addons-dataset init
 uv run anki-addons-dataset download -d 2026-01-01
 uv run anki-addons-dataset parse
-uv run anki-addons-dataset parse -l INFO  # change log level
+uv run anki-addons-dataset parse -l INFO  # change log level (wins over the config file)
+# Optional config file: ~/.anki-addons-dataset.yaml (see config.yaml.example), or:
+uv run anki-addons-dataset parse -c /path/to/config.yaml
 # Selenium timeouts for DOWNLOAD, in seconds (both default to 120)
 uv run anki-addons-dataset download -d 2026-01-01 --page-load-timeout 180 --element-wait-timeout 30
 uv run anki-addons-dataset report
@@ -70,6 +72,7 @@ Six sequential CLI operations form the pipeline:
 - `src/anki_addons_dataset/exporter/` — multi-format export; `ExporterFacade` delegates to json/parquet/xlsx subpackages
 - `src/anki_addons_dataset/facade/` — top-level orchestration wiring operations together
 - `src/anki_addons_dataset/common/working_dir.py` — all filesystem path logic lives here
+- `src/anki_addons_dataset/config/app_config.py` — `AppConfig` (frozen dataclasses) and `ConfigLoader`, which reads the optional `~/.anki-addons-dataset.yaml` over the built-in defaults. Covers `working_dir`, `github.token_file`, `huggingface.repo_id`/`synced_dirs` and the `logging` settings. Precedence is CLI flag > config file > default; an unknown key is an error, not a no-op. `addon_catalog.main()` loads it and passes `AppConfig` down through `Facade` → `CollectorFacade`
 
 ### Design Patterns
 

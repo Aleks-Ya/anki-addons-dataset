@@ -9,16 +9,26 @@ from requests import Response
 from anki_addons_dataset import __version__
 from anki_addons_dataset.common.data_types import SnapshotDate, ReportDate, PageLoadTimeout, ElementWaitTimeout
 from anki_addons_dataset.common.working_dir import WorkingDir
+from anki_addons_dataset.config.app_config import AppConfig, GithubConfig
 from anki_addons_dataset.huggingface.hugging_face_client import HuggingFaceClient
 from anki_addons_dataset.info.app_info import AppInfo
 
 
+def __token_file(tmp_path: Path) -> Path:
+    return tmp_path / ".github" / "token.txt"
+
+
 def __write_token(tmp_path: Path) -> Path:
-    token_dir: Path = tmp_path / ".github"
-    token_dir.mkdir(parents=True)
-    token_file: Path = token_dir / "token.txt"
+    token_file: Path = __token_file(tmp_path)
+    token_file.parent.mkdir(parents=True)
     token_file.write_text("secret-token\n")
     return token_file
+
+
+def __config(tmp_path: Path) -> AppConfig:
+    defaults: AppConfig = AppConfig.defaults()
+    return AppConfig(working_dir=tmp_path, github=GithubConfig(token_file=__token_file(tmp_path)),
+                     huggingface=defaults.huggingface, logging=defaults.logging)
 
 
 def __github_response(status_code: int) -> Response:
@@ -33,20 +43,21 @@ def __patch_github_api(status_code: int = 200):
                  return_value=__github_response(status_code))
 
 
-def __make_app_info(working_dir: WorkingDir) -> AppInfo:
+def __make_app_info(working_dir: WorkingDir, tmp_path: Path) -> AppInfo:
     hugging_face_client: HuggingFaceClient = Mock()
     hugging_face_client.get_repo_id.return_value = "Ya-Alex/anki-addons"
-    return AppInfo(working_dir, hugging_face_client, PageLoadTimeout(90), ElementWaitTimeout(20))
+    return AppInfo(working_dir, hugging_face_client, __config(tmp_path),
+                   PageLoadTimeout(90), ElementWaitTimeout(20))
 
 
 def test_print_info(working_dir: WorkingDir, tmp_path: Path, caplog: pytest.LogCaptureFixture):
-    app_info: AppInfo = __make_app_info(working_dir)
+    app_info: AppInfo = __make_app_info(working_dir, tmp_path)
     snapshot_date: SnapshotDate = SnapshotDate(datetime(2026, 1, 1).date())
     report_date: ReportDate = ReportDate(datetime(2026, 1, 2, 3, 4, 5))
     token_file: Path = __write_token(tmp_path)
 
     with caplog.at_level(logging.INFO):
-        with patch.object(Path, "home", return_value=tmp_path), __patch_github_api():
+        with __patch_github_api():
             app_info.print_info(snapshot_date, report_date)
 
     messages: str = "\n".join(record.message for record in caplog.records)
@@ -65,14 +76,13 @@ def test_print_info(working_dir: WorkingDir, tmp_path: Path, caplog: pytest.LogC
 
 def test_print_info_fails_without_github_token(working_dir: WorkingDir, tmp_path: Path,
                                                caplog: pytest.LogCaptureFixture):
-    app_info: AppInfo = __make_app_info(working_dir)
+    app_info: AppInfo = __make_app_info(working_dir, tmp_path)
     snapshot_date: SnapshotDate = SnapshotDate(datetime(2026, 1, 1).date())
     report_date: ReportDate = ReportDate(datetime(2026, 1, 2, 3, 4, 5))
 
     with caplog.at_level(logging.INFO):
-        with patch.object(Path, "home", return_value=tmp_path):
-            with pytest.raises(FileNotFoundError, match="Missing GitHub token file"):
-                app_info.print_info(snapshot_date, report_date)
+        with pytest.raises(FileNotFoundError, match="Missing GitHub token file"):
+            app_info.print_info(snapshot_date, report_date)
 
     messages: str = "\n".join(record.message for record in caplog.records)
     assert f"Version: {__version__}" in messages  # the config dump is printed before the failure
@@ -81,13 +91,13 @@ def test_print_info_fails_without_github_token(working_dir: WorkingDir, tmp_path
 
 def test_print_info_fails_when_github_rejects_the_token(working_dir: WorkingDir, tmp_path: Path,
                                                         caplog: pytest.LogCaptureFixture):
-    app_info: AppInfo = __make_app_info(working_dir)
+    app_info: AppInfo = __make_app_info(working_dir, tmp_path)
     snapshot_date: SnapshotDate = SnapshotDate(datetime(2026, 1, 1).date())
     report_date: ReportDate = ReportDate(datetime(2026, 1, 2, 3, 4, 5))
     __write_token(tmp_path)
 
     with caplog.at_level(logging.INFO):
-        with patch.object(Path, "home", return_value=tmp_path), __patch_github_api(401):
+        with __patch_github_api(401):
             with pytest.raises(PermissionError, match="GitHub rejected the token"):
                 app_info.print_info(snapshot_date, report_date)
 
@@ -102,13 +112,14 @@ def test_print_info_fails_without_hugging_face_access(working_dir: WorkingDir, t
     hugging_face_client.get_repo_id.return_value = "Ya-Alex/anki-addons"
     hugging_face_client.verify_write_access.side_effect = PermissionError(
         "HuggingFace unauthorized: Ya-Alex/anki-addons")
-    app_info: AppInfo = AppInfo(working_dir, hugging_face_client, PageLoadTimeout(90), ElementWaitTimeout(20))
+    app_info: AppInfo = AppInfo(working_dir, hugging_face_client, __config(tmp_path),
+                                PageLoadTimeout(90), ElementWaitTimeout(20))
     snapshot_date: SnapshotDate = SnapshotDate(datetime(2026, 1, 1).date())
     report_date: ReportDate = ReportDate(datetime(2026, 1, 2, 3, 4, 5))
     __write_token(tmp_path)
 
     with caplog.at_level(logging.INFO):
-        with patch.object(Path, "home", return_value=tmp_path), __patch_github_api():
+        with __patch_github_api():
             with pytest.raises(PermissionError, match="HuggingFace unauthorized"):
                 app_info.print_info(snapshot_date, report_date)
 
@@ -120,12 +131,12 @@ def test_print_info_fails_without_hugging_face_access(working_dir: WorkingDir, t
 def test_print_info_skips_hugging_face_check_when_github_token_missing(working_dir: WorkingDir, tmp_path: Path):
     hugging_face_client: HuggingFaceClient = Mock()
     hugging_face_client.get_repo_id.return_value = "Ya-Alex/anki-addons"
-    app_info: AppInfo = AppInfo(working_dir, hugging_face_client, PageLoadTimeout(90), ElementWaitTimeout(20))
+    app_info: AppInfo = AppInfo(working_dir, hugging_face_client, __config(tmp_path),
+                                PageLoadTimeout(90), ElementWaitTimeout(20))
     snapshot_date: SnapshotDate = SnapshotDate(datetime(2026, 1, 1).date())
     report_date: ReportDate = ReportDate(datetime(2026, 1, 2, 3, 4, 5))
 
-    with patch.object(Path, "home", return_value=tmp_path):
-        with pytest.raises(FileNotFoundError, match="Missing GitHub token file"):
-            app_info.print_info(snapshot_date, report_date)
+    with pytest.raises(FileNotFoundError, match="Missing GitHub token file"):
+        app_info.print_info(snapshot_date, report_date)
 
     hugging_face_client.verify_write_access.assert_not_called()
