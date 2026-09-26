@@ -5,7 +5,7 @@ from pathlib import Path
 from anki_addons_dataset.common.data_types import AddonInfo, AddonInfos, AddonHeader, AddonPage, AddonBranch, \
     GithubInfo, GitHubLink, GitHubUser, GithubRepo, AnkiForumInfo, AddonId, AnkiVersion, HtmlStr, URL, \
     GithubUserName, GithubRepoName, LanguageName, LanguageCode, ScriptVersion, AddonRating, UpdateDate, AddonTitle, \
-    AddonManifest, SpdxLicense, Topic, DependencyName
+    AddonManifest, SpdxLicense, Topic, DependencyName, GithubReadme
 from anki_addons_dataset.common.json_helper import JsonHelper
 
 
@@ -81,7 +81,7 @@ def test_addon_infos_dump_round_trip_with_enrichment_fields(addon_info: AddonInf
                                                min_point_version=45, max_point_version=None,
                                                homepage="https://example.com", mod=1678900000)
     addon_info.github.dependencies = [DependencyName("requests"), DependencyName("beautifulsoup4")]
-    addon_info.github.readme = "# NoteSize"
+    addon_info.github.readme = GithubReadme("# NoteSize")
     addon_info.github.ai_tooling_markers = ["claude-code", "cursor"]
     addon_infos: AddonInfos = AddonInfos([addon_info])
     dump_file: Path = working_dir_path / "addon-infos.json"

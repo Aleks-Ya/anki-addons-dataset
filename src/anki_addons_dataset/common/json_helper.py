@@ -7,7 +7,8 @@ from typing import Any, Optional
 from anki_addons_dataset.common.data_types import AddonInfo, AddonInfos, AddonHeader, AddonPage, AddonBranch, \
     GithubInfo, GitHubLink, GitHubUser, GithubRepo, AnkiForumInfo, AddonId, AnkiVersion, HtmlStr, URL, \
     GithubUserName, GithubRepoName, LanguageName, LanguageCode, TopicSlug, TopicId, LastPostedAt, PostsCount, \
-    ScriptVersion, AddonRating, UpdateDate, AddonTitle, AddonDescription, AddonManifest, SpdxLicense, Topic, DependencyName
+    ScriptVersion, AddonRating, UpdateDate, AddonTitle, AddonDescription, AddonManifest, SpdxLicense, Topic, \
+    DependencyName, GithubReadme
 
 
 class JsonHelper:
@@ -91,6 +92,7 @@ class JsonHelper:
         homepage: Optional[str] = data.get("homepage")
         primary_language: Optional[str] = data.get("primary_language")
         license_str: Optional[str] = data.get("license")
+        readme: Optional[str] = data.get("readme")
         return GithubInfo(
             github_links=[JsonHelper.__github_link_from_dict(link) for link in data["github_links"]],
             github_repo=JsonHelper.__github_repo_from_dict(data["github_repo"]),
@@ -113,7 +115,7 @@ class JsonHelper:
             language_bytes={LanguageName(name): count for name, count in data.get("language_bytes", {}).items()},
             manifest=JsonHelper.__manifest_from_dict(data.get("manifest")),
             dependencies=[DependencyName(dependency) for dependency in data.get("dependencies", [])],
-            readme=data.get("readme"),
+            readme=GithubReadme(readme) if readme is not None else None,
             ai_tooling_markers=list(data.get("ai_tooling_markers", [])),
         )
 

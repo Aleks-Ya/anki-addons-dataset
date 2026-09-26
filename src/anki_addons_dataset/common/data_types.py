@@ -14,6 +14,7 @@ URL = NewType("URL", str)
 GithubRepoName = NewType("GithubRepoName", str)
 GithubUserName = NewType("GithubUserName", str)
 GithubRepoId = NewType("GithubRepoId", str)
+GithubReadme = NewType("GithubReadme", str)
 LanguageName = NewType("LanguageName", str)
 LanguageCode = NewType("LanguageCode", str)
 HtmlStr = NewType("HtmlStr", str)
@@ -103,7 +104,7 @@ class GithubInfo:
     language_bytes: dict[LanguageName, int] = field(default_factory=dict)
     manifest: Optional[AddonManifest] = None
     dependencies: list[DependencyName] = field(default_factory=list)
-    readme: Optional[str] = None
+    readme: Optional[GithubReadme] = None
     ai_tooling_markers: list[str] = field(default_factory=list)
 
 

@@ -7,7 +7,7 @@ from logging import Logger
 from anki_addons_dataset.collector.enricher import Enricher
 from anki_addons_dataset.collector.github.handler.repo_info_repo_handler import GithubRepoMeta
 from anki_addons_dataset.common.data_types import AddonInfo, LanguageName, GithubInfo, AddonId, \
-    AddonInfos, GithubRepo, GitHubLink, AddonManifest, DependencyName
+    AddonInfos, GithubRepo, GitHubLink, AddonManifest, DependencyName, GithubReadme
 from anki_addons_dataset.collector.github.github_service import GithubService
 from anki_addons_dataset.common.json_helper import JsonHelper
 from anki_addons_dataset.common.working_dir import SnapshotDir
@@ -42,7 +42,7 @@ class GithubEnricher(Enricher):
             repo_meta: GithubRepoMeta = self.__github_service.get_repo_info(github_repo)
             manifest: Optional[AddonManifest] = self.__github_service.get_manifest(github_repo)
             dependencies: list[DependencyName] = self.__github_service.get_dependencies(github_repo)
-            readme: Optional[str] = self.__github_service.get_readme(github_repo)
+            readme: Optional[GithubReadme] = self.__github_service.get_readme(github_repo)
             ai_tooling_markers: list[str] = self.__github_service.get_ai_tooling_markers(github_repo, readme)
         else:
             github_repo: Optional[GithubRepo] = None
@@ -55,7 +55,7 @@ class GithubEnricher(Enricher):
             repo_meta: GithubRepoMeta = GithubRepoMeta()
             manifest: Optional[AddonManifest] = None
             dependencies: list[DependencyName] = []
-            readme: Optional[str] = None
+            readme: Optional[GithubReadme] = None
             ai_tooling_markers: list[str] = []
         github_info: GithubInfo = GithubInfo(
             github_links, github_repo, list(language_bytes.keys()), stars, last_commit, action_count, tests_count,

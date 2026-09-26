@@ -1,6 +1,8 @@
 import re
 from typing import Optional, Pattern
 
+from anki_addons_dataset.common.data_types import GithubReadme
+
 # Fingerprint files that AI coding tools drop into a repo. Basename -> normalized tool slug.
 _BASENAME_MARKERS: dict[str, str] = {
     "CLAUDE.md": "claude-code",
@@ -43,7 +45,7 @@ class AiToolingDetector:
     """
 
     @staticmethod
-    def detect(file_paths: list[str], readme: Optional[str]) -> list[str]:
+    def detect(file_paths: list[str], readme: Optional[GithubReadme]) -> list[str]:
         markers: set[str] = set()
         for path in file_paths:
             AiToolingDetector._scan_path(path, markers)
@@ -64,7 +66,7 @@ class AiToolingDetector:
                 markers.add(_DIR_MARKERS[segment])
 
     @staticmethod
-    def _scan_readme(readme: str, markers: set[str]) -> None:
+    def _scan_readme(readme: GithubReadme, markers: set[str]) -> None:
         for pattern, slug in _README_MARKERS:
             if pattern.search(readme):
                 markers.add(slug)

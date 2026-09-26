@@ -4,6 +4,7 @@ import logging
 from logging import Logger
 
 from anki_addons_dataset.collector.github.handler.repo_handler import RepoHandler
+from anki_addons_dataset.common.data_types import GithubReadme
 
 log: Logger = logging.getLogger(__name__)
 
@@ -20,14 +21,14 @@ class ReadmeRepoHandler(RepoHandler):
     def get_url(self) -> str:
         return f"https://api.github.com/repos/{self._repo.user}/{self._repo.repo_name}/readme"
 
-    def _extract_return_value_from_dict(self, content_obj: dict[str, Any]) -> Optional[str]:
+    def _extract_return_value_from_dict(self, content_obj: dict[str, Any]) -> Optional[GithubReadme]:
         if content_obj.get("encoding") != "base64" or "content" not in content_obj:
             return None
         try:
-            return base64.b64decode(content_obj["content"]).decode("utf-8", errors="replace")
+            return GithubReadme(base64.b64decode(content_obj["content"]).decode("utf-8", errors="replace"))
         except ValueError:  # binascii.Error (invalid base64) subclasses ValueError
             log.info(f"Could not decode README for {self._repo.get_id()}")
             return None
 
-    def _prepare_stage_dict(self, return_value: Optional[str]) -> dict[str, Any]:
+    def _prepare_stage_dict(self, return_value: Optional[GithubReadme]) -> dict[str, Any]:
         return {"readme": return_value}

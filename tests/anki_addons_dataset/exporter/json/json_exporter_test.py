@@ -3,7 +3,7 @@ from pathlib import Path
 from typing import Any, Optional
 
 from anki_addons_dataset.common.data_types import Aggregation, AddonInfos, AddonInfo, AnkiForumInfo, PostsCount, \
-    DatasetSnapshotMetadata, RawMetadata, AddonManifest, SpdxLicense, Topic, DependencyName, LanguageName, URL
+    DatasetSnapshotMetadata, RawMetadata, AddonManifest, SpdxLicense, Topic, DependencyName, LanguageName, URL, GithubReadme
 from anki_addons_dataset.common.working_dir import SnapshotDir
 from anki_addons_dataset.exporter.json.json_exporter import JsonExporter
 
@@ -213,7 +213,7 @@ def test_export_addon_infos_with_enrichment_fields(json_exporter: JsonExporter, 
     addon_info.github.manifest = AddonManifest(package="note_size", name="Note Size", conflicts=["123"],
                                                min_point_version=45, homepage="https://example.com", mod=1678900000)
     addon_info.github.dependencies = [DependencyName("requests")]
-    addon_info.github.readme = "# NoteSize"
+    addon_info.github.readme = GithubReadme("# NoteSize")
 
     json_exporter.export_addon_infos(AddonInfos([addon_info]), dataset_snapshot_metadata, raw_metadata)
 

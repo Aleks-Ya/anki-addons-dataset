@@ -20,7 +20,7 @@ from anki_addons_dataset.collector.github.handler.repo_info_repo_handler import 
 from anki_addons_dataset.collector.github.handler.stars_repo_handler import StarsRepoHandler
 from anki_addons_dataset.collector.github.handler.tests_repo_handler import TestsRepoHandler
 from anki_addons_dataset.collector.github.handler.tree_entries_repo_handler import TreeEntriesRepoHandler
-from anki_addons_dataset.common.data_types import AddonManifest, DependencyName, GithubRepo, LanguageName
+from anki_addons_dataset.common.data_types import AddonManifest, DependencyName, GithubReadme, GithubRepo, LanguageName
 from anki_addons_dataset.common.working_dir import SnapshotDir
 
 log: Logger = logging.getLogger(__name__)
@@ -69,7 +69,7 @@ class GithubService:
         meta: Optional[GithubRepoMeta] = self.__get_value(handler)
         return meta if meta is not None else GithubRepoMeta()
 
-    def get_readme(self, repo: GithubRepo) -> Optional[str]:
+    def get_readme(self, repo: GithubRepo) -> Optional[GithubReadme]:
         handler: RepoHandler = ReadmeRepoHandler(repo, self.__raw_dir, self.__stage_dir, self.__prev_raw_dir)
         return self.__get_value(handler)
 
@@ -91,7 +91,7 @@ class GithubService:
             dependencies.extend(DependenciesParser.parse_pyproject(pyproject_content))
         return list(dict.fromkeys(dependencies))
 
-    def get_ai_tooling_markers(self, repo: GithubRepo, readme: Optional[str]) -> list[str]:
+    def get_ai_tooling_markers(self, repo: GithubRepo, readme: Optional[GithubReadme]) -> list[str]:
         # Reuses the cached repo tree (shared with tests/manifest lookup, no extra call) plus the fetched README.
         return AiToolingDetector.detect(self.__get_file_paths(repo), readme)
 

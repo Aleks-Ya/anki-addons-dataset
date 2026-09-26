@@ -1,8 +1,10 @@
 from anki_addons_dataset.collector.github.handler.ai_tooling_detector import AiToolingDetector
+from anki_addons_dataset.common.data_types import GithubReadme
 
 
 def test_no_signals_returns_empty():
-    assert AiToolingDetector.detect(["src/main.py", "README.md", "LICENSE"], "# My addon\nA plain description.") == []
+    readme: GithubReadme = GithubReadme("# My addon\nA plain description.")
+    assert AiToolingDetector.detect(["src/main.py", "README.md", "LICENSE"], readme) == []
 
 
 def test_empty_inputs():
@@ -38,7 +40,7 @@ def test_aider_prefix_files():
 
 
 def test_readme_provenance_markers():
-    readme: str = (
+    readme: GithubReadme = GithubReadme(
         "# Addon\n\n"
         "🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\n"
         "Co-Authored-By: Claude <noreply@anthropic.com>\n"
@@ -48,12 +50,12 @@ def test_readme_provenance_markers():
 
 
 def test_readme_made_with():
-    assert AiToolingDetector.detect([], "Made with Cursor") == ["cursor"]
-    assert AiToolingDetector.detect([], "made with bolt.new") == ["bolt"]
-    assert AiToolingDetector.detect([], "Made with Lovable") == ["lovable"]
+    assert AiToolingDetector.detect([], GithubReadme("Made with Cursor")) == ["cursor"]
+    assert AiToolingDetector.detect([], GithubReadme("made with bolt.new")) == ["bolt"]
+    assert AiToolingDetector.detect([], GithubReadme("Made with Lovable")) == ["lovable"]
 
 
 def test_dedup_across_file_and_readme():
     # A CLAUDE.md file and a Claude README marker collapse to a single slug.
-    markers: list[str] = AiToolingDetector.detect(["CLAUDE.md"], "Co-Authored-By: Claude")
+    markers: list[str] = AiToolingDetector.detect(["CLAUDE.md"], GithubReadme("Co-Authored-By: Claude"))
     assert markers == ["claude-code"]

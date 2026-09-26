@@ -8,7 +8,8 @@ from anki_addons_dataset.collector.github.github_service import GithubService
 from anki_addons_dataset.collector.github.handler.repo_info_repo_handler import GithubRepoMeta
 from anki_addons_dataset.common.data_types import AddonInfo, AddonHeader, AddonId, AddonPage, GithubRepo, \
     LanguageName, GithubInfo, AddonInfos, AnkiForumInfo, TopicSlug, TopicId, LastPostedAt, PostsCount, AnkiVersion, \
-    HtmlStr, URL, AddonRating, UpdateDate, AddonTitle, AddonManifest, SpdxLicense, Topic, DependencyName
+    HtmlStr, URL, AddonRating, UpdateDate, AddonTitle, AddonManifest, SpdxLicense, Topic, DependencyName, \
+    GithubReadme
 
 log: Logger = logging.getLogger(__name__)
 
@@ -67,7 +68,7 @@ def test_enrich(github_enricher: GithubEnricher, github_service: GithubService, 
         pushed_at=pushed_at, created_at=created_at))
     github_service.get_manifest = Mock(return_value=manifest)
     github_service.get_dependencies = Mock(return_value=[DependencyName("requests"), DependencyName("beautifulsoup4")])
-    github_service.get_readme = Mock(return_value="# NoteSize\nExample readme")
+    github_service.get_readme = Mock(return_value=GithubReadme("# NoteSize\nExample readme"))
     github_service.get_ai_tooling_markers = Mock(return_value=["claude-code"])
 
     github_enricher.start()
@@ -113,7 +114,7 @@ def test_enrich(github_enricher: GithubEnricher, github_service: GithubService, 
             language_bytes={LanguageName("Python"): 5, LanguageName("Rust"): 2},
             manifest=manifest,
             dependencies=[DependencyName("requests"), DependencyName("beautifulsoup4")],
-            readme="# NoteSize\nExample readme",
+            readme=GithubReadme("# NoteSize\nExample readme"),
             ai_tooling_markers=["claude-code"]
         ),
         forum=AnkiForumInfo(
