@@ -50,8 +50,9 @@ def test_no_if_none_match_without_etag_and_shared_headers_untouched(tmp_path: Pa
 
 
 def test_missing_token_file(tmp_path: Path):
+    token_file: Path = __token_file(tmp_path)
     with pytest.raises(FileNotFoundError, match="Missing GitHub token file"):
-        GithubRestClient(offline=False, token_file=__token_file(tmp_path))
+        GithubRestClient(offline=False, token_file=token_file)
 
 
 def test_empty_token_file(tmp_path: Path):
