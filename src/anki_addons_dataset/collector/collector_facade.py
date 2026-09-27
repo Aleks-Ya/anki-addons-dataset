@@ -8,6 +8,7 @@ from pydiscourse import DiscourseClient
 
 from anki_addons_dataset.collector.aggregator import Aggregator
 from anki_addons_dataset.collector.addon_infos_collector import AddonInfosCollector
+from anki_addons_dataset.collector.ai.ai_cache_index import AiCacheIndex
 from anki_addons_dataset.collector.ai.ai_enricher import AiEnricher
 from anki_addons_dataset.collector.ai.ai_provider import AiProvider
 from anki_addons_dataset.collector.ai.ai_summarizer import AiSummarizer
@@ -64,16 +65,21 @@ class CollectorFacade:
         log.info(f"===== Downloaded snapshot for {snapshot_date} =====\n")
 
     def summarize_snapshots(self) -> None:
+        # Answers are shared across the whole history, not just carried forward from the previous snapshot:
+        # the cache key is a hash of the model and the prompt, so an identical prompt has an identical answer.
+        # list_snapshot_dirs(), not the sampled variant, so sampling cannot hide answers from the lookup.
+        shared_index: AiCacheIndex = AiCacheIndex.load(
+            [snapshot_dir.get_ai_cache_file() for snapshot_dir in self.__working_dir.list_snapshot_dirs()])
+        log.info(f"AI cache holds {shared_index.size()} answers across all snapshots")
         for snapshot_dir in self.__working_dir.list_sampled_snapshot_dirs():
-            self.__summarize_snapshot(snapshot_dir)
+            self.__summarize_snapshot(snapshot_dir, shared_index)
 
-    def __summarize_snapshot(self, snapshot_dir: SnapshotDir) -> None:
+    def __summarize_snapshot(self, snapshot_dir: SnapshotDir, shared_index: AiCacheIndex) -> None:
         snapshot_date: SnapshotDate = snapshot_dir.snapshot_dir_to_snapshot_date()
         log.info(f"===== Summarize snapshot for {snapshot_date} =====")
         # No create(): this step only fills 1-raw, and wiping 3-final would discard an existing report.
-        prev_snapshot_dir: Optional[SnapshotDir] = self.__working_dir.get_previous_snapshot_dir(snapshot_date)
         addon_infos: AddonInfos = self.__collect(snapshot_dir, True)
-        ai_provider: CachedAiProvider = self.__ai_provider(snapshot_dir, False, prev_snapshot_dir)
+        ai_provider: CachedAiProvider = self.__ai_provider(snapshot_dir, False, shared_index)
         self.__ai_enricher(ai_provider).enrich(addon_infos)  # The filled cache is the result; PARSE reads it back
         log.info(f"AI cache hits: {ai_provider.get_cache_hit_count()}, "
                  f"misses: {ai_provider.get_cache_miss_count()}")
@@ -125,12 +131,11 @@ class CollectorFacade:
         log.info(f"===== Reported snapshot for {snapshot_date} =====\n")
 
     def __ai_provider(self, snapshot_dir: SnapshotDir, offline: bool,
-                      prev_snapshot_dir: Optional[SnapshotDir] = None) -> CachedAiProvider:
+                      shared_index: Optional[AiCacheIndex] = None) -> CachedAiProvider:
         model: AiModel = AiModel(self.__config.ai.model)
         ai_provider: AiProvider = NoAiProvider(model) if offline else OpenAiAiProvider(
             self.__config.ai.endpoint, self.__config.ai.api_key_file.read_text().strip(), model)
-        prev_cache_file: Optional[Path] = prev_snapshot_dir.get_ai_cache_file() if prev_snapshot_dir else None
-        return CachedAiProvider(ai_provider, snapshot_dir.get_ai_cache_file(), prev_cache_file, offline)
+        return CachedAiProvider(ai_provider, snapshot_dir.get_ai_cache_file(), shared_index, offline)
 
     def __ai_enricher(self, ai_provider: CachedAiProvider) -> AiEnricher:
         ai_summarizer: AiSummarizer = AiSummarizer(ai_provider, self.__config.ai.readme_max_chars)

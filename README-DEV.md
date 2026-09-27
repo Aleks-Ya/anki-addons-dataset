@@ -117,9 +117,11 @@ summary, and `parse` logs how many were missing.
 
 The cache key is a hash of the model and the whole prompt, so editing the prompt template or
 `ai.readme_max_chars` invalidates every entry. That is why the step stands on its own — refilling
-the cache costs AI tokens rather than a full re-scrape. Answers are carried forward from the
-previous snapshot when the prompt is unchanged, so a steady-state run only pays for addons whose
-text actually moved.
+the cache costs AI tokens rather than a full re-scrape. The key holds no addon id or date, so an
+unchanged prompt has the same key in every snapshot: the step loads a shared index from *all*
+snapshots' caches and reuses any answer already bought anywhere in the history, copying each hit into
+the current snapshot's cache file. A steady-state run only pays for addons whose text actually moved,
+and re-running `ai` for an older snapshot, or reverting a prompt change, costs nothing.
 
 `1-raw/` is bundled into `raw.zip` and published, so the cache is part of the public dataset. That is
 what lets `init` restore it on a fresh machine. Each line holds the model, the answer and a SHA-256

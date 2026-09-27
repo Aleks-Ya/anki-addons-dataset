@@ -3,6 +3,7 @@ import threading
 from pathlib import Path
 from typing import Optional
 
+from anki_addons_dataset.collector.ai.ai_cache_index import AiCacheIndex
 from anki_addons_dataset.collector.ai.ai_provider import AiProvider, AiPrompt, AiResponseText
 from anki_addons_dataset.collector.ai.cached_ai_provider import CachedAiProvider
 from anki_addons_dataset.common.data_types import AiModel
@@ -52,54 +53,74 @@ def test_cache_survives_a_restart(tmp_path: Path) -> None:
     assert len(read_lines(cache_file)) == 1
 
 
-def test_previous_snapshot_hit_is_carried_forward(tmp_path: Path) -> None:
-    prev_cache_file: Path = tmp_path / "prev" / "ai-cache.jsonl"
+def test_shared_index_hit_is_copied_into_the_snapshot(tmp_path: Path) -> None:
+    other_cache_file: Path = tmp_path / "other" / "ai-cache.jsonl"
     cache_file: Path = tmp_path / "current" / "ai-cache.jsonl"
     prompt: AiPrompt = AiPrompt("Question")
-    CachedAiProvider(StubAiProvider(), prev_cache_file).response(prompt)
+    CachedAiProvider(StubAiProvider(), other_cache_file).response(prompt)
 
     stub: StubAiProvider = StubAiProvider()
-    provider: CachedAiProvider = CachedAiProvider(stub, cache_file, prev_cache_file)
+    provider: CachedAiProvider = CachedAiProvider(stub, cache_file, AiCacheIndex.load([other_cache_file]))
     assert provider.response(prompt) == "answer-1 to Question"
 
     assert stub.call_count == 0
     assert provider.get_cache_hit_count() == 1
-    carried_forward: dict[str, str] = read_lines(cache_file)[0]
-    previous: dict[str, str] = read_lines(prev_cache_file)[0]
-    assert carried_forward["key"] == previous["key"]
-    assert carried_forward["model"] == previous["model"]
-    assert carried_forward["response"] == previous["response"]
+    copied: dict[str, str] = read_lines(cache_file)[0]
+    original: dict[str, str] = read_lines(other_cache_file)[0]
+    assert copied["key"] == original["key"]
+    assert copied["model"] == original["model"]
+    assert copied["response"] == original["response"]
 
 
-def test_unused_previous_entries_are_not_carried_forward(tmp_path: Path) -> None:
-    prev_cache_file: Path = tmp_path / "prev" / "ai-cache.jsonl"
+def test_unused_shared_entries_are_not_copied(tmp_path: Path) -> None:
+    other_cache_file: Path = tmp_path / "other" / "ai-cache.jsonl"
     cache_file: Path = tmp_path / "current" / "ai-cache.jsonl"
-    prev_provider: CachedAiProvider = CachedAiProvider(StubAiProvider(), prev_cache_file)
-    prev_provider.response(AiPrompt("Still asked"))
-    prev_provider.response(AiPrompt("No longer asked"))
+    other_provider: CachedAiProvider = CachedAiProvider(StubAiProvider(), other_cache_file)
+    other_provider.response(AiPrompt("Still asked"))
+    other_provider.response(AiPrompt("No longer asked"))
 
-    provider: CachedAiProvider = CachedAiProvider(StubAiProvider(), cache_file, prev_cache_file)
+    provider: CachedAiProvider = CachedAiProvider(StubAiProvider(), cache_file,
+                                                  AiCacheIndex.load([other_cache_file]))
     provider.response(AiPrompt("Still asked"))
 
-    assert len(read_lines(prev_cache_file)) == 2
+    assert len(read_lines(other_cache_file)) == 2
     assert [line["response"] for line in read_lines(cache_file)] == ["answer-1 to Still asked"]
 
 
-def test_current_snapshot_shadows_previous_snapshot(tmp_path: Path) -> None:
-    prev_cache_file: Path = tmp_path / "prev" / "ai-cache.jsonl"
+def test_own_cache_file_shadows_the_shared_index(tmp_path: Path) -> None:
+    other_cache_file: Path = tmp_path / "other" / "ai-cache.jsonl"
     cache_file: Path = tmp_path / "current" / "ai-cache.jsonl"
     prompt: AiPrompt = AiPrompt("Question")
-    CachedAiProvider(StubAiProvider(), prev_cache_file).response(prompt)
+    CachedAiProvider(StubAiProvider(), other_cache_file).response(prompt)
     cache_file.parent.mkdir(parents=True, exist_ok=True)
-    key: str = read_lines(prev_cache_file)[0]["key"]
+    key: str = read_lines(other_cache_file)[0]["key"]
     cache_file.write_text(json.dumps({"key": key, "model": "stub-model", "response": "fresh answer",
                                       "created_at": "2026-09-27T12:00:00"}) + "\n", encoding="utf-8")
 
     stub: StubAiProvider = StubAiProvider()
-    provider: CachedAiProvider = CachedAiProvider(stub, cache_file, prev_cache_file)
+    provider: CachedAiProvider = CachedAiProvider(stub, cache_file, AiCacheIndex.load([other_cache_file]))
     assert provider.response(prompt) == "fresh answer"
     assert stub.call_count == 0
     assert len(read_lines(cache_file)) == 1
+
+
+def test_an_answer_bought_for_one_snapshot_serves_the_next_one(tmp_path: Path) -> None:
+    shared_index: AiCacheIndex = AiCacheIndex()
+    prompt: AiPrompt = AiPrompt("Question")
+    first_cache_file: Path = tmp_path / "first" / "ai-cache.jsonl"
+    second_cache_file: Path = tmp_path / "second" / "ai-cache.jsonl"
+
+    first_stub: StubAiProvider = StubAiProvider()
+    assert CachedAiProvider(first_stub, first_cache_file, shared_index).response(prompt) == "answer-1 to Question"
+
+    second_stub: StubAiProvider = StubAiProvider()
+    second: CachedAiProvider = CachedAiProvider(second_stub, second_cache_file, shared_index)
+    assert second.response(prompt) == "answer-1 to Question"
+
+    assert first_stub.call_count == 1
+    assert second_stub.call_count == 0
+    assert second.get_cache_hit_count() == 1
+    assert [line["response"] for line in read_lines(second_cache_file)] == ["answer-1 to Question"]
 
 
 def test_truncated_line_is_skipped(tmp_path: Path) -> None:
