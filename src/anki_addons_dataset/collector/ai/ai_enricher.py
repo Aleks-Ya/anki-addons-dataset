@@ -29,7 +29,10 @@ class AiEnricher:
 
     def __summarize(self, addon_info: AddonInfo) -> Optional[AiSummary]:
         readme: Optional[GithubReadme] = addon_info.github.readme if addon_info.github else None
-        return self.__ai_summarizer.summarize(addon_info.header.title, addon_info.page.description, readme)
+        try:
+            return self.__ai_summarizer.summarize(addon_info.header.title, addon_info.page.description, readme)
+        except Exception as e:
+            raise RuntimeError(f"Cannot summarize addon: {addon_info.header.id}") from e
 
     def __enrich(self, addon_info: AddonInfo, summary: Optional[AiSummary]) -> AddonInfo:
         if summary is None:

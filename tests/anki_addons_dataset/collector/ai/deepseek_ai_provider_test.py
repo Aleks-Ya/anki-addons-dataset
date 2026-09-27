@@ -83,14 +83,14 @@ def test_response_delegates_outside_peak_hours(mocker: MockerFixture) -> None:
 
 @freeze_time(f"{MONDAY} 06:30:00")
 def test_peak_hours_abort_the_whole_enrichment(addon_info: AddonInfo, tmp_path: Path) -> None:
-    """The refusal must escape the worker threads and the cache, not degrade into a missing summary."""
     cache_file: Path = tmp_path / "4-ai" / "ai-cache.jsonl"
     provider: CachedAiProvider = CachedAiProvider(__provider(), cache_file)
     enricher: AiEnricher = AiEnricher(AiSummarizer(provider, readme_max_chars=8000), MODEL, workers=2)
 
     addon_infos: AddonInfos = AddonInfos([addon_info])
 
-    with pytest.raises(RuntimeError, match="peak hours"):
+    with pytest.raises(RuntimeError, match=f"Cannot summarize addon: {addon_info.header.id}") as exc_info:
         enricher.enrich(addon_infos)
 
+    assert "peak hours" in str(exc_info.value.__cause__)
     assert not cache_file.exists()

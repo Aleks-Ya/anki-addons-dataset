@@ -1,6 +1,8 @@
 from pathlib import Path
 from typing import Optional
 
+import pytest
+
 from anki_addons_dataset.collector.ai.ai_enricher import AiEnricher
 from anki_addons_dataset.collector.ai.ai_provider import AiProvider, AiPrompt, AiResponseText
 from anki_addons_dataset.collector.ai.ai_summarizer import AiSummarizer
@@ -20,6 +22,15 @@ class StubAiProvider(AiProvider):
     def response(self, prompt: AiPrompt) -> Optional[AiResponseText]:
         self.prompts.append(prompt)
         return self.__response
+
+
+class FailingAiProvider(AiProvider):
+    def __init__(self, error: Exception):
+        super().__init__(MODEL)
+        self.__error: Exception = error
+
+    def response(self, prompt: AiPrompt) -> Optional[AiResponseText]:
+        raise self.__error
 
 
 def __enricher(ai_provider: AiProvider) -> AiEnricher:
@@ -56,6 +67,15 @@ def test_unanswered_addon_keeps_no_summary(addon_info: AddonInfo) -> None:
     enriched: AddonInfos = __enricher(StubAiProvider(response=None)).enrich(AddonInfos([addon_info]))
 
     assert enriched[0].ai is None
+
+
+def test_failed_request_names_the_addon(addon_info: AddonInfo) -> None:
+    error: ValueError = ValueError("Content Exists Risk")
+
+    with pytest.raises(RuntimeError, match=f"Cannot summarize addon: {addon_info.header.id}") as exc_info:
+        __enricher(FailingAiProvider(error)).enrich(AddonInfos([addon_info]))
+
+    assert exc_info.value.__cause__ is error
 
 
 def test_other_blocks_are_preserved(addon_info: AddonInfo) -> None:
