@@ -13,6 +13,10 @@ from anki_addons_dataset.common.json_helper import JsonHelper
 from anki_addons_dataset.common.working_dir import SnapshotDir, WorkingDir
 from anki_addons_dataset.config.app_config import AppConfig
 
+# The string form, not patch.object: the name-mangled private attribute is unresolvable for static analysis.
+__SUMMARIZE_SNAPSHOT: str = \
+    "anki_addons_dataset.collector.collector_facade.CollectorFacade._CollectorFacade__summarize_snapshot"
+
 
 def test_report_snapshots_generates_final_from_dump_without_raw(
         collector_facade: CollectorFacade, snapshot_dir: SnapshotDir, addon_infos: AddonInfos,
@@ -45,7 +49,8 @@ def test_report_snapshots_no_snapshots_is_noop(collector_facade: CollectorFacade
 def test_summarize_snapshots_no_snapshots_is_noop(collector_facade: CollectorFacade,
                                                  caplog: pytest.LogCaptureFixture):
     with caplog.at_level(logging.INFO):
-        collector_facade.summarize_snapshots()  # must not raise, and must not read the AI key, when history is empty
+        # must not raise, and must not read the AI key, when history is empty
+        collector_facade.summarize_snapshots(None)
 
     assert "Total AI cache hits: 0, misses: 0" in caplog.text
 
@@ -57,11 +62,45 @@ def test_summarize_snapshots_totals_the_cache_stats_of_all_snapshots(
     stats: list[AiCacheStats] = [AiCacheStats(hit_count=7, miss_count=1), AiCacheStats(hit_count=2, miss_count=3)]
 
     # The per-snapshot summarizing itself needs a full 1-raw snapshot, and is not what this test is about.
-    with patch.object(CollectorFacade, "_CollectorFacade__summarize_snapshot", side_effect=stats):
+    with patch(__SUMMARIZE_SNAPSHOT, side_effect=stats):
         with caplog.at_level(logging.INFO):
-            collector_facade.summarize_snapshots()
+            collector_facade.summarize_snapshots(None)
 
     assert "Total AI cache hits: 9, misses: 4" in caplog.text
+
+
+def test_summarize_snapshots_with_a_date_summarizes_only_that_snapshot(
+        working_dir: WorkingDir, collector_facade: CollectorFacade):
+    snapshot_dirs: list[SnapshotDir] = [
+        working_dir.get_snapshot_dir(SnapshotDate(date.fromisoformat(snapshot_date))).create()
+        for snapshot_date in ["2025-01-01", "2025-02-01"]]
+
+    with patch(__SUMMARIZE_SNAPSHOT, return_value=AiCacheStats()) as summarize_snapshot:
+        collector_facade.summarize_snapshots(SnapshotDate(date.fromisoformat("2025-01-01")))
+
+    assert summarize_snapshot.call_count == 1
+    assert summarize_snapshot.call_args.args[0] == snapshot_dirs[0]
+
+
+def test_summarize_snapshots_with_a_date_wins_over_the_snapshot_sample(
+        working_dir_path: Path, app_config: AppConfig, page_load_timeout: PageLoadTimeout,
+        element_wait_timeout: ElementWaitTimeout):
+    working_dir: WorkingDir = WorkingDir(working_dir_path, max_snapshots=1)
+    old_dir: SnapshotDir = working_dir.get_snapshot_dir(SnapshotDate(date.fromisoformat("2025-01-01"))).create()
+    working_dir.get_snapshot_dir(SnapshotDate(date.fromisoformat("2025-02-01"))).create()
+    collector_facade: CollectorFacade = CollectorFacade(
+        working_dir, app_config, page_load_timeout, element_wait_timeout)
+
+    with patch(__SUMMARIZE_SNAPSHOT, return_value=AiCacheStats()) as summarize_snapshot:
+        collector_facade.summarize_snapshots(SnapshotDate(date.fromisoformat("2025-01-01")))
+
+    assert summarize_snapshot.call_count == 1
+    assert summarize_snapshot.call_args.args[0] == old_dir
+
+
+def test_summarize_snapshots_with_an_unknown_date_raises(collector_facade: CollectorFacade):
+    with pytest.raises(FileNotFoundError, match="No snapshot for 1999-01-01"):
+        collector_facade.summarize_snapshots(SnapshotDate(date.fromisoformat("1999-01-01")))
 
 
 def test_report_snapshots_honours_the_snapshot_sample(

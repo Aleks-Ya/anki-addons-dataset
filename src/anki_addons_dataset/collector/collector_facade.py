@@ -6,8 +6,8 @@ from typing import Optional
 
 from pydiscourse import DiscourseClient
 
-from anki_addons_dataset.collector.aggregator import Aggregator
 from anki_addons_dataset.collector.addon_infos_collector import AddonInfosCollector
+from anki_addons_dataset.collector.aggregator import Aggregator
 from anki_addons_dataset.collector.ai.ai_cache_index import AiCacheIndex
 from anki_addons_dataset.collector.ai.ai_cache_stats import AiCacheStats
 from anki_addons_dataset.collector.ai.ai_enricher import AiEnricher
@@ -22,21 +22,21 @@ from anki_addons_dataset.collector.ankiforum.ankiforum_service import AnkiForumS
 from anki_addons_dataset.collector.ankiweb.addon_page_downloader import AddonPageDownloader
 from anki_addons_dataset.collector.ankiweb.addon_page_parser import AddonPageParser
 from anki_addons_dataset.collector.ankiweb.addons_page_downloader import AddonsPageDownloader
+from anki_addons_dataset.collector.ankiweb.ankiweb_service import AnkiWebService
 from anki_addons_dataset.collector.ankiweb.page_downloader import PageDownloader
 from anki_addons_dataset.collector.dataset_metadata import DatasetMetadata
 from anki_addons_dataset.collector.github.github_enricher import GithubEnricher
 from anki_addons_dataset.collector.github.github_rest_client import GithubRestClient
 from anki_addons_dataset.collector.github.github_service import GithubService
 from anki_addons_dataset.collector.overrider.overrider import Overrider
+from anki_addons_dataset.collector.raw_metadata_collector import RawMetadataCollector
+from anki_addons_dataset.collector.sample_collector import SampleCollector
 from anki_addons_dataset.common.data_types import Aggregation, AddonInfos, DatasetSnapshotMetadata, RawMetadata, \
     SnapshotDate, ReportDate, ScriptVersion, PageLoadTimeout, ElementWaitTimeout, AiModel
-from anki_addons_dataset.collector.ankiweb.ankiweb_service import AnkiWebService
 from anki_addons_dataset.common.json_helper import JsonHelper
 from anki_addons_dataset.common.working_dir import SnapshotDir, WorkingDir
 from anki_addons_dataset.config.app_config import AppConfig
 from anki_addons_dataset.exporter.exporter_facade import ExporterFacade
-from anki_addons_dataset.collector.raw_metadata_collector import RawMetadataCollector
-from anki_addons_dataset.collector.sample_collector import SampleCollector
 
 log: Logger = logging.getLogger(__name__)
 
@@ -66,17 +66,23 @@ class CollectorFacade:
             raw_metadata_collector.set_finish_datetime(datetime.now().replace(microsecond=0))
         log.info(f"===== Downloaded snapshot for {snapshot_date} =====\n")
 
-    def summarize_snapshots(self) -> None:
-        # Answers are shared across the whole history, not just carried forward from the previous snapshot:
-        # the cache key is a hash of the model and the prompt, so an identical prompt has an identical answer.
-        # list_snapshot_dirs(), not the sampled variant, so sampling cannot hide answers from the lookup.
+    def summarize_snapshots(self, snapshot_date: Optional[SnapshotDate]) -> None:
         shared_index: AiCacheIndex = AiCacheIndex.load(
             [snapshot_dir.get_ai_cache_file() for snapshot_dir in self.__working_dir.list_snapshot_dirs()])
         log.info(f"AI cache holds {shared_index.size()} answers across all snapshots")
         total_stats: AiCacheStats = AiCacheStats()
-        for snapshot_dir in self.__working_dir.list_sampled_snapshot_dirs():
+        for snapshot_dir in self.__snapshot_dirs_to_summarize(snapshot_date):
             total_stats = total_stats + self.__summarize_snapshot(snapshot_dir, shared_index)
         log.info(f"Total AI cache hits: {total_stats.hit_count}, misses: {total_stats.miss_count}")
+
+    def __snapshot_dirs_to_summarize(self, snapshot_date: Optional[SnapshotDate]) -> list[SnapshotDir]:
+        if not snapshot_date:
+            return self.__working_dir.list_sampled_snapshot_dirs()
+        snapshot_dir: SnapshotDir = self.__working_dir.get_snapshot_dir(snapshot_date)
+        if not snapshot_dir.get_path().is_dir():
+            raise FileNotFoundError(f"No snapshot for {snapshot_date} in {self.__working_dir.get_history_dir()}. "
+                                    f"Run the 'download -d {snapshot_date}' operation first.")
+        return [snapshot_dir]
 
     def __summarize_snapshot(self, snapshot_dir: SnapshotDir, shared_index: AiCacheIndex) -> AiCacheStats:
         snapshot_date: SnapshotDate = snapshot_dir.snapshot_dir_to_snapshot_date()

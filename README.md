@@ -36,8 +36,16 @@ anki-addons-dataset init download -d 2026-01-01 ai parse
 
 `ai` generates the one-sentence addon summaries. It is the only step that costs money, and it is
 separate from `download` so that changing the prompt re-runs the AI calls alone. It reads the
-snapshots already in `history/`, so it needs no `-d`, and it caches every answer under
-`1-raw/4-ai/`; `parse` then picks the summaries out of that cache without any network access.
+snapshots already in `history/` and caches every answer under `1-raw/4-ai/`; `parse` then picks the
+summaries out of that cache without any network access. Without `-d` it summarizes every snapshot,
+which is what a changed prompt needs; with `-d` it summarizes that one snapshot only:
+
+```bash
+anki-addons-dataset ai -d 2026-01-01
+```
+
+The date must name an existing snapshot, otherwise `ai` fails. Inside `all`, `-d` belongs to
+`download` alone: the `ai` step of `all` keeps summarizing every snapshot.
 
 Against the default DeepSeek endpoint, `ai` refuses to run during DeepSeek's peak hours
 (01:00-04:00 and 06:00-10:00 UTC, Monday through Friday), when the rate is double the off-peak
@@ -69,7 +77,7 @@ anki-addons-dataset parse report bundle -w ~/anki-addons-scratch
 | Option | Meaning |
 | --- | --- |
 | `--sample-addons` | download and parse only the first N addons, ordered by addon id |
-| `--sample-snapshots` | let `ai`/`parse`/`report`/`bundle` process only the newest N snapshots |
+| `--sample-snapshots` | let `ai` (without `-d`)/`parse`/`report`/`bundle` process only the newest N snapshots |
 
 Use them with `-w` so a sampled run lands in a scratch working directory instead of the real one.
 `download` records the addon limit in the snapshot, so a later `parse`/`ai`/`report` in its own

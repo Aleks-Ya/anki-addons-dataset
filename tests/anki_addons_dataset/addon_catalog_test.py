@@ -1,17 +1,20 @@
 from dataclasses import replace
+from datetime import date
+from typing import Optional
 from unittest.mock import Mock
 
 import pytest
 from _pytest.logging import LogCaptureFixture
 
-from anki_addons_dataset.addon_catalog import _upload_free
+from anki_addons_dataset.addon_catalog import _ai_snapshot_date, _upload_free
 from anki_addons_dataset.argument.script_arguments import Operation
+from anki_addons_dataset.common.data_types import SnapshotDate
 from anki_addons_dataset.config.app_config import AppConfig, SampleConfig
 
 
-def __arguments(explicit_upload: bool) -> Mock:
+def __arguments(explicit_operation: bool) -> Mock:
     arguments: Mock = Mock()
-    arguments.has_explicit_operation.return_value = explicit_upload
+    arguments.has_explicit_operation.return_value = explicit_operation
     return arguments
 
 
@@ -42,3 +45,20 @@ def test_all_drops_upload_from_a_sampled_run(app_config: AppConfig, caplog: LogC
 def test_a_sampled_run_without_upload_is_untouched(app_config: AppConfig):
     operations: list[Operation] = [Operation.PARSE, Operation.REPORT]
     assert _upload_free(operations, __arguments(False), __sampled(app_config)) == operations
+
+
+def test_an_explicit_ai_honours_the_snapshot_date():
+    snapshot_date: SnapshotDate = SnapshotDate(date.fromisoformat("2025-01-01"))
+    assert _ai_snapshot_date(__arguments(True), snapshot_date) == snapshot_date
+
+
+def test_all_hides_the_snapshot_date_from_ai(caplog: LogCaptureFixture):
+    snapshot_date: SnapshotDate = SnapshotDate(date.fromisoformat("2025-01-01"))
+
+    assert _ai_snapshot_date(__arguments(False), snapshot_date) is None
+    assert "Ignoring -d 2025-01-01" in caplog.text
+
+
+def test_no_snapshot_date_stays_none():
+    date_less: Optional[SnapshotDate] = None
+    assert _ai_snapshot_date(__arguments(True), date_less) is None

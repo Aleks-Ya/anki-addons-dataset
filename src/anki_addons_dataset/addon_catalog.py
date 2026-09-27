@@ -10,11 +10,11 @@ from huggingface_hub import HfApi
 from anki_addons_dataset.argument.script_arguments import ScriptArguments, Operation
 from anki_addons_dataset.common.data_types import SnapshotDate, ReportDate, PageLoadTimeout, ElementWaitTimeout
 from anki_addons_dataset.common.duration import format_duration
+from anki_addons_dataset.common.log import Log
 from anki_addons_dataset.common.working_dir import WorkingDir
 from anki_addons_dataset.config.app_config import AppConfig, ConfigLoader
 from anki_addons_dataset.facade.facade import Facade
 from anki_addons_dataset.huggingface.hugging_face_client import HuggingFaceClient
-from anki_addons_dataset.common.log import Log
 
 log: Logger = logging.getLogger("anki_addons_dataset.addon_catalog")
 
@@ -27,6 +27,14 @@ def _upload_free(operations: list[Operation], arguments: ScriptArguments, config
                          "Drop 'upload', or drop the sample limits.")
     log.warning("Skipping the 'upload' step: a sampled run must not publish a partial dataset")
     return [operation for operation in operations if operation != Operation.UPLOAD]
+
+
+def _ai_snapshot_date(arguments: ScriptArguments,
+                      snapshot_date: Optional[SnapshotDate]) -> Optional[SnapshotDate]:
+    if snapshot_date and not arguments.has_explicit_operation(Operation.AI):
+        log.info(f"Ignoring -d {snapshot_date} for the 'ai' step: summarizing every snapshot")
+        return None
+    return snapshot_date
 
 
 def main() -> None:
@@ -45,6 +53,8 @@ def main() -> None:
     operations: list[Operation] = _upload_free(arguments.get_operations(), arguments, config)
     log.info(f"Operations: {[operation.value for operation in operations]}")
     snapshot_date: Optional[SnapshotDate] = arguments.get_snapshot_date()
+    ai_snapshot_date: Optional[SnapshotDate] = _ai_snapshot_date(arguments, snapshot_date) \
+        if Operation.AI in operations else snapshot_date
     report_date: ReportDate = ReportDate(datetime.now().replace(microsecond=0))
     page_load_timeout: PageLoadTimeout = arguments.get_page_load_timeout()
     element_wait_timeout: ElementWaitTimeout = arguments.get_element_wait_timeout()
@@ -57,7 +67,7 @@ def main() -> None:
     for operation in operations:
         log.info(f"Step '{operation.value}' started")
         start: float = time.perf_counter()
-        facade.process(operation, snapshot_date, report_date)
+        facade.process(operation, ai_snapshot_date if operation == Operation.AI else snapshot_date, report_date)
         elapsed: float = time.perf_counter() - start
         timings.append((operation.value, elapsed))
         log.info(f"Step '{operation.value}' completed in {format_duration(elapsed)}")
