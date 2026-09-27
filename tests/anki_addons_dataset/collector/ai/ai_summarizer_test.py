@@ -38,6 +38,15 @@ def test_missing_readme_is_stated_in_the_prompt() -> None:
     assert "No README provided." in provider.prompt
 
 
+def test_missing_description_is_stated_in_the_prompt() -> None:
+    provider: RecordingAiProvider = RecordingAiProvider()
+    summarizer: AiSummarizer = AiSummarizer(provider, readme_max_chars=8000)
+
+    summarizer.summarize(AddonTitle("Note Size"), AddonDescription(""), GithubReadme("A README."))
+
+    assert "No description provided." in provider.prompt
+
+
 def test_long_readme_is_truncated() -> None:
     provider: RecordingAiProvider = RecordingAiProvider()
     summarizer: AiSummarizer = AiSummarizer(provider, readme_max_chars=10)
@@ -47,6 +56,7 @@ def test_long_readme_is_truncated() -> None:
 
     assert "0123456789" in provider.prompt
     assert "dropped" not in provider.prompt
+    assert "(README truncated.)" in provider.prompt
 
 
 def test_short_readme_is_kept_whole() -> None:
@@ -57,10 +67,31 @@ def test_short_readme_is_kept_whole() -> None:
                          GithubReadme("0123456789"))
 
     assert "0123456789" in provider.prompt
+    assert "truncated" not in provider.prompt
 
 
 def test_no_response_yields_no_summary() -> None:
     provider: RecordingAiProvider = RecordingAiProvider(response=None)
+    summarizer: AiSummarizer = AiSummarizer(provider, readme_max_chars=8000)
+
+    summary: Optional[AiSummary] = summarizer.summarize(
+        AddonTitle("Note Size"), AddonDescription("Displays the size of notes."), GithubReadme("A README."))
+
+    assert summary is None
+
+
+def test_response_is_stripped() -> None:
+    provider: RecordingAiProvider = RecordingAiProvider(AiResponseText("  A summary.\n"))
+    summarizer: AiSummarizer = AiSummarizer(provider, readme_max_chars=8000)
+
+    summary: Optional[AiSummary] = summarizer.summarize(
+        AddonTitle("Note Size"), AddonDescription("Displays the size of notes."), GithubReadme("A README."))
+
+    assert summary == "A summary."
+
+
+def test_blank_response_yields_no_summary() -> None:
+    provider: RecordingAiProvider = RecordingAiProvider(AiResponseText("\n  "))
     summarizer: AiSummarizer = AiSummarizer(provider, readme_max_chars=8000)
 
     summary: Optional[AiSummary] = summarizer.summarize(
