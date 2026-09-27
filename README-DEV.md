@@ -162,7 +162,8 @@ anki-addons-dataset parse report               # run only the given steps
 anki-addons-dataset info                        # just print version and configuration
 ```
 
-There are three ways to run it, depending on which version you need:
+There are three ways to run it, depending on which version you need, plus a sampled run for
+testing a change quickly:
 
 ### 1. Full run on a release version (from PyPI)
 
@@ -197,6 +198,29 @@ Or run the source explicitly without relying on the install:
 ```bash
 PYTHONPATH=src python -m anki_addons_dataset.addon_catalog parse report
 ```
+
+### 4. Sample run: a slice of the dataset
+Testing a change end-to-end against the real working directory means thousands of addon pages per
+snapshot and the whole history re-parsed. `--sample-addons` and `--sample-snapshots` cut that down to
+a slice; point `-w` at a scratch directory so the real one is never touched:
+
+```bash
+WD=/tmp/anki-addons-sample
+uv run anki-addons-dataset init -w $WD
+uv run anki-addons-dataset download -d $(date +%F) -w $WD --sample-addons 20
+uv run anki-addons-dataset parse report bundle -w $WD
+```
+
+The `download` is a real scrape, just a short one, so it needs headless Chrome and the GitHub token.
+It records the addon limit in `1-raw/sample.json`, which is why the second command needs no flag: an
+offline `parse` of a sampled snapshot would otherwise ask for an addon page that was never
+downloaded. Add `ai` only when the AI path is what is being tested — it bills per addon.
+
+`--sample-snapshots N` limits `ai`/`parse`/`report`/`bundle` to the newest N snapshots, which is the
+axis that matters once the scratch directory holds several dates.
+
+A sampled run refuses to `upload`, so a partial dataset cannot reach HuggingFace. See the *Sample
+runs* section of [README.md](README.md) for the user-facing description.
 
 ## Create a new version of HuggingFace dataset **from sources** by steps
 1. Upgrade Python packages: `./uv_update.sh`

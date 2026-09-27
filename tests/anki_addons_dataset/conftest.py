@@ -71,7 +71,8 @@ def app_config(working_dir_path: Path, github_token_file: Path, ai_api_key_file:
                     readme_max_chars=defaults.ai.readme_max_chars, workers=2),
         huggingface=HuggingFaceConfig(repo_id=defaults.huggingface.repo_id,
                                       synced_dirs=defaults.huggingface.synced_dirs),
-        logging=defaults.logging)
+        logging=defaults.logging,
+        sample=defaults.sample)
 
 
 @pytest.fixture

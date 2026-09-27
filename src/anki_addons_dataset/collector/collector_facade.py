@@ -33,6 +33,7 @@ from anki_addons_dataset.common.working_dir import SnapshotDir, WorkingDir
 from anki_addons_dataset.config.app_config import AppConfig
 from anki_addons_dataset.exporter.exporter_facade import ExporterFacade
 from anki_addons_dataset.collector.raw_metadata_collector import RawMetadataCollector
+from anki_addons_dataset.collector.sample_collector import SampleCollector
 
 log: Logger = logging.getLogger(__name__)
 
@@ -57,12 +58,13 @@ class CollectorFacade:
             raw_metadata_collector.set_script_version(script_version)
             raw_metadata_collector.set_start_datetime(datetime.now().replace(microsecond=0))
         self.__collect(snapshot_dir, False, prev_snapshot_dir)
+        SampleCollector(snapshot_dir).set_addons(self.__config.sample.addons)
         if not raw_metadata_collector.read_metadata().finish_timestamp:
             raw_metadata_collector.set_finish_datetime(datetime.now().replace(microsecond=0))
         log.info(f"===== Downloaded snapshot for {snapshot_date} =====\n")
 
     def summarize_snapshots(self) -> None:
-        for snapshot_dir in self.__working_dir.list_snapshot_dirs():
+        for snapshot_dir in self.__working_dir.list_sampled_snapshot_dirs():
             self.__summarize_snapshot(snapshot_dir)
 
     def __summarize_snapshot(self, snapshot_dir: SnapshotDir) -> None:
@@ -78,7 +80,7 @@ class CollectorFacade:
         log.info(f"===== Summarized snapshot for {snapshot_date} =====\n")
 
     def parse_snapshots(self) -> None:
-        for snapshot_dir in self.__working_dir.list_snapshot_dirs():
+        for snapshot_dir in self.__working_dir.list_sampled_snapshot_dirs():
             snapshot_date: SnapshotDate = snapshot_dir.snapshot_dir_to_snapshot_date()
             self.__parse_snapshot(snapshot_date)
 
@@ -97,7 +99,7 @@ class CollectorFacade:
         log.info(f"===== Parsed snapshot for {snapshot_date} =====\n")
 
     def report_snapshots(self, report_date: ReportDate) -> None:
-        for snapshot_dir in self.__working_dir.list_snapshot_dirs():
+        for snapshot_dir in self.__working_dir.list_sampled_snapshot_dirs():
             snapshot_date: SnapshotDate = snapshot_dir.snapshot_dir_to_snapshot_date()
             self.__report_snapshot(snapshot_date, report_date)
 
@@ -156,6 +158,8 @@ class CollectorFacade:
         anki_forum_service: AnkiForumService = AnkiForumService(discourse_client, snapshot_dir, offline)
         github_enricher: GithubEnricher = GithubEnricher(snapshot_dir, github_service)
         anki_forum_enricher: AnkiForumEnricher = AnkiForumEnricher(snapshot_dir, anki_forum_service)
+        max_addons: Optional[int] = SampleCollector(snapshot_dir).effective_addons(
+            self.__config.sample.addons) if offline else self.__config.sample.addons
         addon_infos_collector: AddonInfosCollector = AddonInfosCollector(
-            ankiweb_service, github_enricher, anki_forum_enricher)
+            ankiweb_service, github_enricher, anki_forum_enricher, max_addons)
         return addon_infos_collector.collect_addons()

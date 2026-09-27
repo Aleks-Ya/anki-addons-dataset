@@ -134,3 +134,39 @@ def test_invalid_timeout(monkeypatch: MonkeyPatch, timeout: str):
     monkeypatch.setattr('sys.argv', ['addon_catalog.py', 'download', '--page-load-timeout', timeout])
     with pytest.raises(SystemExit):
         ScriptArguments()
+
+
+def test_sample_flags_default_to_none(monkeypatch: MonkeyPatch):
+    monkeypatch.setattr('sys.argv', ['addon_catalog.py', 'parse'])
+    arguments: ScriptArguments = ScriptArguments()
+    assert arguments.get_sample_addons() is None
+    assert arguments.get_sample_snapshots() is None
+
+
+def test_sample_flags(monkeypatch: MonkeyPatch):
+    monkeypatch.setattr('sys.argv',
+                        ['addon_catalog.py', 'parse', '--sample-addons', '20', '--sample-snapshots', '2'])
+    arguments: ScriptArguments = ScriptArguments()
+    assert arguments.get_sample_addons() == 20
+    assert arguments.get_sample_snapshots() == 2
+
+
+@pytest.mark.parametrize("value", ['0', '-1', 'x'])
+def test_invalid_sample_size(monkeypatch: MonkeyPatch, value: str):
+    monkeypatch.setattr('sys.argv', ['addon_catalog.py', 'parse', '--sample-addons', value])
+    with pytest.raises(SystemExit):
+        ScriptArguments()
+
+
+def test_has_explicit_operation(monkeypatch: MonkeyPatch):
+    monkeypatch.setattr('sys.argv', ['addon_catalog.py', 'bundle', 'upload'])
+    arguments: ScriptArguments = ScriptArguments()
+    assert arguments.has_explicit_operation(Operation.UPLOAD)
+    assert not arguments.has_explicit_operation(Operation.PARSE)
+
+
+def test_has_explicit_operation_is_false_for_all(monkeypatch: MonkeyPatch):
+    monkeypatch.setattr('sys.argv', ['addon_catalog.py', 'all', '-d', '2026-01-01'])
+    arguments: ScriptArguments = ScriptArguments()
+    assert Operation.UPLOAD in arguments.get_operations()
+    assert not arguments.has_explicit_operation(Operation.UPLOAD)

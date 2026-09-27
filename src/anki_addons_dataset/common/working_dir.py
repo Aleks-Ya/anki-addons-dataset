@@ -1,10 +1,10 @@
+import logging
 import shutil
 from datetime import date
 from functools import total_ordering
+from logging import Logger
 from pathlib import Path
 from typing import Optional
-import logging
-from logging import Logger
 
 from anki_addons_dataset.common.data_types import SnapshotDate
 
@@ -43,6 +43,9 @@ class SnapshotDir:
     def get_ai_cache_file(self) -> Path:
         return self.get_raw_dir() / "4-ai" / "ai-cache.jsonl"
 
+    def get_sample_file(self) -> Path:
+        return self.get_raw_dir() / "sample.json"
+
     def get_addon_infos_dump(self) -> Path:
         return self.__snapshot_dir / "addon-infos.json"
 
@@ -78,10 +81,11 @@ class SnapshotDir:
 
 
 class WorkingDir:
-    def __init__(self, working_dir_path: Path):
+    def __init__(self, working_dir_path: Path, max_snapshots: Optional[int] = None):
         self.__working_dir_path: Path = working_dir_path
         self.__history_dir: Path = self.__working_dir_path / "history"
         self.__bundle_dir: Path = self.__working_dir_path / "bundle"
+        self.__max_snapshots: Optional[int] = max_snapshots
 
     def get_path(self) -> Path:
         return self.__working_dir_path
@@ -105,6 +109,14 @@ class WorkingDir:
                     log.info(f"Skipping {sub_dir}")
         snapshot_dirs.sort()
         return snapshot_dirs
+
+    def list_sampled_snapshot_dirs(self) -> list[SnapshotDir]:
+        snapshot_dirs: list[SnapshotDir] = self.list_snapshot_dirs()
+        if self.__max_snapshots is None:
+            return snapshot_dirs
+        sampled: list[SnapshotDir] = snapshot_dirs[-self.__max_snapshots:]
+        log.info(f"Snapshot sample: processing {len(sampled)} of {len(snapshot_dirs)} snapshots")
+        return sampled
 
     def get_latest_snapshot_dir(self) -> Optional[SnapshotDir]:
         snapshot_dirs: list[SnapshotDir] = self.list_snapshot_dirs()

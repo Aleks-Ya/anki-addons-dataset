@@ -43,6 +43,8 @@ class AppInfo:
         log.info(f"Report date: {report_date}")
         log.info(f"Page load timeout: {self.__page_load_timeout}s")
         log.info(f"Element wait timeout: {self.__element_wait_timeout}s")
+        log.info(f"Addon sample: {self.__config.sample.addons or 'all addons'}")
+        log.info(f"Snapshot sample: {self.__config.sample.snapshots or 'all snapshots'}")
         log.info("========================")
         self.__verify_github_token()
         self.__verify_ai_key_file()

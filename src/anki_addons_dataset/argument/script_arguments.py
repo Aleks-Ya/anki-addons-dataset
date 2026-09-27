@@ -27,10 +27,11 @@ class ScriptArguments:
         parser.add_argument('-d', '--snapshot-date', type=self.__valid_date)
         parser.add_argument('-c', '--config', type=Path, default=None)
         parser.add_argument('-w', '--working-dir', type=Path, default=None)
-        # No default: None means "not passed", so the config file's logging.level can take over.
         parser.add_argument('-l', '--log-level', type=self.__valid_log_level, default=None)
         parser.add_argument('--page-load-timeout', type=self.__valid_timeout, default=120)
         parser.add_argument('--element-wait-timeout', type=self.__valid_timeout, default=120)
+        parser.add_argument('--sample-addons', type=self.__valid_sample_size, default=None)
+        parser.add_argument('--sample-snapshots', type=self.__valid_sample_size, default=None)
         self.namespace: Namespace = parser.parse_intermixed_args()
 
     def get_snapshot_date(self) -> Optional[SnapshotDate]:
@@ -45,6 +46,9 @@ class ScriptArguments:
                 operations.append(Operation[operation.upper()])
         return operations
 
+    def has_explicit_operation(self, operation: Operation) -> bool:
+        return any(name.lower() == operation.value for name in self.namespace.operations)
+
     def get_config_file(self) -> Path:
         config_file: Optional[Path] = self.namespace.config
         return config_file.expanduser() if config_file else default_config_file()
@@ -54,8 +58,13 @@ class ScriptArguments:
         return working_dir.expanduser() if working_dir else None
 
     def get_log_level(self) -> Optional[int]:
-        """The level from `-l`, or None when the flag was not passed (the config file then decides)."""
         return self.namespace.log_level
+
+    def get_sample_addons(self) -> Optional[int]:
+        return self.namespace.sample_addons
+
+    def get_sample_snapshots(self) -> Optional[int]:
+        return self.namespace.sample_snapshots
 
     def get_page_load_timeout(self) -> PageLoadTimeout:
         return PageLoadTimeout(self.namespace.page_load_timeout)
@@ -80,11 +89,20 @@ class ScriptArguments:
 
     @staticmethod
     def __valid_timeout(s: str) -> int:
-        msg: str = f"Not a valid timeout: '{s}'. Expected a positive integer number of seconds."
+        return ScriptArguments.__valid_positive_int(
+            s, f"Not a valid timeout: '{s}'. Expected a positive integer number of seconds.")
+
+    @staticmethod
+    def __valid_sample_size(s: str) -> int:
+        return ScriptArguments.__valid_positive_int(
+            s, f"Not a valid sample size: '{s}'. Expected a positive integer.")
+
+    @staticmethod
+    def __valid_positive_int(s: str, msg: str) -> int:
         try:
-            timeout: int = int(s)
+            value: int = int(s)
         except ValueError:
             raise ArgumentTypeError(msg)
-        if timeout <= 0:
+        if value <= 0:
             raise ArgumentTypeError(msg)
-        return timeout
+        return value

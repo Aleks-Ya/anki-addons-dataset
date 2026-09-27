@@ -6,7 +6,7 @@ import pytest
 from _pytest.monkeypatch import MonkeyPatch
 
 from anki_addons_dataset.config.app_config import AppConfig, AiConfig, ConfigLoader, DEFAULT_LOG_FORMAT, \
-    GithubConfig, HuggingFaceConfig, LoggingConfig, default_config_file
+    GithubConfig, HuggingFaceConfig, LoggingConfig, SampleConfig, default_config_file
 
 
 def __write(tmp_path: Path, content: str) -> Path:
@@ -58,6 +58,9 @@ logging:
   level: DEBUG
   format: '%(message)s'
   file: /var/log/anki.log
+sample:
+  addons: 20
+  snapshots: 2
 """)
     config: AppConfig = ConfigLoader.load(config_file)
     assert config == AppConfig(
@@ -66,7 +69,8 @@ logging:
         ai=AiConfig(endpoint="https://ai.example.com", api_key_file=Path("/secrets/ai.txt"), model="some-model",
                     readme_max_chars=1234, workers=3),
         huggingface=HuggingFaceConfig(repo_id="Someone/scratch", synced_dirs=["history"]),
-        logging=LoggingConfig(level=logging.DEBUG, format="%(message)s", file=Path("/var/log/anki.log")))
+        logging=LoggingConfig(level=logging.DEBUG, format="%(message)s", file=Path("/var/log/anki.log")),
+        sample=SampleConfig(addons=20, snapshots=2))
 
 
 def test_partial_file_leaves_the_rest_at_defaults(tmp_path: Path, monkeypatch: MonkeyPatch):
@@ -80,6 +84,7 @@ def test_partial_file_leaves_the_rest_at_defaults(tmp_path: Path, monkeypatch: M
     assert config.github == defaults.github
     assert config.ai == defaults.ai
     assert config.logging == defaults.logging
+    assert config.sample == defaults.sample
 
 
 def test_paths_expand_tilde_and_env_vars(tmp_path: Path, monkeypatch: MonkeyPatch):
@@ -164,3 +169,43 @@ def test_absent_working_dir_override_keeps_the_config(tmp_path: Path, monkeypatc
     monkeypatch.setenv("HOME", str(tmp_path))
     defaults: AppConfig = AppConfig.defaults()
     assert defaults.with_working_dir(None) == defaults
+
+
+def test_sample_is_absent_by_default(tmp_path: Path, monkeypatch: MonkeyPatch):
+    monkeypatch.setenv("HOME", str(tmp_path))
+    config: AppConfig = ConfigLoader.load(__write(tmp_path, "sample:\n"))
+    assert config.sample == SampleConfig(addons=None, snapshots=None)
+    assert not config.sample.is_active()
+
+
+def test_sample_accepts_one_axis_alone(tmp_path: Path, monkeypatch: MonkeyPatch):
+    monkeypatch.setenv("HOME", str(tmp_path))
+    config: AppConfig = ConfigLoader.load(__write(tmp_path, "sample:\n  addons: 5\n"))
+    assert config.sample == SampleConfig(addons=5, snapshots=None)
+    assert config.sample.is_active()
+
+
+def test_unknown_sample_key_is_rejected(tmp_path: Path):
+    config_file: Path = __write(tmp_path, "sample:\n  addon: 5\n")
+    with pytest.raises(ValueError, match="Unknown key 'sample.addon'"):
+        ConfigLoader.load(config_file)
+
+
+@pytest.mark.parametrize("value", ["0", "-1", "true", "'5'"])
+def test_invalid_sample_size_is_rejected(tmp_path: Path, value: str):
+    config_file: Path = __write(tmp_path, f"sample:\n  addons: {value}\n")
+    with pytest.raises(ValueError, match="Invalid value for 'sample.addons'"):
+        ConfigLoader.load(config_file)
+
+
+def test_with_sample_overrides_each_value_separately():
+    config: AppConfig = replace(AppConfig.defaults(), sample=SampleConfig(addons=5, snapshots=2))
+    assert config.with_sample(None, None) is config  # nothing passed: the file's values stand
+    assert config.with_sample(7, None).sample == SampleConfig(addons=7, snapshots=2)
+    assert config.with_sample(None, 3).sample == SampleConfig(addons=5, snapshots=3)
+
+
+def test_with_sample_on_an_unsampled_config():
+    defaults: AppConfig = AppConfig.defaults()
+    assert defaults.with_sample(None, None) is defaults
+    assert defaults.with_sample(20, None).sample == SampleConfig(addons=20, snapshots=None)

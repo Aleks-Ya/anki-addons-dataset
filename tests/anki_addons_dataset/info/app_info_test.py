@@ -28,7 +28,8 @@ def __write_token(tmp_path: Path) -> Path:
 def __config(tmp_path: Path) -> AppConfig:
     defaults: AppConfig = AppConfig.defaults()
     return AppConfig(working_dir=tmp_path, github=GithubConfig(token_file=__token_file(tmp_path)),
-                     ai=__ai_config(tmp_path), huggingface=defaults.huggingface, logging=defaults.logging)
+                     ai=__ai_config(tmp_path), huggingface=defaults.huggingface, logging=defaults.logging,
+                     sample=defaults.sample)
 
 
 def __ai_config(tmp_path: Path) -> AiConfig:

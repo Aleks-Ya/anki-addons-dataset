@@ -37,6 +37,13 @@ huggingface:
   # Note: the HuggingFace token is NOT configured here. huggingface_hub reads it
   # from the HF_TOKEN environment variable or from `hf auth login`.
 
+sample:
+  # Shrink a run to a slice of the dataset, for testing changes against a scratch working
+  # directory (-w). Both are unset by default, meaning the whole dataset.
+  # Overridden by --sample-addons / --sample-snapshots. A sampled run refuses to upload.
+  addons: null      # download/parse only the first N addons, ordered by addon id
+  snapshots: null   # ai/parse/report/bundle process only the newest N snapshots
+
 logging:
   # One of: CRITICAL, ERROR, WARNING, INFO, DEBUG. Overridden by -l/--log-level.
   level: INFO

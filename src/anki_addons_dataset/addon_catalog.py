@@ -19,18 +19,30 @@ from anki_addons_dataset.common.log import Log
 log: Logger = logging.getLogger("anki_addons_dataset.addon_catalog")
 
 
+def _upload_free(operations: list[Operation], arguments: ScriptArguments, config: AppConfig) -> list[Operation]:
+    if not config.sample.is_active() or Operation.UPLOAD not in operations:
+        return operations
+    if arguments.has_explicit_operation(Operation.UPLOAD):
+        raise ValueError("A sampled run must not be uploaded: it would publish a partial dataset. "
+                         "Drop 'upload', or drop the sample limits.")
+    log.warning("Skipping the 'upload' step: a sampled run must not publish a partial dataset")
+    return [operation for operation in operations if operation != Operation.UPLOAD]
+
+
 def main() -> None:
     Log.configure_logging()
 
     arguments: ScriptArguments = ScriptArguments()
 
     config_file: Path = arguments.get_config_file()
-    config: AppConfig = ConfigLoader.load(config_file).with_working_dir(arguments.get_working_dir())
+    config: AppConfig = ConfigLoader.load(config_file) \
+        .with_working_dir(arguments.get_working_dir()) \
+        .with_sample(arguments.get_sample_addons(), arguments.get_sample_snapshots())
     Log.apply(config.logging, arguments.get_log_level())
     log.info(f"Config file: {config_file}" if config_file.is_file()
              else f"Config file: {config_file} (not found, using defaults)")
 
-    operations: list[Operation] = arguments.get_operations()
+    operations: list[Operation] = _upload_free(arguments.get_operations(), arguments, config)
     log.info(f"Operations: {[operation.value for operation in operations]}")
     snapshot_date: Optional[SnapshotDate] = arguments.get_snapshot_date()
     report_date: ReportDate = ReportDate(datetime.now().replace(microsecond=0))
@@ -39,7 +51,7 @@ def main() -> None:
 
     hf_api: HfApi = HfApi()
     hugging_face_client: HuggingFaceClient = HuggingFaceClient(hf_api, config.huggingface)
-    working_dir: WorkingDir = WorkingDir(config.working_dir)
+    working_dir: WorkingDir = WorkingDir(config.working_dir, config.sample.snapshots)
     facade: Facade = Facade(working_dir, hugging_face_client, config, page_load_timeout, element_wait_timeout)
     timings: list[tuple[str, float]] = []
     for operation in operations:

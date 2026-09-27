@@ -1,5 +1,5 @@
 <component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="addon_catalog upload" type="PythonConfigurationType" factoryName="Python">
+  <configuration default="false" name="addon_catalog sample ai" type="PythonConfigurationType" factoryName="Python" folderName="Sample">
     <module name="anki-addons-dataset" />
     <option name="ENV_FILES" value="" />
     <option name="INTERPRETER_OPTIONS" value="" />
@@ -29,9 +29,9 @@
       <option name="region" />
       <option name="useCurrentConnection" value="false" />
     </EXTENSION>
-    <option name="RUN_TOOL" value="" />
+    <option name="RUN_TOOL" value="true" />
     <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/anki_addons_dataset/addon_catalog.py" />
-    <option name="PARAMETERS" value="upload" />
+    <option name="PARAMETERS" value="-w /tmp/anki-addons-sample-1 ai --sample-addons 20" />
     <option name="SHOW_COMMAND_LINE" value="false" />
     <option name="EMULATE_TERMINAL" value="false" />
     <option name="MODULE_MODE" value="false" />

@@ -35,9 +35,7 @@ def test_get_previous_snapshot_dir(working_dir_path: Path):
     date_3: SnapshotDate = SnapshotDate(date.fromisoformat("2025-01-20"))
     snapshot_dir_1: SnapshotDir = working_dir.get_snapshot_dir(date_1).create()
     working_dir.get_snapshot_dir(date_3).create()
-    # nearest earlier date is returned, later dates are ignored (out-of-order backfill)
     assert working_dir.get_previous_snapshot_dir(date_2) == snapshot_dir_1
-    # no earlier snapshot exists
     assert working_dir.get_previous_snapshot_dir(date_1) is None
 
 
@@ -69,3 +67,41 @@ def test_create_final_dir_only_wipes_final(working_dir: WorkingDir, snapshot_dat
     assert dump_file.exists()
     assert snapshot_dir.get_final_dir().exists()
     assert not stale_final.exists()
+
+
+def test_list_sampled_snapshot_dirs_without_a_limit(working_dir_path: Path):
+    working_dir: WorkingDir = WorkingDir(working_dir_path)
+    working_dir.get_snapshot_dir(SnapshotDate(date.fromisoformat("2025-01-01"))).create()
+    working_dir.get_snapshot_dir(SnapshotDate(date.fromisoformat("2025-02-01"))).create()
+    assert working_dir.list_sampled_snapshot_dirs() == working_dir.list_snapshot_dirs()
+
+
+def test_list_sampled_snapshot_dirs_keeps_the_newest(working_dir_path: Path):
+    working_dir: WorkingDir = WorkingDir(working_dir_path, max_snapshots=2)
+    dir_1: SnapshotDir = working_dir.get_snapshot_dir(SnapshotDate(date.fromisoformat("2025-01-01"))).create()
+    dir_2: SnapshotDir = working_dir.get_snapshot_dir(SnapshotDate(date.fromisoformat("2025-02-01"))).create()
+    dir_3: SnapshotDir = working_dir.get_snapshot_dir(SnapshotDate(date.fromisoformat("2025-03-01"))).create()
+    assert working_dir.list_sampled_snapshot_dirs() == [dir_2, dir_3]
+    assert working_dir.list_snapshot_dirs() == [dir_1, dir_2, dir_3]
+
+
+def test_list_sampled_snapshot_dirs_tolerates_a_limit_above_the_history_size(working_dir_path: Path):
+    working_dir: WorkingDir = WorkingDir(working_dir_path, max_snapshots=10)
+    working_dir.get_snapshot_dir(SnapshotDate(date.fromisoformat("2025-01-01"))).create()
+    assert len(working_dir.list_sampled_snapshot_dirs()) == 1
+
+
+def test_sampling_does_not_hide_history_from_the_previous_snapshot_lookup(working_dir_path: Path):
+    working_dir: WorkingDir = WorkingDir(working_dir_path, max_snapshots=1)
+    date_1: SnapshotDate = SnapshotDate(date.fromisoformat("2025-01-01"))
+    date_2: SnapshotDate = SnapshotDate(date.fromisoformat("2025-02-01"))
+    dir_1: SnapshotDir = working_dir.get_snapshot_dir(date_1).create()
+    dir_2: SnapshotDir = working_dir.get_snapshot_dir(date_2).create()
+    assert working_dir.list_sampled_snapshot_dirs() == [dir_2]
+    assert working_dir.get_previous_snapshot_dir(date_2) == dir_1
+    assert working_dir.get_latest_snapshot_dir() == dir_2
+
+
+def test_get_sample_file(working_dir_path: Path):
+    snapshot_dir: SnapshotDir = SnapshotDir(working_dir_path / "history" / "2025-01-01")
+    assert snapshot_dir.get_sample_file() == snapshot_dir.get_raw_dir() / "sample.json"

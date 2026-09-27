@@ -51,6 +51,28 @@ anki-addons-dataset download -d 2026-01-01 --page-load-timeout 180 --element-wai
 | `--page-load-timeout` | 120 | how long a single page may take to load before the browser gives up |
 | `--element-wait-timeout` | 120 | how long to wait for the page content to appear after loading |
 
+### Sample runs
+
+Testing a change against the whole dataset is slow: thousands of addon pages per snapshot, and the
+whole history re-parsed. Two limits cut a run down to a slice of it, and combine freely:
+
+```bash
+anki-addons-dataset download -d 2026-01-01 -w ~/anki-addons-scratch --sample-addons 20
+anki-addons-dataset parse report bundle -w ~/anki-addons-scratch
+```
+
+| Option | Meaning |
+| --- | --- |
+| `--sample-addons` | download and parse only the first N addons, ordered by addon id |
+| `--sample-snapshots` | let `ai`/`parse`/`report`/`bundle` process only the newest N snapshots |
+
+Use them with `-w` so a sampled run lands in a scratch working directory instead of the real one.
+`download` records the addon limit in the snapshot, so a later `parse`/`ai`/`report` in its own
+invocation applies the same limit without the flag being repeated.
+
+A sampled run never uploads: `upload` on its own is rejected, and `all` runs through `bundle` and
+skips it, so a partial dataset cannot reach HuggingFace.
+
 ## Configuration
 
 Paths, credentials locations, the HuggingFace target and logging can be set in an optional YAML file
@@ -74,13 +96,17 @@ logging:
   level: INFO
   format: '%(asctime)-15s %(levelname)-8s [%(threadName)-10s] %(message)s'
   file: null                             # also write the log to this file
+sample:
+  addons: null                           # only the first N addons by id; --sample-addons overrides it
+  snapshots: null                        # only the newest N snapshots; --sample-snapshots overrides it
 ```
 
 `~` and `$VAR` are expanded in path values. An unknown or misspelled key is an error rather than a
 silent no-op, so typos surface immediately.
 
 Values resolve as **CLI flag > config file > default**: `-l WARNING` overrides `logging.level` and
-`-w/--working-dir` overrides `working_dir`, but the file still applies when a flag is absent. The
+`-w/--working-dir` overrides `working_dir`, `--sample-addons`/`--sample-snapshots` override the
+`sample` section, but the file still applies when a flag is absent. The
 `info` step prints the resolved values.
 
 ```bash

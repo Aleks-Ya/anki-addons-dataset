@@ -42,6 +42,15 @@ class HuggingFaceConfig:
 
 
 @dataclass(frozen=True)
+class SampleConfig:
+    addons: Optional[int] = None
+    snapshots: Optional[int] = None
+
+    def is_active(self) -> bool:
+        return self.addons is not None or self.snapshots is not None
+
+
+@dataclass(frozen=True)
 class LoggingConfig:
     level: int
     format: str
@@ -55,9 +64,16 @@ class AppConfig:
     ai: AiConfig
     huggingface: HuggingFaceConfig
     logging: LoggingConfig
+    sample: SampleConfig
 
     def with_working_dir(self, working_dir: Optional[Path]) -> 'AppConfig':
         return self if working_dir is None else replace(self, working_dir=working_dir)
+
+    def with_sample(self, addons: Optional[int], snapshots: Optional[int]) -> 'AppConfig':
+        sample: SampleConfig = SampleConfig(
+            addons=self.sample.addons if addons is None else addons,
+            snapshots=self.sample.snapshots if snapshots is None else snapshots)
+        return self if sample == self.sample else replace(self, sample=sample)
 
     @staticmethod
     def defaults() -> 'AppConfig':
@@ -69,7 +85,8 @@ class AppConfig:
                         api_key_file=Path.home() / ".config" / "anki-addons-dataset" / "deepseek-api-key.txt",
                         model="deepseek-flash", readme_max_chars=8000, workers=4),
             huggingface=HuggingFaceConfig(repo_id="Ya-Alex/anki-addons", synced_dirs=["history", "latest"]),
-            logging=LoggingConfig(level=logging.INFO, format=DEFAULT_LOG_FORMAT, file=None))
+            logging=LoggingConfig(level=logging.INFO, format=DEFAULT_LOG_FORMAT, file=None),
+            sample=SampleConfig())
 
 
 class ConfigLoader:
@@ -87,13 +104,15 @@ class ConfigLoader:
         if content is None:
             return defaults
         raw: dict[str, Any] = ConfigLoader.__as_mapping(content, "", config_file)
-        ConfigLoader.__reject_unknown(raw, ["working_dir", "github", "ai", "huggingface", "logging"], "", config_file)
+        ConfigLoader.__reject_unknown(raw, ["working_dir", "github", "ai", "huggingface", "logging", "sample"],
+                                      "", config_file)
         return AppConfig(
             working_dir=ConfigLoader.__path(raw, "working_dir", "", config_file, defaults.working_dir),
             github=ConfigLoader.__github(raw, config_file, defaults.github),
             ai=ConfigLoader.__ai(raw, config_file, defaults.ai),
             huggingface=ConfigLoader.__hugging_face(raw, config_file, defaults.huggingface),
-            logging=ConfigLoader.__logging(raw, config_file, defaults.logging))
+            logging=ConfigLoader.__logging(raw, config_file, defaults.logging),
+            sample=ConfigLoader.__sample(raw, config_file, defaults.sample))
 
     @staticmethod
     def __github(raw: dict[str, Any], config_file: Path, defaults: GithubConfig) -> GithubConfig:
@@ -132,6 +151,15 @@ class ConfigLoader:
             level=ConfigLoader.__level(section, config_file, defaults.level),
             format=ConfigLoader.__string(section, "format", "logging", config_file, defaults.format),
             file=ConfigLoader.__optional_path(section, "file", "logging", config_file, defaults.file))
+
+    @staticmethod
+    def __sample(raw: dict[str, Any], config_file: Path, defaults: SampleConfig) -> SampleConfig:
+        section: dict[str, Any] = ConfigLoader.__section(raw, "sample", config_file)
+        ConfigLoader.__reject_unknown(section, ["addons", "snapshots"], "sample", config_file)
+        return SampleConfig(
+            addons=ConfigLoader.__optional_positive_int(section, "addons", "sample", config_file, defaults.addons),
+            snapshots=ConfigLoader.__optional_positive_int(section, "snapshots", "sample", config_file,
+                                                           defaults.snapshots))
 
     @staticmethod
     def __level(section: dict[str, Any], config_file: Path, default: int) -> int:
@@ -196,6 +224,13 @@ class ConfigLoader:
             raise ValueError(f"Invalid value for '{ConfigLoader.__full_key(prefix, key)}' in config file "
                              f"{config_file}: expected a positive integer")
         return value
+
+    @staticmethod
+    def __optional_positive_int(section: dict[str, Any], key: str, prefix: str, config_file: Path,
+                                default: Optional[int]) -> Optional[int]:
+        if key not in section or section[key] is None:
+            return default
+        return ConfigLoader.__positive_int(section, key, prefix, config_file, 0)
 
     @staticmethod
     def __path(section: dict[str, Any], key: str, prefix: str, config_file: Path, default: Path) -> Path:

@@ -26,7 +26,7 @@ class DatasetBundle:
     def __copy_snapshots(self, bundle_dir: Path):
         bundle_history_dir: Path = bundle_dir / "history"
         bundle_history_dir.mkdir(parents=True, exist_ok=True)
-        for snapshot_dir in self.__working_dir.list_snapshot_dirs():
+        for snapshot_dir in self.__working_dir.list_sampled_snapshot_dirs():
             snapshot_date: SnapshotDate = snapshot_dir.snapshot_dir_to_snapshot_date()
             base_name: str = f"{snapshot_date}"
             output_dir: Path = bundle_history_dir / base_name
