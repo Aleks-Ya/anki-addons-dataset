@@ -57,9 +57,10 @@ def test_response_returns_output_text(create: MagicMock, sleep: MagicMock) -> No
 @pytest.mark.parametrize("status_code", [401, 402, 403])
 def test_fatal_status_fails_without_retry(status_code: int, create: MagicMock, sleep: MagicMock) -> None:
     create.side_effect = __status_error(status_code)
+    provider: OpenAiAiProvider = __provider()
 
     with pytest.raises(APIStatusError):
-        __provider().response(PROMPT)
+        provider.response(PROMPT)
 
     assert create.call_count == 1
     sleep.assert_not_called()
