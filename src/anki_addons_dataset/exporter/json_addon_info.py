@@ -66,6 +66,12 @@ class Forum:
 
 
 @dataclass
+class Ai:
+    summary: Optional[str]
+    model: Optional[str]
+
+
+@dataclass
 class Branch:
     min_version: Optional[str]
     max_version: Optional[str]
@@ -97,6 +103,7 @@ class Details:
     anki_web: AnkiWeb
     github: Optional[GitHub]
     forum: Optional[Forum]
+    ai: Optional[Ai]
 
 
 class JsonAddonInfo:
@@ -113,7 +120,7 @@ class JsonAddonInfo:
                                         addon.page.other_links, addon.page.like_number, addon.page.dislike_number,
                                         list(addon.page.ai_declaration_markers), addon.page.description_language,
                                         addon.page.description_language_confidence)
-            json_obj: Details = Details(addon.header.id, anki_web, github, forum)
+            json_obj: Details = Details(addon.header.id, anki_web, github, forum, JsonAddonInfo.__ai(addon))
             json_list.append(json_obj)
         return json_list
 
@@ -155,6 +162,12 @@ class JsonAddonInfo:
         last_posted_at: Optional[str] = str(addon.forum.last_posted_at) if addon.forum.last_posted_at else None
         posts_count: Optional[int] = addon.forum.posts_count
         return Forum(anki_forum_url, slug, topic_id, last_posted_at, posts_count)
+
+    @staticmethod
+    def __ai(addon: AddonInfo) -> Optional[Ai]:
+        if not addon.ai:
+            return None
+        return Ai(addon.ai.summary, addon.ai.model)
 
     @staticmethod
     def __branches(addon: AddonInfo) -> list[Branch]:

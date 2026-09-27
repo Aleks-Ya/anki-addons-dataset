@@ -35,6 +35,7 @@ They are **never executed in GitHub Actions**: `pytest.ini` sets `testpaths = te
 Requirements:
 - headless Chrome (resolved by Selenium Manager) for the AnkiWeb tests
 - a GitHub personal access token in `~/.github/token.txt` (see `github.token_file` in the config)
+- an AI API key in the file `ai.api_key_file` points at (the AI tests bill your account)
 - a write-capable HuggingFace token via `HF_TOKEN` or `hf auth login`
 
 Missing credentials make the tests **fail**, not skip — the point is to tell you the local setup is
@@ -70,7 +71,7 @@ credentials `upload` uses (`hf auth login`).
 
 ## Configuration file
 An optional `~/.anki-addons-dataset.yaml` supplies the working directory, the GitHub token path, the
-HuggingFace target and the logging settings. See the *Configuration* section of [README.md](README.md)
+AI provider, the HuggingFace target and the logging settings. See the *Configuration* section of [README.md](README.md)
 for the full annotated example; `config.yaml.example` in the repo root is a copy-ready version:
 
 ```bash
@@ -100,6 +101,28 @@ immediately instead of failing minutes later during `download`. It also verifies
 write access to the dataset (the same check `upload` runs), so both credentials are validated
 up front.
 
+## AI summaries
+The `ai` step generates the one-sentence addon summary exported as `ai.summary`. It is the only step
+that spends money, so it is separate from `download`: it reads the snapshots already in `history/`
+(no `-d`), builds a prompt from the addon title, the AnkiWeb description and the GitHub README, and
+writes every answer to `history/<date>/1-raw/4-ai/ai-cache.jsonl`. `parse` then reads that cache
+offline and attaches the summaries to the dump; an addon with no cached answer simply gets no
+summary, and `parse` logs how many were missing.
+
+The cache key is a hash of the model and the whole prompt, so editing the prompt template or
+`ai.readme_max_chars` invalidates every entry. That is why the step stands on its own — refilling
+the cache costs AI tokens rather than a full re-scrape. Answers are carried forward from the
+previous snapshot when the prompt is unchanged, so a steady-state run only pays for addons whose
+text actually moved.
+
+`1-raw/` is bundled into `raw.zip` and published, so the cache is part of the public dataset. That is
+what lets `init` restore it on a fresh machine. Each line holds the model, the answer and a SHA-256
+of the prompt; the prompt text itself is not stored.
+
+```bash
+anki-addons-dataset ai            # all snapshots; watch the per-snapshot hit/miss counts
+```
+
 ## Logging
 Default log level: INFO (`logging.level` in the config file)
 Set log level: `uv run anki-addons-dataset parse -l DEBUG` — the flag wins over the config file.
@@ -118,15 +141,17 @@ uv run anki-addons-dataset download -d 2026-01-01 --page-load-timeout 180 --elem
 
 ## Running the pipeline
 
-The pipeline has six steps run in order: `init download parse report bundle upload`.
+The pipeline has seven steps run in order: `init download ai parse report bundle upload`.
 There is also an `info` step that logs the app version and runtime configuration (working dir, HuggingFace dataset, GitHub token file, Python/platform, snapshot/report dates, browser timeouts) without side effects. It fails fast on bad credentials: a GitHub token that is absent, empty or
-rejected by the API, or missing HuggingFace write access. Both checks need network access.
+rejected by the API, an absent or empty AI API key file, or missing HuggingFace write access. The
+GitHub and HuggingFace checks need network access; the AI key is only checked for presence, because a
+live request would be billed on every `info` run.
 
 A single invocation accepts any subset of steps (space-separated), or the shorthand `all`,
-which expands to `info` followed by the full six-step sequence in pipeline order:
+which expands to `info` followed by the full seven-step sequence in pipeline order:
 
 ```bash
-anki-addons-dataset all -d 2026-01-01          # equivalent to: info init download parse report bundle upload
+anki-addons-dataset all -d 2026-01-01          # equivalent to: info init download ai parse report bundle upload
 anki-addons-dataset parse report               # run only the given steps
 anki-addons-dataset info                        # just print version and configuration
 ```

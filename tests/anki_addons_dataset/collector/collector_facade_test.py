@@ -32,3 +32,7 @@ def test_report_snapshots_missing_dump_raises(
 
 def test_report_snapshots_no_snapshots_is_noop(collector_facade: CollectorFacade, report_date: ReportDate):
     collector_facade.report_snapshots(report_date)  # must not raise when history is empty
+
+
+def test_summarize_snapshots_no_snapshots_is_noop(collector_facade: CollectorFacade):
+    collector_facade.summarize_snapshots()  # must not raise, and must not read the AI key, when history is empty

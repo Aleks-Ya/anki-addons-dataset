@@ -36,12 +36,16 @@ class AppInfo:
         log.info(f"Bundle directory: {self.__working_dir.get_bundle_dir()}")
         log.info(f"HuggingFace dataset: {self.__hugging_face_client.get_repo_id()}")
         log.info(f"GitHub token file: {self.__config.github.token_file}")
+        log.info(f"AI endpoint: {self.__config.ai.endpoint}")
+        log.info(f"AI model: {self.__config.ai.model}")
+        log.info(f"AI key file: {self.__config.ai.api_key_file}")
         log.info(f"Snapshot date: {snapshot_date}")
         log.info(f"Report date: {report_date}")
         log.info(f"Page load timeout: {self.__page_load_timeout}s")
         log.info(f"Element wait timeout: {self.__element_wait_timeout}s")
         log.info("========================")
         self.__verify_github_token()
+        self.__verify_ai_key_file()
         self.__verify_hugging_face_access()
 
     def __verify_github_token(self) -> None:
@@ -49,6 +53,15 @@ class AppInfo:
         github_rest_client: GithubRestClient = GithubRestClient(offline=False, token_file=token_file)
         limit_remaining: Optional[int] = github_rest_client.verify_token()
         log.info(f"GitHub token: OK ({token_file}, {limit_remaining} API requests remaining)")
+
+    def __verify_ai_key_file(self) -> None:
+        """Only checks the file: a live request would bill every `info` run."""
+        api_key_file: Path = self.__config.ai.api_key_file
+        if not api_key_file.is_file():
+            raise FileNotFoundError(f"Missing AI API key file: {api_key_file}")
+        if not api_key_file.read_text().strip():
+            raise ValueError(f"Empty AI API key file: {api_key_file}")
+        log.info(f"AI API key: OK ({api_key_file})")
 
     def __verify_hugging_face_access(self) -> None:
         self.__hugging_face_client.verify_write_access()

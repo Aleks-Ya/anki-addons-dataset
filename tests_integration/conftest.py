@@ -7,12 +7,14 @@ import pytest
 from huggingface_hub import HfApi
 from pydiscourse import DiscourseClient
 
+from anki_addons_dataset.collector.ai.ai_provider import AiProvider
+from anki_addons_dataset.collector.ai.openai_ai_provider import OpenAiAiProvider
 from anki_addons_dataset.collector.ankiweb.page_downloader import PageDownloader
 from anki_addons_dataset.collector.github.github_rest_client import GithubRestClient
-from anki_addons_dataset.common.data_types import AddonId, ElementWaitTimeout, GithubRepo, GithubRepoName, \
+from anki_addons_dataset.common.data_types import AddonId, AiModel, ElementWaitTimeout, GithubRepo, GithubRepoName, \
     GithubUserName, PageLoadTimeout, SnapshotDate, TopicId, TopicSlug
 from anki_addons_dataset.common.working_dir import SnapshotDir, WorkingDir
-from anki_addons_dataset.config.app_config import AppConfig
+from anki_addons_dataset.config.app_config import AiConfig, AppConfig
 from anki_addons_dataset.huggingface.hugging_face_client import HuggingFaceClient
 
 __ANKI_FORUM_HOST: str = "https://forums.ankiweb.net"
@@ -106,6 +108,17 @@ def github_rate_limit_guard(github_rest_client: GithubRestClient) -> int:
         pytest.fail(f"GitHub rate limit nearly exhausted ({remaining} requests remaining). "
                     f"Wait for the reset instead of letting the tests block on it.")
     return remaining if remaining is not None else 0
+
+
+@pytest.fixture
+def ai_model(integration_config: AppConfig) -> AiModel:
+    return AiModel(integration_config.ai.model)
+
+
+@pytest.fixture
+def ai_provider(integration_config: AppConfig, ai_model: AiModel) -> AiProvider:
+    ai: AiConfig = integration_config.ai
+    return OpenAiAiProvider(ai.endpoint, ai.api_key_file.read_text().strip(), ai_model)
 
 
 @pytest.fixture

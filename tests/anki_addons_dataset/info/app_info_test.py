@@ -9,7 +9,7 @@ from requests import Response
 from anki_addons_dataset import __version__
 from anki_addons_dataset.common.data_types import SnapshotDate, ReportDate, PageLoadTimeout, ElementWaitTimeout
 from anki_addons_dataset.common.working_dir import WorkingDir
-from anki_addons_dataset.config.app_config import AppConfig, GithubConfig
+from anki_addons_dataset.config.app_config import AppConfig, AiConfig, GithubConfig
 from anki_addons_dataset.huggingface.hugging_face_client import HuggingFaceClient
 from anki_addons_dataset.info.app_info import AppInfo
 
@@ -28,7 +28,24 @@ def __write_token(tmp_path: Path) -> Path:
 def __config(tmp_path: Path) -> AppConfig:
     defaults: AppConfig = AppConfig.defaults()
     return AppConfig(working_dir=tmp_path, github=GithubConfig(token_file=__token_file(tmp_path)),
-                     huggingface=defaults.huggingface, logging=defaults.logging)
+                     ai=__ai_config(tmp_path), huggingface=defaults.huggingface, logging=defaults.logging)
+
+
+def __ai_config(tmp_path: Path) -> AiConfig:
+    defaults: AiConfig = AppConfig.defaults().ai
+    return AiConfig(endpoint=defaults.endpoint, api_key_file=__ai_api_key_file(tmp_path), model=defaults.model,
+                    readme_max_chars=defaults.readme_max_chars, workers=defaults.workers)
+
+
+def __ai_api_key_file(tmp_path: Path) -> Path:
+    return tmp_path / ".config" / "ai-api-key.txt"
+
+
+def __write_ai_api_key(tmp_path: Path) -> Path:
+    api_key_file: Path = __ai_api_key_file(tmp_path)
+    api_key_file.parent.mkdir(parents=True, exist_ok=True)
+    api_key_file.write_text("secret-ai-key\n")
+    return api_key_file
 
 
 def __github_response(status_code: int) -> Response:
@@ -55,6 +72,7 @@ def test_print_info(working_dir: WorkingDir, tmp_path: Path, caplog: pytest.LogC
     snapshot_date: SnapshotDate = SnapshotDate(datetime(2026, 1, 1).date())
     report_date: ReportDate = ReportDate(datetime(2026, 1, 2, 3, 4, 5))
     token_file: Path = __write_token(tmp_path)
+    api_key_file: Path = __write_ai_api_key(tmp_path)
 
     with caplog.at_level(logging.INFO):
         with __patch_github_api():
@@ -71,6 +89,9 @@ def test_print_info(working_dir: WorkingDir, tmp_path: Path, caplog: pytest.LogC
     assert "Page load timeout: 90s" in messages
     assert "Element wait timeout: 20s" in messages
     assert f"GitHub token: OK ({token_file}, 4999 API requests remaining)" in messages
+    assert f"AI key file: {api_key_file}" in messages
+    assert "secret-ai-key" not in messages  # the key value itself is never logged
+    assert f"AI API key: OK ({api_key_file})" in messages
     assert "HuggingFace write access: OK (Ya-Alex/anki-addons)" in messages
 
 
@@ -117,6 +138,7 @@ def test_print_info_fails_without_hugging_face_access(working_dir: WorkingDir, t
     snapshot_date: SnapshotDate = SnapshotDate(datetime(2026, 1, 1).date())
     report_date: ReportDate = ReportDate(datetime(2026, 1, 2, 3, 4, 5))
     __write_token(tmp_path)
+    __write_ai_api_key(tmp_path)
 
     with caplog.at_level(logging.INFO):
         with __patch_github_api():
@@ -126,6 +148,35 @@ def test_print_info_fails_without_hugging_face_access(working_dir: WorkingDir, t
     messages: str = "\n".join(record.message for record in caplog.records)
     assert "GitHub token: OK" in messages  # GitHub is verified first
     assert "HuggingFace write access: OK" not in messages
+
+
+def test_print_info_fails_without_ai_api_key(working_dir: WorkingDir, tmp_path: Path,
+                                             caplog: pytest.LogCaptureFixture):
+    app_info: AppInfo = __make_app_info(working_dir, tmp_path)
+    snapshot_date: SnapshotDate = SnapshotDate(datetime(2026, 1, 1).date())
+    report_date: ReportDate = ReportDate(datetime(2026, 1, 2, 3, 4, 5))
+    __write_token(tmp_path)
+
+    with caplog.at_level(logging.INFO):
+        with __patch_github_api():
+            with pytest.raises(FileNotFoundError, match="Missing AI API key file"):
+                app_info.print_info(snapshot_date, report_date)
+
+    messages: str = "\n".join(record.message for record in caplog.records)
+    assert "GitHub token: OK" in messages  # GitHub is verified first
+    assert "HuggingFace write access: OK" not in messages
+
+
+def test_print_info_fails_on_empty_ai_api_key(working_dir: WorkingDir, tmp_path: Path):
+    app_info: AppInfo = __make_app_info(working_dir, tmp_path)
+    __write_token(tmp_path)
+    api_key_file: Path = __write_ai_api_key(tmp_path)
+    api_key_file.write_text("  \n")
+
+    with __patch_github_api():
+        with pytest.raises(ValueError, match="Empty AI API key file"):
+            app_info.print_info(SnapshotDate(datetime(2026, 1, 1).date()),
+                                ReportDate(datetime(2026, 1, 2, 3, 4, 5)))
 
 
 def test_print_info_skips_hugging_face_check_when_github_token_missing(working_dir: WorkingDir, tmp_path: Path):

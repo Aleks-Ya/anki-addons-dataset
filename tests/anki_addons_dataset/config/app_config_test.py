@@ -4,8 +4,8 @@ from pathlib import Path
 import pytest
 from _pytest.monkeypatch import MonkeyPatch
 
-from anki_addons_dataset.config.app_config import AppConfig, ConfigLoader, DEFAULT_LOG_FORMAT, GithubConfig, \
-    HuggingFaceConfig, LoggingConfig, default_config_file
+from anki_addons_dataset.config.app_config import AppConfig, AiConfig, ConfigLoader, DEFAULT_LOG_FORMAT, \
+    GithubConfig, HuggingFaceConfig, LoggingConfig, default_config_file
 
 
 def __write(tmp_path: Path, content: str) -> Path:
@@ -44,6 +44,12 @@ def test_full_file_overrides_every_field(tmp_path: Path):
 working_dir: /data/anki
 github:
   token_file: /secrets/gh.txt
+ai:
+  endpoint: https://ai.example.com
+  api_key_file: /secrets/ai.txt
+  model: some-model
+  readme_max_chars: 1234
+  workers: 3
 huggingface:
   repo_id: Someone/scratch
   synced_dirs: [history]
@@ -56,6 +62,8 @@ logging:
     assert config == AppConfig(
         working_dir=Path("/data/anki"),
         github=GithubConfig(token_file=Path("/secrets/gh.txt")),
+        ai=AiConfig(endpoint="https://ai.example.com", api_key_file=Path("/secrets/ai.txt"), model="some-model",
+                    readme_max_chars=1234, workers=3),
         huggingface=HuggingFaceConfig(repo_id="Someone/scratch", synced_dirs=["history"]),
         logging=LoggingConfig(level=logging.DEBUG, format="%(message)s", file=Path("/var/log/anki.log")))
 
@@ -69,6 +77,7 @@ def test_partial_file_leaves_the_rest_at_defaults(tmp_path: Path, monkeypatch: M
     assert config.huggingface.synced_dirs == defaults.huggingface.synced_dirs
     assert config.working_dir == defaults.working_dir
     assert config.github == defaults.github
+    assert config.ai == defaults.ai
     assert config.logging == defaults.logging
 
 
@@ -90,6 +99,19 @@ def test_unknown_top_level_key_is_rejected(tmp_path: Path):
 def test_unknown_nested_key_is_rejected(tmp_path: Path):
     config_file: Path = __write(tmp_path, "logging:\n  lvl: DEBUG\n")
     with pytest.raises(ValueError, match="Unknown key 'logging.lvl'"):
+        ConfigLoader.load(config_file)
+
+
+def test_unknown_ai_key_is_rejected(tmp_path: Path):
+    config_file: Path = __write(tmp_path, "ai:\n  modell: some-model\n")
+    with pytest.raises(ValueError, match="Unknown key 'ai.modell'"):
+        ConfigLoader.load(config_file)
+
+
+@pytest.mark.parametrize("value", ["0", "-1", "abc", "true"])
+def test_non_positive_ai_worker_count_is_rejected(tmp_path: Path, value: str):
+    config_file: Path = __write(tmp_path, f"ai:\n  workers: {value}\n")
+    with pytest.raises(ValueError, match="Invalid value for 'ai.workers'"):
         ConfigLoader.load(config_file)
 
 

@@ -50,7 +50,7 @@ def test_all_operation(monkeypatch: MonkeyPatch):
     snapshot_date: Optional[SnapshotDate] = arguments.get_snapshot_date()
     assert snapshot_date == date(2026, 1, 1)
     operations: list[Operation] = arguments.get_operations()
-    assert operations == [Operation.INFO, Operation.INIT, Operation.DOWNLOAD, Operation.PARSE,
+    assert operations == [Operation.INFO, Operation.INIT, Operation.DOWNLOAD, Operation.AI, Operation.PARSE,
                           Operation.REPORT, Operation.BUNDLE, Operation.UPLOAD]
     assert operations[0] == Operation.INFO
 

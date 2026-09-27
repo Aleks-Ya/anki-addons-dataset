@@ -27,6 +27,15 @@ class GithubConfig:
 
 
 @dataclass(frozen=True)
+class AiConfig:
+    endpoint: str
+    api_key_file: Path
+    model: str
+    readme_max_chars: int
+    workers: int
+
+
+@dataclass(frozen=True)
 class HuggingFaceConfig:
     repo_id: str
     synced_dirs: list[str]
@@ -43,6 +52,7 @@ class LoggingConfig:
 class AppConfig:
     working_dir: Path
     github: GithubConfig
+    ai: AiConfig
     huggingface: HuggingFaceConfig
     logging: LoggingConfig
 
@@ -52,6 +62,9 @@ class AppConfig:
         return AppConfig(
             working_dir=Path.home() / "anki-addons-dataset",
             github=GithubConfig(token_file=Path.home() / ".github" / "token.txt"),
+            ai=AiConfig(endpoint="https://api.deepseek.com",
+                        api_key_file=Path.home() / ".config" / "anki-addons-dataset" / "deepseek-api-key.txt",
+                        model="deepseek-flash", readme_max_chars=8000, workers=4),
             huggingface=HuggingFaceConfig(repo_id="Ya-Alex/anki-addons", synced_dirs=["history", "latest"]),
             logging=LoggingConfig(level=logging.INFO, format=DEFAULT_LOG_FORMAT, file=None))
 
@@ -71,10 +84,11 @@ class ConfigLoader:
         if content is None:
             return defaults
         raw: dict[str, Any] = ConfigLoader.__as_mapping(content, "", config_file)
-        ConfigLoader.__reject_unknown(raw, ["working_dir", "github", "huggingface", "logging"], "", config_file)
+        ConfigLoader.__reject_unknown(raw, ["working_dir", "github", "ai", "huggingface", "logging"], "", config_file)
         return AppConfig(
             working_dir=ConfigLoader.__path(raw, "working_dir", "", config_file, defaults.working_dir),
             github=ConfigLoader.__github(raw, config_file, defaults.github),
+            ai=ConfigLoader.__ai(raw, config_file, defaults.ai),
             huggingface=ConfigLoader.__hugging_face(raw, config_file, defaults.huggingface),
             logging=ConfigLoader.__logging(raw, config_file, defaults.logging))
 
@@ -84,6 +98,19 @@ class ConfigLoader:
         ConfigLoader.__reject_unknown(section, ["token_file"], "github", config_file)
         return GithubConfig(
             token_file=ConfigLoader.__path(section, "token_file", "github", config_file, defaults.token_file))
+
+    @staticmethod
+    def __ai(raw: dict[str, Any], config_file: Path, defaults: AiConfig) -> AiConfig:
+        section: dict[str, Any] = ConfigLoader.__section(raw, "ai", config_file)
+        ConfigLoader.__reject_unknown(section, ["endpoint", "api_key_file", "model", "readme_max_chars", "workers"],
+                                      "ai", config_file)
+        return AiConfig(
+            endpoint=ConfigLoader.__string(section, "endpoint", "ai", config_file, defaults.endpoint),
+            api_key_file=ConfigLoader.__path(section, "api_key_file", "ai", config_file, defaults.api_key_file),
+            model=ConfigLoader.__string(section, "model", "ai", config_file, defaults.model),
+            readme_max_chars=ConfigLoader.__positive_int(section, "readme_max_chars", "ai", config_file,
+                                                         defaults.readme_max_chars),
+            workers=ConfigLoader.__positive_int(section, "workers", "ai", config_file, defaults.workers))
 
     @staticmethod
     def __hugging_face(raw: dict[str, Any], config_file: Path, defaults: HuggingFaceConfig) -> HuggingFaceConfig:
@@ -154,6 +181,17 @@ class ConfigLoader:
         if not isinstance(value, list) or not all(isinstance(item, str) for item in value):
             raise ValueError(f"Invalid value for '{ConfigLoader.__full_key(prefix, key)}' in config file "
                              f"{config_file}: expected a list of strings")
+        return value
+
+    @staticmethod
+    def __positive_int(section: dict[str, Any], key: str, prefix: str, config_file: Path, default: int) -> int:
+        if key not in section or section[key] is None:
+            return default
+        value: Any = section[key]
+        # bool is an int subclass, and `workers: true` is a typo rather than a worker count.
+        if not isinstance(value, int) or isinstance(value, bool) or value <= 0:
+            raise ValueError(f"Invalid value for '{ConfigLoader.__full_key(prefix, key)}' in config file "
+                             f"{config_file}: expected a positive integer")
         return value
 
     @staticmethod

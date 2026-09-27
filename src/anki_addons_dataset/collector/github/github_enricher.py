@@ -77,7 +77,8 @@ class GithubEnricher(Enricher):
         return max(language_bytes.items(), key=lambda item: item[1])[0]
 
     def __enrich(self, addon_info: AddonInfo, github_info: GithubInfo) -> AddonInfo:
-        enriched_addon_info: AddonInfo = AddonInfo(addon_info.header, addon_info.page, github_info, addon_info.forum)
+        enriched_addon_info: AddonInfo = AddonInfo(addon_info.header, addon_info.page, github_info, addon_info.forum,
+                                                   addon_info.ai)
         addon_json_file: Path = self.__stage_dir / f"{addon_info.header.id}.json"
         JsonHelper.write_addon_info_to_file(addon_info, addon_json_file)
         log.info(f"Enriched ({self.__name}): {addon_info.header.id}")

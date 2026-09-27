@@ -8,6 +8,12 @@ from pydiscourse import DiscourseClient
 
 from anki_addons_dataset.collector.aggregator import Aggregator
 from anki_addons_dataset.collector.addon_infos_collector import AddonInfosCollector
+from anki_addons_dataset.collector.ai.ai_enricher import AiEnricher
+from anki_addons_dataset.collector.ai.ai_provider import AiProvider
+from anki_addons_dataset.collector.ai.ai_summarizer import AiSummarizer
+from anki_addons_dataset.collector.ai.cached_ai_provider import CachedAiProvider
+from anki_addons_dataset.collector.ai.no_ai_provider import NoAiProvider
+from anki_addons_dataset.collector.ai.openai_ai_provider import OpenAiAiProvider
 from anki_addons_dataset.collector.ankiforum.ankiforum_enricher import AnkiForumEnricher
 from anki_addons_dataset.collector.ankiforum.ankiforum_service import AnkiForumService
 from anki_addons_dataset.collector.ankiweb.addon_page_downloader import AddonPageDownloader
@@ -20,7 +26,7 @@ from anki_addons_dataset.collector.github.github_rest_client import GithubRestCl
 from anki_addons_dataset.collector.github.github_service import GithubService
 from anki_addons_dataset.collector.overrider.overrider import Overrider
 from anki_addons_dataset.common.data_types import Aggregation, AddonInfos, DatasetSnapshotMetadata, RawMetadata, \
-    SnapshotDate, ReportDate, ScriptVersion, PageLoadTimeout, ElementWaitTimeout
+    SnapshotDate, ReportDate, ScriptVersion, PageLoadTimeout, ElementWaitTimeout, AiModel
 from anki_addons_dataset.collector.ankiweb.ankiweb_service import AnkiWebService
 from anki_addons_dataset.common.json_helper import JsonHelper
 from anki_addons_dataset.common.working_dir import SnapshotDir, WorkingDir
@@ -55,6 +61,22 @@ class CollectorFacade:
             raw_metadata_collector.set_finish_datetime(datetime.now().replace(microsecond=0))
         log.info(f"===== Downloaded snapshot for {snapshot_date} =====\n")
 
+    def summarize_snapshots(self) -> None:
+        for snapshot_dir in self.__working_dir.list_snapshot_dirs():
+            self.__summarize_snapshot(snapshot_dir)
+
+    def __summarize_snapshot(self, snapshot_dir: SnapshotDir) -> None:
+        snapshot_date: SnapshotDate = snapshot_dir.snapshot_dir_to_snapshot_date()
+        log.info(f"===== Summarize snapshot for {snapshot_date} =====")
+        # No create(): this step only fills 1-raw, and wiping 3-final would discard an existing report.
+        prev_snapshot_dir: Optional[SnapshotDir] = self.__working_dir.get_previous_snapshot_dir(snapshot_date)
+        addon_infos: AddonInfos = self.__collect(snapshot_dir, True)
+        ai_provider: CachedAiProvider = self.__ai_provider(snapshot_dir, False, prev_snapshot_dir)
+        self.__ai_enricher(ai_provider).enrich(addon_infos)  # The filled cache is the result; PARSE reads it back
+        log.info(f"AI cache hits: {ai_provider.get_cache_hit_count()}, "
+                 f"misses: {ai_provider.get_cache_miss_count()}")
+        log.info(f"===== Summarized snapshot for {snapshot_date} =====\n")
+
     def parse_snapshots(self) -> None:
         for snapshot_dir in self.__working_dir.list_snapshot_dirs():
             snapshot_date: SnapshotDate = snapshot_dir.snapshot_dir_to_snapshot_date()
@@ -65,6 +87,12 @@ class CollectorFacade:
         snapshot_dir: SnapshotDir = self.__working_dir.get_snapshot_dir(snapshot_date).create()
         script_version: ScriptVersion = self.__script_version()
         addon_infos: AddonInfos = self.__collect(snapshot_dir, True)
+        ai_provider: CachedAiProvider = self.__ai_provider(snapshot_dir, True)
+        addon_infos = self.__ai_enricher(ai_provider).enrich(addon_infos)
+        cache_miss_count: int = ai_provider.get_cache_miss_count()
+        if cache_miss_count:
+            log.warning(f"{cache_miss_count} addons have no cached AI summary and stay without one. "
+                        f"Run the 'ai' operation to fill the cache.")
         JsonHelper.write_addon_infos_dump(addon_infos, script_version, snapshot_dir.get_addon_infos_dump())
         log.info(f"===== Parsed snapshot for {snapshot_date} =====\n")
 
@@ -93,6 +121,18 @@ class CollectorFacade:
         raw_metadata: RawMetadata = raw_metadata_collector.read_metadata()
         exporter_facade.export_all(addon_infos, aggregation, dataset_snapshot_metadata, raw_metadata)
         log.info(f"===== Reported snapshot for {snapshot_date} =====\n")
+
+    def __ai_provider(self, snapshot_dir: SnapshotDir, offline: bool,
+                      prev_snapshot_dir: Optional[SnapshotDir] = None) -> CachedAiProvider:
+        model: AiModel = AiModel(self.__config.ai.model)
+        ai_provider: AiProvider = NoAiProvider(model) if offline else OpenAiAiProvider(
+            self.__config.ai.endpoint, self.__config.ai.api_key_file.read_text().strip(), model)
+        prev_cache_file: Optional[Path] = prev_snapshot_dir.get_ai_cache_file() if prev_snapshot_dir else None
+        return CachedAiProvider(ai_provider, snapshot_dir.get_ai_cache_file(), prev_cache_file, offline)
+
+    def __ai_enricher(self, ai_provider: CachedAiProvider) -> AiEnricher:
+        ai_summarizer: AiSummarizer = AiSummarizer(ai_provider, self.__config.ai.readme_max_chars)
+        return AiEnricher(ai_summarizer, ai_provider.get_model(), self.__config.ai.workers)
 
     @staticmethod
     def __script_version() -> ScriptVersion:

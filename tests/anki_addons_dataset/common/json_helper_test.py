@@ -176,3 +176,40 @@ def test_addon_infos_dump_reads_legacy_dump_without_enrichment_fields(addon_info
     forum = read_addon_infos[0].forum
     assert forum is not None
     assert isinstance(forum.last_posted_at, datetime)
+
+
+def test_addon_infos_dump_round_trip_preserves_the_ai_summary(addon_infos: AddonInfos,
+                                                              script_version: ScriptVersion,
+                                                              working_dir_path: Path):
+    dump_file: Path = working_dir_path / "addon-infos.json"
+    JsonHelper.write_addon_infos_dump(addon_infos, script_version, dump_file)
+
+    _, read_addon_infos = JsonHelper.read_addon_infos_dump(dump_file)
+
+    assert read_addon_infos[0].ai == addon_infos[0].ai
+
+
+def test_addon_infos_dump_round_trip_without_an_ai_summary(addon_info: AddonInfo, script_version: ScriptVersion,
+                                                           working_dir_path: Path):
+    addon_info.ai = None
+    dump_file: Path = working_dir_path / "addon-infos.json"
+    JsonHelper.write_addon_infos_dump(AddonInfos([addon_info]), script_version, dump_file)
+
+    _, read_addon_infos = JsonHelper.read_addon_infos_dump(dump_file)
+
+    assert read_addon_infos[0].ai is None
+
+
+def test_addon_infos_dump_reads_legacy_dump_without_the_ai_block(addon_infos: AddonInfos,
+                                                                 script_version: ScriptVersion,
+                                                                 working_dir_path: Path):
+    # A dump written before the `ai` step existed has no `ai` key at all; reading must not raise.
+    dump_file: Path = working_dir_path / "addon-infos.json"
+    JsonHelper.write_addon_infos_dump(addon_infos, script_version, dump_file)
+    envelope: dict = json.loads(dump_file.read_text())
+    envelope["addon_infos"][0].pop("ai", None)
+    dump_file.write_text(json.dumps(envelope))
+
+    _, read_addon_infos = JsonHelper.read_addon_infos_dump(dump_file)
+
+    assert read_addon_infos[0].ai is None

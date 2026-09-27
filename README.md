@@ -21,6 +21,7 @@ This installs the `anki-addons-dataset` command. The pipeline runs as a sequence
 anki-addons-dataset info
 anki-addons-dataset init
 anki-addons-dataset download -d 2026-01-01
+anki-addons-dataset ai
 anki-addons-dataset parse
 anki-addons-dataset report
 anki-addons-dataset bundle
@@ -30,8 +31,13 @@ anki-addons-dataset upload
 Operations can also be chained in a single command, running in the given order:
 
 ```bash
-anki-addons-dataset init download -d 2026-01-01 parse
+anki-addons-dataset init download -d 2026-01-01 ai parse
 ```
+
+`ai` generates the one-sentence addon summaries. It is the only step that costs money, and it is
+separate from `download` so that changing the prompt re-runs the AI calls alone. It reads the
+snapshots already in `history/`, so it needs no `-d`, and it caches every answer under
+`1-raw/4-ai/`; `parse` then picks the summaries out of that cache without any network access.
 
 `download` scrapes AnkiWeb with a headless browser. Two timeouts (in seconds) can be raised on a slow
 network:
@@ -55,6 +61,12 @@ keys keep the defaults shown below, and with no file at all the defaults apply:
 working_dir: ~/anki-addons-dataset       # where snapshots and the bundle are kept
 github:
   token_file: ~/.github/token.txt        # GitHub personal access token, read by download/parse
+ai:
+  endpoint: https://api.deepseek.com     # any OpenAI-compatible endpoint, used by the ai step
+  api_key_file: ~/.config/anki-addons-dataset/deepseek-api-key.txt
+  model: deepseek-flash
+  readme_max_chars: 8000                 # the README is cut to this length before entering the prompt
+  workers: 4                             # parallel requests to the AI endpoint
 huggingface:
   repo_id: Ya-Alex/anki-addons           # the dataset upload targets
   synced_dirs: [history, latest]         # the remote folders upload pushes and prunes

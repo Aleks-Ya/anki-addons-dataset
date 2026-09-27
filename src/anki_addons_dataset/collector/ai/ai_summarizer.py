@@ -11,11 +11,13 @@ log: Logger = logging.getLogger(__name__)
 
 class AiSummarizer:
 
-    def __init__(self, ai_provider: AiProvider):
+    def __init__(self, ai_provider: AiProvider, readme_max_chars: int):
         self.__ai_provider: AiProvider = ai_provider
+        self.__readme_max_chars: int = readme_max_chars
 
     def summarize(self, title: AddonTitle, addon_description: AddonDescription,
                   github_readme: Optional[GithubReadme]) -> Optional[AiSummary]:
+        readme: Optional[GithubReadme] = self.__truncate(github_readme)
         prompt: AiPrompt = AiPrompt(dedent(f"""
             You need to prepare a summary of an addon for the Anki flashcard application according to the guidelines.
             
@@ -28,7 +30,7 @@ class AiSummarizer:
             </addon_description>
             
             <addon_github_readme>
-            {github_readme if github_readme else 'No README provided.'}
+            {readme if readme else 'No README provided.'}
             </addon_github_readme>
             
             <guidelines>
@@ -39,3 +41,9 @@ class AiSummarizer:
             """))
         ai_response: Optional[AiResponseText] = self.__ai_provider.response(prompt)
         return AiSummary(ai_response) if ai_response is not None else None
+
+    def __truncate(self, github_readme: Optional[GithubReadme]) -> Optional[GithubReadme]:
+        """READMEs run to tens of kilobytes, and a one-sentence summary rarely needs more than the opening."""
+        if github_readme is None or len(github_readme) <= self.__readme_max_chars:
+            return github_readme
+        return GithubReadme(github_readme[:self.__readme_max_chars])

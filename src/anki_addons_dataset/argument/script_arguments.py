@@ -13,6 +13,7 @@ class Operation(Enum):
     INFO = "info"
     INIT = "init"
     DOWNLOAD = "download"
+    AI = "ai"
     PARSE = "parse"
     REPORT = "report"
     BUNDLE = "bundle"

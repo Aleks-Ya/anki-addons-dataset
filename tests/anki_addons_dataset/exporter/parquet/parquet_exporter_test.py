@@ -65,7 +65,9 @@ def test_export_addon_infos(snapshot_dir: SnapshotDir, addon_infos: AddonInfos,
                       'topic_slug': 'note-size-addon-support',
                       'topic_id': 46001,
                       'last_posted_at': '2023-09-10 12:00:00+00:00',
-                      'posts_count': 42}
+                      'posts_count': 42},
+            'ai': {'summary': 'Shows the size of the collection and of individual notes.',
+                   'model': 'test-model'}
         }]
     )
     pdt.assert_frame_equal(act_df, exp_df)

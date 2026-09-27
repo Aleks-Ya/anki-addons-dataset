@@ -45,7 +45,7 @@ class AnkiForumEnricher(Enricher):
 
     def __enrich(self, addon_info: AddonInfo, anki_forum_info: Optional[AnkiForumInfo]) -> AddonInfo:
         enriched_addon_info: AddonInfo = AddonInfo(
-            addon_info.header, addon_info.page, addon_info.github, anki_forum_info)
+            addon_info.header, addon_info.page, addon_info.github, anki_forum_info, addon_info.ai)
         addon_json_file: Path = self.__stage_dir / f"{addon_info.header.id}.json"
         JsonHelper.write_addon_info_to_file(addon_info, addon_json_file)
         log.info(f"Enriched ({self.__name}): {addon_info.header.id}")

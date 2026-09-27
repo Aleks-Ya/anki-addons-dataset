@@ -23,9 +23,10 @@ from anki_addons_dataset.collector.overrider.overrider import Overrider
 from anki_addons_dataset.common.data_types import AddonId, GithubRepo, GithubUserName, GithubRepoName, LastPostedAt, \
     URL, PostsCount, AddonInfo, AddonHeader, AddonPage, GithubInfo, AnkiForumInfo, LanguageName, AddonInfos, \
     DatasetSnapshotMetadata, RawMetadata, AnkiVersion, AddonBranch, HtmlStr, SnapshotDate, ReportDate, ScriptVersion, \
-    AddonRating, UpdateDate, AddonTitle, AddonDescription, PageLoadTimeout, ElementWaitTimeout
+    AddonRating, UpdateDate, AddonTitle, AddonDescription, PageLoadTimeout, ElementWaitTimeout, AiInfo, AiSummary, \
+    AiModel
 from anki_addons_dataset.common.working_dir import WorkingDir, SnapshotDir
-from anki_addons_dataset.config.app_config import AppConfig, GithubConfig, HuggingFaceConfig
+from anki_addons_dataset.config.app_config import AppConfig, AiConfig, GithubConfig, HuggingFaceConfig
 from anki_addons_dataset.exporter.json.json_exporter import JsonExporter
 from anki_addons_dataset.exporter.xlsx.xlsx_exporter import XlsxExporter
 from anki_addons_dataset.facade.facade import Facade
@@ -53,11 +54,21 @@ def github_token_file(working_dir_path: Path) -> Path:
 
 
 @pytest.fixture
-def app_config(working_dir_path: Path, github_token_file: Path) -> AppConfig:
+def ai_api_key_file(working_dir_path: Path) -> Path:
+    api_key_file: Path = working_dir_path / ".config" / "ai-api-key.txt"
+    api_key_file.parent.mkdir(parents=True, exist_ok=True)
+    api_key_file.write_text("secret-ai-key\n")
+    return api_key_file
+
+
+@pytest.fixture
+def app_config(working_dir_path: Path, github_token_file: Path, ai_api_key_file: Path) -> AppConfig:
     defaults: AppConfig = AppConfig.defaults()
     return AppConfig(
         working_dir=working_dir_path,
         github=GithubConfig(token_file=github_token_file),
+        ai=AiConfig(endpoint="https://ai.example.com", api_key_file=ai_api_key_file, model="test-model",
+                    readme_max_chars=defaults.ai.readme_max_chars, workers=2),
         huggingface=HuggingFaceConfig(repo_id=defaults.huggingface.repo_id,
                                       synced_dirs=defaults.huggingface.synced_dirs),
         logging=defaults.logging)
@@ -211,6 +222,10 @@ def addon_info(addon_header: AddonHeader, github_repo: GithubRepo, topic_slug: T
             topic_id=topic_id,
             last_posted_at=last_posted_at,
             posts_count=posts_count
+        ),
+        ai=AiInfo(
+            summary=AiSummary("Shows the size of the collection and of individual notes."),
+            model=AiModel("test-model")
         )
     )
 

@@ -15,6 +15,18 @@ github:
   # No scopes are required for public repositories.
   token_file: ~/.github/token.txt
 
+ai:
+  # Used by the `ai` step to generate the short addon summaries. Any OpenAI-compatible
+  # endpoint works; the key is read from api_key_file (never from this file).
+  endpoint: https://api.deepseek.com
+  api_key_file: ~/.config/anki-addons-dataset/deepseek-api-key.txt
+  model: deepseek-flash
+  # The GitHub README is truncated to this many characters before going into the prompt.
+  # Changing it changes the prompt, which invalidates the cached answers: see the `ai` step.
+  readme_max_chars: 8000
+  # Parallel requests to the AI endpoint. Lower this if the provider rate-limits you.
+  workers: 4
+
 huggingface:
   # The dataset the upload step pushes to. Point this at a scratch dataset of your
   # own to try the pipeline without touching the published one.

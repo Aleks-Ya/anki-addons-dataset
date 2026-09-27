@@ -4,20 +4,18 @@ from typing import Optional
 from anki_addons_dataset.collector.ai.ai_provider import AiProvider
 from anki_addons_dataset.collector.ai.ai_summarizer import AiSummarizer
 from anki_addons_dataset.collector.ai.cached_ai_provider import CachedAiProvider
-from anki_addons_dataset.collector.ai.deepseek_ai_provider import DeepSeekAiProvider
-from anki_addons_dataset.common.data_types import AddonTitle, AddonDescription, GithubReadme, AiModel, AiSummary
+from anki_addons_dataset.common.data_types import AddonTitle, AddonDescription, GithubReadme, AiSummary
+from anki_addons_dataset.common.working_dir import SnapshotDir
+from anki_addons_dataset.config.app_config import AppConfig
 
 
-def test_summarize(tmp_path: Path) -> None:
-    endpoint: str = "https://api.deepseek.com"
-    api_key: str = Path("/home/aleks/.config/anki-addons-dataset/deepseek-api-key.txt").read_text().strip()
-    model: AiModel = AiModel("deepseek-flash")
-    deepseek_ai_provider: AiProvider = DeepSeekAiProvider(endpoint, api_key, model)
-    cached_ai_provider: CachedAiProvider = CachedAiProvider(deepseek_ai_provider, tmp_path / "ai-cache.jsonl")
+def test_summarize(ai_provider: AiProvider, integration_config: AppConfig, snapshot_dir: SnapshotDir) -> None:
+    cache_file: Path = snapshot_dir.get_ai_cache_file()
+    cached_ai_provider: CachedAiProvider = CachedAiProvider(ai_provider, cache_file)
     assert cached_ai_provider.get_cache_hit_count() == 0
     assert cached_ai_provider.get_cache_miss_count() == 0
 
-    ai_summarizer: AiSummarizer = AiSummarizer(cached_ai_provider)
+    ai_summarizer: AiSummarizer = AiSummarizer(cached_ai_provider, integration_config.ai.readme_max_chars)
     title: AddonTitle = AddonTitle("Note Size anki addon")
     description: AddonDescription = AddonDescription(
         """
@@ -32,3 +30,4 @@ def test_summarize(tmp_path: Path) -> None:
     print(summary)
     print(f"Cache hits: {cached_ai_provider.get_cache_hit_count()}")
     print(f"Cache misses: {cached_ai_provider.get_cache_miss_count()}")
+    assert summary is not None
