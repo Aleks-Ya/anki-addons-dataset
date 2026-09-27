@@ -174,10 +174,12 @@ def test_print_info_fails_on_empty_ai_api_key(working_dir: WorkingDir, tmp_path:
     api_key_file: Path = __write_ai_api_key(tmp_path)
     api_key_file.write_text("  \n")
 
+    snapshot_date: SnapshotDate = SnapshotDate(datetime(2026, 1, 1).date())
+    report_date: ReportDate = ReportDate(datetime(2026, 1, 2, 3, 4, 5))
+
     with __patch_github_api():
         with pytest.raises(ValueError, match="Empty AI API key file"):
-            app_info.print_info(SnapshotDate(datetime(2026, 1, 1).date()),
-                                ReportDate(datetime(2026, 1, 2, 3, 4, 5)))
+            app_info.print_info(snapshot_date, report_date)
 
 
 def test_print_info_skips_hugging_face_check_when_github_token_missing(working_dir: WorkingDir, tmp_path: Path):

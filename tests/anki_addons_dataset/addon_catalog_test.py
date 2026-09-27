@@ -25,8 +25,11 @@ def test_upload_runs_when_nothing_is_sampled(app_config: AppConfig):
 
 
 def test_an_explicit_upload_of_a_sampled_run_is_rejected(app_config: AppConfig):
+    arguments: Mock = __arguments(True)
+    sampled: AppConfig = __sampled(app_config)
+
     with pytest.raises(ValueError, match="must not be uploaded"):
-        _upload_free([Operation.BUNDLE, Operation.UPLOAD], __arguments(True), __sampled(app_config))
+        _upload_free([Operation.BUNDLE, Operation.UPLOAD], arguments, sampled)
 
 
 def test_all_drops_upload_from_a_sampled_run(app_config: AppConfig, caplog: LogCaptureFixture):

@@ -62,9 +62,10 @@ def test_does_not_own_other_endpoints(endpoint: str) -> None:
 @freeze_time(f"{MONDAY} 06:30:00")
 def test_response_fails_during_peak_hours(mocker: MockerFixture) -> None:
     super_response = mocker.patch.object(OpenAiAiProvider, "response")
+    provider: DeepSeekAiProvider = __provider()
 
     with pytest.raises(RuntimeError, match="peak hours"):
-        __provider().response(PROMPT)
+        provider.response(PROMPT)
 
     super_response.assert_not_called()
 
@@ -87,7 +88,9 @@ def test_peak_hours_abort_the_whole_enrichment(addon_info: AddonInfo, tmp_path: 
     provider: CachedAiProvider = CachedAiProvider(__provider(), cache_file)
     enricher: AiEnricher = AiEnricher(AiSummarizer(provider, readme_max_chars=8000), MODEL, workers=2)
 
+    addon_infos: AddonInfos = AddonInfos([addon_info])
+
     with pytest.raises(RuntimeError, match="peak hours"):
-        enricher.enrich(AddonInfos([addon_info]))
+        enricher.enrich(addon_infos)
 
     assert not cache_file.exists()
