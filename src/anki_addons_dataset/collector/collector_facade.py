@@ -84,7 +84,7 @@ class CollectorFacade:
         # No create(): this step only fills 1-raw, and wiping 3-final would discard an existing report.
         addon_infos: AddonInfos = self.__collect(snapshot_dir, True)
         ai_provider: CachedAiProvider = self.__ai_provider(snapshot_dir, False, shared_index)
-        self.__ai_enricher(ai_provider).enrich(addon_infos)  # The filled cache is the result; PARSE reads it back
+        self.__ai_enrich(addon_infos, ai_provider)  # The filled cache is the result; PARSE reads it back
         stats: AiCacheStats = ai_provider.get_cache_stats()
         log.info(f"AI cache hits: {stats.hit_count}, misses: {stats.miss_count}")
         log.info(f"===== Summarized snapshot for {snapshot_date} =====\n")
@@ -101,7 +101,7 @@ class CollectorFacade:
         script_version: ScriptVersion = self.__script_version()
         addon_infos: AddonInfos = self.__collect(snapshot_dir, True)
         ai_provider: CachedAiProvider = self.__ai_provider(snapshot_dir, True)
-        addon_infos = self.__ai_enricher(ai_provider).enrich(addon_infos)
+        addon_infos = self.__ai_enrich(addon_infos, ai_provider)
         cache_miss_count: int = ai_provider.get_cache_stats().miss_count
         if cache_miss_count:
             log.warning(f"{cache_miss_count} addons have no cached AI summary and stay without one. "
@@ -145,9 +145,15 @@ class CollectorFacade:
             endpoint, self.__config.ai.api_key_file.read_text().strip(), model)
         return CachedAiProvider(ai_provider, snapshot_dir.get_ai_cache_file(), shared_index, offline)
 
-    def __ai_enricher(self, ai_provider: CachedAiProvider) -> AiEnricher:
+    def __ai_enrich(self, addon_infos: AddonInfos, ai_provider: CachedAiProvider) -> AddonInfos:
         ai_summarizer: AiSummarizer = AiSummarizer(ai_provider, self.__config.ai.readme_max_chars)
-        return AiEnricher(ai_summarizer, ai_provider.get_model())
+        ai_enricher: AiEnricher = AiEnricher(ai_summarizer, ai_provider.get_model())
+        log.info(f"Summarizing {len(addon_infos)} addons")
+        ai_enricher.start()
+        for addon_info in addon_infos:
+            ai_enricher.download_in_background(addon_info)
+        ai_enricher.wait_download_finish()
+        return ai_enricher.enrich(addon_infos)
 
     @staticmethod
     def __script_version() -> ScriptVersion:

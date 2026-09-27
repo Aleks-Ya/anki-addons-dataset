@@ -108,8 +108,8 @@ explicit `upload` and drops UPLOAD from `all`, before the first step runs.
 ### Design Patterns
 
 - **Facade classes** (`CollectorFacade`, `ExporterFacade`, `Facade`) orchestrate complex multi-step workflows
-- **Enrichers** (`GithubEnricher`, `AnkiForumEnricher`) run asynchronously in background threads during PARSE
-- **`AiEnricher` is deliberately not an `Enricher`** — its prompt needs the GitHub README, so it runs over already-enriched `AddonInfos` (after the queue-based enrichers have joined) rather than in parallel with them. The same class serves the AI step (online provider, result discarded, cache is the output) and PARSE (offline provider, result carried into the dump)
+- **Enrichers** (`GithubEnricher`, `AnkiForumEnricher`) run asynchronously in background threads during PARSE; `AiEnricher` is the third `Enricher`, but runs sequentially after those two rather than alongside them
+- **`AiEnricher` is an `Enricher` driven by `CollectorFacade`, not `AddonInfosCollector`** — its prompt needs the GitHub README, so the facade runs its queue lifecycle (`start` → `download_in_background` → `wait_download_finish` → `enrich`) over already-enriched `AddonInfos`, after the other enrichers have joined, rather than in parallel with them. The same class serves the AI step (online provider, result discarded, cache is the output) and PARSE (offline provider, result carried into the dump)
 - **AddonInfos dump** — PARSE serializes the enriched `AddonInfos` to `history/YYYY-MM-DD/addon-infos.json` via `JsonHelper.write_addon_infos_dump`; REPORT reconstructs them with `JsonHelper.read_addon_infos_dump`. This is the only round-trip (de)serialization of the domain model
 - **Manual overrides** — `history/YYYY-MM-DD/2-stage/4-overrider/overrides.yaml` lets you fix parsing errors without re-downloading
 

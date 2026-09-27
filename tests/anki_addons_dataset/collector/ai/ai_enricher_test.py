@@ -37,9 +37,18 @@ def __enricher(ai_provider: AiProvider) -> AiEnricher:
     return AiEnricher(AiSummarizer(ai_provider, readme_max_chars=8000), MODEL)
 
 
+def __enrich(ai_provider: AiProvider, addon_infos: AddonInfos) -> AddonInfos:
+    enricher: AiEnricher = __enricher(ai_provider)
+    enricher.start()
+    for addon_info in addon_infos:
+        enricher.download_in_background(addon_info)
+    enricher.wait_download_finish()
+    return enricher.enrich(addon_infos)
+
+
 def test_summary_is_added(addon_info: AddonInfo) -> None:
     addon_info.ai = None
-    enriched: AddonInfos = __enricher(StubAiProvider()).enrich(AddonInfos([addon_info]))
+    enriched: AddonInfos = __enrich(StubAiProvider(), AddonInfos([addon_info]))
 
     assert enriched[0].ai is not None
     assert enriched[0].ai.summary == "A generated summary."
@@ -50,21 +59,21 @@ def test_readme_is_taken_from_the_github_block(addon_info: AddonInfo) -> None:
     addon_info.github.readme = GithubReadme("Readme of the addon repo.")
     provider: StubAiProvider = StubAiProvider()
 
-    __enricher(provider).enrich(AddonInfos([addon_info]))
+    __enrich(provider, AddonInfos([addon_info]))
 
     assert "Readme of the addon repo." in provider.prompts[0]
 
 
 def test_addon_without_github_is_still_summarized(addon_info: AddonInfo) -> None:
     addon_info.github = None
-    enriched: AddonInfos = __enricher(StubAiProvider()).enrich(AddonInfos([addon_info]))
+    enriched: AddonInfos = __enrich(StubAiProvider(), AddonInfos([addon_info]))
 
     assert enriched[0].ai.summary == "A generated summary."
 
 
 def test_unanswered_addon_keeps_no_summary(addon_info: AddonInfo) -> None:
     addon_info.ai = None
-    enriched: AddonInfos = __enricher(StubAiProvider(response=None)).enrich(AddonInfos([addon_info]))
+    enriched: AddonInfos = __enrich(StubAiProvider(response=None), AddonInfos([addon_info]))
 
     assert enriched[0].ai is None
 
@@ -73,13 +82,13 @@ def test_failed_request_names_the_addon(addon_info: AddonInfo) -> None:
     error: ValueError = ValueError("Content Exists Risk")
 
     with pytest.raises(RuntimeError, match=f"Cannot summarize addon: {addon_info.header.id}") as exc_info:
-        __enricher(FailingAiProvider(error)).enrich(AddonInfos([addon_info]))
+        __enricher(FailingAiProvider(error))._download(addon_info)
 
     assert exc_info.value.__cause__ is error
 
 
 def test_other_blocks_are_preserved(addon_info: AddonInfo) -> None:
-    enriched: AddonInfos = __enricher(StubAiProvider()).enrich(AddonInfos([addon_info]))
+    enriched: AddonInfos = __enrich(StubAiProvider(), AddonInfos([addon_info]))
 
     assert enriched[0].header == addon_info.header
     assert enriched[0].page == addon_info.page
@@ -88,14 +97,13 @@ def test_other_blocks_are_preserved(addon_info: AddonInfo) -> None:
 
 
 def test_offline_run_is_served_from_the_cache(addon_info: AddonInfo, tmp_path: Path) -> None:
-    """How PARSE works: the `ai` step filled the cache, PARSE reads it back without network."""
     addon_info.ai = None
     cache_file: Path = tmp_path / "ai-cache.jsonl"
     online: CachedAiProvider = CachedAiProvider(StubAiProvider(), cache_file)
-    __enricher(online).enrich(AddonInfos([addon_info]))
+    __enrich(online, AddonInfos([addon_info]))
 
     offline: CachedAiProvider = CachedAiProvider(NoAiProvider(MODEL), cache_file, offline=True)
-    enriched: AddonInfos = __enricher(offline).enrich(AddonInfos([addon_info]))
+    enriched: AddonInfos = __enrich(offline, AddonInfos([addon_info]))
 
     assert enriched[0].ai.summary == "A generated summary."
     assert offline.get_cache_stats().hit_count == 1
@@ -106,7 +114,7 @@ def test_offline_miss_leaves_no_summary(addon_info: AddonInfo, tmp_path: Path) -
     addon_info.ai = None
     offline: CachedAiProvider = CachedAiProvider(NoAiProvider(MODEL), tmp_path / "ai-cache.jsonl", offline=True)
 
-    enriched: AddonInfos = __enricher(offline).enrich(AddonInfos([addon_info]))
+    enriched: AddonInfos = __enrich(offline, AddonInfos([addon_info]))
 
     assert enriched[0].ai is None
     assert offline.get_cache_stats().miss_count == 1

@@ -12,7 +12,7 @@ from anki_addons_dataset.collector.ai.ai_summarizer import AiSummarizer
 from anki_addons_dataset.collector.ai.cached_ai_provider import CachedAiProvider
 from anki_addons_dataset.collector.ai.deepseek_ai_provider import DeepSeekAiProvider
 from anki_addons_dataset.collector.ai.openai_ai_provider import OpenAiAiProvider
-from anki_addons_dataset.common.data_types import AddonInfo, AddonInfos, AiModel
+from anki_addons_dataset.common.data_types import AddonInfo, AiModel
 
 MODEL: AiModel = AiModel("deepseek-flash")
 PROMPT: AiPrompt = AiPrompt("What is the capital of France?")
@@ -87,10 +87,8 @@ def test_peak_hours_abort_the_whole_enrichment(addon_info: AddonInfo, tmp_path: 
     provider: CachedAiProvider = CachedAiProvider(__provider(), cache_file)
     enricher: AiEnricher = AiEnricher(AiSummarizer(provider, readme_max_chars=8000), MODEL)
 
-    addon_infos: AddonInfos = AddonInfos([addon_info])
-
     with pytest.raises(RuntimeError, match=f"Cannot summarize addon: {addon_info.header.id}") as exc_info:
-        enricher.enrich(addon_infos)
+        enricher._download(addon_info)
 
     assert "peak hours" in str(exc_info.value.__cause__)
     assert not cache_file.exists()
