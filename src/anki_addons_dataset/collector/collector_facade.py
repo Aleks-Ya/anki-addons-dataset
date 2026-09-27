@@ -9,6 +9,7 @@ from pydiscourse import DiscourseClient
 from anki_addons_dataset.collector.aggregator import Aggregator
 from anki_addons_dataset.collector.addon_infos_collector import AddonInfosCollector
 from anki_addons_dataset.collector.ai.ai_cache_index import AiCacheIndex
+from anki_addons_dataset.collector.ai.ai_cache_stats import AiCacheStats
 from anki_addons_dataset.collector.ai.ai_enricher import AiEnricher
 from anki_addons_dataset.collector.ai.ai_provider import AiProvider
 from anki_addons_dataset.collector.ai.ai_summarizer import AiSummarizer
@@ -71,19 +72,22 @@ class CollectorFacade:
         shared_index: AiCacheIndex = AiCacheIndex.load(
             [snapshot_dir.get_ai_cache_file() for snapshot_dir in self.__working_dir.list_snapshot_dirs()])
         log.info(f"AI cache holds {shared_index.size()} answers across all snapshots")
+        total_stats: AiCacheStats = AiCacheStats()
         for snapshot_dir in self.__working_dir.list_sampled_snapshot_dirs():
-            self.__summarize_snapshot(snapshot_dir, shared_index)
+            total_stats = total_stats + self.__summarize_snapshot(snapshot_dir, shared_index)
+        log.info(f"Total AI cache hits: {total_stats.hit_count}, misses: {total_stats.miss_count}")
 
-    def __summarize_snapshot(self, snapshot_dir: SnapshotDir, shared_index: AiCacheIndex) -> None:
+    def __summarize_snapshot(self, snapshot_dir: SnapshotDir, shared_index: AiCacheIndex) -> AiCacheStats:
         snapshot_date: SnapshotDate = snapshot_dir.snapshot_dir_to_snapshot_date()
         log.info(f"===== Summarize snapshot for {snapshot_date} =====")
         # No create(): this step only fills 1-raw, and wiping 3-final would discard an existing report.
         addon_infos: AddonInfos = self.__collect(snapshot_dir, True)
         ai_provider: CachedAiProvider = self.__ai_provider(snapshot_dir, False, shared_index)
         self.__ai_enricher(ai_provider).enrich(addon_infos)  # The filled cache is the result; PARSE reads it back
-        log.info(f"AI cache hits: {ai_provider.get_cache_hit_count()}, "
-                 f"misses: {ai_provider.get_cache_miss_count()}")
+        stats: AiCacheStats = ai_provider.get_cache_stats()
+        log.info(f"AI cache hits: {stats.hit_count}, misses: {stats.miss_count}")
         log.info(f"===== Summarized snapshot for {snapshot_date} =====\n")
+        return stats
 
     def parse_snapshots(self) -> None:
         for snapshot_dir in self.__working_dir.list_sampled_snapshot_dirs():
@@ -97,7 +101,7 @@ class CollectorFacade:
         addon_infos: AddonInfos = self.__collect(snapshot_dir, True)
         ai_provider: CachedAiProvider = self.__ai_provider(snapshot_dir, True)
         addon_infos = self.__ai_enricher(ai_provider).enrich(addon_infos)
-        cache_miss_count: int = ai_provider.get_cache_miss_count()
+        cache_miss_count: int = ai_provider.get_cache_stats().miss_count
         if cache_miss_count:
             log.warning(f"{cache_miss_count} addons have no cached AI summary and stay without one. "
                         f"Run the 'ai' operation to fill the cache.")

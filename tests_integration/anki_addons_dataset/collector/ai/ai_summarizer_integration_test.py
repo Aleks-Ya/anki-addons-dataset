@@ -12,8 +12,8 @@ from anki_addons_dataset.config.app_config import AppConfig
 def test_summarize(ai_provider: AiProvider, integration_config: AppConfig, snapshot_dir: SnapshotDir) -> None:
     cache_file: Path = snapshot_dir.get_ai_cache_file()
     cached_ai_provider: CachedAiProvider = CachedAiProvider(ai_provider, cache_file)
-    assert cached_ai_provider.get_cache_hit_count() == 0
-    assert cached_ai_provider.get_cache_miss_count() == 0
+    assert cached_ai_provider.get_cache_stats().hit_count == 0
+    assert cached_ai_provider.get_cache_stats().miss_count == 0
 
     ai_summarizer: AiSummarizer = AiSummarizer(cached_ai_provider, integration_config.ai.readme_max_chars)
     title: AddonTitle = AddonTitle("Note Size anki addon")
@@ -28,6 +28,6 @@ def test_summarize(ai_provider: AiProvider, integration_config: AppConfig, snaps
         """)
     summary: Optional[AiSummary] = ai_summarizer.summarize(title, description, readme)
     print(summary)
-    print(f"Cache hits: {cached_ai_provider.get_cache_hit_count()}")
-    print(f"Cache misses: {cached_ai_provider.get_cache_miss_count()}")
+    print(f"Cache hits: {cached_ai_provider.get_cache_stats().hit_count}")
+    print(f"Cache misses: {cached_ai_provider.get_cache_stats().miss_count}")
     assert summary is not None

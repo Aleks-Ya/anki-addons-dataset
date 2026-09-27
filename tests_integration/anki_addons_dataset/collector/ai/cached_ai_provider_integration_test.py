@@ -14,8 +14,8 @@ def test_response(ai_provider: AiProvider, snapshot_dir: SnapshotDir) -> None:
     answer: Optional[AiResponseText] = cached_ai_provider.response(prompt)
     print(answer)
     assert answer is not None
-    assert cached_ai_provider.get_cache_miss_count() == 1
+    assert cached_ai_provider.get_cache_stats().miss_count == 1
 
     assert cached_ai_provider.response(prompt) == answer
-    assert cached_ai_provider.get_cache_hit_count() == 1
+    assert cached_ai_provider.get_cache_stats().hit_count == 1
     print(cache_file.read_text())

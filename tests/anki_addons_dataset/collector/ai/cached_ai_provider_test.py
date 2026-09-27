@@ -33,8 +33,8 @@ def test_miss_then_hit(tmp_path: Path) -> None:
     assert provider.response(prompt) == "answer-1 to What is the capital of France?"
 
     assert stub.call_count == 1
-    assert provider.get_cache_hit_count() == 1
-    assert provider.get_cache_miss_count() == 1
+    assert provider.get_cache_stats().hit_count == 1
+    assert provider.get_cache_stats().miss_count == 1
     lines: list[dict[str, str]] = read_lines(cache_file)
     assert len(lines) == 1
     assert lines[0]["model"] == "stub-model"
@@ -64,7 +64,7 @@ def test_shared_index_hit_is_copied_into_the_snapshot(tmp_path: Path) -> None:
     assert provider.response(prompt) == "answer-1 to Question"
 
     assert stub.call_count == 0
-    assert provider.get_cache_hit_count() == 1
+    assert provider.get_cache_stats().hit_count == 1
     copied: dict[str, str] = read_lines(cache_file)[0]
     original: dict[str, str] = read_lines(other_cache_file)[0]
     assert copied["key"] == original["key"]
@@ -119,7 +119,7 @@ def test_an_answer_bought_for_one_snapshot_serves_the_next_one(tmp_path: Path) -
 
     assert first_stub.call_count == 1
     assert second_stub.call_count == 0
-    assert second.get_cache_hit_count() == 1
+    assert second.get_cache_stats().hit_count == 1
     assert [line["response"] for line in read_lines(second_cache_file)] == ["answer-1 to Question"]
 
 
@@ -147,7 +147,7 @@ def test_another_model_is_a_miss(tmp_path: Path) -> None:
     provider.response(prompt)
 
     assert stub.call_count == 1
-    assert provider.get_cache_miss_count() == 1
+    assert provider.get_cache_stats().miss_count == 1
     assert [line["model"] for line in read_lines(cache_file)] == ["model-a", "model-b"]
 
 
@@ -158,7 +158,7 @@ def test_offline_miss_returns_none(tmp_path: Path) -> None:
 
     assert provider.response(AiPrompt("Question")) is None
     assert stub.call_count == 0
-    assert provider.get_cache_miss_count() == 1
+    assert provider.get_cache_stats().miss_count == 1
     assert not cache_file.exists()
 
 

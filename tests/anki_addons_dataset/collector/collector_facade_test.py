@@ -1,8 +1,11 @@
+import logging
 from datetime import date
 from pathlib import Path
+from unittest.mock import patch
 
 import pytest
 
+from anki_addons_dataset.collector.ai.ai_cache_stats import AiCacheStats
 from anki_addons_dataset.collector.collector_facade import CollectorFacade
 from anki_addons_dataset.common.data_types import AddonInfos, ElementWaitTimeout, PageLoadTimeout, ReportDate, \
     ScriptVersion, SnapshotDate
@@ -39,8 +42,26 @@ def test_report_snapshots_no_snapshots_is_noop(collector_facade: CollectorFacade
     collector_facade.report_snapshots(report_date)  # must not raise when history is empty
 
 
-def test_summarize_snapshots_no_snapshots_is_noop(collector_facade: CollectorFacade):
-    collector_facade.summarize_snapshots()  # must not raise, and must not read the AI key, when history is empty
+def test_summarize_snapshots_no_snapshots_is_noop(collector_facade: CollectorFacade,
+                                                 caplog: pytest.LogCaptureFixture):
+    with caplog.at_level(logging.INFO):
+        collector_facade.summarize_snapshots()  # must not raise, and must not read the AI key, when history is empty
+
+    assert "Total AI cache hits: 0, misses: 0" in caplog.text
+
+
+def test_summarize_snapshots_totals_the_cache_stats_of_all_snapshots(
+        working_dir: WorkingDir, collector_facade: CollectorFacade, caplog: pytest.LogCaptureFixture):
+    for snapshot_date in ["2025-01-01", "2025-02-01"]:
+        working_dir.get_snapshot_dir(SnapshotDate(date.fromisoformat(snapshot_date))).create()
+    stats: list[AiCacheStats] = [AiCacheStats(hit_count=7, miss_count=1), AiCacheStats(hit_count=2, miss_count=3)]
+
+    # The per-snapshot summarizing itself needs a full 1-raw snapshot, and is not what this test is about.
+    with patch.object(CollectorFacade, "_CollectorFacade__summarize_snapshot", side_effect=stats):
+        with caplog.at_level(logging.INFO):
+            collector_facade.summarize_snapshots()
+
+    assert "Total AI cache hits: 9, misses: 4" in caplog.text
 
 
 def test_report_snapshots_honours_the_snapshot_sample(

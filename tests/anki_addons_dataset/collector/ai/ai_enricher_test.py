@@ -78,8 +78,8 @@ def test_offline_run_is_served_from_the_cache(addon_info: AddonInfo, tmp_path: P
     enriched: AddonInfos = __enricher(offline).enrich(AddonInfos([addon_info]))
 
     assert enriched[0].ai.summary == "A generated summary."
-    assert offline.get_cache_hit_count() == 1
-    assert offline.get_cache_miss_count() == 0
+    assert offline.get_cache_stats().hit_count == 1
+    assert offline.get_cache_stats().miss_count == 0
 
 
 def test_offline_miss_leaves_no_summary(addon_info: AddonInfo, tmp_path: Path) -> None:
@@ -89,4 +89,4 @@ def test_offline_miss_leaves_no_summary(addon_info: AddonInfo, tmp_path: Path) -
     enriched: AddonInfos = __enricher(offline).enrich(AddonInfos([addon_info]))
 
     assert enriched[0].ai is None
-    assert offline.get_cache_miss_count() == 1
+    assert offline.get_cache_stats().miss_count == 1
