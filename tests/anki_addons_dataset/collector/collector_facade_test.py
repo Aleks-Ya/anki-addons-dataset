@@ -99,8 +99,10 @@ def test_summarize_snapshots_with_a_date_wins_over_the_snapshot_sample(
 
 
 def test_summarize_snapshots_with_an_unknown_date_raises(collector_facade: CollectorFacade):
+    unknown_date: SnapshotDate = SnapshotDate(date.fromisoformat("1999-01-01"))
+
     with pytest.raises(FileNotFoundError, match="No snapshot for 1999-01-01"):
-        collector_facade.summarize_snapshots(SnapshotDate(date.fromisoformat("1999-01-01")))
+        collector_facade.summarize_snapshots(unknown_date)
 
 
 def test_report_snapshots_honours_the_snapshot_sample(

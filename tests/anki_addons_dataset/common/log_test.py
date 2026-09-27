@@ -61,7 +61,8 @@ def test_file_gets_debug_while_the_console_keeps_the_requested_level(tmp_path: P
         assert logger.level == logging.DEBUG
         console_levels: list[int] = [handler.level for handler in logging.getLogger().handlers
                                      if not isinstance(handler, logging.FileHandler)]
-        assert console_levels and all(level == logging.WARNING for level in console_levels)
+        assert console_levels
+        assert all(level == logging.WARNING for level in console_levels)
     finally:
         __remove_file_handlers()
     assert "A debug message" in log_file.read_text()
