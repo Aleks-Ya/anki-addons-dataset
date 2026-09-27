@@ -8,6 +8,7 @@
 # "~" and "$VAR" are expanded in paths. An unknown key is an error, not a no-op.
 
 # Where snapshots (history/) and the upload bundle (bundle/) are kept.
+# Overridden by -w/--working-dir.
 working_dir: ~/anki-addons-dataset
 
 github:

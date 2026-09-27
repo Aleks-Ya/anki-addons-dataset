@@ -26,6 +26,7 @@ class ScriptArguments:
         parser.add_argument('operations', nargs='+')
         parser.add_argument('-d', '--snapshot-date', type=self.__valid_date)
         parser.add_argument('-c', '--config', type=Path, default=None)
+        parser.add_argument('-w', '--working-dir', type=Path, default=None)
         # No default: None means "not passed", so the config file's logging.level can take over.
         parser.add_argument('-l', '--log-level', type=self.__valid_log_level, default=None)
         parser.add_argument('--page-load-timeout', type=self.__valid_timeout, default=120)
@@ -47,6 +48,10 @@ class ScriptArguments:
     def get_config_file(self) -> Path:
         config_file: Optional[Path] = self.namespace.config
         return config_file.expanduser() if config_file else default_config_file()
+
+    def get_working_dir(self) -> Optional[Path]:
+        working_dir: Optional[Path] = self.namespace.working_dir
+        return working_dir.expanduser() if working_dir else None
 
     def get_log_level(self) -> Optional[int]:
         """The level from `-l`, or None when the flag was not passed (the config file then decides)."""

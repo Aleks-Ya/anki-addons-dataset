@@ -1,6 +1,6 @@
 import logging
 import os
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from pathlib import Path
 from typing import Any, Optional
 
@@ -55,6 +55,9 @@ class AppConfig:
     ai: AiConfig
     huggingface: HuggingFaceConfig
     logging: LoggingConfig
+
+    def with_working_dir(self, working_dir: Optional[Path]) -> 'AppConfig':
+        return self if working_dir is None else replace(self, working_dir=working_dir)
 
     @staticmethod
     def defaults() -> 'AppConfig':

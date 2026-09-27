@@ -83,7 +83,13 @@ Values resolve as **CLI flag > config file > default**, and a different file can
 directory is itself one of its keys.
 
 Pointing `working_dir` at a scratch directory and `huggingface.repo_id` at a personal scratch
-dataset is the safe way to try the pipeline without touching the published one.
+dataset is the safe way to try the pipeline without touching the published one. A single run can be
+redirected without touching the file at all — `-w/--working-dir` overrides `working_dir`, and the
+`info` step prints the directory actually in use:
+
+```bash
+uv run anki-addons-dataset init -w ~/anki-addons-scratch
+```
 
 ## GitHub token
 The `download` and `parse` steps call the GitHub REST API and need a personal access token

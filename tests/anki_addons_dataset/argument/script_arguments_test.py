@@ -113,6 +113,22 @@ def test_custom_config_file(monkeypatch: MonkeyPatch, tmp_path: Path):
     assert ScriptArguments().get_config_file() == tmp_path / "custom.yaml"
 
 
+def test_no_working_dir(monkeypatch: MonkeyPatch):
+    monkeypatch.setattr('sys.argv', ['addon_catalog.py', 'parse'])
+    assert ScriptArguments().get_working_dir() is None
+
+
+def test_working_dir_from_cli(monkeypatch: MonkeyPatch):
+    monkeypatch.setattr('sys.argv', ['addon_catalog.py', 'parse', '-w', '/data/anki'])
+    assert ScriptArguments().get_working_dir() == Path('/data/anki')
+
+
+def test_working_dir_is_expanded(monkeypatch: MonkeyPatch, tmp_path: Path):
+    monkeypatch.setattr('sys.argv', ['addon_catalog.py', 'parse', '--working-dir', '~/scratch'])
+    monkeypatch.setenv("HOME", str(tmp_path))
+    assert ScriptArguments().get_working_dir() == tmp_path / "scratch"
+
+
 @pytest.mark.parametrize("timeout", ['abc', '0', '-5'])
 def test_invalid_timeout(monkeypatch: MonkeyPatch, timeout: str):
     monkeypatch.setattr('sys.argv', ['addon_catalog.py', 'download', '--page-load-timeout', timeout])

@@ -58,7 +58,7 @@ at `~/.anki-addons-dataset.yaml` (or elsewhere, via `-c/--config`). Every key is
 keys keep the defaults shown below, and with no file at all the defaults apply:
 
 ```yaml
-working_dir: ~/anki-addons-dataset       # where snapshots and the bundle are kept
+working_dir: ~/anki-addons-dataset       # where snapshots and the bundle are kept; -w overrides it
 github:
   token_file: ~/.github/token.txt        # GitHub personal access token, read by download/parse
 ai:
@@ -79,8 +79,13 @@ logging:
 `~` and `$VAR` are expanded in path values. An unknown or misspelled key is an error rather than a
 silent no-op, so typos surface immediately.
 
-Values resolve as **CLI flag > config file > default**: `-l WARNING` overrides `logging.level`, but
-the file still applies when the flag is absent. The `info` step prints the resolved values.
+Values resolve as **CLI flag > config file > default**: `-l WARNING` overrides `logging.level` and
+`-w/--working-dir` overrides `working_dir`, but the file still applies when a flag is absent. The
+`info` step prints the resolved values.
+
+```bash
+anki-addons-dataset init download -d 2026-01-01 -w ~/anki-addons-scratch
+```
 
 The HuggingFace token is not part of this file — `huggingface_hub` reads it from `HF_TOKEN` or from
 `hf auth login`.

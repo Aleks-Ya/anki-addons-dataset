@@ -25,7 +25,7 @@ def main() -> None:
     arguments: ScriptArguments = ScriptArguments()
 
     config_file: Path = arguments.get_config_file()
-    config: AppConfig = ConfigLoader.load(config_file)
+    config: AppConfig = ConfigLoader.load(config_file).with_working_dir(arguments.get_working_dir())
     Log.apply(config.logging, arguments.get_log_level())
     log.info(f"Config file: {config_file}" if config_file.is_file()
              else f"Config file: {config_file} (not found, using defaults)")

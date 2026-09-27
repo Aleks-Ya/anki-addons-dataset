@@ -1,4 +1,5 @@
 import logging
+from dataclasses import replace
 from pathlib import Path
 
 import pytest
@@ -149,3 +150,17 @@ def test_explicit_nulls_fall_back_to_defaults(tmp_path: Path, monkeypatch: Monke
     monkeypatch.setenv("HOME", str(tmp_path))
     config_file: Path = __write(tmp_path, "working_dir: null\ngithub: null\nlogging:\n  level: null\n  file: null\n")
     assert ConfigLoader.load(config_file) == AppConfig.defaults()
+
+
+def test_working_dir_override_replaces_only_the_working_dir(tmp_path: Path, monkeypatch: MonkeyPatch):
+    monkeypatch.setenv("HOME", str(tmp_path))
+    defaults: AppConfig = AppConfig.defaults()
+    config: AppConfig = defaults.with_working_dir(Path("/data/anki"))
+    assert config.working_dir == Path("/data/anki")
+    assert config == replace(defaults, working_dir=Path("/data/anki"))
+
+
+def test_absent_working_dir_override_keeps_the_config(tmp_path: Path, monkeypatch: MonkeyPatch):
+    monkeypatch.setenv("HOME", str(tmp_path))
+    defaults: AppConfig = AppConfig.defaults()
+    assert defaults.with_working_dir(None) == defaults
