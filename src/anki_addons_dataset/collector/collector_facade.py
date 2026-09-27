@@ -14,6 +14,7 @@ from anki_addons_dataset.collector.ai.ai_enricher import AiEnricher
 from anki_addons_dataset.collector.ai.ai_provider import AiProvider
 from anki_addons_dataset.collector.ai.ai_summarizer import AiSummarizer
 from anki_addons_dataset.collector.ai.cached_ai_provider import CachedAiProvider
+from anki_addons_dataset.collector.ai.deepseek_ai_provider import DeepSeekAiProvider
 from anki_addons_dataset.collector.ai.no_ai_provider import NoAiProvider
 from anki_addons_dataset.collector.ai.openai_ai_provider import OpenAiAiProvider
 from anki_addons_dataset.collector.ankiforum.ankiforum_enricher import AnkiForumEnricher
@@ -137,8 +138,11 @@ class CollectorFacade:
     def __ai_provider(self, snapshot_dir: SnapshotDir, offline: bool,
                       shared_index: Optional[AiCacheIndex] = None) -> CachedAiProvider:
         model: AiModel = AiModel(self.__config.ai.model)
-        ai_provider: AiProvider = NoAiProvider(model) if offline else OpenAiAiProvider(
-            self.__config.ai.endpoint, self.__config.ai.api_key_file.read_text().strip(), model)
+        endpoint: str = self.__config.ai.endpoint
+        online_provider_type: type[OpenAiAiProvider] = \
+            DeepSeekAiProvider if DeepSeekAiProvider.owns(endpoint) else OpenAiAiProvider
+        ai_provider: AiProvider = NoAiProvider(model) if offline else online_provider_type(
+            endpoint, self.__config.ai.api_key_file.read_text().strip(), model)
         return CachedAiProvider(ai_provider, snapshot_dir.get_ai_cache_file(), shared_index, offline)
 
     def __ai_enricher(self, ai_provider: CachedAiProvider) -> AiEnricher:

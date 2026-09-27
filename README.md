@@ -39,6 +39,11 @@ separate from `download` so that changing the prompt re-runs the AI calls alone.
 snapshots already in `history/`, so it needs no `-d`, and it caches every answer under
 `1-raw/4-ai/`; `parse` then picks the summaries out of that cache without any network access.
 
+Against the default DeepSeek endpoint, `ai` refuses to run during DeepSeek's peak hours
+(01:00-04:00 and 06:00-10:00 UTC, Monday through Friday), when the rate is double the off-peak
+one, and fails with an error naming the window. Chinese public holidays are ignored: they only
+turn peak hours into off-peak ones, so the check never lets a peak-rate request through.
+
 `download` scrapes AnkiWeb with a headless browser. Two timeouts (in seconds) can be raised on a slow
 network:
 
