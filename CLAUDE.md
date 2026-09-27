@@ -112,14 +112,7 @@ explicit `upload` and drops UPLOAD from `all`, before the first step runs.
 - **`AiEnricher` is deliberately not an `Enricher`** — its prompt needs the GitHub README, so it runs over already-enriched `AddonInfos` (after the queue-based enrichers have joined) rather than in parallel with them. The same class serves the AI step (online provider, result discarded, cache is the output) and PARSE (offline provider, result carried into the dump)
 - **AddonInfos dump** — PARSE serializes the enriched `AddonInfos` to `history/YYYY-MM-DD/addon-infos.json` via `JsonHelper.write_addon_infos_dump`; REPORT reconstructs them with `JsonHelper.read_addon_infos_dump`. This is the only round-trip (de)serialization of the domain model
 - **Manual overrides** — `history/YYYY-MM-DD/2-stage/4-overrider/overrides.yaml` lets you fix parsing errors without re-downloading
-- Frozen dataclasses used for immutability (e.g., `GithubRepo`)
-
-### Code Style
-
-- Add comments only when unavoidable — when the code cannot be made self-explanatory through naming and structure, or when a non-obvious decision needs its rationale recorded. Do not restate what the code already says.
 
 ### Testing
 
-Tests mirror `src/` structure under `tests/`. HTML fixtures for AnkiWeb parser tests are in `src/collector/ankiweb/`. Tests use `conftest.py` with `tmp_path`-based working directories and mocked external APIs. `freezegun` is used for time-sensitive tests. The whole suite runs without network access.
-
-Live integration tests live in `tests_integration/` (same mirrored layout, `*_integration_test.py` names, its own `conftest.py` with *real* clients). They are outside `pytest.ini`'s `testpaths`, so the bare `uv run pytest` that CI runs never collects them; run them on demand with `uv run pytest tests_integration` or the `Integration tests` PyCharm run config. They are read-only, write only under `tmp_path`, and fail rather than skip when credentials are missing. See README-DEV.md for requirements.
+Live integration tests live in `tests_integration/`. They are outside `pytest.ini`'s `testpaths`, so the bare `uv run pytest` that CI runs never collects them; run them on demand with `uv run pytest tests_integration` or the `Integration tests` PyCharm run config. See README-DEV.md for requirements.
