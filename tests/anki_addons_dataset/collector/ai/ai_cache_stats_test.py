@@ -12,9 +12,3 @@ def test_add_sums_both_fields_without_changing_operands() -> None:
     assert first + second == AiCacheStats(hit_count=13, miss_count=5)
     assert first == AiCacheStats(hit_count=3, miss_count=1)
     assert second == AiCacheStats(hit_count=10, miss_count=4)
-
-
-def test_error_counts_are_added() -> None:
-    total: AiCacheStats = AiCacheStats(1, 2, 3) + AiCacheStats(10, 20, 30)
-
-    assert total == AiCacheStats(11, 22, 33)

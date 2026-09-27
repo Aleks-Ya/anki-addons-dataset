@@ -21,9 +21,3 @@ class AiProvider(ABC):
 
     def get_model(self) -> AiModel:
         return self.__model
-
-
-class AiFailure(Exception):
-    def __init__(self, message: str, retryable: bool):
-        super().__init__(message)
-        self.retryable: bool = retryable

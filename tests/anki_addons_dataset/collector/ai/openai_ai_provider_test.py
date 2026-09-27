@@ -6,7 +6,7 @@ import pytest
 from openai import APIStatusError
 from pytest_mock import MockerFixture
 
-from anki_addons_dataset.collector.ai.ai_provider import AiFailure, AiPrompt, AiResponseText
+from anki_addons_dataset.collector.ai.ai_provider import AiPrompt, AiResponseText
 from anki_addons_dataset.collector.ai.openai_ai_provider import OpenAiAiProvider
 from anki_addons_dataset.common.data_types import AiModel
 
@@ -66,41 +66,23 @@ def test_fatal_status_fails_without_retry(status_code: int, create: MagicMock, s
     sleep.assert_not_called()
 
 
-@pytest.mark.parametrize("error", [__status_error(500), __status_error(429), __status_error(408),
-                                   ValueError("boom")])
+@pytest.mark.parametrize("error", [__status_error(500), __status_error(429), ValueError("boom")])
 def test_transient_error_is_retried(error: Exception, create: MagicMock, sleep: MagicMock) -> None:
     create.side_effect = error
-    provider: OpenAiAiProvider = __provider()
 
-    with pytest.raises(AiFailure) as failure:
-        provider.response(PROMPT)
+    answer: Optional[AiResponseText] = __provider().response(PROMPT)
 
-    assert failure.value.retryable is True
+    assert answer is None
     assert create.call_count == MAX_ATTEMPTS
     assert sleep.call_count == MAX_ATTEMPTS - 1
 
 
-@pytest.mark.parametrize("status_code", [400, 404, 413, 422])
-def test_permanent_status_fails_without_retry(status_code: int, create: MagicMock, sleep: MagicMock) -> None:
-    create.side_effect = __status_error(status_code)
-    provider: OpenAiAiProvider = __provider()
-
-    with pytest.raises(AiFailure) as failure:
-        provider.response(PROMPT)
-
-    assert failure.value.retryable is False
-    assert create.call_count == 1
-    sleep.assert_not_called()
-
-
 def test_incomplete_response_is_retried(create: MagicMock, sleep: MagicMock) -> None:
     create.return_value = __response(status="incomplete")
-    provider: OpenAiAiProvider = __provider()
 
-    with pytest.raises(AiFailure) as failure:
-        provider.response(PROMPT)
+    answer: Optional[AiResponseText] = __provider().response(PROMPT)
 
-    assert failure.value.retryable is True
+    assert answer is None
     assert create.call_count == MAX_ATTEMPTS
     assert sleep.call_count == MAX_ATTEMPTS - 1
 

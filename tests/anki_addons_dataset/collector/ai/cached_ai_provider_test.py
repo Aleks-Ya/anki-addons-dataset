@@ -3,11 +3,8 @@ import threading
 from pathlib import Path
 from typing import Optional
 
-import pytest
-
 from anki_addons_dataset.collector.ai.ai_cache_index import AiCacheIndex
-from anki_addons_dataset.collector.ai.ai_cache_stats import AiCacheStats
-from anki_addons_dataset.collector.ai.ai_provider import AiFailure, AiProvider, AiPrompt, AiResponseText
+from anki_addons_dataset.collector.ai.ai_provider import AiProvider, AiPrompt, AiResponseText
 from anki_addons_dataset.collector.ai.cached_ai_provider import CachedAiProvider
 from anki_addons_dataset.common.data_types import AiModel
 
@@ -20,17 +17,6 @@ class StubAiProvider(AiProvider):
     def response(self, prompt: AiPrompt) -> Optional[AiResponseText]:
         self.call_count += 1
         return AiResponseText(f"answer-{self.call_count} to {prompt}")
-
-
-class FailingAiProvider(AiProvider):
-    def __init__(self, retryable: bool, model: AiModel = AiModel("stub-model")):
-        super().__init__(model)
-        self.__retryable: bool = retryable
-        self.call_count: int = 0
-
-    def response(self, prompt: AiPrompt) -> Optional[AiResponseText]:
-        self.call_count += 1
-        raise AiFailure("provider says no", self.__retryable)
 
 
 def read_lines(cache_file: Path) -> list[dict[str, str]]:
@@ -200,86 +186,3 @@ def test_concurrent_appends_produce_readable_lines(tmp_path: Path) -> None:
     lines: list[dict[str, str]] = read_lines(cache_file)
     assert len(lines) == 50
     assert len({line["key"] for line in lines}) == 50
-
-
-def test_a_retryable_error_is_recorded_and_retried(tmp_path: Path) -> None:
-    cache_file: Path = tmp_path / "ai-cache.jsonl"
-    prompt: AiPrompt = AiPrompt("Question")
-    failing: FailingAiProvider = FailingAiProvider(retryable=True)
-    provider: CachedAiProvider = CachedAiProvider(failing, cache_file)
-
-    assert provider.response(prompt) is None
-    assert provider.response(prompt) is None
-
-    assert failing.call_count == 2
-    assert provider.get_cache_stats() == AiCacheStats(hit_count=0, miss_count=2, error_count=0)
-    lines: list[dict[str, str]] = read_lines(cache_file)
-    assert len(lines) == 2
-    assert lines[0]["error"] == "provider says no"
-    assert lines[0]["retryable"] is True
-    assert "response" not in lines[0]
-
-    stub: StubAiProvider = StubAiProvider()
-    assert CachedAiProvider(stub, cache_file).response(prompt) == "answer-1 to Question"
-    assert stub.call_count == 1
-
-
-def test_a_non_retryable_error_is_answered_from_the_cache(tmp_path: Path) -> None:
-    cache_file: Path = tmp_path / "ai-cache.jsonl"
-    prompt: AiPrompt = AiPrompt("Question")
-    failing: FailingAiProvider = FailingAiProvider(retryable=False)
-
-    assert CachedAiProvider(failing, cache_file).response(prompt) is None
-
-    stub: StubAiProvider = StubAiProvider()
-    provider: CachedAiProvider = CachedAiProvider(stub, cache_file)
-    assert provider.response(prompt) is None
-    assert failing.call_count == 1
-    assert stub.call_count == 0
-    assert provider.get_cache_stats() == AiCacheStats(hit_count=1, miss_count=0, error_count=1)
-    assert read_lines(cache_file)[0]["retryable"] is False
-
-
-def test_a_non_retryable_error_is_copied_from_the_shared_index(tmp_path: Path) -> None:
-    other_cache_file: Path = tmp_path / "other" / "ai-cache.jsonl"
-    cache_file: Path = tmp_path / "current" / "ai-cache.jsonl"
-    prompt: AiPrompt = AiPrompt("Question")
-    CachedAiProvider(FailingAiProvider(retryable=False), other_cache_file).response(prompt)
-
-    stub: StubAiProvider = StubAiProvider()
-    provider: CachedAiProvider = CachedAiProvider(stub, cache_file, AiCacheIndex.load([other_cache_file]))
-
-    assert provider.response(prompt) is None
-    assert stub.call_count == 0
-    copied: dict[str, str] = read_lines(cache_file)[0]
-    assert copied["key"] == read_lines(other_cache_file)[0]["key"]
-    assert copied["error"] == "provider says no"
-    assert copied["retryable"] is False
-
-
-def test_a_retryable_error_is_not_shared_with_the_next_snapshot(tmp_path: Path) -> None:
-    shared_index: AiCacheIndex = AiCacheIndex()
-    prompt: AiPrompt = AiPrompt("Question")
-    CachedAiProvider(FailingAiProvider(retryable=True), tmp_path / "first" / "ai-cache.jsonl",
-                     shared_index).response(prompt)
-
-    stub: StubAiProvider = StubAiProvider()
-    second: CachedAiProvider = CachedAiProvider(stub, tmp_path / "second" / "ai-cache.jsonl", shared_index)
-
-    assert second.response(prompt) == "answer-1 to Question"
-    assert stub.call_count == 1
-
-
-def test_an_unexpected_error_is_not_cached(tmp_path: Path) -> None:
-    cache_file: Path = tmp_path / "ai-cache.jsonl"
-
-    class RaisingAiProvider(AiProvider):
-        def response(self, prompt: AiPrompt) -> Optional[AiResponseText]:
-            raise RuntimeError("peak hours")
-
-    provider: CachedAiProvider = CachedAiProvider(RaisingAiProvider(AiModel("stub-model")), cache_file)
-
-    with pytest.raises(RuntimeError):
-        provider.response(AiPrompt("Question"))
-
-    assert not cache_file.exists()
