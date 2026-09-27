@@ -5,6 +5,9 @@ from dataclasses import dataclass
 class AiCacheStats:
     hit_count: int = 0
     miss_count: int = 0
+    error_count: int = 0
 
     def __add__(self, other: "AiCacheStats") -> "AiCacheStats":
-        return AiCacheStats(self.hit_count + other.hit_count, self.miss_count + other.miss_count)
+        return AiCacheStats(self.hit_count + other.hit_count,
+                            self.miss_count + other.miss_count,
+                            self.error_count + other.error_count)

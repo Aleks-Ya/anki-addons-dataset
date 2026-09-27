@@ -6,7 +6,7 @@ from typing import Optional
 from openai import OpenAI, APIStatusError
 from openai.types.responses import Response
 
-from anki_addons_dataset.collector.ai.ai_provider import AiProvider, AiPrompt, AiResponseText
+from anki_addons_dataset.collector.ai.ai_provider import AiFailure, AiProvider, AiPrompt, AiResponseText
 from anki_addons_dataset.common.data_types import AiModel
 
 log: Logger = logging.getLogger(__name__)
@@ -15,6 +15,7 @@ log: Logger = logging.getLogger(__name__)
 class OpenAiAiProvider(AiProvider):
     __max_attempts: int = 3
     __fatal_status_codes: frozenset[int] = frozenset({401, 402, 403})
+    __retryable_status_codes: frozenset[int] = frozenset({408, 429})
     __retry_delay_seconds: int = 5
     __timeout_seconds: int = 120
 
@@ -23,9 +24,10 @@ class OpenAiAiProvider(AiProvider):
         self.__client: OpenAI = OpenAI(base_url=endpoint, api_key=api_key, timeout=self.__timeout_seconds)
 
     def response(self, prompt: AiPrompt) -> Optional[AiResponseText]:
-        """Returns None once the retries are exhausted: one unanswered addon must not abort a whole run.
+        """Raises AiFailure once the retries are exhausted: one unanswered addon must not abort a whole run.
 
-        Raises on a status no retry can fix (bad key, empty balance): every later addon would fail alike."""
+        Raises the original error on a status no retry can fix (bad key, empty balance): every later
+        addon would fail alike."""
         for attempt in range(1, self.__max_attempts + 1):
             try:
                 response: Response = self.__client.responses.create(
@@ -39,16 +41,25 @@ class OpenAiAiProvider(AiProvider):
                 if self.__is_fatal(e):
                     log.error(f"AI request rejected and not retryable: {e}", exc_info=True)
                     raise
+                if self.__is_permanent(e):
+                    log.error(f"AI request rejected, no retry can fix it: {e}", exc_info=True)
+                    raise AiFailure(str(e), False) from e
                 if attempt == self.__max_attempts:
                     log.error(f"AI request failed after {attempt} attempts: {e}", exc_info=True)
-                    return None
+                    raise AiFailure(str(e), True) from e
                 delay: int = self.__retry_delay_seconds * attempt
                 log.warning(f"AI request failed (attempt {attempt}/{self.__max_attempts}), "
                             f"retrying in {delay}s: {e}")
                 time.sleep(delay)
-        return None
+        raise AiFailure(f"AI request failed after {self.__max_attempts} attempts", True)
 
     @staticmethod
     def __is_fatal(error: Exception) -> bool:
         return isinstance(error, APIStatusError) \
             and error.status_code in OpenAiAiProvider.__fatal_status_codes
+
+    @staticmethod
+    def __is_permanent(error: Exception) -> bool:
+        return isinstance(error, APIStatusError) \
+            and 400 <= error.status_code < 500 \
+            and error.status_code not in OpenAiAiProvider.__retryable_status_codes

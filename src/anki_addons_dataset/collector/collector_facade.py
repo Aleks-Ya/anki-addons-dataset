@@ -76,7 +76,8 @@ class CollectorFacade:
         total_stats: AiCacheStats = AiCacheStats()
         for snapshot_dir in self.__working_dir.list_sampled_snapshot_dirs():
             total_stats = total_stats + self.__summarize_snapshot(snapshot_dir, shared_index)
-        log.info(f"Total AI cache hits: {total_stats.hit_count}, misses: {total_stats.miss_count}")
+        log.info(f"Total AI cache hits: {total_stats.hit_count}, misses: {total_stats.miss_count}, "
+                 f"cached failures: {total_stats.error_count}")
 
     def __summarize_snapshot(self, snapshot_dir: SnapshotDir, shared_index: AiCacheIndex) -> AiCacheStats:
         snapshot_date: SnapshotDate = snapshot_dir.snapshot_dir_to_snapshot_date()
@@ -86,7 +87,8 @@ class CollectorFacade:
         ai_provider: CachedAiProvider = self.__ai_provider(snapshot_dir, False, shared_index)
         self.__ai_enricher(ai_provider).enrich(addon_infos)  # The filled cache is the result; PARSE reads it back
         stats: AiCacheStats = ai_provider.get_cache_stats()
-        log.info(f"AI cache hits: {stats.hit_count}, misses: {stats.miss_count}")
+        log.info(f"AI cache hits: {stats.hit_count}, misses: {stats.miss_count}, "
+                 f"cached failures: {stats.error_count}")
         log.info(f"===== Summarized snapshot for {snapshot_date} =====\n")
         return stats
 
@@ -102,10 +104,13 @@ class CollectorFacade:
         addon_infos: AddonInfos = self.__collect(snapshot_dir, True)
         ai_provider: CachedAiProvider = self.__ai_provider(snapshot_dir, True)
         addon_infos = self.__ai_enricher(ai_provider).enrich(addon_infos)
-        cache_miss_count: int = ai_provider.get_cache_stats().miss_count
-        if cache_miss_count:
-            log.warning(f"{cache_miss_count} addons have no cached AI summary and stay without one. "
+        cache_stats: AiCacheStats = ai_provider.get_cache_stats()
+        if cache_stats.miss_count:
+            log.warning(f"{cache_stats.miss_count} addons have no cached AI summary and stay without one. "
                         f"Run the 'ai' operation to fill the cache.")
+        if cache_stats.error_count:
+            log.warning(f"{cache_stats.error_count} addons stay without an AI summary because the provider "
+                        f"rejected their prompt. Re-running the 'ai' operation cannot fix this.")
         JsonHelper.write_addon_infos_dump(addon_infos, script_version, snapshot_dir.get_addon_infos_dump())
         log.info(f"===== Parsed snapshot for {snapshot_date} =====\n")
 
