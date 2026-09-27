@@ -34,7 +34,7 @@ class FailingAiProvider(AiProvider):
 
 
 def __enricher(ai_provider: AiProvider) -> AiEnricher:
-    return AiEnricher(AiSummarizer(ai_provider, readme_max_chars=8000), MODEL, workers=2)
+    return AiEnricher(AiSummarizer(ai_provider, readme_max_chars=8000), MODEL)
 
 
 def test_summary_is_added(addon_info: AddonInfo) -> None:

@@ -147,7 +147,7 @@ class CollectorFacade:
 
     def __ai_enricher(self, ai_provider: CachedAiProvider) -> AiEnricher:
         ai_summarizer: AiSummarizer = AiSummarizer(ai_provider, self.__config.ai.readme_max_chars)
-        return AiEnricher(ai_summarizer, ai_provider.get_model(), self.__config.ai.workers)
+        return AiEnricher(ai_summarizer, ai_provider.get_model())
 
     @staticmethod
     def __script_version() -> ScriptVersion:

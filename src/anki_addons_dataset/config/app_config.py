@@ -16,10 +16,6 @@ DEFAULT_LOG_FILE: Path = Path("logs") / "anki-addons-dataset.log"
 
 
 def default_config_file() -> Path:
-    """The config file used when `--config` is not given.
-
-    Deliberately outside the working directory: the working directory is itself a
-    config key, so keeping the file there would be circular."""
     return Path.home() / CONFIG_FILE_NAME
 
 
@@ -34,7 +30,6 @@ class AiConfig:
     api_key_file: Path
     model: str
     readme_max_chars: int
-    workers: int
 
 
 @dataclass(frozen=True)
@@ -90,7 +85,7 @@ class AppConfig:
             github=GithubConfig(token_file=Path.home() / ".github" / "token.txt"),
             ai=AiConfig(endpoint="https://api.deepseek.com",
                         api_key_file=Path.home() / ".config" / "anki-addons-dataset" / "deepseek-api-key.txt",
-                        model="deepseek-flash", readme_max_chars=8000, workers=4),
+                        model="deepseek-flash", readme_max_chars=8000),
             huggingface=HuggingFaceConfig(repo_id="Ya-Alex/anki-addons", synced_dirs=["history", "latest"]),
             logging=LoggingConfig(level=logging.INFO, format=DEFAULT_LOG_FORMAT, file=DEFAULT_LOG_FILE),
             sample=SampleConfig())
@@ -131,15 +126,14 @@ class ConfigLoader:
     @staticmethod
     def __ai(raw: dict[str, Any], config_file: Path, defaults: AiConfig) -> AiConfig:
         section: dict[str, Any] = ConfigLoader.__section(raw, "ai", config_file)
-        ConfigLoader.__reject_unknown(section, ["endpoint", "api_key_file", "model", "readme_max_chars", "workers"],
+        ConfigLoader.__reject_unknown(section, ["endpoint", "api_key_file", "model", "readme_max_chars"],
                                       "ai", config_file)
         return AiConfig(
             endpoint=ConfigLoader.__string(section, "endpoint", "ai", config_file, defaults.endpoint),
             api_key_file=ConfigLoader.__path(section, "api_key_file", "ai", config_file, defaults.api_key_file),
             model=ConfigLoader.__string(section, "model", "ai", config_file, defaults.model),
             readme_max_chars=ConfigLoader.__positive_int(section, "readme_max_chars", "ai", config_file,
-                                                         defaults.readme_max_chars),
-            workers=ConfigLoader.__positive_int(section, "workers", "ai", config_file, defaults.workers))
+                                                         defaults.readme_max_chars))
 
     @staticmethod
     def __hugging_face(raw: dict[str, Any], config_file: Path, defaults: HuggingFaceConfig) -> HuggingFaceConfig:
@@ -232,7 +226,7 @@ class ConfigLoader:
         if key not in section or section[key] is None:
             return default
         value: Any = section[key]
-        # bool is an int subclass, and `workers: true` is a typo rather than a worker count.
+        # bool is an int subclass, and `readme_max_chars: true` is a typo rather than a length.
         if not isinstance(value, int) or isinstance(value, bool) or value <= 0:
             raise ValueError(f"Invalid value for '{ConfigLoader.__full_key(prefix, key)}' in config file "
                              f"{config_file}: expected a positive integer")

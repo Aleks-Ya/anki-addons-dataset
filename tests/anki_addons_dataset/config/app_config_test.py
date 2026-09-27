@@ -50,7 +50,6 @@ ai:
   api_key_file: /secrets/ai.txt
   model: some-model
   readme_max_chars: 1234
-  workers: 3
 huggingface:
   repo_id: Someone/scratch
   synced_dirs: [history]
@@ -67,7 +66,7 @@ sample:
         working_dir=Path("/data/anki"),
         github=GithubConfig(token_file=Path("/secrets/gh.txt")),
         ai=AiConfig(endpoint="https://ai.example.com", api_key_file=Path("/secrets/ai.txt"), model="some-model",
-                    readme_max_chars=1234, workers=3),
+                    readme_max_chars=1234),
         huggingface=HuggingFaceConfig(repo_id="Someone/scratch", synced_dirs=["history"]),
         logging=LoggingConfig(level=logging.DEBUG, format="%(message)s", file=Path("/var/log/anki.log")),
         sample=SampleConfig(addons=20, snapshots=2))
@@ -114,10 +113,16 @@ def test_unknown_ai_key_is_rejected(tmp_path: Path):
         ConfigLoader.load(config_file)
 
 
+def test_removed_ai_worker_count_is_rejected(tmp_path: Path):
+    config_file: Path = __write(tmp_path, "ai:\n  workers: 4\n")
+    with pytest.raises(ValueError, match="Unknown key 'ai.workers'"):
+        ConfigLoader.load(config_file)
+
+
 @pytest.mark.parametrize("value", ["0", "-1", "abc", "true"])
-def test_non_positive_ai_worker_count_is_rejected(tmp_path: Path, value: str):
-    config_file: Path = __write(tmp_path, f"ai:\n  workers: {value}\n")
-    with pytest.raises(ValueError, match="Invalid value for 'ai.workers'"):
+def test_non_positive_readme_max_chars_is_rejected(tmp_path: Path, value: str):
+    config_file: Path = __write(tmp_path, f"ai:\n  readme_max_chars: {value}\n")
+    with pytest.raises(ValueError, match="Invalid value for 'ai.readme_max_chars'"):
         ConfigLoader.load(config_file)
 
 

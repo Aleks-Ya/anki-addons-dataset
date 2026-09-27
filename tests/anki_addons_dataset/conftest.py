@@ -68,7 +68,7 @@ def app_config(working_dir_path: Path, github_token_file: Path, ai_api_key_file:
         working_dir=working_dir_path,
         github=GithubConfig(token_file=github_token_file),
         ai=AiConfig(endpoint="https://ai.example.com", api_key_file=ai_api_key_file, model="test-model",
-                    readme_max_chars=defaults.ai.readme_max_chars, workers=2),
+                    readme_max_chars=defaults.ai.readme_max_chars),
         huggingface=HuggingFaceConfig(repo_id=defaults.huggingface.repo_id,
                                       synced_dirs=defaults.huggingface.synced_dirs),
         logging=defaults.logging,

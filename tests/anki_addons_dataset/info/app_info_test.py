@@ -35,7 +35,7 @@ def __config(tmp_path: Path) -> AppConfig:
 def __ai_config(tmp_path: Path) -> AiConfig:
     defaults: AiConfig = AppConfig.defaults().ai
     return AiConfig(endpoint=defaults.endpoint, api_key_file=__ai_api_key_file(tmp_path), model=defaults.model,
-                    readme_max_chars=defaults.readme_max_chars, workers=defaults.workers)
+                    readme_max_chars=defaults.readme_max_chars)
 
 
 def __ai_api_key_file(tmp_path: Path) -> Path:

@@ -85,7 +85,7 @@ def test_response_delegates_outside_peak_hours(mocker: MockerFixture) -> None:
 def test_peak_hours_abort_the_whole_enrichment(addon_info: AddonInfo, tmp_path: Path) -> None:
     cache_file: Path = tmp_path / "4-ai" / "ai-cache.jsonl"
     provider: CachedAiProvider = CachedAiProvider(__provider(), cache_file)
-    enricher: AiEnricher = AiEnricher(AiSummarizer(provider, readme_max_chars=8000), MODEL, workers=2)
+    enricher: AiEnricher = AiEnricher(AiSummarizer(provider, readme_max_chars=8000), MODEL)
 
     addon_infos: AddonInfos = AddonInfos([addon_info])
 
