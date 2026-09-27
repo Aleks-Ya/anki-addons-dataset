@@ -278,9 +278,8 @@ def test_an_unexpected_error_is_not_cached(tmp_path: Path) -> None:
             raise RuntimeError("peak hours")
 
     provider: CachedAiProvider = CachedAiProvider(RaisingAiProvider(AiModel("stub-model")), cache_file)
-    prompt: AiPrompt = AiPrompt("Question")
 
     with pytest.raises(RuntimeError):
-        provider.response(prompt)
+        provider.response(AiPrompt("Question"))
 
     assert not cache_file.exists()
