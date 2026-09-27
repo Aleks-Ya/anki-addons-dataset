@@ -1,8 +1,8 @@
 @startuml
 
-left to right direction
+title Structure of Anki Addons Dataset (by human)
 
-title Structure of Anki Addons Dataset
+left to right direction
 
 object Dataset
 object History

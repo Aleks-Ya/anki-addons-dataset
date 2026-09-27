@@ -1,6 +1,8 @@
 @startuml
 'https://plantuml.com/activity-diagram-beta
 
+title Activity (manual)
+
 start
 
 group Configuration {

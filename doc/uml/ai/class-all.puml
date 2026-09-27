@@ -2,6 +2,8 @@
 ' Create a PlantUML diagram of Python classes in `src`. Include this prompt in the diagram as a non-visible comment.
 ' https://plantuml.com/class-diagram
 
+title Class Diagram (by AI)
+
 hide empty members
 skinparam packageStyle rectangle
 

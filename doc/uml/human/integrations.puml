@@ -1,23 +1,29 @@
 @startuml
 'https://plantuml.com/component-diagram
 
+title Integrations (manual)
+
 left to right direction
 
 component AnkiAddonsDataset
 component AnkiWeb
 component GitHub
 component AnkiForum
+component AiProvider
 
 interface "REST" as GitHubRest
 interface "HTML" as AnkiWebHtml
 interface "REST" as AnkiForumRest
+interface "REST" as AiProviderRest
 
 AnkiForum -u- AnkiForumRest
 GitHub -u- GitHubRest
 AnkiWeb -u- AnkiWebHtml
+AiProvider -u- AiProviderRest
 
 AnkiAddonsDataset --> AnkiWebHtml
 AnkiAddonsDataset --> GitHubRest
 AnkiAddonsDataset --> AnkiForumRest
+AnkiAddonsDataset --> AiProviderRest
 
 @enduml

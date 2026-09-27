@@ -1,5 +1,8 @@
 @startuml
 'https://plantuml.com/class-diagram
+
+title Class Diagram (manual)
+
 hide empty members
 
 package anki_addons_dataset {

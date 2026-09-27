@@ -1,5 +1,7 @@
 @startuml
-'https://plantuml.com/class-diagram
+
+title Packages Diagram (by human)
+
 hide empty members
 skinparam ArrowColor red
 

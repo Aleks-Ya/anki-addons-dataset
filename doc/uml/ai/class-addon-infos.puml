@@ -2,6 +2,8 @@
 ' Structure of the AddonInfos domain model (src/anki_addons_dataset/common/data_types.py).
 ' https://plantuml.com/class-diagram
 
+title AddonInfos Domain Model (by AI)
+
 skinparam packageStyle rectangle
 
 class AddonInfos <<NewType>> {
