@@ -98,9 +98,9 @@ huggingface:
   repo_id: Ya-Alex/anki-addons           # the dataset upload targets
   synced_dirs: [history, latest]         # the remote folders upload pushes and prunes
 logging:
-  level: INFO
+  level: INFO                            # console level; the log file always gets DEBUG
   format: '%(asctime)-15s %(levelname)-8s [%(threadName)-10s] %(message)s'
-  file: null                             # also write the log to this file
+  file: logs/anki-addons-dataset.log     # relative to working_dir; `false` disables file logging
 sample:
   addons: null                           # only the first N addons by id; --sample-addons overrides it
   snapshots: null                        # only the newest N snapshots; --sample-snapshots overrides it

@@ -38,7 +38,7 @@ def main() -> None:
     config: AppConfig = ConfigLoader.load(config_file) \
         .with_working_dir(arguments.get_working_dir()) \
         .with_sample(arguments.get_sample_addons(), arguments.get_sample_snapshots())
-    Log.apply(config.logging, arguments.get_log_level())
+    Log.apply(config.resolved_logging(), arguments.get_log_level())
     log.info(f"Config file: {config_file}" if config_file.is_file()
              else f"Config file: {config_file} (not found, using defaults)")
 

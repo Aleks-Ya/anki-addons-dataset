@@ -132,9 +132,12 @@ anki-addons-dataset ai            # all snapshots; watch the per-snapshot hit/mi
 ```
 
 ## Logging
-Default log level: INFO (`logging.level` in the config file)
+Default console log level: INFO (`logging.level` in the config file)
 Set log level: `uv run anki-addons-dataset parse -l DEBUG` — the flag wins over the config file.
-The log format and an optional log file are set by `logging.format` and `logging.file`.
+It only moves the console level: the log file always receives DEBUG.
+The log is also appended to `<working_dir>/logs/anki-addons-dataset.log`, so a run's output survives
+the terminal. `logging.file` moves it (a relative path stays relative to the working directory) and
+`logging.file: false` turns it off; `logging.format` sets the format.
 
 ## Browser timeouts
 `download` drives a headless Chrome via Selenium. Both of its timeouts (seconds) are configurable and

@@ -12,6 +12,8 @@ CONFIG_FILE_NAME: str = ".anki-addons-dataset.yaml"
 
 DEFAULT_LOG_FORMAT: str = '%(asctime)-15s %(levelname)-8s [%(threadName)-10s] %(message)s'
 
+DEFAULT_LOG_FILE: Path = Path("logs") / "anki-addons-dataset.log"
+
 
 def default_config_file() -> Path:
     """The config file used when `--config` is not given.
@@ -69,6 +71,11 @@ class AppConfig:
     def with_working_dir(self, working_dir: Optional[Path]) -> 'AppConfig':
         return self if working_dir is None else replace(self, working_dir=working_dir)
 
+    def resolved_logging(self) -> LoggingConfig:
+        if self.logging.file is None or self.logging.file.is_absolute():
+            return self.logging
+        return replace(self.logging, file=self.working_dir / self.logging.file)
+
     def with_sample(self, addons: Optional[int], snapshots: Optional[int]) -> 'AppConfig':
         sample: SampleConfig = SampleConfig(
             addons=self.sample.addons if addons is None else addons,
@@ -85,7 +92,7 @@ class AppConfig:
                         api_key_file=Path.home() / ".config" / "anki-addons-dataset" / "deepseek-api-key.txt",
                         model="deepseek-flash", readme_max_chars=8000, workers=4),
             huggingface=HuggingFaceConfig(repo_id="Ya-Alex/anki-addons", synced_dirs=["history", "latest"]),
-            logging=LoggingConfig(level=logging.INFO, format=DEFAULT_LOG_FORMAT, file=None),
+            logging=LoggingConfig(level=logging.INFO, format=DEFAULT_LOG_FORMAT, file=DEFAULT_LOG_FILE),
             sample=SampleConfig())
 
 
@@ -150,7 +157,13 @@ class ConfigLoader:
         return LoggingConfig(
             level=ConfigLoader.__level(section, config_file, defaults.level),
             format=ConfigLoader.__string(section, "format", "logging", config_file, defaults.format),
-            file=ConfigLoader.__optional_path(section, "file", "logging", config_file, defaults.file))
+            file=ConfigLoader.__log_file(section, config_file, defaults.file))
+
+    @staticmethod
+    def __log_file(section: dict[str, Any], config_file: Path, default: Optional[Path]) -> Optional[Path]:
+        if section.get("file") is False:
+            return None
+        return ConfigLoader.__optional_path(section, "file", "logging", config_file, default)
 
     @staticmethod
     def __sample(raw: dict[str, Any], config_file: Path, defaults: SampleConfig) -> SampleConfig:

@@ -34,6 +34,7 @@ class AppInfo:
         log.info(f"Working directory: {self.__working_dir.get_path()}")
         log.info(f"History directory: {self.__working_dir.get_history_dir()}")
         log.info(f"Bundle directory: {self.__working_dir.get_bundle_dir()}")
+        log.info(f"Log file: {self.__config.resolved_logging().file or 'disabled'}")
         log.info(f"HuggingFace dataset: {self.__hugging_face_client.get_repo_id()}")
         log.info(f"GitHub token file: {self.__config.github.token_file}")
         log.info(f"AI endpoint: {self.__config.ai.endpoint}")

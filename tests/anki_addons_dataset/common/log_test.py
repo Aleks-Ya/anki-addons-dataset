@@ -13,6 +13,13 @@ def __logging_config(level: int = logging.INFO, log_file: Path = None) -> Loggin
     return LoggingConfig(level=level, format=DEFAULT_LOG_FORMAT, file=log_file)
 
 
+def __remove_file_handlers() -> None:
+    for handler in list(logging.getLogger().handlers):
+        if isinstance(handler, logging.FileHandler):
+            logging.getLogger().removeHandler(handler)
+            handler.close()
+
+
 def test_configure_logging(caplog: LogCaptureFixture):
     with caplog.at_level(logging.DEBUG):
         Log.configure_logging()
@@ -40,11 +47,24 @@ def test_log_file_is_created_and_written(tmp_path: Path):
     try:
         logging.getLogger('anki_addons_dataset').info("Into the file")
     finally:
-        for handler in list(logging.getLogger().handlers):
-            if isinstance(handler, logging.FileHandler):
-                logging.getLogger().removeHandler(handler)
-                handler.close()
+        __remove_file_handlers()
     assert "Into the file" in log_file.read_text()
+
+
+def test_file_gets_debug_while_the_console_keeps_the_requested_level(tmp_path: Path):
+    log_file: Path = tmp_path / "anki.log"
+    Log.configure_logging()
+    Log.apply(__logging_config(level=logging.WARNING, log_file=log_file), cli_level=None)
+    try:
+        logger: Logger = logging.getLogger('anki_addons_dataset')
+        logger.debug("A debug message")
+        assert logger.level == logging.DEBUG
+        console_levels: list[int] = [handler.level for handler in logging.getLogger().handlers
+                                     if not isinstance(handler, logging.FileHandler)]
+        assert console_levels and all(level == logging.WARNING for level in console_levels)
+    finally:
+        __remove_file_handlers()
+    assert "A debug message" in log_file.read_text()
 
 
 def test_parse_level_accepts_any_case():

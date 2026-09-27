@@ -5,8 +5,8 @@ from pathlib import Path
 import pytest
 from _pytest.monkeypatch import MonkeyPatch
 
-from anki_addons_dataset.config.app_config import AppConfig, AiConfig, ConfigLoader, DEFAULT_LOG_FORMAT, \
-    GithubConfig, HuggingFaceConfig, LoggingConfig, SampleConfig, default_config_file
+from anki_addons_dataset.config.app_config import AppConfig, AiConfig, ConfigLoader, DEFAULT_LOG_FILE, \
+    DEFAULT_LOG_FORMAT, GithubConfig, HuggingFaceConfig, LoggingConfig, SampleConfig, default_config_file
 
 
 def __write(tmp_path: Path, content: str) -> Path:
@@ -32,7 +32,7 @@ def test_missing_file_yields_defaults(tmp_path: Path, monkeypatch: MonkeyPatch):
     assert config.huggingface.synced_dirs == ["history", "latest"]
     assert config.logging.level == logging.INFO
     assert config.logging.format == DEFAULT_LOG_FORMAT
-    assert config.logging.file is None
+    assert config.logging.file == DEFAULT_LOG_FILE
 
 
 def test_empty_file_yields_defaults(tmp_path: Path, monkeypatch: MonkeyPatch):
@@ -209,3 +209,25 @@ def test_with_sample_on_an_unsampled_config():
     defaults: AppConfig = AppConfig.defaults()
     assert defaults.with_sample(None, None) is defaults
     assert defaults.with_sample(20, None).sample == SampleConfig(addons=20, snapshots=None)
+
+
+def test_default_log_file_lands_in_the_working_dir():
+    config: AppConfig = replace(AppConfig.defaults(), working_dir=Path("/data/anki"))
+    assert config.resolved_logging().file == Path("/data/anki/logs/anki-addons-dataset.log")
+
+
+def test_relative_log_file_is_resolved_against_the_working_dir(tmp_path: Path):
+    config: AppConfig = ConfigLoader.load(__write(tmp_path, "logging:\n  file: run.log\n")) \
+        .with_working_dir(Path("/scratch"))
+    assert config.resolved_logging().file == Path("/scratch/run.log")
+
+
+def test_absolute_log_file_is_kept_as_is(tmp_path: Path):
+    config: AppConfig = ConfigLoader.load(__write(tmp_path, "logging:\n  file: /var/log/anki.log\n"))
+    assert config.resolved_logging().file == Path("/var/log/anki.log")
+
+
+def test_false_log_file_disables_file_logging(tmp_path: Path):
+    config: AppConfig = ConfigLoader.load(__write(tmp_path, "logging:\n  file: false\n"))
+    assert config.logging.file is None
+    assert config.resolved_logging().file is None
