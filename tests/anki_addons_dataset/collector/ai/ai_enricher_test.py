@@ -71,9 +71,11 @@ def test_unanswered_addon_keeps_no_summary(addon_info: AddonInfo) -> None:
 
 def test_failed_request_names_the_addon(addon_info: AddonInfo) -> None:
     error: ValueError = ValueError("Content Exists Risk")
+    enricher: AiEnricher = __enricher(FailingAiProvider(error))
+    addon_infos: AddonInfos = AddonInfos([addon_info])
 
     with pytest.raises(RuntimeError, match=f"Cannot summarize addon: {addon_info.header.id}") as exc_info:
-        __enricher(FailingAiProvider(error)).enrich(AddonInfos([addon_info]))
+        enricher.enrich(addon_infos)
 
     assert exc_info.value.__cause__ is error
 
