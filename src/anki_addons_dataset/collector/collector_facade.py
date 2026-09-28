@@ -11,12 +11,9 @@ from anki_addons_dataset.collector.aggregator import Aggregator
 from anki_addons_dataset.collector.ai.ai_cache_index import AiCacheIndex
 from anki_addons_dataset.collector.ai.ai_cache_stats import AiCacheStats
 from anki_addons_dataset.collector.ai.ai_enricher import AiEnricher
-from anki_addons_dataset.collector.ai.ai_provider import AiProvider
+from anki_addons_dataset.collector.ai.ai_provider_factory import AiProviderFactory
 from anki_addons_dataset.collector.ai.ai_summarizer import AiSummarizer
 from anki_addons_dataset.collector.ai.cached_ai_provider import CachedAiProvider
-from anki_addons_dataset.collector.ai.deepseek_ai_provider import DeepSeekAiProvider
-from anki_addons_dataset.collector.ai.no_ai_provider import NoAiProvider
-from anki_addons_dataset.collector.ai.openai_ai_provider import OpenAiAiProvider
 from anki_addons_dataset.collector.ankiforum.ankiforum_enricher import AnkiForumEnricher
 from anki_addons_dataset.collector.ankiforum.ankiforum_service import AnkiForumService
 from anki_addons_dataset.collector.ankiweb.addon_page_downloader import AddonPageDownloader
@@ -32,7 +29,7 @@ from anki_addons_dataset.collector.overrider.overrider import Overrider
 from anki_addons_dataset.collector.raw_metadata_collector import RawMetadataCollector
 from anki_addons_dataset.collector.sample_collector import SampleCollector
 from anki_addons_dataset.common.data_types import Aggregation, AddonInfos, DatasetSnapshotMetadata, RawMetadata, \
-    SnapshotDate, ReportDate, ScriptVersion, PageLoadTimeout, ElementWaitTimeout, AiModel
+    SnapshotDate, ReportDate, ScriptVersion, PageLoadTimeout, ElementWaitTimeout
 from anki_addons_dataset.common.json_helper import JsonHelper
 from anki_addons_dataset.common.working_dir import SnapshotDir, WorkingDir
 from anki_addons_dataset.config.app_config import AppConfig
@@ -143,13 +140,8 @@ class CollectorFacade:
 
     def __ai_provider(self, snapshot_dir: SnapshotDir, offline: bool,
                       shared_index: Optional[AiCacheIndex] = None) -> CachedAiProvider:
-        model: AiModel = AiModel(self.__config.ai.model)
-        endpoint: str = self.__config.ai.endpoint
-        online_provider_type: type[OpenAiAiProvider] = \
-            DeepSeekAiProvider if DeepSeekAiProvider.owns(endpoint) else OpenAiAiProvider
-        ai_provider: AiProvider = NoAiProvider(model) if offline else online_provider_type(
-            endpoint, self.__config.ai.api_key_file.read_text().strip(), model)
-        return CachedAiProvider(ai_provider, snapshot_dir.get_ai_cache_file(), shared_index, offline)
+        return CachedAiProvider(AiProviderFactory.create(self.__config.ai, offline),
+                                snapshot_dir.get_ai_cache_file(), shared_index, offline)
 
     def __ai_enrich(self, addon_infos: AddonInfos, ai_provider: CachedAiProvider) -> AddonInfos:
         ai_summarizer: AiSummarizer = AiSummarizer(ai_provider, self.__config.ai.readme_max_chars)
