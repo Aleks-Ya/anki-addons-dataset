@@ -1,6 +1,4 @@
 @startuml
-' Structure of the AddonInfos domain model (src/anki_addons_dataset/common/data_types.py).
-' https://plantuml.com/class-diagram
 
 title AddonInfos Domain Model (by AI)
 
@@ -15,6 +13,7 @@ class AddonInfo <<dataclass>> {
   page : AddonPage
   github : Optional[GithubInfo]
   forum : Optional[AnkiForumInfo]
+  ai : Optional[AiInfo]
 }
 
 class AddonHeader <<dataclass>> {
@@ -34,6 +33,9 @@ class AddonPage <<dataclass>> {
   other_links : list[URL]
   description : AddonDescription
   contact_author_url : Optional[URL]
+  ai_declaration_markers : list[str]
+  description_language : Optional[LanguageCode]
+  description_language_confidence : Optional[float]
 }
 
 class AddonBranch <<dataclass>> {
@@ -50,6 +52,32 @@ class GithubInfo <<dataclass>> {
   last_commit : Optional[datetime]
   action_count : Optional[int]
   tests_count : Optional[int]
+  license : Optional[SpdxLicense]
+  forks : Optional[int]
+  open_issues : Optional[int]
+  size_kb : Optional[int]
+  topics : list[Topic]
+  repo_description : Optional[str]
+  homepage : Optional[URL]
+  archived : Optional[bool]
+  pushed_at : Optional[datetime]
+  created_at : Optional[datetime]
+  primary_language : Optional[LanguageName]
+  language_bytes : dict[LanguageName, int]
+  manifest : Optional[AddonManifest]
+  dependencies : list[DependencyName]
+  readme : Optional[GithubReadme]
+  ai_tooling_markers : list[str]
+}
+
+class AddonManifest <<dataclass>> {
+  package : Optional[str]
+  name : Optional[str]
+  conflicts : list[str]
+  min_point_version : Optional[int]
+  max_point_version : Optional[int]
+  homepage : Optional[str]
+  mod : Optional[int]
 }
 
 class GitHubLink <<dataclass>> {
@@ -80,17 +108,24 @@ class AnkiForumInfo <<dataclass>> {
   posts_count : Optional[PostsCount]
 }
 
+class AiInfo <<dataclass>> {
+  summary : Optional[AiSummary]
+  model : Optional[AiModel]
+}
+
 AddonInfos "1" o-- "*" AddonInfo
 
 AddonInfo *-- "1" AddonHeader
 AddonInfo *-- "1" AddonPage
 AddonInfo o-- "0..1" GithubInfo
 AddonInfo o-- "0..1" AnkiForumInfo
+AddonInfo o-- "0..1" AiInfo
 
 AddonPage "1" o-- "*" AddonBranch
 
 GithubInfo "1" o-- "*" GitHubLink
 GithubInfo o-- "0..1" GithubRepo
+GithubInfo o-- "0..1" AddonManifest
 
 GitHubLink *-- "1" GitHubUser
 GitHubLink o-- "0..1" GithubRepo

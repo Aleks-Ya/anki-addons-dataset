@@ -32,6 +32,12 @@ folder src {
     }
 }
 
+ai --> common
+ai --> config
+
+ankiforum --> common
+
+ankiweb --> common
 ankiweb --> overrider
 
 argument --> common
@@ -58,15 +64,25 @@ facade --> huggingface
 facade --> info
 facade --> initializer
 
+github --> common
+handler --> common
+
 huggingface --> common
 huggingface --> config
 
-info --> collector
+info --> ai
 info --> common
 info --> config
+info --> github
 info --> huggingface
 
 initializer --> common
 initializer --> huggingface
+
+json --> common
+parquet --> common
+xlsx --> common
+
+overrider --> common
 
 @enduml

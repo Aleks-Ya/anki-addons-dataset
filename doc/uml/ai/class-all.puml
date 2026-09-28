@@ -1,6 +1,4 @@
 @startuml
-' Create a PlantUML diagram of Python classes in `src`. Include this prompt in the diagram as a non-visible comment.
-' https://plantuml.com/class-diagram
 
 title Class Diagram (by AI)
 
@@ -29,28 +27,58 @@ package "anki_addons_dataset" {
     class GitHubUser <<dataclass>>
     class GithubRepo <<dataclass>>
     class GitHubLink <<dataclass>>
+    class AddonManifest <<dataclass>>
     class GithubInfo <<dataclass>>
     class AddonBranch <<dataclass>>
     class AddonPage <<dataclass>>
     class AnkiForumInfo <<dataclass>>
+    class AiInfo <<dataclass>>
     class AddonInfo <<dataclass>>
     class Aggregation <<dataclass>>
     class RawMetadata <<dataclass>>
     class DatasetSnapshotMetadata <<dataclass>>
   }
 
+  package "config" {
+    class AppConfig <<dataclass>>
+    class ConfigLoader
+    class AiConfig <<dataclass>>
+    class GithubConfig <<dataclass>>
+    class HuggingFaceConfig <<dataclass>>
+    class LoggingConfig <<dataclass>>
+    class SampleConfig <<dataclass>>
+  }
+
   package "facade" {
     class Facade
   }
 
+  package "info" {
+    class AppInfo
+  }
+
   package "collector" {
-    class AddonCollector
+    class AddonInfosCollector
     class Aggregator
     class CollectorFacade
     class DatasetMetadata
     abstract class Enricher
     class RawMetadataCollector
+    class SampleCollector
     class UrlParser
+
+    package "ai" {
+      class AiCacheIndex
+      class AiCacheStats <<dataclass>>
+      class AiEnricher
+      abstract class AiProvider
+      class AiProviderFactory
+      class AiSummarizer
+      class CachedAiProvider
+      class DeepSeekAiProvider
+      class NoAiProvider
+      class OpenAiAiProvider
+    }
 
     package "ankiweb" {
       class AddonPageDownloader
@@ -58,7 +86,9 @@ package "anki_addons_dataset" {
       class AddonBranchParser
       class AddonsPageDownloader
       class AddonsPageParser
+      class AiDeclarationDetector
       class AnkiWebService
+      class DescriptionLanguageDetector
       class PageDownloader
     }
 
@@ -77,11 +107,20 @@ package "anki_addons_dataset" {
       package "handler" {
         abstract class RepoHandler
         class ActionsRepoHandler
+        class AiToolingDetector
+        class ContentsRepoHandler
+        class DependenciesParser
+        class GithubRepoMeta <<dataclass>>
         class LanguagesRepoHandler
         class LastCommitRepoHandler
+        class ManifestParser
+        class ReadmeRepoHandler
+        class RepoInfoRepoHandler
         class StarsRepoHandler
         class TestsCounter
         class TestsRepoHandler
+        class TreeEntriesRepoHandler
+        class TreeReader
       }
     }
 
@@ -96,9 +135,13 @@ package "anki_addons_dataset" {
     class JsonAddonInfo
 
     class Link <<dataclass>>
+    class LanguageBytes <<dataclass>>
+    class Manifest <<dataclass>>
     class GitHub <<dataclass>>
     class Forum <<dataclass>>
-    class Version <<dataclass>>
+    class Ai <<dataclass>>
+    class Branch <<dataclass>>
+    class AnkiWeb <<dataclass>>
     class Details <<dataclass>>
 
     package "json" {
@@ -112,6 +155,7 @@ package "anki_addons_dataset" {
     package "xlsx" {
       class AddonInfoSheet
       class AggregationSheet
+      class LanguageNameFormatter
       class XlsxExporter
     }
   }
@@ -129,17 +173,46 @@ package "anki_addons_dataset" {
 
 ' Core orchestration
 AddonCatalog --> ScriptArguments
+AddonCatalog --> ConfigLoader
+AddonCatalog --> WorkingDir
+AddonCatalog --> HuggingFaceClient
 AddonCatalog --> Facade
 ScriptArguments --> Operation
+Facade --> AppInfo
 Facade --> CollectorFacade
 Facade --> DatasetBundle
-Facade --> HuggingFace
+Facade --> HuggingFaceClient
+Facade --> WorkingDirBackup
+Facade --> WorkingDirInitializer
 CollectorFacade --> WorkingDir
-CollectorFacade --> AddonCollector
+CollectorFacade --> AddonInfosCollector
 CollectorFacade --> Aggregator
 CollectorFacade --> DatasetMetadata
 CollectorFacade --> ExporterFacade
+CollectorFacade --> JsonHelper
 CollectorFacade --> RawMetadataCollector
+CollectorFacade --> SampleCollector
+
+' Configuration
+AppConfig *-- AiConfig
+AppConfig *-- GithubConfig
+AppConfig *-- HuggingFaceConfig
+AppConfig *-- LoggingConfig
+AppConfig *-- SampleConfig
+ConfigLoader --> AppConfig
+ConfigLoader --> Log
+Facade --> AppConfig
+CollectorFacade --> AppConfig
+AiProviderFactory --> AiConfig
+HuggingFaceClient --> HuggingFaceConfig
+
+' Runtime information
+AppInfo --> AppConfig
+AppInfo --> WorkingDir
+AppInfo --> AiProviderFactory
+AppInfo --> AiProvider
+AppInfo --> GithubRestClient
+AppInfo --> HuggingFaceClient
 
 ' Working directories and initialization
 WorkingDir "1" o-- "*" SnapshotDir
@@ -154,40 +227,81 @@ GitHubLink --> GitHubUser
 GitHubLink --> GithubRepo
 GithubInfo "1" o-- "*" GitHubLink
 GithubInfo --> GithubRepo
+GithubInfo --> AddonManifest
 AddonPage "1" o-- "*" AddonBranch
 AddonInfo *-- AddonHeader
 AddonInfo *-- AddonPage
 AddonInfo --> GithubInfo
 AddonInfo --> AnkiForumInfo
+AddonInfo --> AiInfo
 
 ' Collection flow
-AddonCollector --> AnkiWebService
-AddonCollector --> GithubEnricher
-AddonCollector --> AnkiForumEnricher
-AddonCollector --> Overrider
+AddonInfosCollector --> AnkiWebService
+AddonInfosCollector --> GithubEnricher
+AddonInfosCollector --> AnkiForumEnricher
 AnkiWebService --> AddonsPageDownloader
 AnkiWebService --> AddonPageDownloader
 AddonsPageDownloader --> PageDownloader
+AddonsPageDownloader --> AddonsPageParser
 AddonPageDownloader --> PageDownloader
 AddonPageDownloader --> AddonPageParser
 AddonPageParser --> AddonBranchParser
+AddonPageParser --> AiDeclarationDetector
+AddonPageParser --> DescriptionLanguageDetector
+AddonPageParser --> UrlParser
 AddonPageParser --> Overrider
 AddonsPageParser --> AddonHeader
+Overrider --> UrlParser
 GithubEnricher --|> Enricher
 AnkiForumEnricher --|> Enricher
 GithubEnricher --> GithubService
 AnkiForumEnricher --> AnkiForumService
+AnkiForumEnricher --> AnkiForumTopic
 GithubService --> GithubRestClient
 GithubService --> RepoHandler
-AnkiForumService --> AnkiForumTopic
+GithubRestClient --> GithubRateLimit
 
 ' GitHub repo handlers
 ActionsRepoHandler --|> RepoHandler
+ContentsRepoHandler --|> RepoHandler
 LanguagesRepoHandler --|> RepoHandler
 LastCommitRepoHandler --|> RepoHandler
+ReadmeRepoHandler --|> RepoHandler
+RepoInfoRepoHandler --|> RepoHandler
 StarsRepoHandler --|> RepoHandler
 TestsRepoHandler --|> RepoHandler
+TreeEntriesRepoHandler --|> RepoHandler
+RepoInfoRepoHandler --> GithubRepoMeta
 TestsRepoHandler --> TestsCounter
+TestsRepoHandler --> TreeReader
+TreeEntriesRepoHandler --> TreeReader
+GithubService --> AiToolingDetector
+GithubService --> DependenciesParser
+GithubService --> ManifestParser
+GithubService --> GithubRepoMeta
+GithubEnricher --> GithubRepoMeta
+
+' AI summaries
+CollectorFacade --> AiEnricher
+CollectorFacade --> AiProviderFactory
+CollectorFacade --> AiSummarizer
+CollectorFacade --> CachedAiProvider
+CollectorFacade --> AiCacheIndex
+CollectorFacade --> AiCacheStats
+AiEnricher --|> Enricher
+AiEnricher --> AiSummarizer
+AiEnricher --> AiInfo
+AiSummarizer --> AiProvider
+AiProviderFactory --> AiProvider
+AiProviderFactory --> NoAiProvider
+AiProviderFactory --> OpenAiAiProvider
+AiProviderFactory --> DeepSeekAiProvider
+CachedAiProvider --|> AiProvider
+NoAiProvider --|> AiProvider
+OpenAiAiProvider --|> AiProvider
+DeepSeekAiProvider --|> OpenAiAiProvider
+CachedAiProvider --> AiCacheIndex
+CachedAiProvider --> AiCacheStats
 
 ' Export flow
 ExporterFacade --> Exporter
@@ -195,23 +309,34 @@ JsonExporter --|> Exporter
 ParquetExporter --|> Exporter
 XlsxExporter --|> Exporter
 JsonExporter --> JsonAddonInfo
+ParquetExporter --> JsonAddonInfo
 JsonAddonInfo --> Details
+Details *-- AnkiWeb
 Details *-- GitHub
 Details *-- Forum
-Details *-- Version
+Details *-- Ai
+AnkiWeb *-- Branch
 GitHub *-- Link
+GitHub *-- LanguageBytes
+GitHub *-- Manifest
 XlsxExporter --> AddonInfoSheet
 XlsxExporter --> AggregationSheet
+AddonInfoSheet --> LanguageNameFormatter
 ExporterFacade --> JsonExporter
 ExporterFacade --> ParquetExporter
 ExporterFacade --> XlsxExporter
 
 ' Metadata and persistence helpers
+Aggregator --> Aggregation
 DatasetMetadata --> DatasetSnapshotMetadata
 DatasetMetadata --> JsonHelper
+DatasetMetadata --> SnapshotDir
+JsonHelper --> AddonInfo
 RawMetadataCollector --> RawMetadata
 RawMetadataCollector --> SnapshotDir
+SampleCollector --> SnapshotDir
+DatasetBundle --> WorkingDir
 DatasetBundle --> SnapshotDir
-HuggingFace --> HuggingFaceClient
+DatasetBundle --> HuggingFace
 
 @enduml
