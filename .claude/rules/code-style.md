@@ -7,7 +7,7 @@ paths:
 
 ## Comments
 
-- Add comments only when unavoidable — when the code cannot be made self-explanatory through naming
+- Add comments and docstrings only when unavoidable — when the code cannot be made self-explanatory through naming
   and structure, or when a non-obvious decision needs its rationale recorded. Do not restate what the
   code already says.
 
