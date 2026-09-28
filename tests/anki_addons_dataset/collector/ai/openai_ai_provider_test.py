@@ -111,9 +111,10 @@ def test_verify_access_asks_for_one_answer(create: MagicMock, sleep: MagicMock) 
 @pytest.mark.parametrize("status_code", [401, 402, 403])
 def test_verify_access_fails_on_a_fatal_status(status_code: int, create: MagicMock, sleep: MagicMock) -> None:
     create.side_effect = __status_error(status_code)
+    provider: OpenAiAiProvider = __provider()
 
     with pytest.raises(APIStatusError):
-        __provider().verify_access()
+        provider.verify_access()
 
     assert create.call_count == 1
     sleep.assert_not_called()
@@ -121,8 +122,9 @@ def test_verify_access_fails_on_a_fatal_status(status_code: int, create: MagicMo
 
 def test_verify_access_fails_when_the_retries_are_exhausted(create: MagicMock, sleep: MagicMock) -> None:
     create.side_effect = ValueError("boom")
+    provider: OpenAiAiProvider = __provider()
 
     with pytest.raises(RuntimeError, match="AI provider did not answer: https://api.openai.com/v1, model gpt-flash"):
-        __provider().verify_access()
+        provider.verify_access()
 
     assert create.call_count == MAX_ATTEMPTS

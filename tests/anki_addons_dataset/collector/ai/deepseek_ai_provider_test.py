@@ -126,9 +126,10 @@ def test_verify_access_reports_the_balance(mocker: MockerFixture) -> None:
 def test_verify_access_fails_on_an_unavailable_balance(mocker: MockerFixture) -> None:
     mocker.patch.object(OpenAiAiProvider, "verify_access", return_value=None)
     __patch_balance(mocker, {"is_available": False, "balance_infos": []})
+    provider: DeepSeekAiProvider = __provider()
 
     with pytest.raises(PermissionError, match="DeepSeek balance is not available"):
-        __provider().verify_access()
+        provider.verify_access()
 
 
 @freeze_time(f"{MONDAY} 12:30:00")
@@ -146,8 +147,9 @@ def test_verify_access_survives_a_balance_without_details(mocker: MockerFixture,
 @freeze_time(f"{MONDAY} 06:30:00")
 def test_verify_access_fails_during_peak_hours(mocker: MockerFixture) -> None:
     get: MagicMock = __patch_balance(mocker, {"is_available": True})
+    provider: DeepSeekAiProvider = __provider()
 
     with pytest.raises(RuntimeError, match="peak hours"):
-        __provider().verify_access()
+        provider.verify_access()
 
     get.assert_not_called()

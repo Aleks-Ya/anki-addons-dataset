@@ -10,10 +10,15 @@ def __provider() -> NoAiProvider:
 
 
 def test_response_must_not_be_called() -> None:
+    provider: NoAiProvider = __provider()
+    prompt: AiPrompt = AiPrompt("What is the capital of France?")
+
     with pytest.raises(AssertionError, match="NoAiProvider must not be called"):
-        __provider().response(AiPrompt("What is the capital of France?"))
+        provider.response(prompt)
 
 
 def test_verify_access_must_not_be_called() -> None:
+    provider: NoAiProvider = __provider()
+
     with pytest.raises(AssertionError, match="NoAiProvider must not be called"):
-        __provider().verify_access()
+        provider.verify_access()
