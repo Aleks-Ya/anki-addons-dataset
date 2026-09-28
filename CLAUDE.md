@@ -25,7 +25,8 @@ uv run pytest -v --cov=anki_addons_dataset --cov-report=xml --cov-branch
 # A single invocation accepts any subset of steps; `all` expands to `info` + the full seven-step sequence.
 # `info` is a side-effect-free step that logs the app version and runtime configuration,
 # then fails fast on bad credentials: it validates the GitHub token (~/.github/token.txt)
-# against the API and checks HuggingFace write access. Both are network calls.
+# against the API, buys one tiny answer from the AI provider (reporting the balance where the
+# provider exposes it) and checks HuggingFace write access. All three are network calls.
 uv run anki-addons-dataset all -d 2026-01-01  # full pipeline (info first)
 uv run anki-addons-dataset info               # print version + config only
 uv run anki-addons-dataset init
@@ -105,7 +106,7 @@ explicit `upload` and drops UPLOAD from `all`, before the first step runs.
 
 - `src/anki_addons_dataset/common/data_types.py` — all core dataclasses (`AddonInfo`, `GithubInfo`, `AnkiForumInfo`, `Aggregation`, etc.) and `NewType` aliases (`AddonId`, `URL`, `SnapshotDate`)
 - `src/anki_addons_dataset/collector/` — data collection; `AddonInfosCollector` orchestrates AnkiWeb scraping followed by async GitHub and AnkiForumEnrichers running in background threads
-- `src/anki_addons_dataset/collector/ai/` — the AI summary: `AiSummarizer` builds the prompt, `AiProvider`/`OpenAiAiProvider` talk to the endpoint (retrying a transient failure three times, but re-raising a 401/402/403 — a bad key or an empty balance aborts the run instead of failing every addon in turn), `DeepSeekAiProvider` adds the peak-hour refusal and is selected by `CollectorFacade` when `ai.endpoint` is a deepseek.com host, `CachedAiProvider` is the JSONL read-through cache in `1-raw/4-ai/`, `NoAiProvider` stands in where no request may be made, and `AiEnricher` puts the summary on `AddonInfo.ai`
+- `src/anki_addons_dataset/collector/ai/` — the AI summary: `AiSummarizer` builds the prompt, `AiProvider`/`OpenAiAiProvider` talk to the endpoint (retrying a transient failure three times, but re-raising a 401/402/403 — a bad key or an empty balance aborts the run instead of failing every addon in turn), `DeepSeekAiProvider` adds the peak-hour refusal and is selected by `CollectorFacade` when `ai.endpoint` is a deepseek.com host, `CachedAiProvider` is the JSONL read-through cache in `1-raw/4-ai/`, `NoAiProvider` stands in where no request may be made, `AiProviderFactory` builds the provider the configuration asks for (the offline `NoAiProvider`, or DeepSeek vs generic endpoint), and `AiEnricher` puts the summary on `AddonInfo.ai`. Every provider implements `verify_access()`, the `info` preflight: `OpenAiAiProvider` asks for the shortest possible answer through the same `response()` path (so a bad key raises there too), `DeepSeekAiProvider` adds the remaining balance from `/user/balance` and inherits the peak-hour refusal
 - `src/anki_addons_dataset/exporter/` — multi-format export; `ExporterFacade` delegates to json/parquet/xlsx subpackages
 - `src/anki_addons_dataset/facade/` — top-level orchestration wiring operations together
 - `src/anki_addons_dataset/common/working_dir.py` — all filesystem path logic lives here

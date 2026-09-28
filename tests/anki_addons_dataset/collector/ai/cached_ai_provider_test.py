@@ -13,10 +13,15 @@ class StubAiProvider(AiProvider):
     def __init__(self, model: AiModel = AiModel("stub-model")):
         super().__init__(model)
         self.call_count: int = 0
+        self.verify_count: int = 0
 
     def response(self, prompt: AiPrompt) -> Optional[AiResponseText]:
         self.call_count += 1
         return AiResponseText(f"answer-{self.call_count} to {prompt}")
+
+    def verify_access(self) -> Optional[str]:
+        self.verify_count += 1
+        return "stub-details"
 
 
 def read_lines(cache_file: Path) -> list[dict[str, str]]:
@@ -186,3 +191,19 @@ def test_concurrent_appends_produce_readable_lines(tmp_path: Path) -> None:
     lines: list[dict[str, str]] = read_lines(cache_file)
     assert len(lines) == 50
     assert len({line["key"] for line in lines}) == 50
+
+
+def test_verify_access_is_delegated(tmp_path: Path) -> None:
+    stub: StubAiProvider = StubAiProvider()
+    provider: CachedAiProvider = CachedAiProvider(stub, tmp_path / "4-ai" / "ai-cache.jsonl")
+
+    assert provider.verify_access() == "stub-details"
+    assert stub.verify_count == 1
+
+
+def test_offline_verify_access_makes_no_request(tmp_path: Path) -> None:
+    stub: StubAiProvider = StubAiProvider()
+    provider: CachedAiProvider = CachedAiProvider(stub, tmp_path / "4-ai" / "ai-cache.jsonl", offline=True)
+
+    assert provider.verify_access() is None
+    assert stub.verify_count == 0

@@ -52,6 +52,11 @@ class CachedAiProvider(AiProvider):
             self.__append(key, response)
         return response
 
+    def verify_access(self) -> Optional[str]:
+        if self.__offline:
+            return None
+        return self.__ai_provider.verify_access()
+
     def __append(self, key: str, response: AiResponseText) -> None:
         record: dict[str, Any] = {
             AiCacheIndex.key_field: key,

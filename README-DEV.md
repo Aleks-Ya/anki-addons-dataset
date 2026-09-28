@@ -154,9 +154,11 @@ uv run anki-addons-dataset download -d 2026-01-01 --page-load-timeout 180 --elem
 
 The pipeline has seven steps run in order: `init download ai parse report bundle upload`.
 There is also an `info` step that logs the app version and runtime configuration (working dir, HuggingFace dataset, GitHub token file, Python/platform, snapshot/report dates, browser timeouts) without side effects. It fails fast on bad credentials: a GitHub token that is absent, empty or
-rejected by the API, an absent or empty AI API key file, or missing HuggingFace write access. The
-GitHub and HuggingFace checks need network access; the AI key is only checked for presence, because a
-live request would be billed on every `info` run.
+rejected by the API, an AI API key file that is absent, empty or rejected by the provider, or missing
+HuggingFace write access. All three checks need network access: the AI one asks the configured endpoint
+for the shortest possible answer, so it costs a handful of tokens per `info` run, and it reports the
+remaining balance where the provider exposes it (DeepSeek does). Against DeepSeek the check also
+inherits the peak-hour refusal, so run `info` outside the peak hours.
 
 A single invocation accepts any subset of steps (space-separated), or the shorthand `all`,
 which expands to `info` followed by the full seven-step sequence in pipeline order:

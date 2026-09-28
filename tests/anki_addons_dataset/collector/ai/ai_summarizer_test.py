@@ -15,6 +15,9 @@ class RecordingAiProvider(AiProvider):
         self.prompt = prompt
         return self.__response
 
+    def verify_access(self) -> Optional[str]:
+        return None
+
 
 def test_prompt_carries_the_addon_texts() -> None:
     provider: RecordingAiProvider = RecordingAiProvider()

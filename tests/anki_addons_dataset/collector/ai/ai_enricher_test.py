@@ -23,6 +23,9 @@ class StubAiProvider(AiProvider):
         self.prompts.append(prompt)
         return self.__response
 
+    def verify_access(self) -> Optional[str]:
+        return None
+
 
 class FailingAiProvider(AiProvider):
     def __init__(self, error: Exception):
@@ -30,6 +33,9 @@ class FailingAiProvider(AiProvider):
         self.__error: Exception = error
 
     def response(self, prompt: AiPrompt) -> Optional[AiResponseText]:
+        raise self.__error
+
+    def verify_access(self) -> Optional[str]:
         raise self.__error
 
 

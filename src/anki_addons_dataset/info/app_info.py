@@ -6,6 +6,8 @@ from pathlib import Path
 from typing import Optional
 
 from anki_addons_dataset import __version__
+from anki_addons_dataset.collector.ai.ai_provider import AiProvider
+from anki_addons_dataset.collector.ai.ai_provider_factory import AiProviderFactory
 from anki_addons_dataset.collector.github.github_rest_client import GithubRestClient
 from anki_addons_dataset.common.data_types import SnapshotDate, ReportDate, PageLoadTimeout, ElementWaitTimeout
 from anki_addons_dataset.common.working_dir import WorkingDir
@@ -49,6 +51,7 @@ class AppInfo:
         log.info("========================")
         self.__verify_github_token()
         self.__verify_ai_key_file()
+        self.__verify_ai_provider()
         self.__verify_hugging_face_access()
 
     def __verify_github_token(self) -> None:
@@ -58,13 +61,18 @@ class AppInfo:
         log.info(f"GitHub token: OK ({token_file}, {limit_remaining} API requests remaining)")
 
     def __verify_ai_key_file(self) -> None:
-        """Only checks the file: a live request would bill every `info` run."""
         api_key_file: Path = self.__config.ai.api_key_file
         if not api_key_file.is_file():
             raise FileNotFoundError(f"Missing AI API key file: {api_key_file}")
         if not api_key_file.read_text().strip():
             raise ValueError(f"Empty AI API key file: {api_key_file}")
         log.info(f"AI API key: OK ({api_key_file})")
+
+    def __verify_ai_provider(self) -> None:
+        ai_provider: AiProvider = AiProviderFactory.create(self.__config.ai, offline=False)
+        details: Optional[str] = ai_provider.verify_access()
+        log.info(f"AI provider: OK ({self.__config.ai.endpoint}, model {self.__config.ai.model}"
+                 f"{f', {details}' if details else ''})")
 
     def __verify_hugging_face_access(self) -> None:
         self.__hugging_face_client.verify_write_access()

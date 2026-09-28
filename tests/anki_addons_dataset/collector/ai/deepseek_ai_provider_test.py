@@ -1,10 +1,13 @@
+import json
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Optional
+from typing import Any, Optional
+from unittest.mock import MagicMock
 
 import pytest
 from freezegun import freeze_time
 from pytest_mock import MockerFixture
+from requests import Response
 
 from anki_addons_dataset.collector.ai.ai_enricher import AiEnricher
 from anki_addons_dataset.collector.ai.ai_provider import AiPrompt, AiResponseText
@@ -92,3 +95,59 @@ def test_peak_hours_abort_the_whole_enrichment(addon_info: AddonInfo, tmp_path: 
 
     assert "peak hours" in str(exc_info.value.__cause__)
     assert not cache_file.exists()
+
+
+def __balance_response(payload: dict[str, Any]) -> Response:
+    response: Response = Response()
+    response.status_code = 200
+    response._content = json.dumps(payload).encode("utf-8")
+    return response
+
+
+def __patch_balance(mocker: MockerFixture, payload: dict[str, Any]) -> MagicMock:
+    return mocker.patch("anki_addons_dataset.collector.ai.deepseek_ai_provider.requests.get",
+                        return_value=__balance_response(payload))
+
+
+@freeze_time(f"{MONDAY} 12:30:00")
+def test_verify_access_reports_the_balance(mocker: MockerFixture) -> None:
+    mocker.patch.object(OpenAiAiProvider, "verify_access", return_value=None)
+    get: MagicMock = __patch_balance(mocker, {"is_available": True,
+                                              "balance_infos": [{"currency": "CNY", "total_balance": "42.00"}]})
+
+    details: Optional[str] = __provider().verify_access()
+
+    assert details == "balance 42.00 CNY"
+    assert get.call_args.args[0] == "https://api.deepseek.com/user/balance"
+    assert get.call_args.kwargs["headers"] == {"Authorization": "Bearer api-key"}
+
+
+@freeze_time(f"{MONDAY} 12:30:00")
+def test_verify_access_fails_on_an_unavailable_balance(mocker: MockerFixture) -> None:
+    mocker.patch.object(OpenAiAiProvider, "verify_access", return_value=None)
+    __patch_balance(mocker, {"is_available": False, "balance_infos": []})
+
+    with pytest.raises(PermissionError, match="DeepSeek balance is not available"):
+        __provider().verify_access()
+
+
+@freeze_time(f"{MONDAY} 12:30:00")
+def test_verify_access_survives_a_balance_without_details(mocker: MockerFixture,
+                                                          caplog: pytest.LogCaptureFixture) -> None:
+    mocker.patch.object(OpenAiAiProvider, "verify_access", return_value=None)
+    __patch_balance(mocker, {"is_available": True})
+
+    details: Optional[str] = __provider().verify_access()
+
+    assert details is None
+    assert "reported no balance details" in caplog.text
+
+
+@freeze_time(f"{MONDAY} 06:30:00")
+def test_verify_access_fails_during_peak_hours(mocker: MockerFixture) -> None:
+    get: MagicMock = __patch_balance(mocker, {"is_available": True})
+
+    with pytest.raises(RuntimeError, match="peak hours"):
+        __provider().verify_access()
+
+    get.assert_not_called()

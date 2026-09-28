@@ -20,12 +20,23 @@ class OpenAiAiProvider(AiProvider):
 
     def __init__(self, endpoint: str, api_key: str, model: AiModel):
         super().__init__(model)
+        self.__endpoint: str = endpoint
+        self.__api_key: str = api_key
         self.__client: OpenAI = OpenAI(base_url=endpoint, api_key=api_key, timeout=self.__timeout_seconds)
 
-    def response(self, prompt: AiPrompt) -> Optional[AiResponseText]:
-        """Returns None once the retries are exhausted: one unanswered addon must not abort a whole run.
+    def verify_access(self) -> Optional[str]:
+        answer: Optional[AiResponseText] = self.response(AiPrompt("Answer with the single word: pong"))
+        if answer is None:
+            raise RuntimeError(f"AI provider did not answer: {self.__endpoint}, model {self.get_model()}")
+        return None
 
-        Raises on a status no retry can fix (bad key, empty balance): every later addon would fail alike."""
+    def _get_endpoint(self) -> str:
+        return self.__endpoint
+
+    def _get_api_key(self) -> str:
+        return self.__api_key
+
+    def response(self, prompt: AiPrompt) -> Optional[AiResponseText]:
         for attempt in range(1, self.__max_attempts + 1):
             try:
                 response: Response = self.__client.responses.create(

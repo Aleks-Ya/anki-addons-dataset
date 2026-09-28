@@ -19,5 +19,9 @@ class AiProvider(ABC):
     def response(self, prompt: AiPrompt) -> Optional[AiResponseText]:
         ...
 
+    @abstractmethod
+    def verify_access(self) -> Optional[str]:
+        ...
+
     def get_model(self) -> AiModel:
         return self.__model

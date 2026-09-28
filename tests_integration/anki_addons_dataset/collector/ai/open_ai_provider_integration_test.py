@@ -8,3 +8,8 @@ def test_response(ai_provider: AiProvider) -> None:
     answer: Optional[AiResponseText] = ai_provider.response(prompt)
     print(answer)
     assert answer is not None
+
+
+def test_verify_access(ai_provider: AiProvider) -> None:
+    details: Optional[str] = ai_provider.verify_access()
+    print(details)

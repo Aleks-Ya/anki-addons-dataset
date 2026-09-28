@@ -95,3 +95,34 @@ def test_retry_succeeds_after_transient_error(create: MagicMock, sleep: MagicMoc
     assert answer == "Paris"
     assert create.call_count == 2
     assert sleep.call_count == 1
+
+
+def test_verify_access_asks_for_one_answer(create: MagicMock, sleep: MagicMock) -> None:
+    create.return_value = __response(output_text="pong")
+
+    details: Optional[str] = __provider().verify_access()
+
+    assert details is None
+    assert create.call_count == 1
+    assert create.call_args.kwargs["model"] == MODEL
+    sleep.assert_not_called()
+
+
+@pytest.mark.parametrize("status_code", [401, 402, 403])
+def test_verify_access_fails_on_a_fatal_status(status_code: int, create: MagicMock, sleep: MagicMock) -> None:
+    create.side_effect = __status_error(status_code)
+
+    with pytest.raises(APIStatusError):
+        __provider().verify_access()
+
+    assert create.call_count == 1
+    sleep.assert_not_called()
+
+
+def test_verify_access_fails_when_the_retries_are_exhausted(create: MagicMock, sleep: MagicMock) -> None:
+    create.side_effect = ValueError("boom")
+
+    with pytest.raises(RuntimeError, match="AI provider did not answer: https://api.openai.com/v1, model gpt-flash"):
+        __provider().verify_access()
+
+    assert create.call_count == MAX_ATTEMPTS

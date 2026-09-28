@@ -20,4 +20,5 @@ def test_print_info(working_dir: WorkingDir, hugging_face_client: HuggingFaceCli
         app_info.print_info(snapshot_date, ReportDate(datetime.now()))
 
     assert "GitHub token: OK" in caplog.text
+    assert "AI provider: OK" in caplog.text
     assert "HuggingFace write access: OK" in caplog.text

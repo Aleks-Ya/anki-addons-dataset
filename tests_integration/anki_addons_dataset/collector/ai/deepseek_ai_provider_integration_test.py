@@ -13,3 +13,12 @@ def test_response(integration_config: AppConfig, ai_model: AiModel) -> None:
     answer: Optional[AiResponseText] = ai_provider.response(prompt)
     print(answer)
     assert answer is not None
+
+
+def test_verify_access(integration_config: AppConfig, ai_model: AiModel) -> None:
+    api_key: str = integration_config.ai.api_key_file.read_text().strip()
+    ai_provider: AiProvider = DeepSeekAiProvider(integration_config.ai.endpoint, api_key, ai_model)
+    details: Optional[str] = ai_provider.verify_access()
+    print(details)
+    assert details is not None
+    assert details.startswith("balance ")
