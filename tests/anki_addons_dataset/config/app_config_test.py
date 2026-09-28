@@ -6,7 +6,8 @@ import pytest
 from _pytest.monkeypatch import MonkeyPatch
 
 from anki_addons_dataset.config.app_config import AppConfig, AiConfig, ConfigLoader, DEFAULT_LOG_FILE, \
-    DEFAULT_LOG_FORMAT, GithubConfig, HuggingFaceConfig, LoggingConfig, SampleConfig, default_config_file
+    DEFAULT_LOG_FORMAT, DEFAULT_LOG_KEEP, GithubConfig, HuggingFaceConfig, LoggingConfig, SampleConfig, \
+    default_config_file
 
 
 def __write(tmp_path: Path, content: str) -> Path:
@@ -33,6 +34,7 @@ def test_missing_file_yields_defaults(tmp_path: Path, monkeypatch: MonkeyPatch):
     assert config.logging.level == logging.INFO
     assert config.logging.format == DEFAULT_LOG_FORMAT
     assert config.logging.file == DEFAULT_LOG_FILE
+    assert config.logging.keep == DEFAULT_LOG_KEEP
 
 
 def test_empty_file_yields_defaults(tmp_path: Path, monkeypatch: MonkeyPatch):
@@ -57,6 +59,7 @@ logging:
   level: DEBUG
   format: '%(message)s'
   file: /var/log/anki.log
+  keep: 5
 sample:
   addons: 20
   snapshots: 2
@@ -68,7 +71,7 @@ sample:
         ai=AiConfig(endpoint="https://ai.example.com", api_key_file=Path("/secrets/ai.txt"), model="some-model",
                     readme_max_chars=1234),
         huggingface=HuggingFaceConfig(repo_id="Someone/scratch", synced_dirs=["history"]),
-        logging=LoggingConfig(level=logging.DEBUG, format="%(message)s", file=Path("/var/log/anki.log")),
+        logging=LoggingConfig(level=logging.DEBUG, format="%(message)s", file=Path("/var/log/anki.log"), keep=5),
         sample=SampleConfig(addons=20, snapshots=2))
 
 
@@ -236,3 +239,22 @@ def test_false_log_file_disables_file_logging(tmp_path: Path):
     config: AppConfig = ConfigLoader.load(__write(tmp_path, "logging:\n  file: false\n"))
     assert config.logging.file is None
     assert config.resolved_logging().file is None
+
+
+def test_false_log_keep_keeps_every_run_log(tmp_path: Path):
+    config: AppConfig = ConfigLoader.load(__write(tmp_path, "logging:\n  keep: false\n"))
+    assert config.logging.keep is None
+
+
+@pytest.mark.parametrize("value", ["0", "-1", "abc", "true"])
+def test_non_positive_log_keep_is_rejected(tmp_path: Path, value: str):
+    config_file: Path = __write(tmp_path, f"logging:\n  keep: {value}\n")
+    with pytest.raises(ValueError, match="Invalid value for 'logging.keep'"):
+        ConfigLoader.load(config_file)
+
+
+def test_resolved_logging_preserves_the_other_settings(tmp_path: Path):
+    config: AppConfig = ConfigLoader.load(__write(tmp_path, "logging:\n  file: run.log\n  keep: 5\n")) \
+        .with_working_dir(Path("/scratch"))
+    assert config.resolved_logging() == LoggingConfig(level=logging.INFO, format=DEFAULT_LOG_FORMAT,
+                                                      file=Path("/scratch/run.log"), keep=5)

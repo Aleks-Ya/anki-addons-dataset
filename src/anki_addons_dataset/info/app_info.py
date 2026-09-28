@@ -10,6 +10,7 @@ from anki_addons_dataset.collector.ai.ai_provider import AiProvider
 from anki_addons_dataset.collector.ai.ai_provider_factory import AiProviderFactory
 from anki_addons_dataset.collector.github.github_rest_client import GithubRestClient
 from anki_addons_dataset.common.data_types import SnapshotDate, ReportDate, PageLoadTimeout, ElementWaitTimeout
+from anki_addons_dataset.common.log import Log
 from anki_addons_dataset.common.working_dir import WorkingDir
 from anki_addons_dataset.config.app_config import AppConfig
 from anki_addons_dataset.huggingface.hugging_face_client import HuggingFaceClient
@@ -36,7 +37,7 @@ class AppInfo:
         log.info(f"Working directory: {self.__working_dir.get_path()}")
         log.info(f"History directory: {self.__working_dir.get_history_dir()}")
         log.info(f"Bundle directory: {self.__working_dir.get_bundle_dir()}")
-        log.info(f"Log file: {self.__config.resolved_logging().file or 'disabled'}")
+        log.info(f"Log file: {Log.active_log_file() or 'disabled'}")
         log.info(f"HuggingFace dataset: {self.__hugging_face_client.get_repo_id()}")
         log.info(f"GitHub token file: {self.__config.github.token_file}")
         log.info(f"AI endpoint: {self.__config.ai.endpoint}")

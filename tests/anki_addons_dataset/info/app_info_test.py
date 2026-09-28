@@ -15,8 +15,10 @@ from requests import Response
 
 from anki_addons_dataset import __version__
 from anki_addons_dataset.common.data_types import SnapshotDate, ReportDate, PageLoadTimeout, ElementWaitTimeout
+from anki_addons_dataset.common.log import Log
 from anki_addons_dataset.common.working_dir import WorkingDir
-from anki_addons_dataset.config.app_config import AppConfig, AiConfig, GithubConfig
+from anki_addons_dataset.config.app_config import AppConfig, AiConfig, DEFAULT_LOG_FORMAT, GithubConfig, \
+    LoggingConfig
 from anki_addons_dataset.huggingface.hugging_face_client import HuggingFaceClient
 from anki_addons_dataset.info.app_info import AppInfo
 
@@ -148,6 +150,29 @@ def test_print_info(working_dir: WorkingDir, tmp_path: Path, caplog: pytest.LogC
     assert f"AI API key: OK ({api_key_file})" in messages
     assert "AI provider: OK (https://ai.example.com, model deepseek-flash)" in messages
     assert "HuggingFace write access: OK (Ya-Alex/anki-addons)" in messages
+
+
+def test_print_info_reports_the_running_log_file(working_dir: WorkingDir, tmp_path: Path,
+                                                 caplog: pytest.LogCaptureFixture):
+    app_info: AppInfo = __make_app_info(working_dir, tmp_path)
+    __write_token(tmp_path)
+    __write_ai_api_key(tmp_path)
+    Log.configure_logging()
+    with freeze_time("2026-09-28 14:30:05"):
+        Log.apply(LoggingConfig(level=logging.INFO, format=DEFAULT_LOG_FORMAT, file=tmp_path / "anki.log", keep=1),
+                  cli_level=None)
+    try:
+        with caplog.at_level(logging.INFO):
+            with __patch_github_api(), __patch_ai_api():
+                app_info.print_info(None, ReportDate(datetime(2026, 1, 2, 3, 4, 5)))
+    finally:
+        for handler in list(logging.getLogger().handlers):
+            if isinstance(handler, logging.FileHandler):
+                logging.getLogger().removeHandler(handler)
+                handler.close()
+
+    messages: str = "\n".join(record.message for record in caplog.records)
+    assert f"Log file: {tmp_path / 'anki-2026-09-28-143005.log'}" in messages
 
 
 def test_print_info_fails_without_github_token(working_dir: WorkingDir, tmp_path: Path,

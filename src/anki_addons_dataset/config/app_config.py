@@ -14,6 +14,8 @@ DEFAULT_LOG_FORMAT: str = '%(asctime)-15s %(levelname)-8s [%(threadName)-10s] %(
 
 DEFAULT_LOG_FILE: Path = Path("logs") / "anki-addons-dataset.log"
 
+DEFAULT_LOG_KEEP: int = 30
+
 
 def default_config_file() -> Path:
     return Path.home() / CONFIG_FILE_NAME
@@ -52,6 +54,7 @@ class LoggingConfig:
     level: int
     format: str
     file: Optional[Path]
+    keep: Optional[int]
 
 
 @dataclass(frozen=True)
@@ -69,8 +72,7 @@ class AppConfig:
     def resolved_logging(self) -> LoggingConfig:
         if self.logging.file is None or self.logging.file.is_absolute():
             return self.logging
-        return LoggingConfig(level=self.logging.level, format=self.logging.format,
-                             file=self.working_dir / self.logging.file)
+        return replace(self.logging, file=self.working_dir / self.logging.file)
 
     def with_sample(self, addons: Optional[int], snapshots: Optional[int]) -> 'AppConfig':
         sample: SampleConfig = SampleConfig(
@@ -80,7 +82,6 @@ class AppConfig:
 
     @staticmethod
     def defaults() -> 'AppConfig':
-        """The built-in defaults, reproducing the behaviour the app had before it was configurable."""
         return AppConfig(
             working_dir=Path.home() / "anki-addons-dataset",
             github=GithubConfig(token_file=Path.home() / ".github" / "token.txt"),
@@ -88,15 +89,12 @@ class AppConfig:
                         api_key_file=Path.home() / ".config" / "anki-addons-dataset" / "deepseek-api-key.txt",
                         model="deepseek-flash", readme_max_chars=8000),
             huggingface=HuggingFaceConfig(repo_id="Ya-Alex/anki-addons", synced_dirs=["history", "latest"]),
-            logging=LoggingConfig(level=logging.INFO, format=DEFAULT_LOG_FORMAT, file=DEFAULT_LOG_FILE),
+            logging=LoggingConfig(level=logging.INFO, format=DEFAULT_LOG_FORMAT, file=DEFAULT_LOG_FILE,
+                                  keep=DEFAULT_LOG_KEEP),
             sample=SampleConfig())
 
 
 class ConfigLoader:
-    """Reads the optional YAML config file over the built-in defaults.
-
-    Every key is optional, but an unknown key is an error rather than a no-op: a silently
-    ignored typo in a config file is the classic way to spend an hour debugging the wrong thing."""
 
     @staticmethod
     def load(config_file: Path) -> AppConfig:
@@ -148,17 +146,24 @@ class ConfigLoader:
     @staticmethod
     def __logging(raw: dict[str, Any], config_file: Path, defaults: LoggingConfig) -> LoggingConfig:
         section: dict[str, Any] = ConfigLoader.__section(raw, "logging", config_file)
-        ConfigLoader.__reject_unknown(section, ["level", "format", "file"], "logging", config_file)
+        ConfigLoader.__reject_unknown(section, ["level", "format", "file", "keep"], "logging", config_file)
         return LoggingConfig(
             level=ConfigLoader.__level(section, config_file, defaults.level),
             format=ConfigLoader.__string(section, "format", "logging", config_file, defaults.format),
-            file=ConfigLoader.__log_file(section, config_file, defaults.file))
+            file=ConfigLoader.__log_file(section, config_file, defaults.file),
+            keep=ConfigLoader.__log_keep(section, config_file, defaults.keep))
 
     @staticmethod
     def __log_file(section: dict[str, Any], config_file: Path, default: Optional[Path]) -> Optional[Path]:
         if section.get("file") is False:
             return None
         return ConfigLoader.__optional_path(section, "file", "logging", config_file, default)
+
+    @staticmethod
+    def __log_keep(section: dict[str, Any], config_file: Path, default: Optional[int]) -> Optional[int]:
+        if section.get("keep") is False:
+            return None
+        return ConfigLoader.__optional_positive_int(section, "keep", "logging", config_file, default)
 
     @staticmethod
     def __sample(raw: dict[str, Any], config_file: Path, defaults: SampleConfig) -> SampleConfig:

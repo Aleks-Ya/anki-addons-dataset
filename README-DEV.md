@@ -116,7 +116,8 @@ huggingface:
 logging:
   level: INFO                            # console level; the log file always gets DEBUG
   format: '%(asctime)-15s %(levelname)-8s [%(threadName)-10s] %(message)s'
-  file: logs/anki-addons-dataset.log     # relative to working_dir; `false` disables file logging
+  file: logs/anki-addons-dataset.log     # name template; relative to working_dir, `false` disables file logging
+  keep: 30                               # delete all but the newest N run logs; `false` keeps them all
 sample:
   addons: null                           # only the first N addons by id; --sample-addons overrides it
   snapshots: null                        # only the newest N snapshots; --sample-snapshots overrides it
@@ -204,9 +205,12 @@ turn peak hours into off-peak ones, so the check never lets a peak-rate request 
 Default console log level: INFO (`logging.level` in the config file)
 Set log level: `uv run anki-addons-dataset parse -l DEBUG` — the flag wins over the config file.
 It only moves the console level: the log file always receives DEBUG.
-The log is also appended to `<working_dir>/logs/anki-addons-dataset.log`, so a run's output survives
-the terminal. `logging.file` moves it (a relative path stays relative to the working directory) and
-`logging.file: false` turns it off; `logging.format` sets the format.
+Every run also writes its own log file under `<working_dir>/logs/`, so a run's output survives the
+terminal and is never mixed with another run's: the start timestamp goes into the name, giving
+`logs/anki-addons-dataset-2026-09-28-143005.log`. `logging.file` is the template the name is built
+from (a relative path stays relative to the working directory) and `logging.file: false` turns file
+logging off; `logging.keep` (30 by default, `false` for unlimited) deletes all but the newest N run
+logs at startup; `logging.format` sets the format.
 
 ## Browser timeouts
 `download` scrapes AnkiWeb with a headless Chrome driven by Selenium. Both of its timeouts (in
