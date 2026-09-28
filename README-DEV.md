@@ -1,5 +1,22 @@
 # Developer Guide
 
+## Install
+The released command comes from PyPI:
+
+```bash
+pip install anki-addons-dataset
+```
+
+Or with [uv](https://docs.astral.sh/uv/):
+
+```bash
+uv tool install anki-addons-dataset   # install the command
+uvx anki-addons-dataset info          # or run it once, without installing
+```
+
+Either way this provides the `anki-addons-dataset` command. To run the working sources instead, set
+up the virtual environment below and prefix commands with `uv run`.
+
 ## Set up a Python virtual environment
 The project is managed by [uv](https://docs.astral.sh/uv/).
 
@@ -70,26 +87,56 @@ read-only token as a Space secret named `HF_TOKEN` (Space -> Settings -> Variabl
 credentials `upload` uses (`hf auth login`).
 
 ## Configuration file
-An optional `~/.anki-addons-dataset.yaml` supplies the working directory, the GitHub token path, the
-AI provider, the HuggingFace target and the logging settings. See the *Configuration* section of [README.md](README.md)
-for the full annotated example; `config.yaml.example` in the repo root is a copy-ready version:
+Paths, credentials locations, the AI provider, the HuggingFace target and logging can be set in an
+optional YAML file at `~/.anki-addons-dataset.yaml` (or elsewhere, via `-c/--config`). Every key is
+optional; omitted keys keep the defaults shown below, and with no file at all the defaults apply:
+
+```yaml
+working_dir: ~/anki-addons-dataset       # where snapshots and the bundle are kept; -w overrides it
+github:
+  token_file: ~/.github/token.txt        # GitHub personal access token, read by download/parse
+ai:
+  endpoint: https://api.deepseek.com     # any OpenAI-compatible endpoint, used by the ai step
+  api_key_file: ~/.config/anki-addons-dataset/deepseek-api-key.txt
+  model: deepseek-flash
+  readme_max_chars: 8000                 # the README is cut to this length before entering the prompt
+huggingface:
+  repo_id: Ya-Alex/anki-addons           # the dataset upload targets
+  synced_dirs: [history, latest]         # the remote folders upload pushes and prunes
+logging:
+  level: INFO                            # console level; the log file always gets DEBUG
+  format: '%(asctime)-15s %(levelname)-8s [%(threadName)-10s] %(message)s'
+  file: logs/anki-addons-dataset.log     # relative to working_dir; `false` disables file logging
+sample:
+  addons: null                           # only the first N addons by id; --sample-addons overrides it
+  snapshots: null                        # only the newest N snapshots; --sample-snapshots overrides it
+```
+
+`config.yaml.example` in the repo root is a copy-ready version:
 
 ```bash
 cp config.yaml.example ~/.anki-addons-dataset.yaml
 ```
 
-Values resolve as **CLI flag > config file > default**, and a different file can be passed with
-`-c/--config`. The file deliberately lives outside the working directory, because the working
+`~` and `$VAR` are expanded in path values. An unknown or misspelled key is an error rather than a
+silent no-op, so typos surface immediately.
+
+Values resolve as **CLI flag > config file > default**: `-l WARNING` overrides `logging.level`,
+`-w/--working-dir` overrides `working_dir`, and `--sample-addons`/`--sample-snapshots` override the
+`sample` section, but the file still applies when a flag is absent. The `info` step prints the
+resolved values. The file deliberately lives outside the working directory, because the working
 directory is itself one of its keys.
 
 Pointing `working_dir` at a scratch directory and `huggingface.repo_id` at a personal scratch
 dataset is the safe way to try the pipeline without touching the published one. A single run can be
-redirected without touching the file at all — `-w/--working-dir` overrides `working_dir`, and the
-`info` step prints the directory actually in use:
+redirected without touching the file at all:
 
 ```bash
-uv run anki-addons-dataset init -w ~/anki-addons-scratch
+uv run anki-addons-dataset init download -d 2026-01-01 -w ~/anki-addons-scratch
 ```
+
+The HuggingFace token is not part of this file — `huggingface_hub` reads it from `HF_TOKEN` or from
+`hf auth login`.
 
 ## GitHub token
 The `download` and `parse` steps call the GitHub REST API and need a personal access token
@@ -127,9 +174,21 @@ and re-running `ai` for an older snapshot, or reverting a prompt change, costs n
 what lets `init` restore it on a fresh machine. Each line holds the model, the answer and a SHA-256
 of the prompt; the prompt text itself is not stored.
 
+Without `-d` the step summarizes every snapshot, which is what a changed prompt needs; with `-d` it
+summarizes that one snapshot only:
+
 ```bash
-anki-addons-dataset ai            # all snapshots; watch the per-snapshot hit/miss counts
+anki-addons-dataset ai                  # all snapshots; watch the per-snapshot hit/miss counts
+anki-addons-dataset ai -d 2026-01-01    # one snapshot only
 ```
+
+The date must name an existing snapshot, otherwise `ai` fails. Inside `all`, `-d` belongs to
+`download` alone: the `ai` step of `all` keeps summarizing every snapshot.
+
+Against the default DeepSeek endpoint, `ai` refuses to run during DeepSeek's peak hours
+(01:00-04:00 and 06:00-10:00 UTC, Monday through Friday), when the rate is double the off-peak
+one, and fails with an error naming the window. Chinese public holidays are ignored: they only
+turn peak hours into off-peak ones, so the check never lets a peak-rate request through.
 
 ## Logging
 Default console log level: INFO (`logging.level` in the config file)
@@ -140,11 +199,13 @@ the terminal. `logging.file` moves it (a relative path stays relative to the wor
 `logging.file: false` turns it off; `logging.format` sets the format.
 
 ## Browser timeouts
-`download` drives a headless Chrome via Selenium. Both of its timeouts (seconds) are configurable and
-are printed by the `info` step:
+`download` scrapes AnkiWeb with a headless Chrome driven by Selenium. Both of its timeouts (in
+seconds) can be raised on a slow network and are printed by the `info` step:
 
-- `--page-load-timeout` (default 120): passed to `driver.set_page_load_timeout()`, aborts a hung page load
-- `--element-wait-timeout` (default 120): passed to `WebDriverWait`, waits for the page content to appear
+| Option | Default | Meaning |
+| --- | --- | --- |
+| `--page-load-timeout` | 120 | passed to `driver.set_page_load_timeout()`; how long a single page may take to load before the browser gives up |
+| `--element-wait-timeout` | 120 | passed to `WebDriverWait`; how long to wait for the page content to appear after loading |
 
 ```bash
 uv run anki-addons-dataset download -d 2026-01-01 --page-load-timeout 180 --element-wait-timeout 30
@@ -160,13 +221,28 @@ for the shortest possible answer, so it costs a handful of tokens per `info` run
 remaining balance where the provider exposes it (DeepSeek does). Against DeepSeek the check also
 inherits the peak-hour refusal, so run `info` outside the peak hours.
 
-A single invocation accepts any subset of steps (space-separated), or the shorthand `all`,
-which expands to `info` followed by the full seven-step sequence in pipeline order:
+Each step can be run on its own:
 
 ```bash
+anki-addons-dataset info
+anki-addons-dataset init
+anki-addons-dataset download -d 2026-01-01
+anki-addons-dataset ai
+anki-addons-dataset parse
+anki-addons-dataset report
+anki-addons-dataset bundle
+anki-addons-dataset upload
+```
+
+A single invocation also accepts any subset of steps (space-separated), running them in the given
+order, or the shorthand `all`, which expands to `info` followed by the full seven-step sequence in
+pipeline order:
+
+```bash
+anki-addons-dataset init download -d 2026-01-01 ai parse
 anki-addons-dataset all -d 2026-01-01          # equivalent to: info init download ai parse report bundle upload
 anki-addons-dataset parse report               # run only the given steps
-anki-addons-dataset info                        # just print version and configuration
+anki-addons-dataset info                       # just print version and configuration
 ```
 
 There are three ways to run it, depending on which version you need, plus a sampled run for
@@ -208,8 +284,13 @@ PYTHONPATH=src python -m anki_addons_dataset.addon_catalog parse report
 
 ### 4. Sample run: a slice of the dataset
 Testing a change end-to-end against the real working directory means thousands of addon pages per
-snapshot and the whole history re-parsed. `--sample-addons` and `--sample-snapshots` cut that down to
-a slice; point `-w` at a scratch directory so the real one is never touched:
+snapshot and the whole history re-parsed. Two limits cut that down to a slice of it, and combine
+freely; point `-w` at a scratch directory so the real one is never touched:
+
+| Option | Meaning |
+| --- | --- |
+| `--sample-addons` | download and parse only the first N addons, ordered by addon id |
+| `--sample-snapshots` | let `ai` (without `-d`)/`parse`/`report`/`bundle` process only the newest N snapshots |
 
 ```bash
 WD=/tmp/anki-addons-sample
@@ -223,11 +304,10 @@ It records the addon limit in `1-raw/sample.json`, which is why the second comma
 offline `parse` of a sampled snapshot would otherwise ask for an addon page that was never
 downloaded. Add `ai` only when the AI path is what is being tested — it bills per addon.
 
-`--sample-snapshots N` limits `ai`/`parse`/`report`/`bundle` to the newest N snapshots, which is the
-axis that matters once the scratch directory holds several dates.
+`--sample-snapshots` is the axis that matters once the scratch directory holds several dates.
 
-A sampled run refuses to `upload`, so a partial dataset cannot reach HuggingFace. See the *Sample
-runs* section of [README.md](README.md) for the user-facing description.
+A sampled run never uploads: `upload` on its own is rejected, and `all` runs through `bundle` and
+skips it, so a partial dataset cannot reach HuggingFace.
 
 ## Create a new version of HuggingFace dataset **from sources** by steps
 1. Upgrade Python packages: `./uv_update.sh`
