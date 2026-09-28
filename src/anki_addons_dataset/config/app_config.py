@@ -72,7 +72,8 @@ class AppConfig:
     def resolved_logging(self) -> LoggingConfig:
         if self.logging.file is None or self.logging.file.is_absolute():
             return self.logging
-        return replace(self.logging, file=self.working_dir / self.logging.file)
+        return LoggingConfig(level=self.logging.level, format=self.logging.format,
+                             file=self.working_dir / self.logging.file, keep=self.logging.keep)
 
     def with_sample(self, addons: Optional[int], snapshots: Optional[int]) -> 'AppConfig':
         sample: SampleConfig = SampleConfig(
