@@ -1,4 +1,5 @@
 import logging
+import sys
 import time
 from datetime import datetime
 from logging import Logger
@@ -37,9 +38,7 @@ def _ai_snapshot_date(arguments: ScriptArguments,
     return snapshot_date
 
 
-def main() -> None:
-    Log.configure_logging()
-
+def _run() -> None:
     arguments: ScriptArguments = ScriptArguments()
 
     config_file: Path = arguments.get_config_file()
@@ -78,6 +77,15 @@ def main() -> None:
         log.info(f"{name:<10} {format_duration(elapsed)}")
     log.info(f"{'Total':<10} {format_duration(total)}")
     log.info("==========================")
+
+
+def main() -> None:
+    Log.configure_logging()
+    try:
+        _run()
+    except Exception as e:
+        log.error(f"Operation failed: {e}", exc_info=True)
+        sys.exit(1)
 
 
 if __name__ == "__main__":

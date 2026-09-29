@@ -5,8 +5,10 @@ from unittest.mock import Mock
 
 import pytest
 from _pytest.logging import LogCaptureFixture
+from _pytest.monkeypatch import MonkeyPatch
 
-from anki_addons_dataset.addon_catalog import _ai_snapshot_date, _upload_free
+from anki_addons_dataset import addon_catalog
+from anki_addons_dataset.addon_catalog import _ai_snapshot_date, _upload_free, main
 from anki_addons_dataset.argument.script_arguments import Operation
 from anki_addons_dataset.common.data_types import SnapshotDate
 from anki_addons_dataset.config.app_config import AppConfig, SampleConfig
@@ -62,3 +64,35 @@ def test_all_hides_the_snapshot_date_from_ai(caplog: LogCaptureFixture):
 def test_no_snapshot_date_stays_none():
     date_less: Optional[SnapshotDate] = None
     assert _ai_snapshot_date(__arguments(True), date_less) is None
+
+
+def test_a_failing_run_is_logged_and_exits_with_an_error(monkeypatch: MonkeyPatch, caplog: LogCaptureFixture):
+    def failing_run() -> None:
+        raise RuntimeError("boom")
+
+    monkeypatch.setattr(addon_catalog, "_run", failing_run)
+
+    with pytest.raises(SystemExit) as exit_info:
+        main()
+
+    assert exit_info.value.code == 1
+    assert "Operation failed: boom" in caplog.text
+    assert "RuntimeError: boom" in caplog.text
+
+
+def test_a_system_exit_is_not_swallowed(monkeypatch: MonkeyPatch, caplog: LogCaptureFixture):
+    def exiting_run() -> None:
+        raise SystemExit(0)
+
+    monkeypatch.setattr(addon_catalog, "_run", exiting_run)
+
+    with pytest.raises(SystemExit) as exit_info:
+        main()
+
+    assert exit_info.value.code == 0
+    assert "Operation failed" not in caplog.text
+
+
+def test_a_successful_run_returns(monkeypatch: MonkeyPatch):
+    monkeypatch.setattr(addon_catalog, "_run", lambda: None)
+    main()
