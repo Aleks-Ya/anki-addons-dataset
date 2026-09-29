@@ -20,7 +20,7 @@ class WorkingDirInitializer:
 
     def initialize_working_dir(self) -> None:
         log.info(f"Initializing working directory: {self.__working_dir.get_path()}")
-        self.__working_dir_backup.rename_existing_working_dir()
+        self.__working_dir_backup.backup_existing_content()
         self.__create_empty_working_dir()
         snapshots: dict[SnapshotDir, HuggingFaceFolder] = self.__find_snapshots_in_hf()
         self.__download_raw_zip_files(snapshots)

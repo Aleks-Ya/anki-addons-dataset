@@ -66,7 +66,11 @@ git push origin HEAD --tags
 
 Seven sequential CLI operations form the pipeline:
 
-1. **INIT** — creates `~/anki-addons-dataset/` working directory with `history/` and `bundle/` subdirs
+1. **INIT** — creates `~/anki-addons-dataset/` working directory with `history/` and `bundle/` subdirs.
+   Existing content is not deleted: every top-level entry is moved into `backups/YYYYmmdd-HHMMSS/` first,
+   except `backups/` itself and whatever holds the run's active log file (`logs/` by default), so the log
+   of the run doing the backup stays where `info` reported it. Backups are never pruned automatically —
+   delete them by hand. They are not published: BUNDLE/UPLOAD only ever read `bundle/`
 2. **DOWNLOAD** — scrapes AnkiWeb for a given date (`-d YYYY-MM-DD`), saves raw HTML/JSON to `history/YYYY-MM-DD/1-raw/` (the durable cache). It also writes parsed `AddonInfo` JSONs to `2-stage/` as a side effect, but those are regenerable and get wiped/rebuilt by the next PARSE (see item 4).
 3. **AI** — generates the one-sentence addon summary for every snapshot, or, with `-d YYYY-MM-DD`, for
    that one snapshot only (an unknown date is an error; a named date also wins over

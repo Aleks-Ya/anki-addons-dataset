@@ -85,6 +85,7 @@ class WorkingDir:
         self.__working_dir_path: Path = working_dir_path
         self.__history_dir: Path = self.__working_dir_path / "history"
         self.__bundle_dir: Path = self.__working_dir_path / "bundle"
+        self.__backups_dir: Path = self.__working_dir_path / "backups"
         self.__max_snapshots: Optional[int] = max_snapshots
 
     def get_path(self) -> Path:
@@ -95,6 +96,9 @@ class WorkingDir:
 
     def get_bundle_dir(self) -> Path:
         return self.__bundle_dir
+
+    def get_backups_dir(self) -> Path:
+        return self.__backups_dir
 
     def get_snapshot_dir(self, snapshot_date: SnapshotDate) -> SnapshotDir:
         return SnapshotDir(self.__history_dir / snapshot_date.isoformat())

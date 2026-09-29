@@ -211,6 +211,9 @@ terminal and is never mixed with another run's: the start timestamp goes into th
 from (a relative path stays relative to the working directory) and `logging.file: false` turns file
 logging off; `logging.keep` (30 by default, `false` for unlimited) deletes all but the newest N run
 logs at startup; `logging.format` sets the format.
+`init` leaves the log directory alone: it moves the other top-level entries of the working directory into
+`backups/YYYYmmdd-HHMMSS/`, so the log of the run that re-initialized the working directory stays in
+`<working_dir>/logs/` together with the earlier ones.
 
 ## Browser timeouts
 `download` scrapes AnkiWeb with a headless Chrome driven by Selenium. Both of its timeouts (in
@@ -326,7 +329,8 @@ skips it, so a partial dataset cannot reach HuggingFace.
 ## Create a new version of HuggingFace dataset **from sources** by steps
 1. Upgrade Python packages: `./uv_update.sh`
 2. Check version: `uv run anki-addons-dataset info`
-3. Initialize a working directory: `uv run anki-addons-dataset init` (creates `~/anki-addons-dataset`)
+3. Initialize a working directory: `uv run anki-addons-dataset init` (creates `~/anki-addons-dataset`; any
+   existing content except `logs/` is moved to `~/anki-addons-dataset/backups/YYYYmmdd-HHMMSS`)
 4. Download new snapshot: `uv run anki-addons-dataset download -d 2026-01-01` (creates `~/anki-addons-dataset/history/2026-01-01/1-raw`)
 5. Parse dataset: `uv run anki-addons-dataset parse` (enriches `~/anki-addons-dataset/history/YYYY-MM-DD/2-stage`)
 6. Generate reports: `uv run anki-addons-dataset report` (creates `~/anki-addons-dataset/history/YYYY-MM-DD/3-final`)
