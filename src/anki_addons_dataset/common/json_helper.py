@@ -1,5 +1,7 @@
 import dataclasses
 import json
+import os
+import tempfile
 from datetime import date, datetime
 from pathlib import Path
 from typing import Any, Optional
@@ -17,19 +19,17 @@ class JsonHelper:
 
     @staticmethod
     def write_addon_info_to_file(addon_infos: AddonInfo, file: Path) -> None:
-        file.parent.mkdir(parents=True, exist_ok=True)
         content_json: str = json.dumps(dataclasses.asdict(addon_infos), indent=2, default=JsonHelper.__date_serializer)
-        file.write_text(content_json)
+        JsonHelper.__write_atomically(content_json, file)
 
     @staticmethod
     def write_addon_infos_dump(addon_infos: AddonInfos, script_version: ScriptVersion, file: Path) -> None:
-        file.parent.mkdir(parents=True, exist_ok=True)
         envelope: dict[str, Any] = {
             JsonHelper.__script_version_key: script_version,
             JsonHelper.__addon_infos_key: [dataclasses.asdict(addon_info) for addon_info in addon_infos],
         }
         content_json: str = json.dumps(envelope, indent=2, default=JsonHelper.__date_serializer)
-        file.write_text(content_json)
+        JsonHelper.__write_atomically(content_json, file)
 
     @staticmethod
     def read_addon_infos_dump(file: Path) -> tuple[ScriptVersion, AddonInfos]:
@@ -181,13 +181,24 @@ class JsonHelper:
 
     @staticmethod
     def write_dict_to_file(content: dict[str, Any], file: Path) -> None:
-        file.parent.mkdir(parents=True, exist_ok=True)
         content_json: str = json.dumps(content, indent=2, default=JsonHelper.__date_serializer)
-        file.write_text(content_json)
+        JsonHelper.__write_atomically(content_json, file)
 
     @staticmethod
     def write_content_to_file(content: str, file: Path) -> None:
         JsonHelper.write_dict_to_file(json.loads(content), file)
+
+    @staticmethod
+    def __write_atomically(content: str, file: Path) -> None:
+        file.parent.mkdir(parents=True, exist_ok=True)
+        descriptor, temp_path = tempfile.mkstemp(dir=file.parent, prefix=f"{file.name}.", suffix=".tmp")
+        try:
+            with os.fdopen(descriptor, "w") as temp_file:
+                temp_file.write(content)
+            os.replace(temp_path, file)
+        except BaseException:
+            Path(temp_path).unlink(missing_ok=True)
+            raise
 
     @staticmethod
     def __date_serializer(obj: object):

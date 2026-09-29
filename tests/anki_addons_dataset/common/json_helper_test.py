@@ -1,6 +1,10 @@
 import json
+import threading
 from datetime import date, datetime
 from pathlib import Path
+from unittest.mock import Mock, patch
+
+import pytest
 
 from anki_addons_dataset.common.data_types import AddonInfo, AddonInfos, AddonHeader, AddonPage, AddonBranch, \
     GithubInfo, GitHubLink, GitHubUser, GithubRepo, AnkiForumInfo, AddonId, AnkiVersion, HtmlStr, URL, \
@@ -213,3 +217,49 @@ def test_addon_infos_dump_reads_legacy_dump_without_the_ai_block(addon_infos: Ad
     _, read_addon_infos = JsonHelper.read_addon_infos_dump(dump_file)
 
     assert read_addon_infos[0].ai is None
+
+
+def test_write_leaves_no_temp_files(addon_infos: AddonInfos, script_version: ScriptVersion,
+                                    working_dir_path: Path):
+    dump_file: Path = working_dir_path / "addon-infos.json"
+
+    JsonHelper.write_addon_infos_dump(addon_infos, script_version, dump_file)
+
+    assert list(working_dir_path.iterdir()) == [dump_file]
+
+
+def test_failed_write_keeps_the_previous_file(addon_infos: AddonInfos, script_version: ScriptVersion,
+                                              working_dir_path: Path):
+    dump_file: Path = working_dir_path / "addon-infos.json"
+    JsonHelper.write_addon_infos_dump(addon_infos, script_version, dump_file)
+    previous_content: str = dump_file.read_text()
+
+    with patch("os.replace", Mock(side_effect=OSError("No space left on device"))):
+        with pytest.raises(OSError):
+            JsonHelper.write_addon_infos_dump(AddonInfos([]), ScriptVersion("9.9.9"), dump_file)
+
+    assert dump_file.read_text() == previous_content
+    assert list(working_dir_path.iterdir()) == [dump_file]
+
+
+def test_concurrent_reader_never_sees_a_partial_file(addon_infos: AddonInfos, script_version: ScriptVersion,
+                                                     working_dir_path: Path):
+    dump_file: Path = working_dir_path / "addon-infos.json"
+    JsonHelper.write_addon_infos_dump(addon_infos, script_version, dump_file)
+    writes_finished: threading.Event = threading.Event()
+
+    def write_repeatedly() -> None:
+        for _ in range(200):
+            JsonHelper.write_addon_infos_dump(addon_infos, script_version, dump_file)
+        writes_finished.set()
+
+    writer: threading.Thread = threading.Thread(target=write_repeatedly)
+    writer.start()
+    read_count: int = 0
+    while not writes_finished.is_set():
+        _, read_addon_infos = JsonHelper.read_addon_infos_dump(dump_file)
+        assert read_addon_infos == addon_infos
+        read_count += 1
+    writer.join()
+
+    assert read_count > 0
