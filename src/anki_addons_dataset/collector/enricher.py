@@ -1,52 +1,40 @@
 import os
 from abc import ABC, abstractmethod
-from queue import Queue
-from threading import Thread
+from concurrent.futures import Future, ThreadPoolExecutor
+from typing import Optional
 import logging
 from logging import Logger
 
-from anki_addons_dataset.common.data_types import AddonInfo, AddonHeader, AddonPage, AddonId, \
-    AddonInfos, AnkiVersion, HtmlStr, URL, AddonRating, UpdateDate, AddonTitle
+from anki_addons_dataset.common.data_types import AddonInfo, AddonInfos
 
 log: Logger = logging.getLogger(__name__)
 
 
-class Enricher(ABC, Thread):
+class Enricher(ABC):
 
-    def __init__(self, name: str):
-        super().__init__(name=name, daemon=True)
+    def __init__(self, name: str, pool_size: int = 1):
         self.__name: str = name
-        self.__queue: Queue[AddonInfo] = Queue()
-        self.__sentinel: AddonInfo = AddonInfo(AddonHeader(AddonId(0), AddonTitle(""), URL(""), AddonRating(0), UpdateDate(""), AnkiVersion("")),
-                                               AddonPage(HtmlStr(""), 0, 0, [], []), None, None)
+        self.__pool_size: int = pool_size
+        self.__executor: Optional[ThreadPoolExecutor] = None
+        self.__futures: list[Future[None]] = []
 
-    def run(self) -> None:
-        log.info(f"Start thread: {self.__name}")
-        while True:
-            item: AddonInfo = self.__queue.get()
-            if item is self.__sentinel:
-                log.info("Finishing by sentinel")
-                self.__queue.task_done()
-                break
-            try:
-                log.info(f"Enriching: {item.header.id}. Queue: {self.__queue.qsize()}. Done: {self._done()}")
-                self._download(item)
-            except Exception:
-                log.error(f"Error processing item: {item}", exc_info=True)
-                os._exit(1)
-            self.__queue.task_done()
-        log.info("Exit run")
+    def start(self) -> None:
+        log.info(f"Start thread pool: {self.__name} (size: {self.__pool_size})")
+        self.__executor = ThreadPoolExecutor(max_workers=self.__pool_size, thread_name_prefix=self.__name)
 
     def download_in_background(self, addon_info: AddonInfo) -> None:
         log.debug(f"Enqueue for enriching ({self.__name}): {addon_info.header.id}")
-        self.__queue.put(addon_info)
+        if self.__executor is None:
+            raise RuntimeError(f"Enricher is not started: {self.__name}")
+        self.__futures.append(self.__executor.submit(self.__download, addon_info))
 
     def wait_download_finish(self) -> None:
         log.info("Wait finish")
-        if self.is_alive():
+        if self.__executor:
             log.info("Waiting for finish")
-            self.__queue.put(self.__sentinel)
-            self.__queue.join()
+            self.__executor.shutdown(wait=True)
+            self.__executor = None
+            self.__futures = []
 
     @abstractmethod
     def enrich(self, addon_infos: AddonInfos) -> AddonInfos:
@@ -59,3 +47,11 @@ class Enricher(ABC, Thread):
     @abstractmethod
     def _done(self) -> int:
         ...
+
+    def __download(self, addon_info: AddonInfo) -> None:
+        try:
+            log.info(f"Enriching: {addon_info.header.id}. Done: {self._done()}")
+            self._download(addon_info)
+        except Exception:
+            log.error(f"Error processing item: {addon_info}", exc_info=True)
+            os._exit(1)
