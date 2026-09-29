@@ -1,4 +1,6 @@
 import base64
+import time
+from concurrent.futures import Future, ThreadPoolExecutor
 from datetime import date, datetime
 from typing import Optional
 from unittest.mock import Mock
@@ -189,6 +191,33 @@ def test_conditional_get_304_copies_previous_snapshot(working_dir: WorkingDir,
     mock_304.assert_called_once_with("https://api.github.com/repos/John/app", 'W/"abc"')
     curr_raw = curr_snapshot.get_raw_dir() / "2-github" / github_repo.user / github_repo.repo_name / "info.json"
     assert curr_raw.exists()
+
+
+def test_concurrent_calls_for_the_same_repo_download_once(github_service: GithubService,
+                                                          github_rest_client: GithubRestClient,
+                                                          github_repo: GithubRepo):
+    content: str = """{"Python":145190,"Shell":1154}"""
+    github_rest_client.get_from_url = __mock_slow_content(content)
+    exp: dict[LanguageName, int] = {LanguageName("Python"): 145190, LanguageName("Shell"): 1154}
+
+    with ThreadPoolExecutor(max_workers=3) as executor:
+        futures: list[Future[dict[LanguageName, int]]] = [
+            executor.submit(github_service.get_languages, github_repo) for _ in range(3)]
+        results: list[dict[LanguageName, int]] = [future.result() for future in futures]
+
+    assert results == [exp, exp, exp]
+    github_rest_client.get_from_url.assert_called_once()
+
+
+def __mock_slow_content(content: str) -> Mock:
+    def side_effect(_url: str, _etag: Optional[str] = None) -> Response:
+        response: Response = Response()
+        response.status_code = 200
+        response._content = content.encode("utf-8")
+        time.sleep(0.1)
+        return response
+
+    return Mock(side_effect=side_effect)
 
 
 def __mock_content(content: str, status_code: int = 200, etag: Optional[str] = None) -> Mock:

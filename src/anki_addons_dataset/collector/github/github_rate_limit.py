@@ -1,6 +1,7 @@
 import datetime
 import time
 from datetime import datetime
+from threading import Lock
 from typing import Optional
 import logging
 from logging import Logger
@@ -14,12 +15,25 @@ log: Logger = logging.getLogger(__name__)
 class GithubRateLimit:
 
     def __init__(self):
+        self.__lock: Lock = Lock()
         self.__status_code: Optional[int] = None
         self.__retry_after: Optional[int] = None
         self.__retry_limit_remaining: Optional[int] = None
         self.__retry_limit_reset: Optional[int] = None
 
     def update_rate_limit(self, response: Response) -> None:
+        with self.__lock:
+            self.__update_rate_limit(response)
+
+    def wait_for_reset(self) -> None:
+        with self.__lock:
+            self.__wait_for_reset()
+
+    def get_limit_remaining(self) -> Optional[int]:
+        with self.__lock:
+            return self.__retry_limit_remaining
+
+    def __update_rate_limit(self, response: Response) -> None:
         self.__status_code = response.status_code
         headers: CaseInsensitiveDict[str] = response.headers
         retry_after: Optional[str] = headers.get("retry-after")
@@ -29,7 +43,7 @@ class GithubRateLimit:
         self.__retry_limit_remaining = int(retry_limit_remaining) if retry_limit_remaining else None
         self.__retry_limit_reset = int(retry_limit_reset) if retry_limit_reset else None
 
-    def wait_for_reset(self) -> None:
+    def __wait_for_reset(self) -> None:
         if self.__retry_limit_remaining and self.__retry_limit_remaining == 0:
             retry_limit_reset_str: Optional[datetime] = datetime.fromtimestamp(self.__retry_limit_reset) \
                 if self.__retry_limit_reset else None
@@ -43,6 +57,3 @@ class GithubRateLimit:
             log.info(f"Waiting for reset: {sleep_time} seconds")
             time.sleep(sleep_time)
             log.info("Done waiting for reset")
-
-    def get_limit_remaining(self) -> Optional[int]:
-        return self.__retry_limit_remaining

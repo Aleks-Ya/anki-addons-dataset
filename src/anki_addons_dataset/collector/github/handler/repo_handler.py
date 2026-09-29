@@ -7,7 +7,7 @@ from logging import Logger
 
 from requests import Response
 
-from anki_addons_dataset.common.data_types import GithubRepo
+from anki_addons_dataset.common.data_types import GithubRepo, GithubRepoId
 from anki_addons_dataset.common.json_helper import JsonHelper
 
 log: Logger = logging.getLogger(__name__)
@@ -20,6 +20,9 @@ class RepoHandler(ABC):
         self.__raw_dir: Path = raw_dir
         self.__stage_dir: Path = stage_dir
         self.__prev_raw_dir: Optional[Path] = prev_raw_dir
+
+    def get_repo_id(self) -> GithubRepoId:
+        return self._repo.get_id()
 
     def is_downloaded(self) -> bool:
         return self.get_raw_file().exists()

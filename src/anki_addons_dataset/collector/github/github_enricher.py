@@ -1,5 +1,6 @@
 from datetime import datetime
 from pathlib import Path
+from threading import Lock
 from typing import Optional
 import logging
 from logging import Logger
@@ -17,12 +18,14 @@ log: Logger = logging.getLogger(__name__)
 
 class GithubEnricher(Enricher):
     __name: str = "GitHub"
+    __pool_size: int = 3
 
     def __init__(self, snapshot_dir: SnapshotDir, github_service: GithubService):
-        super().__init__(name=self.__name)
+        super().__init__(name=self.__name, pool_size=self.__pool_size)
         self.__stage_dir: Path = snapshot_dir.get_stage_dir() / "3-enricher" / "github"
         self.__github_service: GithubService = github_service
         self.__github_infos: dict[AddonId, GithubInfo] = {}
+        self.__lock: Lock = Lock()
 
     def enrich(self, addon_infos: AddonInfos) -> AddonInfos:
         return AddonInfos([self.__enrich(addon_info, self.__github_infos[addon_info.header.id])
@@ -65,10 +68,12 @@ class GithubEnricher(Enricher):
             created_at=repo_meta.created_at, primary_language=self.__primary_language(language_bytes),
             language_bytes=language_bytes, manifest=manifest, dependencies=dependencies, readme=readme,
             ai_tooling_markers=ai_tooling_markers)
-        self.__github_infos[addon_info.header.id] = github_info
+        with self.__lock:
+            self.__github_infos[addon_info.header.id] = github_info
 
     def _done(self) -> int:
-        return len(self.__github_infos)
+        with self.__lock:
+            return len(self.__github_infos)
 
     @staticmethod
     def __primary_language(language_bytes: dict[LanguageName, int]) -> Optional[LanguageName]:

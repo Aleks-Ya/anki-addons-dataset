@@ -1,5 +1,6 @@
 from datetime import datetime
 from pathlib import Path
+from threading import Lock
 from typing import Any, Optional
 import logging
 from logging import Logger
@@ -20,7 +21,8 @@ from anki_addons_dataset.collector.github.handler.repo_info_repo_handler import 
 from anki_addons_dataset.collector.github.handler.stars_repo_handler import StarsRepoHandler
 from anki_addons_dataset.collector.github.handler.tests_repo_handler import TestsRepoHandler
 from anki_addons_dataset.collector.github.handler.tree_entries_repo_handler import TreeEntriesRepoHandler
-from anki_addons_dataset.common.data_types import AddonManifest, DependencyName, GithubReadme, GithubRepo, LanguageName
+from anki_addons_dataset.common.data_types import AddonManifest, DependencyName, GithubReadme, GithubRepo, \
+    GithubRepoId, LanguageName
 from anki_addons_dataset.common.working_dir import SnapshotDir
 
 log: Logger = logging.getLogger(__name__)
@@ -36,6 +38,8 @@ class GithubService:
             prev_snapshot_dir.get_raw_dir() / "2-github" if prev_snapshot_dir else None
         self.__github_rest_client: GithubRestClient = github_rest_client
         self.__offline: bool = offline
+        self.__repo_locks: dict[GithubRepoId, Lock] = {}
+        self.__repo_locks_lock: Lock = Lock()
 
     def get_languages(self, repo: GithubRepo) -> dict[LanguageName, int]:
         handler: RepoHandler = LanguagesRepoHandler(repo, self.__raw_dir, self.__stage_dir, self.__prev_raw_dir)
@@ -112,7 +116,15 @@ class GithubService:
             repo, path, raw_name, self.__raw_dir, self.__stage_dir, self.__prev_raw_dir)
         return self.__get_value(handler)
 
+    def __repo_lock(self, repo_id: GithubRepoId) -> Lock:
+        with self.__repo_locks_lock:
+            return self.__repo_locks.setdefault(repo_id, Lock())
+
     def __get_value(self, handler: RepoHandler) -> Optional[Any]:
+        with self.__repo_lock(handler.get_repo_id()):
+            return self.__get_value_unlocked(handler)
+
+    def __get_value_unlocked(self, handler: RepoHandler) -> Optional[Any]:
         if not handler.is_downloaded():
             if handler.is_repo_marked_as_not_found():
                 return handler.get_not_found_return_value()
