@@ -233,10 +233,12 @@ def test_failed_write_keeps_the_previous_file(addon_infos: AddonInfos, script_ve
     dump_file: Path = working_dir_path / "addon-infos.json"
     JsonHelper.write_addon_infos_dump(addon_infos, script_version, dump_file)
     previous_content: str = dump_file.read_text()
+    empty_addon_infos: AddonInfos = AddonInfos([])
+    other_version: ScriptVersion = ScriptVersion("9.9.9")
 
     with patch("os.replace", Mock(side_effect=OSError("No space left on device"))):
         with pytest.raises(OSError):
-            JsonHelper.write_addon_infos_dump(AddonInfos([]), ScriptVersion("9.9.9"), dump_file)
+            JsonHelper.write_addon_infos_dump(empty_addon_infos, other_version, dump_file)
 
     assert dump_file.read_text() == previous_content
     assert list(working_dir_path.iterdir()) == [dump_file]
