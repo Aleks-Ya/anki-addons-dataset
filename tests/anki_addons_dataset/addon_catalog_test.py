@@ -8,7 +8,7 @@ from _pytest.logging import LogCaptureFixture
 from _pytest.monkeypatch import MonkeyPatch
 
 from anki_addons_dataset import addon_catalog
-from anki_addons_dataset.addon_catalog import _ai_snapshot_date, _upload_free, main
+from anki_addons_dataset.addon_catalog import _step_snapshot_date, _upload_free, main
 from anki_addons_dataset.argument.script_arguments import Operation
 from anki_addons_dataset.common.data_types import SnapshotDate
 from anki_addons_dataset.config.app_config import AppConfig, SampleConfig
@@ -51,19 +51,31 @@ def test_a_sampled_run_without_upload_is_untouched(app_config: AppConfig):
 
 def test_an_explicit_ai_honours_the_snapshot_date():
     snapshot_date: SnapshotDate = SnapshotDate(date.fromisoformat("2025-01-01"))
-    assert _ai_snapshot_date(__arguments(True), snapshot_date) == snapshot_date
+    assert _step_snapshot_date(__arguments(True), Operation.AI, snapshot_date) == snapshot_date
 
 
 def test_all_hides_the_snapshot_date_from_ai(caplog: LogCaptureFixture):
     snapshot_date: SnapshotDate = SnapshotDate(date.fromisoformat("2025-01-01"))
 
-    assert _ai_snapshot_date(__arguments(False), snapshot_date) is None
-    assert "Ignoring -d 2025-01-01" in caplog.text
+    assert _step_snapshot_date(__arguments(False), Operation.AI, snapshot_date) is None
+    assert "Ignoring -d 2025-01-01 for the 'ai' step" in caplog.text
+
+
+def test_an_explicit_parse_honours_the_snapshot_date():
+    snapshot_date: SnapshotDate = SnapshotDate(date.fromisoformat("2025-01-01"))
+    assert _step_snapshot_date(__arguments(True), Operation.PARSE, snapshot_date) == snapshot_date
+
+
+def test_all_hides_the_snapshot_date_from_parse(caplog: LogCaptureFixture):
+    snapshot_date: SnapshotDate = SnapshotDate(date.fromisoformat("2025-01-01"))
+
+    assert _step_snapshot_date(__arguments(False), Operation.PARSE, snapshot_date) is None
+    assert "Ignoring -d 2025-01-01 for the 'parse' step" in caplog.text
 
 
 def test_no_snapshot_date_stays_none():
     date_less: Optional[SnapshotDate] = None
-    assert _ai_snapshot_date(__arguments(True), date_less) is None
+    assert _step_snapshot_date(__arguments(True), Operation.AI, date_less) is None
 
 
 def test_a_failing_run_is_logged_and_exits_with_an_error(monkeypatch: MonkeyPatch, caplog: LogCaptureFixture):

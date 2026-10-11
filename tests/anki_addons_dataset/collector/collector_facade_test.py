@@ -16,6 +16,8 @@ from anki_addons_dataset.config.app_config import AppConfig
 # The string form, not patch.object: the name-mangled private attribute is unresolvable for static analysis.
 __SUMMARIZE_SNAPSHOT: str = \
     "anki_addons_dataset.collector.collector_facade.CollectorFacade._CollectorFacade__summarize_snapshot"
+__PARSE_SNAPSHOT: str = \
+    "anki_addons_dataset.collector.collector_facade.CollectorFacade._CollectorFacade__parse_snapshot"
 
 
 def test_report_snapshots_generates_final_from_dump_without_raw(
@@ -103,6 +105,39 @@ def test_summarize_snapshots_with_an_unknown_date_raises(collector_facade: Colle
 
     with pytest.raises(FileNotFoundError, match="No snapshot for 1999-01-01"):
         collector_facade.summarize_snapshots(unknown_date)
+
+
+def test_parse_snapshots_with_a_date_parses_only_that_snapshot(
+        working_dir: WorkingDir, collector_facade: CollectorFacade):
+    for snapshot_date in ["2025-01-01", "2025-02-01"]:
+        working_dir.get_snapshot_dir(SnapshotDate(date.fromisoformat(snapshot_date))).create()
+
+    with patch(__PARSE_SNAPSHOT) as parse_snapshot:
+        collector_facade.parse_snapshots(SnapshotDate(date.fromisoformat("2025-01-01")))
+
+    parse_snapshot.assert_called_once_with(SnapshotDate(date.fromisoformat("2025-01-01")))
+
+
+def test_parse_snapshots_with_a_date_wins_over_the_snapshot_sample(
+        working_dir_path: Path, app_config: AppConfig, page_load_timeout: PageLoadTimeout,
+        element_wait_timeout: ElementWaitTimeout):
+    working_dir: WorkingDir = WorkingDir(working_dir_path, max_snapshots=1)
+    for snapshot_date in ["2025-01-01", "2025-02-01"]:
+        working_dir.get_snapshot_dir(SnapshotDate(date.fromisoformat(snapshot_date))).create()
+    collector_facade: CollectorFacade = CollectorFacade(
+        working_dir, app_config, page_load_timeout, element_wait_timeout)
+
+    with patch(__PARSE_SNAPSHOT) as parse_snapshot:
+        collector_facade.parse_snapshots(SnapshotDate(date.fromisoformat("2025-01-01")))
+
+    parse_snapshot.assert_called_once_with(SnapshotDate(date.fromisoformat("2025-01-01")))
+
+
+def test_parse_snapshots_with_an_unknown_date_raises(collector_facade: CollectorFacade):
+    unknown_date: SnapshotDate = SnapshotDate(date.fromisoformat("1999-01-01"))
+
+    with pytest.raises(FileNotFoundError, match="No snapshot for 1999-01-01"):
+        collector_facade.parse_snapshots(unknown_date)
 
 
 def test_report_snapshots_honours_the_snapshot_sample(

@@ -30,10 +30,10 @@ def _upload_free(operations: list[Operation], arguments: ScriptArguments, config
     return [operation for operation in operations if operation != Operation.UPLOAD]
 
 
-def _ai_snapshot_date(arguments: ScriptArguments,
-                      snapshot_date: Optional[SnapshotDate]) -> Optional[SnapshotDate]:
-    if snapshot_date and not arguments.has_explicit_operation(Operation.AI):
-        log.info(f"Ignoring -d {snapshot_date} for the 'ai' step: summarizing every snapshot")
+def _step_snapshot_date(arguments: ScriptArguments, operation: Operation,
+                        snapshot_date: Optional[SnapshotDate]) -> Optional[SnapshotDate]:
+    if snapshot_date and not arguments.has_explicit_operation(operation):
+        log.info(f"Ignoring -d {snapshot_date} for the '{operation.value}' step: processing every snapshot")
         return None
     return snapshot_date
 
@@ -52,8 +52,6 @@ def _run() -> None:
     operations: list[Operation] = _upload_free(arguments.get_operations(), arguments, config)
     log.info(f"Operations: {[operation.value for operation in operations]}")
     snapshot_date: Optional[SnapshotDate] = arguments.get_snapshot_date()
-    ai_snapshot_date: Optional[SnapshotDate] = _ai_snapshot_date(arguments, snapshot_date) \
-        if Operation.AI in operations else snapshot_date
     report_date: ReportDate = ReportDate(datetime.now().replace(microsecond=0))
     page_load_timeout: PageLoadTimeout = arguments.get_page_load_timeout()
     element_wait_timeout: ElementWaitTimeout = arguments.get_element_wait_timeout()
@@ -66,7 +64,9 @@ def _run() -> None:
     for operation in operations:
         log.info(f"Step '{operation.value}' started")
         start: float = time.perf_counter()
-        facade.process(operation, ai_snapshot_date if operation == Operation.AI else snapshot_date, report_date)
+        step_snapshot_date: Optional[SnapshotDate] = _step_snapshot_date(arguments, operation, snapshot_date) \
+            if operation in (Operation.AI, Operation.PARSE) else snapshot_date
+        facade.process(operation, step_snapshot_date, report_date)
         elapsed: float = time.perf_counter() - start
         timings.append((operation.value, elapsed))
         log.info(f"Step '{operation.value}' completed in {format_duration(elapsed)}")

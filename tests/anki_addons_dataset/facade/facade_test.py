@@ -28,3 +28,21 @@ def test_ai_operation_passes_the_snapshot_date_on(facade: Facade, report_date: R
         facade.process(Operation.AI, snapshot_date, report_date)
 
     summarize_snapshots.assert_called_once_with(snapshot_date)
+
+
+def test_parse_operation_parses_snapshots(facade: Facade, report_date: ReportDate):
+    snapshot_date: Optional[SnapshotDate] = None
+
+    with patch.object(CollectorFacade, "parse_snapshots") as parse_snapshots:
+        facade.process(Operation.PARSE, snapshot_date, report_date)
+
+    parse_snapshots.assert_called_once_with(None)
+
+
+def test_parse_operation_passes_the_snapshot_date_on(facade: Facade, report_date: ReportDate):
+    snapshot_date: SnapshotDate = SnapshotDate(date.fromisoformat("2025-01-01"))
+
+    with patch.object(CollectorFacade, "parse_snapshots") as parse_snapshots:
+        facade.process(Operation.PARSE, snapshot_date, report_date)
+
+    parse_snapshots.assert_called_once_with(snapshot_date)

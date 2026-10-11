@@ -44,7 +44,7 @@ class Facade:
         elif operation == Operation.AI:
             self.__collector_facade.summarize_snapshots(snapshot_date)
         elif operation == Operation.PARSE:
-            self.__collector_facade.parse_snapshots()
+            self.__collector_facade.parse_snapshots(snapshot_date)
         elif operation == Operation.REPORT:
             self.__collector_facade.report_snapshots(report_date)
         elif operation == Operation.BUNDLE:

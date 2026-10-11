@@ -69,11 +69,11 @@ class CollectorFacade:
             [snapshot_dir.get_ai_cache_file() for snapshot_dir in self.__working_dir.list_snapshot_dirs()])
         log.info(f"AI cache holds {shared_index.size()} answers across all snapshots")
         total_stats: AiCacheStats = AiCacheStats()
-        for snapshot_dir in self.__snapshot_dirs_to_summarize(snapshot_date):
+        for snapshot_dir in self.__selected_snapshot_dirs(snapshot_date):
             total_stats = total_stats + self.__summarize_snapshot(snapshot_dir, shared_index)
         log.info(f"Total AI cache hits: {total_stats.hit_count}, misses: {total_stats.miss_count}")
 
-    def __snapshot_dirs_to_summarize(self, snapshot_date: Optional[SnapshotDate]) -> list[SnapshotDir]:
+    def __selected_snapshot_dirs(self, snapshot_date: Optional[SnapshotDate]) -> list[SnapshotDir]:
         if not snapshot_date:
             return self.__working_dir.list_sampled_snapshot_dirs()
         snapshot_dir: SnapshotDir = self.__working_dir.get_snapshot_dir(snapshot_date)
@@ -94,8 +94,8 @@ class CollectorFacade:
         log.info(f"===== Summarized snapshot for {snapshot_date} =====\n")
         return stats
 
-    def parse_snapshots(self) -> None:
-        for snapshot_dir in self.__working_dir.list_sampled_snapshot_dirs():
+    def parse_snapshots(self, snapshot_date: Optional[SnapshotDate]) -> None:
+        for snapshot_dir in self.__selected_snapshot_dirs(snapshot_date):
             snapshot_date: SnapshotDate = snapshot_dir.snapshot_dir_to_snapshot_date()
             self.__parse_snapshot(snapshot_date)
 

@@ -199,6 +199,14 @@ anki-addons-dataset ai -d 2026-01-01    # one snapshot only
 The date must name an existing snapshot, otherwise `ai` fails. Inside `all`, `-d` belongs to
 `download` alone: the `ai` step of `all` keeps summarizing every snapshot.
 
+`parse` takes `-d` under the same rules: without it every snapshot is re-parsed, with it only that one
+(it must exist), and the `parse` step of `all` keeps re-parsing every snapshot:
+
+```bash
+anki-addons-dataset parse                  # all snapshots
+anki-addons-dataset parse -d 2026-01-01    # one snapshot only
+```
+
 Against the default DeepSeek endpoint, `ai` refuses to run during DeepSeek's peak hours
 (01:00-04:00 and 06:00-10:00 UTC, Monday through Friday), when the rate is double the off-peak
 one, and fails with an error naming the window. Chinese public holidays are ignored: they only
