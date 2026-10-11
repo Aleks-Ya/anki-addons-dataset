@@ -30,6 +30,7 @@ Topic = NewType("Topic", str)
 PageLoadTimeout = NewType("PageLoadTimeout", int)
 ElementWaitTimeout = NewType("ElementWaitTimeout", int)
 AiSummary = NewType("AiSummary", str)
+AiTag = NewType("AiTag", str)
 AiModel = NewType("AiModel", str)
 
 
