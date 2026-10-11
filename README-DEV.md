@@ -173,6 +173,7 @@ that spends money, so it is separate from `download`: it reads the snapshots alr
 writes every answer to `history/<date>/1-raw/4-ai/ai-cache.jsonl`. `parse` then reads that cache
 offline and attaches the summaries and tags to the dump; an addon with no cached answer simply gets
 no summary or tags, and `parse` logs how many answers were missing (two per addon).
+The step works on 50 addons at once, so up to 50 AI requests are in flight.
 
 The cache key is a hash of the model and the whole prompt, system prompt included, so editing a
 prompt template or `ai.readme_max_chars` invalidates every entry. Summaries and tags use different

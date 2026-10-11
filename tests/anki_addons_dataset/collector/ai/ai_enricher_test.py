@@ -1,3 +1,4 @@
+import dataclasses
 from pathlib import Path
 from typing import Optional
 
@@ -9,7 +10,7 @@ from anki_addons_dataset.collector.ai.ai_summarizer import AiSummarizer
 from anki_addons_dataset.collector.ai.ai_tagger import AiTagger
 from anki_addons_dataset.collector.ai.cached_ai_provider import CachedAiProvider
 from anki_addons_dataset.collector.ai.no_ai_provider import NoAiProvider
-from anki_addons_dataset.common.data_types import AddonInfo, AddonInfos, AiModel, GithubReadme
+from anki_addons_dataset.common.data_types import AddonId, AddonInfo, AddonInfos, AiModel, GithubReadme
 
 MODEL: AiModel = AiModel("test-model")
 
@@ -172,3 +173,25 @@ def test_offline_miss_leaves_no_summary(addon_info: AddonInfo, tmp_path: Path) -
 
     assert enriched[0].ai is None
     assert offline.get_cache_stats().miss_count == 2
+
+
+def test_pool_has_fifty_threads(caplog: pytest.LogCaptureFixture) -> None:
+    enricher: AiEnricher = __enricher(StubAiProvider())
+
+    enricher.start()
+    enricher.wait_download_finish()
+
+    assert "Start thread pool: Ai (size: 50)" in caplog.text
+
+
+def test_many_addons_are_all_enriched(addon_info: AddonInfo) -> None:
+    addon_info.ai = None
+    addon_infos: AddonInfos = AddonInfos(
+        [dataclasses.replace(addon_info, header=dataclasses.replace(addon_info.header, id=AddonId(i)))
+         for i in range(20)])
+
+    enriched: AddonInfos = __enrich(StubAiProvider(), addon_infos)
+
+    assert [info.header.id for info in enriched] == list(range(20))
+    assert all(info.ai.summary == "A generated summary." for info in enriched)
+    assert all(info.ai.tags == ["statistics", "paid"] for info in enriched)
