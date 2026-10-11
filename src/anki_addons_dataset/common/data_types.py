@@ -145,6 +145,7 @@ class AnkiForumInfo:
 class AiInfo:
     summary: Optional[AiSummary] = None
     model: Optional[AiModel] = None
+    tags: Optional[list[AiTag]] = None
 
 
 @dataclass

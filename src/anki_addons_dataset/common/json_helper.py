@@ -10,7 +10,7 @@ from anki_addons_dataset.common.data_types import AddonInfo, AddonInfos, AddonHe
     GithubInfo, GitHubLink, GitHubUser, GithubRepo, AnkiForumInfo, AddonId, AnkiVersion, HtmlStr, URL, \
     GithubUserName, GithubRepoName, LanguageName, LanguageCode, TopicSlug, TopicId, LastPostedAt, PostsCount, \
     ScriptVersion, AddonRating, UpdateDate, AddonTitle, AddonDescription, AddonManifest, SpdxLicense, Topic, \
-    DependencyName, GithubReadme, AiInfo, AiSummary, AiModel
+    DependencyName, GithubReadme, AiInfo, AiSummary, AiModel, AiTag
 
 
 class JsonHelper:
@@ -55,9 +55,11 @@ class JsonHelper:
             return None
         summary: Optional[str] = data.get("summary")
         model: Optional[str] = data.get("model")
+        tags: Optional[list[str]] = data.get("tags")
         return AiInfo(
             summary=AiSummary(summary) if summary is not None else None,
             model=AiModel(model) if model is not None else None,
+            tags=[AiTag(tag) for tag in tags] if tags is not None else None,
         )
 
     @staticmethod
