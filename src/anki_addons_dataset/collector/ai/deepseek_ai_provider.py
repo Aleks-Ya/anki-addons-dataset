@@ -7,7 +7,7 @@ from urllib.parse import urlparse
 import requests
 from requests import Response
 
-from anki_addons_dataset.collector.ai.ai_provider import AiPrompt, AiResponseText
+from anki_addons_dataset.collector.ai.ai_provider import AiPrompt, AiResponseText, AiInstructions
 from anki_addons_dataset.collector.ai.openai_ai_provider import OpenAiAiProvider
 
 log: Logger = logging.getLogger(__name__)
@@ -28,13 +28,13 @@ class DeepSeekAiProvider(OpenAiAiProvider):
     def is_peak(now_utc: datetime) -> bool:
         return now_utc.weekday() < 5 and (1 <= now_utc.hour < 4 or 6 <= now_utc.hour < 10)
 
-    def response(self, prompt: AiPrompt) -> Optional[AiResponseText]:
+    def response(self, prompt: AiPrompt, instructions: Optional[AiInstructions] = None) -> Optional[AiResponseText]:
         now_utc: datetime = datetime.now(timezone.utc)
         if self.is_peak(now_utc):
             raise RuntimeError(f"DeepSeek peak hours ({PEAK_HOURS_DESCRIPTION}): "
                                f"it is {now_utc.strftime('%Y-%m-%d %H:%M:%S')} UTC and the rate is double the "
                                f"off-peak one. Re-run the 'ai' operation outside the peak hours.")
-        return super().response(prompt)
+        return super().response(prompt, instructions)
 
     def verify_access(self) -> Optional[str]:
         super().verify_access()

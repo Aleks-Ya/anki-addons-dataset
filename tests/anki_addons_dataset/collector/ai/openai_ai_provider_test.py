@@ -6,7 +6,7 @@ import pytest
 from openai import APIStatusError
 from pytest_mock import MockerFixture
 
-from anki_addons_dataset.collector.ai.ai_provider import AiPrompt, AiResponseText
+from anki_addons_dataset.collector.ai.ai_provider import AiPrompt, AiResponseText, AiInstructions
 from anki_addons_dataset.collector.ai.openai_ai_provider import OpenAiAiProvider
 from anki_addons_dataset.common.data_types import AiModel
 
@@ -51,7 +51,17 @@ def test_response_returns_output_text(create: MagicMock, sleep: MagicMock) -> No
 
     assert answer == "Paris"
     assert create.call_count == 1
+    assert "instructions" not in create.call_args.kwargs
     sleep.assert_not_called()
+
+
+def test_instructions_are_passed(create: MagicMock, sleep: MagicMock) -> None:
+    create.return_value = __response()
+
+    __provider().response(PROMPT, AiInstructions("Answer briefly."))
+
+    assert create.call_args.kwargs["instructions"] == "Answer briefly."
+    assert create.call_args.kwargs["input"] == PROMPT
 
 
 @pytest.mark.parametrize("status_code", [401, 402, 403])

@@ -9,6 +9,7 @@ log: Logger = logging.getLogger(__name__)
 
 AiPrompt = NewType("AiPrompt", str)
 AiResponseText = NewType("AiResponseText", str)
+AiInstructions = NewType("AiInstructions", str)
 
 
 class AiProvider(ABC):
@@ -16,7 +17,7 @@ class AiProvider(ABC):
         self.__model: AiModel = model
 
     @abstractmethod
-    def response(self, prompt: AiPrompt) -> Optional[AiResponseText]:
+    def response(self, prompt: AiPrompt, instructions: Optional[AiInstructions] = None) -> Optional[AiResponseText]:
         ...
 
     @abstractmethod

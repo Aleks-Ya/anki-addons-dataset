@@ -1,6 +1,6 @@
 from typing import Optional
 
-from anki_addons_dataset.collector.ai.ai_provider import AiProvider, AiPrompt, AiResponseText
+from anki_addons_dataset.collector.ai.ai_provider import AiProvider, AiPrompt, AiResponseText, AiInstructions
 from anki_addons_dataset.collector.ai.ai_summarizer import AiSummarizer
 from anki_addons_dataset.common.data_types import AddonTitle, AddonDescription, GithubReadme, AiModel, AiSummary
 
@@ -11,7 +11,7 @@ class RecordingAiProvider(AiProvider):
         self.__response: Optional[AiResponseText] = response
         self.prompt: Optional[AiPrompt] = None
 
-    def response(self, prompt: AiPrompt) -> Optional[AiResponseText]:
+    def response(self, prompt: AiPrompt, instructions: Optional[AiInstructions] = None) -> Optional[AiResponseText]:
         self.prompt = prompt
         return self.__response
 

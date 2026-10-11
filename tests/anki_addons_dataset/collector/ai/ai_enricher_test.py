@@ -4,7 +4,7 @@ from typing import Optional
 import pytest
 
 from anki_addons_dataset.collector.ai.ai_enricher import AiEnricher
-from anki_addons_dataset.collector.ai.ai_provider import AiProvider, AiPrompt, AiResponseText
+from anki_addons_dataset.collector.ai.ai_provider import AiProvider, AiPrompt, AiResponseText, AiInstructions
 from anki_addons_dataset.collector.ai.ai_summarizer import AiSummarizer
 from anki_addons_dataset.collector.ai.cached_ai_provider import CachedAiProvider
 from anki_addons_dataset.collector.ai.no_ai_provider import NoAiProvider
@@ -19,7 +19,7 @@ class StubAiProvider(AiProvider):
         self.__response: Optional[AiResponseText] = response
         self.prompts: list[AiPrompt] = []
 
-    def response(self, prompt: AiPrompt) -> Optional[AiResponseText]:
+    def response(self, prompt: AiPrompt, instructions: Optional[AiInstructions] = None) -> Optional[AiResponseText]:
         self.prompts.append(prompt)
         return self.__response
 
@@ -32,7 +32,7 @@ class FailingAiProvider(AiProvider):
         super().__init__(MODEL)
         self.__error: Exception = error
 
-    def response(self, prompt: AiPrompt) -> Optional[AiResponseText]:
+    def response(self, prompt: AiPrompt, instructions: Optional[AiInstructions] = None) -> Optional[AiResponseText]:
         raise self.__error
 
     def verify_access(self) -> Optional[str]:

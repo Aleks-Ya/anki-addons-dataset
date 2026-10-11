@@ -1,10 +1,11 @@
+import hashlib
 import json
 import threading
 from pathlib import Path
 from typing import Optional
 
 from anki_addons_dataset.collector.ai.ai_cache_index import AiCacheIndex
-from anki_addons_dataset.collector.ai.ai_provider import AiProvider, AiPrompt, AiResponseText
+from anki_addons_dataset.collector.ai.ai_provider import AiProvider, AiPrompt, AiResponseText, AiInstructions
 from anki_addons_dataset.collector.ai.cached_ai_provider import CachedAiProvider
 from anki_addons_dataset.common.data_types import AiModel
 
@@ -14,9 +15,11 @@ class StubAiProvider(AiProvider):
         super().__init__(model)
         self.call_count: int = 0
         self.verify_count: int = 0
+        self.instructions: Optional[AiInstructions] = None
 
-    def response(self, prompt: AiPrompt) -> Optional[AiResponseText]:
+    def response(self, prompt: AiPrompt, instructions: Optional[AiInstructions] = None) -> Optional[AiResponseText]:
         self.call_count += 1
+        self.instructions = instructions
         return AiResponseText(f"answer-{self.call_count} to {prompt}")
 
     def verify_access(self) -> Optional[str]:
@@ -154,6 +157,29 @@ def test_another_model_is_a_miss(tmp_path: Path) -> None:
     assert stub.call_count == 1
     assert provider.get_cache_stats().miss_count == 1
     assert [line["model"] for line in read_lines(cache_file)] == ["model-a", "model-b"]
+
+
+def test_other_instructions_are_a_miss(tmp_path: Path) -> None:
+    stub: StubAiProvider = StubAiProvider()
+    provider: CachedAiProvider = CachedAiProvider(stub, tmp_path / "ai-cache.jsonl")
+    prompt: AiPrompt = AiPrompt("Question")
+
+    provider.response(prompt, AiInstructions("Be brief."))
+    provider.response(prompt, AiInstructions("Be verbose."))
+    assert stub.instructions == "Be verbose."
+    provider.response(prompt, AiInstructions("Be brief."))
+
+    assert stub.call_count == 2
+    assert provider.get_cache_stats().hit_count == 1
+    assert provider.get_cache_stats().miss_count == 2
+
+
+def test_key_without_instructions_is_unchanged(tmp_path: Path) -> None:
+    cache_file: Path = tmp_path / "ai-cache.jsonl"
+    CachedAiProvider(StubAiProvider(), cache_file).response(AiPrompt("Question"))
+
+    expected: str = hashlib.sha256(json.dumps(["stub-model", "Question"]).encode("utf-8")).hexdigest()
+    assert read_lines(cache_file)[0]["key"] == expected
 
 
 def test_offline_miss_returns_none(tmp_path: Path) -> None:

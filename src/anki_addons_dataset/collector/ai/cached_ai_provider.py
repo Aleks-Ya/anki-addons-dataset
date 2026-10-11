@@ -9,7 +9,7 @@ from typing import Any, Optional
 
 from anki_addons_dataset.collector.ai.ai_cache_index import AiCacheIndex
 from anki_addons_dataset.collector.ai.ai_cache_stats import AiCacheStats
-from anki_addons_dataset.collector.ai.ai_provider import AiProvider, AiPrompt, AiResponseText
+from anki_addons_dataset.collector.ai.ai_provider import AiProvider, AiPrompt, AiResponseText, AiInstructions
 
 log: Logger = logging.getLogger(__name__)
 
@@ -28,8 +28,8 @@ class CachedAiProvider(AiProvider):
         self.__cache_hit_count: int = 0
         self.__cache_miss_count: int = 0
 
-    def response(self, prompt: AiPrompt) -> Optional[AiResponseText]:
-        key: str = self.__key(prompt)
+    def response(self, prompt: AiPrompt, instructions: Optional[AiInstructions] = None) -> Optional[AiResponseText]:
+        key: str = self.__key(prompt, instructions)
         cached: Optional[AiResponseText] = self.__current.get(key)
         if cached is not None:
             log.debug(f"Cache hit for key: {key}")
@@ -47,7 +47,7 @@ class CachedAiProvider(AiProvider):
             log.warning(f"Offline mode is enabled. Skip requesting the AI provider for key: {key}")
             return None
         log.debug(f"Cache miss for key: {key}")
-        response: Optional[AiResponseText] = self.__ai_provider.response(prompt)
+        response: Optional[AiResponseText] = self.__ai_provider.response(prompt, instructions)
         if response is not None:
             self.__append(key, response)
         return response
@@ -80,8 +80,10 @@ class CachedAiProvider(AiProvider):
         with self.__stats_lock:
             self.__cache_miss_count += 1
 
-    def __key(self, prompt: AiPrompt) -> str:
-        payload: str = json.dumps([self.get_model(), prompt])
+    def __key(self, prompt: AiPrompt, instructions: Optional[AiInstructions]) -> str:
+        parts: list[str] = [self.get_model(), prompt] if instructions is None \
+            else [self.get_model(), instructions, prompt]
+        payload: str = json.dumps(parts)
         return hashlib.sha256(payload.encode("utf-8")).hexdigest()
 
     def get_cache_stats(self) -> AiCacheStats:

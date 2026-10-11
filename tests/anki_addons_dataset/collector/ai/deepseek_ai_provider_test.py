@@ -81,7 +81,7 @@ def test_response_delegates_outside_peak_hours(mocker: MockerFixture) -> None:
     answer: Optional[AiResponseText] = __provider().response(PROMPT)
 
     assert answer == "Paris"
-    super_response.assert_called_once_with(PROMPT)
+    super_response.assert_called_once_with(PROMPT, None)
 
 
 @freeze_time(f"{MONDAY} 06:30:00")

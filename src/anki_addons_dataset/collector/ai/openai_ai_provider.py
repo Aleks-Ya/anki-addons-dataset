@@ -1,12 +1,12 @@
 import logging
 import time
 from logging import Logger
-from typing import Optional
+from typing import Any, Optional
 
 from openai import OpenAI, APIStatusError
 from openai.types.responses import Response
 
-from anki_addons_dataset.collector.ai.ai_provider import AiProvider, AiPrompt, AiResponseText
+from anki_addons_dataset.collector.ai.ai_provider import AiProvider, AiPrompt, AiResponseText, AiInstructions
 from anki_addons_dataset.common.data_types import AiModel
 
 log: Logger = logging.getLogger(__name__)
@@ -36,15 +36,16 @@ class OpenAiAiProvider(AiProvider):
     def _get_api_key(self) -> str:
         return self.__api_key
 
-    def response(self, prompt: AiPrompt) -> Optional[AiResponseText]:
+    def response(self, prompt: AiPrompt, instructions: Optional[AiInstructions] = None) -> Optional[AiResponseText]:
+        arguments: dict[str, Any] = {"model": self.get_model(), "input": prompt}
+        if instructions is not None:
+            arguments["instructions"] = instructions
         for attempt in range(1, self.__max_attempts + 1):
             try:
-                response: Response = self.__client.responses.create(
-                    model=self.get_model(),
-                    input=prompt
-                )
+                response: Response = self.__client.responses.create(**arguments)
                 if response.status != "completed":
                     raise ValueError(f"Response not completed: {response}")
+                self.__log_usage(response)
                 return AiResponseText(response.output_text)
             except Exception as e:
                 if self.__is_fatal(e):
@@ -58,6 +59,14 @@ class OpenAiAiProvider(AiProvider):
                             f"retrying in {delay}s: {e}")
                 time.sleep(delay)
         return None
+
+    @staticmethod
+    def __log_usage(response: Response) -> None:
+        if response.usage is None:
+            return
+        cached: Optional[int] = response.usage.input_tokens_details.cached_tokens \
+            if response.usage.input_tokens_details else None
+        log.debug(f"Input tokens: {response.usage.input_tokens}, cached: {cached}")
 
     @staticmethod
     def __is_fatal(error: Exception) -> bool:
