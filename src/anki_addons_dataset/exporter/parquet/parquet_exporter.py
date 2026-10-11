@@ -5,7 +5,8 @@ from logging import Logger
 
 from pandas import DataFrame
 
-from anki_addons_dataset.common.data_types import Aggregation, AddonInfos, DatasetSnapshotMetadata, RawMetadata
+from anki_addons_dataset.common.data_types import Aggregation, AddonInfos, DatasetSnapshotMetadata, RawMetadata, \
+    AiTagDefinition
 from anki_addons_dataset.exporter.exporter import Exporter
 from anki_addons_dataset.exporter.json_addon_info import JsonAddonInfo, Details
 
@@ -28,4 +29,10 @@ class ParquetExporter(Exporter):
         aggregation_dict: dict[str, int] = dataclasses.asdict(aggregation)
         output_file: Path = self._final_dir / "aggregation.parquet"
         DataFrame([aggregation_dict]).to_parquet(output_file, compression="zstd")
+        log.info(f"Write Parquet to file: {output_file}")
+
+    def export_tags(self, tags: list[AiTagDefinition], dataset_snapshot_metadata: DatasetSnapshotMetadata,
+                    raw_metadata: RawMetadata) -> None:
+        output_file: Path = self._final_dir / "tags.parquet"
+        DataFrame([dataclasses.asdict(tag) for tag in tags]).to_parquet(output_file, compression="zstd")
         log.info(f"Write Parquet to file: {output_file}")

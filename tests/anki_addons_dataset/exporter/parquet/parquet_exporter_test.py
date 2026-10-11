@@ -4,7 +4,8 @@ import pandas
 from pandas import DataFrame
 import pandas.testing as pdt
 
-from anki_addons_dataset.common.data_types import Aggregation, AddonInfos, DatasetSnapshotMetadata, RawMetadata
+from anki_addons_dataset.common.data_types import Aggregation, AddonInfos, DatasetSnapshotMetadata, RawMetadata, \
+    AiTagDefinition, AiTag, AiTagGroup
 from anki_addons_dataset.common.working_dir import SnapshotDir
 from anki_addons_dataset.exporter.parquet.parquet_exporter import ParquetExporter
 
@@ -91,5 +92,22 @@ def test_export_aggregation(snapshot_dir: SnapshotDir, dataset_snapshot_metadata
           'addon_with_github_number': 4,
           'addon_with_anki_forum_page_number': 3,
           'addon_with_unit_tests_number': 2}]
+    )
+    pdt.assert_frame_equal(act_df, exp_df)
+
+
+def test_export_tags(snapshot_dir: SnapshotDir, dataset_snapshot_metadata: DatasetSnapshotMetadata,
+                     raw_metadata: RawMetadata):
+    tags: list[AiTagDefinition] = [AiTagDefinition(AiTag("statistics"), AiTagGroup("function"), "Graphs"),
+                                   AiTagDefinition(AiTag("paid"), AiTagGroup("status"), "Patreon-only")]
+    final_dir: Path = snapshot_dir.get_final_dir()
+    exporter: ParquetExporter = ParquetExporter(final_dir)
+    exporter.export_tags(tags, dataset_snapshot_metadata, raw_metadata)
+
+    act_file: Path = final_dir / "parquet" / "tags.parquet"
+    act_df: DataFrame = pandas.read_parquet(act_file)
+    exp_df: DataFrame = DataFrame(
+        [{'name': 'statistics', 'group': 'function', 'description': 'Graphs'},
+         {'name': 'paid', 'group': 'status', 'description': 'Patreon-only'}]
     )
     pdt.assert_frame_equal(act_df, exp_df)

@@ -1,7 +1,8 @@
 from abc import abstractmethod, ABC
 from pathlib import Path
 
-from anki_addons_dataset.common.data_types import Aggregation, AddonInfos, DatasetSnapshotMetadata, RawMetadata
+from anki_addons_dataset.common.data_types import Aggregation, AddonInfos, DatasetSnapshotMetadata, RawMetadata, \
+    AiTagDefinition
 
 
 class Exporter(ABC):
@@ -17,4 +18,9 @@ class Exporter(ABC):
     @abstractmethod
     def export_aggregation(self, aggregation: Aggregation, dataset_snapshot_metadata: DatasetSnapshotMetadata,
                            raw_metadata: RawMetadata) -> None:
+        ...
+
+    @abstractmethod
+    def export_tags(self, tags: list[AiTagDefinition], dataset_snapshot_metadata: DatasetSnapshotMetadata,
+                    raw_metadata: RawMetadata) -> None:
         ...

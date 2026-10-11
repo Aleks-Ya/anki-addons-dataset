@@ -3,7 +3,8 @@ from pathlib import Path
 from typing import Any, Optional
 
 from anki_addons_dataset.common.data_types import Aggregation, AddonInfos, AddonInfo, AnkiForumInfo, PostsCount, \
-    DatasetSnapshotMetadata, RawMetadata, AddonManifest, SpdxLicense, Topic, DependencyName, LanguageName, URL, GithubReadme
+    DatasetSnapshotMetadata, RawMetadata, AddonManifest, SpdxLicense, Topic, DependencyName, LanguageName, URL, GithubReadme, \
+    AiTagDefinition, AiTag, AiTagGroup
 from anki_addons_dataset.common.working_dir import SnapshotDir
 from anki_addons_dataset.exporter.json.json_exporter import JsonExporter
 
@@ -251,3 +252,15 @@ def test_export_aggregation(json_exporter: JsonExporter, snapshot_dir: SnapshotD
                         'addon_with_anki_forum_page_number': 3,
                         'addon_with_github_number': 4,
                         'addon_with_unit_tests_number': 2}
+
+
+def test_export_tags(json_exporter: JsonExporter, snapshot_dir: SnapshotDir,
+                     dataset_snapshot_metadata: DatasetSnapshotMetadata, raw_metadata: RawMetadata):
+    tags: list[AiTagDefinition] = [AiTagDefinition(AiTag("statistics"), AiTagGroup("function"), "Graphs"),
+                                   AiTagDefinition(AiTag("paid"), AiTagGroup("status"), "Patreon-only")]
+    json_exporter.export_tags(tags, dataset_snapshot_metadata, raw_metadata)
+
+    act_file: Path = snapshot_dir.get_final_dir() / "json" / "tags.json"
+    act_json: list[dict[str, Any]] = json.loads(act_file.read_text())
+    assert act_json == [{'name': 'statistics', 'group': 'function', 'description': 'Graphs'},
+                        {'name': 'paid', 'group': 'status', 'description': 'Patreon-only'}]

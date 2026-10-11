@@ -31,6 +31,7 @@ PageLoadTimeout = NewType("PageLoadTimeout", int)
 ElementWaitTimeout = NewType("ElementWaitTimeout", int)
 AiSummary = NewType("AiSummary", str)
 AiTag = NewType("AiTag", str)
+AiTagGroup = NewType("AiTagGroup", str)
 AiModel = NewType("AiModel", str)
 
 
@@ -146,6 +147,13 @@ class AiInfo:
     summary: Optional[AiSummary] = None
     model: Optional[AiModel] = None
     tags: Optional[list[AiTag]] = None
+
+
+@dataclass
+class AiTagDefinition:
+    name: AiTag
+    group: AiTagGroup
+    description: str
 
 
 @dataclass

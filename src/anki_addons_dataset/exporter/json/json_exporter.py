@@ -8,7 +8,8 @@ from logging import Logger
 
 from jsonschema import validate
 
-from anki_addons_dataset.common.data_types import Aggregation, AddonInfos, DatasetSnapshotMetadata, RawMetadata
+from anki_addons_dataset.common.data_types import Aggregation, AddonInfos, DatasetSnapshotMetadata, RawMetadata, \
+    AiTagDefinition
 from anki_addons_dataset.exporter.exporter import Exporter
 from anki_addons_dataset.exporter.json_addon_info import JsonAddonInfo, Details
 
@@ -36,6 +37,13 @@ class JsonExporter(Exporter):
         aggregation_dict: dict[str, int] = dataclasses.asdict(aggregation)
         output_file: Path = self._final_dir / "aggregation.json"
         json_str: str = json.dumps(aggregation_dict, indent=2)
+        output_file.write_text(json_str)
+        log.info(f"Write JSON to file: {output_file}")
+
+    def export_tags(self, tags: list[AiTagDefinition], dataset_snapshot_metadata: DatasetSnapshotMetadata,
+                    raw_metadata: RawMetadata) -> None:
+        output_file: Path = self._final_dir / "tags.json"
+        json_str: str = json.dumps([dataclasses.asdict(tag) for tag in tags], indent=2)
         output_file.write_text(json_str)
         log.info(f"Write JSON to file: {output_file}")
 

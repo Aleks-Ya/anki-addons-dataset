@@ -13,6 +13,7 @@ from anki_addons_dataset.collector.ai.ai_cache_stats import AiCacheStats
 from anki_addons_dataset.collector.ai.ai_enricher import AiEnricher
 from anki_addons_dataset.collector.ai.ai_provider_factory import AiProviderFactory
 from anki_addons_dataset.collector.ai.ai_summarizer import AiSummarizer
+from anki_addons_dataset.collector.ai.ai_tag_vocabulary import AiTagVocabulary
 from anki_addons_dataset.collector.ai.ai_tagger import AiTagger
 from anki_addons_dataset.collector.ai.cached_ai_provider import CachedAiProvider
 from anki_addons_dataset.collector.ankiforum.ankiforum_enricher import AnkiForumEnricher
@@ -136,7 +137,8 @@ class CollectorFacade:
         DatasetMetadata.write_snapshot_metadata_to_json(snapshot_dir, dataset_snapshot_metadata)
         raw_metadata_collector: RawMetadataCollector = RawMetadataCollector(snapshot_dir)
         raw_metadata: RawMetadata = raw_metadata_collector.read_metadata()
-        exporter_facade.export_all(addon_infos, aggregation, dataset_snapshot_metadata, raw_metadata)
+        exporter_facade.export_all(addon_infos, aggregation, AiTagVocabulary.definitions(), dataset_snapshot_metadata,
+                                   raw_metadata)
         log.info(f"===== Reported snapshot for {snapshot_date} =====\n")
 
     def __ai_provider(self, snapshot_dir: SnapshotDir, offline: bool,

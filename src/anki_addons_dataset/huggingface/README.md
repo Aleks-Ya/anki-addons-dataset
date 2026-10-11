@@ -11,6 +11,8 @@ tags:
 configs:
   - config_name: default
     data_files: latest/parquet/data.parquet
+  - config_name: tags
+    data_files: latest/parquet/tags.parquet
 ---
 
 ## Introduction
@@ -25,7 +27,8 @@ AnkiWeb description and the GitHub README, not written by the addon author. The 
 it is recorded in `ai.model`. It may be inaccurate: treat it as a convenience for browsing, not as a
 statement by the author. The `ai.tags` field is generated the same way: the model picks the addon's tags
 from a fixed vocabulary (function tags such as `scheduling` or `statistics`, and status tags such as
-`obsolete` or `paid`). All other fields are collected, not generated.
+`obsolete` or `paid`). The full vocabulary with the meaning of every tag is the `tags` table
+(`latest/parquet/tags.parquet`, also in JSON and Excel). All other fields are collected, not generated.
 
 Questions, feedback, bugs: [Support page at Anki Forum](https://forums.ankiweb.net/t/anki-addons-dataset-a-detailed-list-of-addons/63090)
 
@@ -44,13 +47,16 @@ Folder `latest` contains the most recent day from `history`.
 │   │   ├── json
 │   │   │   ├── aggregation.json
 │   │   │   ├── data.json
-│   │   │   └── schema.json
+│   │   │   ├── schema.json
+│   │   │   └── tags.json
 │   │   ├── parquet
 │   │   │   ├── aggregation.parquet
-│   │   │   └── data.parquet
+│   │   │   ├── data.parquet
+│   │   │   └── tags.parquet
 │   │   ├── xlsx
 │   │   │   ├── aggregation.xlsx
-│   │   │   └── data.xlsx
+│   │   │   ├── data.xlsx
+│   │   │   └── tags.xlsx
 │   │   ├── metadata.json
 │   │   ├── raw.zip
 │   │   └── stage.zip
@@ -58,13 +64,16 @@ Folder `latest` contains the most recent day from `history`.
 │   ├── json
 │   │   ├── aggregation.json
 │   │   ├── data.json
-│   │   └── schema.json
+│   │   ├── schema.json
+│   │   └── tags.json
 │   ├── parquet
 │   │   ├── aggregation.parquet
-│   │   └── data.parquet
+│   │   ├── data.parquet
+│   │   └── tags.parquet
 │   ├── xlsx
 │   │   ├── aggregation.xlsx
-│   │   └── data.xlsx
+│   │   ├── data.xlsx
+│   │   └── tags.xlsx
 │   └── metadata.json
 └── README.md
 ```

@@ -1,6 +1,7 @@
 from pathlib import Path
 
-from anki_addons_dataset.common.data_types import Aggregation, AddonInfos, DatasetSnapshotMetadata, RawMetadata
+from anki_addons_dataset.common.data_types import Aggregation, AddonInfos, DatasetSnapshotMetadata, RawMetadata, \
+    AiTagDefinition
 from anki_addons_dataset.common.working_dir import SnapshotDir
 from anki_addons_dataset.exporter.exporter import Exporter
 from anki_addons_dataset.exporter.json.json_exporter import JsonExporter
@@ -17,8 +18,9 @@ class ExporterFacade:
             ParquetExporter(final_dir)
         ]
 
-    def export_all(self, addon_infos: AddonInfos, aggregation: Aggregation,
+    def export_all(self, addon_infos: AddonInfos, aggregation: Aggregation, tags: list[AiTagDefinition],
                    dataset_snapshot_metadata: DatasetSnapshotMetadata, raw_metadata: RawMetadata) -> None:
         for exporter in self.exporters:
             exporter.export_addon_infos(addon_infos, dataset_snapshot_metadata, raw_metadata)
             exporter.export_aggregation(aggregation, dataset_snapshot_metadata, raw_metadata)
+            exporter.export_tags(tags, dataset_snapshot_metadata, raw_metadata)

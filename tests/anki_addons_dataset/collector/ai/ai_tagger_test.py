@@ -1,3 +1,4 @@
+import hashlib
 from typing import Optional
 
 from anki_addons_dataset.collector.ai.ai_provider import AiProvider, AiPrompt, AiResponseText, AiInstructions
@@ -51,6 +52,16 @@ def test_prompt_lists_the_tags() -> None:
     assert '<tag name="no-description">' in provider.instructions
     assert '<tag name="beta">' in provider.instructions
     assert provider.instructions.count("<tag name=") == 39
+
+
+def test_instructions_text_is_stable() -> None:
+    provider: RecordingAiProvider = RecordingAiProvider()
+    tagger: AiTagger = AiTagger(provider, readme_max_chars=8000)
+
+    tagger.tag(AddonTitle("Note Size"), AddonDescription("Displays the size of notes."), None)
+
+    assert (hashlib.sha256(provider.instructions.encode()).hexdigest() ==
+            "bde259bee9b8127a0f2b87bf573885f67ba2f977bad47765b1604300106c9ce7")
 
 
 def test_instructions_hold_no_addon_texts_and_prompt_holds_no_tags() -> None:
