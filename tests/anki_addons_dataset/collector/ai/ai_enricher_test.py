@@ -6,6 +6,7 @@ import pytest
 from anki_addons_dataset.collector.ai.ai_enricher import AiEnricher
 from anki_addons_dataset.collector.ai.ai_provider import AiProvider, AiPrompt, AiResponseText, AiInstructions
 from anki_addons_dataset.collector.ai.ai_summarizer import AiSummarizer
+from anki_addons_dataset.collector.ai.ai_tagger import AiTagger
 from anki_addons_dataset.collector.ai.cached_ai_provider import CachedAiProvider
 from anki_addons_dataset.collector.ai.no_ai_provider import NoAiProvider
 from anki_addons_dataset.common.data_types import AddonInfo, AddonInfos, AiModel, GithubReadme
@@ -14,14 +15,16 @@ MODEL: AiModel = AiModel("test-model")
 
 
 class StubAiProvider(AiProvider):
-    def __init__(self, response: Optional[AiResponseText] = AiResponseText("A generated summary.")):
+    def __init__(self, summary: Optional[AiResponseText] = AiResponseText("A generated summary."),
+                 tags: Optional[AiResponseText] = AiResponseText("statistics, paid")):
         super().__init__(MODEL)
-        self.__response: Optional[AiResponseText] = response
+        self.__summary: Optional[AiResponseText] = summary
+        self.__tags: Optional[AiResponseText] = tags
         self.prompts: list[AiPrompt] = []
 
     def response(self, prompt: AiPrompt, instructions: Optional[AiInstructions] = None) -> Optional[AiResponseText]:
         self.prompts.append(prompt)
-        return self.__response
+        return self.__summary if instructions is None else self.__tags
 
     def verify_access(self) -> Optional[str]:
         return None
@@ -40,7 +43,8 @@ class FailingAiProvider(AiProvider):
 
 
 def __enricher(ai_provider: AiProvider) -> AiEnricher:
-    return AiEnricher(AiSummarizer(ai_provider, readme_max_chars=8000), MODEL)
+    return AiEnricher(AiSummarizer(ai_provider, readme_max_chars=8000),
+                      AiTagger(ai_provider, readme_max_chars=8000), MODEL)
 
 
 def __enrich(ai_provider: AiProvider, addon_infos: AddonInfos) -> AddonInfos:
@@ -61,6 +65,30 @@ def test_summary_is_added(addon_info: AddonInfo) -> None:
     assert enriched[0].ai.model == MODEL
 
 
+def test_tags_are_added(addon_info: AddonInfo) -> None:
+    addon_info.ai = None
+    enriched: AddonInfos = __enrich(StubAiProvider(), AddonInfos([addon_info]))
+
+    assert enriched[0].ai.tags == ["statistics", "paid"]
+
+
+def test_summary_is_kept_without_tags(addon_info: AddonInfo) -> None:
+    addon_info.ai = None
+    enriched: AddonInfos = __enrich(StubAiProvider(tags=None), AddonInfos([addon_info]))
+
+    assert enriched[0].ai.summary == "A generated summary."
+    assert enriched[0].ai.tags is None
+
+
+def test_tags_are_kept_without_summary(addon_info: AddonInfo) -> None:
+    addon_info.ai = None
+    enriched: AddonInfos = __enrich(StubAiProvider(summary=None), AddonInfos([addon_info]))
+
+    assert enriched[0].ai.summary is None
+    assert enriched[0].ai.tags == ["statistics", "paid"]
+    assert enriched[0].ai.model == MODEL
+
+
 def test_readme_is_taken_from_the_github_block(addon_info: AddonInfo) -> None:
     addon_info.github.readme = GithubReadme("Readme of the addon repo.")
     provider: StubAiProvider = StubAiProvider()
@@ -68,6 +96,7 @@ def test_readme_is_taken_from_the_github_block(addon_info: AddonInfo) -> None:
     __enrich(provider, AddonInfos([addon_info]))
 
     assert "Readme of the addon repo." in provider.prompts[0]
+    assert "Readme of the addon repo." in provider.prompts[1]
 
 
 def test_addon_without_github_is_still_summarized(addon_info: AddonInfo) -> None:
@@ -79,7 +108,7 @@ def test_addon_without_github_is_still_summarized(addon_info: AddonInfo) -> None
 
 def test_unanswered_addon_keeps_no_summary(addon_info: AddonInfo) -> None:
     addon_info.ai = None
-    enriched: AddonInfos = __enrich(StubAiProvider(response=None), AddonInfos([addon_info]))
+    enriched: AddonInfos = __enrich(StubAiProvider(summary=None, tags=None), AddonInfos([addon_info]))
 
     assert enriched[0].ai is None
 
@@ -89,6 +118,23 @@ def test_failed_request_names_the_addon(addon_info: AddonInfo) -> None:
     enricher: AiEnricher = __enricher(FailingAiProvider(error))
 
     with pytest.raises(RuntimeError, match=f"Cannot summarize addon: {addon_info.header.id}") as exc_info:
+        enricher._download(addon_info)
+
+    assert exc_info.value.__cause__ is error
+
+
+def test_failed_tag_request_names_the_addon(addon_info: AddonInfo) -> None:
+    error: ValueError = ValueError("Content Exists Risk")
+
+    class TagFailingAiProvider(StubAiProvider):
+        def response(self, prompt: AiPrompt, instructions: Optional[AiInstructions] = None) -> Optional[AiResponseText]:
+            if instructions is not None:
+                raise error
+            return super().response(prompt, instructions)
+
+    enricher: AiEnricher = __enricher(TagFailingAiProvider())
+
+    with pytest.raises(RuntimeError, match=f"Cannot tag addon: {addon_info.header.id}") as exc_info:
         enricher._download(addon_info)
 
     assert exc_info.value.__cause__ is error
@@ -113,7 +159,8 @@ def test_offline_run_is_served_from_the_cache(addon_info: AddonInfo, tmp_path: P
     enriched: AddonInfos = __enrich(offline, AddonInfos([addon_info]))
 
     assert enriched[0].ai.summary == "A generated summary."
-    assert offline.get_cache_stats().hit_count == 1
+    assert enriched[0].ai.tags == ["statistics", "paid"]
+    assert offline.get_cache_stats().hit_count == 2
     assert offline.get_cache_stats().miss_count == 0
 
 
@@ -124,4 +171,4 @@ def test_offline_miss_leaves_no_summary(addon_info: AddonInfo, tmp_path: Path) -
     enriched: AddonInfos = __enrich(offline, AddonInfos([addon_info]))
 
     assert enriched[0].ai is None
-    assert offline.get_cache_stats().miss_count == 1
+    assert offline.get_cache_stats().miss_count == 2

@@ -8,7 +8,7 @@ from anki_addons_dataset.collector.ankiforum.ankiforum_service import AnkiForumS
 from anki_addons_dataset.common.data_types import AddonInfo, AddonHeader, AddonId, AddonPage, GithubInfo, AddonInfos, \
     AnkiForumInfo, TopicSlug, TopicId, LastPostedAt, URL, PostsCount, LanguageName, GithubRepo, GithubUserName, \
     GithubRepoName, AnkiVersion, AddonBranch, HtmlStr, AddonRating, UpdateDate, AddonTitle, AddonDescription, \
-    AiInfo, AiSummary, AiModel
+    AiInfo, AiSummary, AiModel, AiTag
 
 log: Logger = logging.getLogger(__name__)
 
@@ -61,7 +61,8 @@ def test_enrich(anki_forum_enricher: AnkiForumEnricher, anki_forum_service: Anki
         ),
         ai=AiInfo(
             summary=AiSummary("Shows the size of the collection and of individual notes."),
-            model=AiModel("test-model")
+            model=AiModel("test-model"),
+            tags=[AiTag("statistics")]
         )
     )
 

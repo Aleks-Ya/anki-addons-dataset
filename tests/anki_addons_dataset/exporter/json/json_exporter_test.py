@@ -62,7 +62,8 @@ def test_export_addon_infos(json_exporter: JsonExporter, snapshot_dir: SnapshotD
                                    'last_posted_at': '2023-09-10 12:00:00+00:00',
                                    'posts_count': 42},
                          'ai': {'summary': 'Shows the size of the collection and of individual notes.',
-                                'model': 'test-model'}
+                                'model': 'test-model',
+                                'tags': ['statistics']}
                          }]
 
 
@@ -120,7 +121,8 @@ def test_export_addon_infos_empty_forum(json_exporter: JsonExporter, snapshot_di
                                     'ai_tooling_markers': ['claude-code', 'cursor']},
                          'forum': None,
                          'ai': {'summary': 'Shows the size of the collection and of individual notes.',
-                                'model': 'test-model'}}]
+                                'model': 'test-model',
+                                'tags': ['statistics']}}]
 
 
 def test_export_addon_infos_empty_posts_count(json_exporter: JsonExporter, snapshot_dir: SnapshotDir,
@@ -182,7 +184,8 @@ def test_export_addon_infos_empty_posts_count(json_exporter: JsonExporter, snaps
                                    'last_posted_at': '2023-09-10 12:00:00+00:00',
                                    'posts_count': None},
                          'ai': {'summary': 'Shows the size of the collection and of individual notes.',
-                                'model': 'test-model'}}]
+                                'model': 'test-model',
+                                'tags': ['statistics']}}]
 
 
 def test_export_addon_infos_empty_last_posted_at(json_exporter: JsonExporter, snapshot_dir: SnapshotDir,

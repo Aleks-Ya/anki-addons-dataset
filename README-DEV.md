@@ -165,16 +165,18 @@ immediately instead of failing minutes later during `download`. It also verifies
 write access to the dataset (the same check `upload` runs), so both credentials are validated
 up front.
 
-## AI summaries
-The `ai` step generates the one-sentence addon summary exported as `ai.summary`. It is the only step
+## AI summaries and tags
+The `ai` step generates the one-sentence addon summary exported as `ai.summary` and the addon tags
+exported as `ai.tags`, picked from the vocabulary hard-coded in `AiTagger`. It is the only step
 that spends money, so it is separate from `download`: it reads the snapshots already in `history/`
 (no `-d`), builds a prompt from the addon title, the AnkiWeb description and the GitHub README, and
 writes every answer to `history/<date>/1-raw/4-ai/ai-cache.jsonl`. `parse` then reads that cache
-offline and attaches the summaries to the dump; an addon with no cached answer simply gets no
-summary, and `parse` logs how many were missing.
+offline and attaches the summaries and tags to the dump; an addon with no cached answer simply gets
+no summary or tags, and `parse` logs how many answers were missing (two per addon).
 
-The cache key is a hash of the model and the whole prompt, so editing the prompt template or
-`ai.readme_max_chars` invalidates every entry. That is why the step stands on its own — refilling
+The cache key is a hash of the model and the whole prompt, system prompt included, so editing a
+prompt template or `ai.readme_max_chars` invalidates every entry. Summaries and tags use different
+prompts, so editing the tag vocabulary re-buys only the tag answers. That is why the step stands on its own — refilling
 the cache costs AI tokens rather than a full re-scrape. The key holds no addon id or date, so an
 unchanged prompt has the same key in every snapshot: the step loads a shared index from *all*
 snapshots' caches and reuses any answer already bought anywhere in the history, copying each hit into

@@ -67,7 +67,8 @@ def test_export_addon_infos(snapshot_dir: SnapshotDir, addon_infos: AddonInfos,
                       'last_posted_at': '2023-09-10 12:00:00+00:00',
                       'posts_count': 42},
             'ai': {'summary': 'Shows the size of the collection and of individual notes.',
-                   'model': 'test-model'}
+                   'model': 'test-model',
+                   'tags': ['statistics']}
         }]
     )
     pdt.assert_frame_equal(act_df, exp_df)

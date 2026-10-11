@@ -12,6 +12,7 @@ from requests import Response
 from anki_addons_dataset.collector.ai.ai_enricher import AiEnricher
 from anki_addons_dataset.collector.ai.ai_provider import AiPrompt, AiResponseText
 from anki_addons_dataset.collector.ai.ai_summarizer import AiSummarizer
+from anki_addons_dataset.collector.ai.ai_tagger import AiTagger
 from anki_addons_dataset.collector.ai.cached_ai_provider import CachedAiProvider
 from anki_addons_dataset.collector.ai.deepseek_ai_provider import DeepSeekAiProvider
 from anki_addons_dataset.collector.ai.openai_ai_provider import OpenAiAiProvider
@@ -88,7 +89,8 @@ def test_response_delegates_outside_peak_hours(mocker: MockerFixture) -> None:
 def test_peak_hours_abort_the_whole_enrichment(addon_info: AddonInfo, tmp_path: Path) -> None:
     cache_file: Path = tmp_path / "4-ai" / "ai-cache.jsonl"
     provider: CachedAiProvider = CachedAiProvider(__provider(), cache_file)
-    enricher: AiEnricher = AiEnricher(AiSummarizer(provider, readme_max_chars=8000), MODEL)
+    enricher: AiEnricher = AiEnricher(AiSummarizer(provider, readme_max_chars=8000),
+                                      AiTagger(provider, readme_max_chars=8000), MODEL)
 
     with pytest.raises(RuntimeError, match=f"Cannot summarize addon: {addon_info.header.id}") as exc_info:
         enricher._download(addon_info)

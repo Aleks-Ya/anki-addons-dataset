@@ -69,6 +69,7 @@ class Forum:
 class Ai:
     summary: Optional[str]
     model: Optional[str]
+    tags: Optional[list[str]]
 
 
 @dataclass
@@ -167,7 +168,7 @@ class JsonAddonInfo:
     def __ai(addon: AddonInfo) -> Optional[Ai]:
         if not addon.ai:
             return None
-        return Ai(addon.ai.summary, addon.ai.model)
+        return Ai(addon.ai.summary, addon.ai.model, addon.ai.tags)
 
     @staticmethod
     def __branches(addon: AddonInfo) -> list[Branch]:

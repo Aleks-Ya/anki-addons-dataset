@@ -13,6 +13,7 @@ from anki_addons_dataset.collector.ai.ai_cache_stats import AiCacheStats
 from anki_addons_dataset.collector.ai.ai_enricher import AiEnricher
 from anki_addons_dataset.collector.ai.ai_provider_factory import AiProviderFactory
 from anki_addons_dataset.collector.ai.ai_summarizer import AiSummarizer
+from anki_addons_dataset.collector.ai.ai_tagger import AiTagger
 from anki_addons_dataset.collector.ai.cached_ai_provider import CachedAiProvider
 from anki_addons_dataset.collector.ankiforum.ankiforum_enricher import AnkiForumEnricher
 from anki_addons_dataset.collector.ankiforum.ankiforum_service import AnkiForumService
@@ -107,7 +108,7 @@ class CollectorFacade:
         addon_infos = self.__ai_enrich(addon_infos, ai_provider)
         cache_miss_count: int = ai_provider.get_cache_stats().miss_count
         if cache_miss_count:
-            log.warning(f"{cache_miss_count} addons have no cached AI summary and stay without one. "
+            log.warning(f"{cache_miss_count} AI answers (summaries or tags) are missing from the cache. "
                         f"Run the 'ai' operation to fill the cache.")
         JsonHelper.write_addon_infos_dump(addon_infos, script_version, snapshot_dir.get_addon_infos_dump())
         log.info(f"===== Parsed snapshot for {snapshot_date} =====\n")
@@ -145,8 +146,9 @@ class CollectorFacade:
 
     def __ai_enrich(self, addon_infos: AddonInfos, ai_provider: CachedAiProvider) -> AddonInfos:
         ai_summarizer: AiSummarizer = AiSummarizer(ai_provider, self.__config.ai.readme_max_chars)
-        ai_enricher: AiEnricher = AiEnricher(ai_summarizer, ai_provider.get_model())
-        log.info(f"Summarizing {len(addon_infos)} addons")
+        ai_tagger: AiTagger = AiTagger(ai_provider, self.__config.ai.readme_max_chars)
+        ai_enricher: AiEnricher = AiEnricher(ai_summarizer, ai_tagger, ai_provider.get_model())
+        log.info(f"Summarizing and tagging {len(addon_infos)} addons")
         ai_enricher.start()
         for addon_info in addon_infos:
             ai_enricher.download_in_background(addon_info)

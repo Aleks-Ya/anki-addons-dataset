@@ -23,7 +23,7 @@ from anki_addons_dataset.collector.overrider.overrider import Overrider
 from anki_addons_dataset.common.data_types import AddonId, GithubRepo, GithubUserName, GithubRepoName, LastPostedAt, \
     URL, PostsCount, AddonInfo, AddonHeader, AddonPage, GithubInfo, AnkiForumInfo, LanguageName, AddonInfos, \
     DatasetSnapshotMetadata, RawMetadata, AnkiVersion, AddonBranch, HtmlStr, SnapshotDate, ReportDate, ScriptVersion, \
-    AddonRating, UpdateDate, AddonTitle, AddonDescription, PageLoadTimeout, ElementWaitTimeout, AiInfo, AiSummary, \
+    AddonRating, UpdateDate, AddonTitle, AddonDescription, PageLoadTimeout, ElementWaitTimeout, AiInfo, AiSummary, AiTag, \
     AiModel
 from anki_addons_dataset.common.working_dir import WorkingDir, SnapshotDir
 from anki_addons_dataset.config.app_config import AppConfig, AiConfig, GithubConfig, HuggingFaceConfig
@@ -226,7 +226,8 @@ def addon_info(addon_header: AddonHeader, github_repo: GithubRepo, topic_slug: T
         ),
         ai=AiInfo(
             summary=AiSummary("Shows the size of the collection and of individual notes."),
-            model=AiModel("test-model")
+            model=AiModel("test-model"),
+            tags=[AiTag("statistics")]
         )
     )
 

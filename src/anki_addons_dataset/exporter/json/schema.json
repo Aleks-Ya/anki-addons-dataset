@@ -406,6 +406,15 @@
               "string",
               "null"
             ]
+          },
+          "tags": {
+            "type": [
+              "array",
+              "null"
+            ],
+            "items": {
+              "type": "string"
+            }
           }
         }
       }
