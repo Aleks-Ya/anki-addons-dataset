@@ -26,3 +26,4 @@ excluded_github_repos:
   - https://github.com/jaseg/python-mpv
   - https://github.com/iwalton3/python-mpv-jsonipc
   - https://github.com/cvsuser-chromium/third_party_hunspell_dictionaries
+  - https://github.com/yt-dlp/yt-dlp
