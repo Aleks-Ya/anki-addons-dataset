@@ -65,7 +65,7 @@ def _run() -> None:
         log.info(f"Step '{operation.value}' started")
         start: float = time.perf_counter()
         step_snapshot_date: Optional[SnapshotDate] = _step_snapshot_date(arguments, operation, snapshot_date) \
-            if operation in (Operation.AI, Operation.PARSE) else snapshot_date
+            if operation in (Operation.AI, Operation.PARSE, Operation.REPORT) else snapshot_date
         facade.process(operation, step_snapshot_date, report_date)
         elapsed: float = time.perf_counter() - start
         timings.append((operation.value, elapsed))

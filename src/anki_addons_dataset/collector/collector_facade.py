@@ -113,8 +113,8 @@ class CollectorFacade:
         JsonHelper.write_addon_infos_dump(addon_infos, script_version, snapshot_dir.get_addon_infos_dump())
         log.info(f"===== Parsed snapshot for {snapshot_date} =====\n")
 
-    def report_snapshots(self, report_date: ReportDate) -> None:
-        for snapshot_dir in self.__working_dir.list_sampled_snapshot_dirs():
+    def report_snapshots(self, snapshot_date: Optional[SnapshotDate], report_date: ReportDate) -> None:
+        for snapshot_dir in self.__selected_snapshot_dirs(snapshot_date):
             snapshot_date: SnapshotDate = snapshot_dir.snapshot_dir_to_snapshot_date()
             self.__report_snapshot(snapshot_date, report_date)
 

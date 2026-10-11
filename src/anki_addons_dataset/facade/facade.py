@@ -46,7 +46,7 @@ class Facade:
         elif operation == Operation.PARSE:
             self.__collector_facade.parse_snapshots(snapshot_date)
         elif operation == Operation.REPORT:
-            self.__collector_facade.report_snapshots(report_date)
+            self.__collector_facade.report_snapshots(snapshot_date, report_date)
         elif operation == Operation.BUNDLE:
             dataset_bundle: DatasetBundle = DatasetBundle(self.__working_dir)
             dataset_bundle.create_bundle()

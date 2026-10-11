@@ -46,3 +46,21 @@ def test_parse_operation_passes_the_snapshot_date_on(facade: Facade, report_date
         facade.process(Operation.PARSE, snapshot_date, report_date)
 
     parse_snapshots.assert_called_once_with(snapshot_date)
+
+
+def test_report_operation_reports_snapshots(facade: Facade, report_date: ReportDate):
+    snapshot_date: Optional[SnapshotDate] = None
+
+    with patch.object(CollectorFacade, "report_snapshots") as report_snapshots:
+        facade.process(Operation.REPORT, snapshot_date, report_date)
+
+    report_snapshots.assert_called_once_with(None, report_date)
+
+
+def test_report_operation_passes_the_snapshot_date_on(facade: Facade, report_date: ReportDate):
+    snapshot_date: SnapshotDate = SnapshotDate(date.fromisoformat("2025-01-01"))
+
+    with patch.object(CollectorFacade, "report_snapshots") as report_snapshots:
+        facade.process(Operation.REPORT, snapshot_date, report_date)
+
+    report_snapshots.assert_called_once_with(snapshot_date, report_date)

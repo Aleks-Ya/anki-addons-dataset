@@ -73,6 +73,18 @@ def test_all_hides_the_snapshot_date_from_parse(caplog: LogCaptureFixture):
     assert "Ignoring -d 2025-01-01 for the 'parse' step" in caplog.text
 
 
+def test_an_explicit_report_honours_the_snapshot_date():
+    snapshot_date: SnapshotDate = SnapshotDate(date.fromisoformat("2025-01-01"))
+    assert _step_snapshot_date(__arguments(True), Operation.REPORT, snapshot_date) == snapshot_date
+
+
+def test_all_hides_the_snapshot_date_from_report(caplog: LogCaptureFixture):
+    snapshot_date: SnapshotDate = SnapshotDate(date.fromisoformat("2025-01-01"))
+
+    assert _step_snapshot_date(__arguments(False), Operation.REPORT, snapshot_date) is None
+    assert "Ignoring -d 2025-01-01 for the 'report' step" in caplog.text
+
+
 def test_no_snapshot_date_stays_none():
     date_less: Optional[SnapshotDate] = None
     assert _step_snapshot_date(__arguments(True), Operation.AI, date_less) is None

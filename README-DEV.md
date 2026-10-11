@@ -168,8 +168,8 @@ up front.
 ## AI summaries and tags
 The `ai` step generates the one-sentence addon summary exported as `ai.summary` and the addon tags
 exported as `ai.tags`, picked from the vocabulary hard-coded in `AiTagger`. It is the only step
-that spends money, so it is separate from `download`: it reads the snapshots already in `history/`
-(no `-d`), builds a prompt from the addon title, the AnkiWeb description and the GitHub README, and
+that spends money, so it is separate from `download`: it reads the snapshots already in `history/`,
+builds a prompt from the addon title, the AnkiWeb description and the GitHub README, and
 writes every answer to `history/<date>/1-raw/4-ai/ai-cache.jsonl`. `parse` then reads that cache
 offline and attaches the summaries and tags to the dump; an addon with no cached answer simply gets
 no summary or tags, and `parse` logs how many answers were missing (two per addon).
@@ -197,15 +197,8 @@ anki-addons-dataset ai -d 2026-01-01    # one snapshot only
 ```
 
 The date must name an existing snapshot, otherwise `ai` fails. Inside `all`, `-d` belongs to
-`download` alone: the `ai` step of `all` keeps summarizing every snapshot.
-
-`parse` takes `-d` under the same rules: without it every snapshot is re-parsed, with it only that one
-(it must exist), and the `parse` step of `all` keeps re-parsing every snapshot:
-
-```bash
-anki-addons-dataset parse                  # all snapshots
-anki-addons-dataset parse -d 2026-01-01    # one snapshot only
-```
+`download` alone: the `ai` step of `all` keeps summarizing every snapshot. `parse` and `report` take
+`-d` the same way, see [Running the pipeline](#running-the-pipeline).
 
 Against the default DeepSeek endpoint, `ai` refuses to run during DeepSeek's peak hours
 (01:00-04:00 and 06:00-10:00 UTC, Monday through Friday), when the rate is double the off-peak
@@ -262,6 +255,19 @@ anki-addons-dataset bundle
 anki-addons-dataset upload
 ```
 
+`ai`, `parse` and `report` process every snapshot in `history/` by default. With `-d` they process
+that one snapshot only:
+
+```bash
+anki-addons-dataset ai -d 2026-01-01
+anki-addons-dataset parse -d 2026-01-01
+anki-addons-dataset report -d 2026-01-01
+anki-addons-dataset parse report -d 2026-01-01   # re-parse and re-report one snapshot
+```
+
+The date must name a snapshot that was already downloaded, otherwise the step fails. It also wins over
+`--sample-snapshots`. `bundle` ignores `-d` and always bundles the whole history.
+
 A single invocation also accepts any subset of steps (space-separated), running them in the given
 order, or the shorthand `all`, which expands to `info` followed by the full seven-step sequence in
 pipeline order:
@@ -272,6 +278,10 @@ anki-addons-dataset all -d 2026-01-01          # equivalent to: info init downlo
 anki-addons-dataset parse report               # run only the given steps
 anki-addons-dataset info                       # just print version and configuration
 ```
+
+Inside `all`, `-d` is the date `download` scrapes. The `ai`, `parse` and `report` steps of `all` still
+process every snapshot. They take the date only when they are named explicitly, as in
+`download parse report -d 2026-01-01`.
 
 There are three ways to run it, depending on which version you need, plus a sampled run for
 testing a change quickly:
@@ -318,7 +328,7 @@ freely; point `-w` at a scratch directory so the real one is never touched:
 | Option | Meaning |
 | --- | --- |
 | `--sample-addons` | download and parse only the first N addons, ordered by addon id |
-| `--sample-snapshots` | let `ai` (without `-d`)/`parse`/`report`/`bundle` process only the newest N snapshots |
+| `--sample-snapshots` | let `ai`/`parse`/`report` (without `-d`) and `bundle` process only the newest N snapshots |
 
 ```bash
 WD=/tmp/anki-addons-sample

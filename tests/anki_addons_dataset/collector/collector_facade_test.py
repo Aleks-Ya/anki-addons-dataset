@@ -18,6 +18,8 @@ __SUMMARIZE_SNAPSHOT: str = \
     "anki_addons_dataset.collector.collector_facade.CollectorFacade._CollectorFacade__summarize_snapshot"
 __PARSE_SNAPSHOT: str = \
     "anki_addons_dataset.collector.collector_facade.CollectorFacade._CollectorFacade__parse_snapshot"
+__REPORT_SNAPSHOT: str = \
+    "anki_addons_dataset.collector.collector_facade.CollectorFacade._CollectorFacade__report_snapshot"
 
 
 def test_report_snapshots_generates_final_from_dump_without_raw(
@@ -28,7 +30,7 @@ def test_report_snapshots_generates_final_from_dump_without_raw(
     stage_marker.write_text("keep me")
     JsonHelper.write_addon_infos_dump(addon_infos, script_version, snapshot_dir.get_addon_infos_dump())
 
-    collector_facade.report_snapshots(report_date)
+    collector_facade.report_snapshots(None, report_date)
 
     final_dir = snapshot_dir.get_final_dir()
     assert (final_dir / "json" / "data.json").exists()
@@ -41,11 +43,11 @@ def test_report_snapshots_generates_final_from_dump_without_raw(
 def test_report_snapshots_missing_dump_raises(
         collector_facade: CollectorFacade, snapshot_dir: SnapshotDir, report_date: ReportDate):
     with pytest.raises(FileNotFoundError, match="Run the 'parse' operation first"):
-        collector_facade.report_snapshots(report_date)
+        collector_facade.report_snapshots(None, report_date)
 
 
 def test_report_snapshots_no_snapshots_is_noop(collector_facade: CollectorFacade, report_date: ReportDate):
-    collector_facade.report_snapshots(report_date)  # must not raise when history is empty
+    collector_facade.report_snapshots(None, report_date)  # must not raise when history is empty
 
 
 def test_summarize_snapshots_no_snapshots_is_noop(collector_facade: CollectorFacade,
@@ -150,7 +152,40 @@ def test_report_snapshots_honours_the_snapshot_sample(
     for snapshot_dir in [old_dir, new_dir]:
         JsonHelper.write_addon_infos_dump(addon_infos, script_version, snapshot_dir.get_addon_infos_dump())
 
-    CollectorFacade(working_dir, app_config, page_load_timeout, element_wait_timeout).report_snapshots(report_date)
+    CollectorFacade(working_dir, app_config, page_load_timeout, element_wait_timeout).report_snapshots(None, report_date)
 
     assert (new_dir.get_final_dir() / "json" / "data.json").exists()
     assert not (old_dir.get_final_dir() / "json" / "data.json").exists()
+
+
+def test_report_snapshots_with_a_date_reports_only_that_snapshot(
+        working_dir: WorkingDir, collector_facade: CollectorFacade, report_date: ReportDate):
+    for snapshot_date in ["2025-01-01", "2025-02-01"]:
+        working_dir.get_snapshot_dir(SnapshotDate(date.fromisoformat(snapshot_date))).create()
+
+    with patch(__REPORT_SNAPSHOT) as report_snapshot:
+        collector_facade.report_snapshots(SnapshotDate(date.fromisoformat("2025-01-01")), report_date)
+
+    report_snapshot.assert_called_once_with(SnapshotDate(date.fromisoformat("2025-01-01")), report_date)
+
+
+def test_report_snapshots_with_a_date_wins_over_the_snapshot_sample(
+        working_dir_path: Path, app_config: AppConfig, page_load_timeout: PageLoadTimeout,
+        element_wait_timeout: ElementWaitTimeout, report_date: ReportDate):
+    working_dir: WorkingDir = WorkingDir(working_dir_path, max_snapshots=1)
+    for snapshot_date in ["2025-01-01", "2025-02-01"]:
+        working_dir.get_snapshot_dir(SnapshotDate(date.fromisoformat(snapshot_date))).create()
+    collector_facade: CollectorFacade = CollectorFacade(
+        working_dir, app_config, page_load_timeout, element_wait_timeout)
+
+    with patch(__REPORT_SNAPSHOT) as report_snapshot:
+        collector_facade.report_snapshots(SnapshotDate(date.fromisoformat("2025-01-01")), report_date)
+
+    report_snapshot.assert_called_once_with(SnapshotDate(date.fromisoformat("2025-01-01")), report_date)
+
+
+def test_report_snapshots_with_an_unknown_date_raises(collector_facade: CollectorFacade, report_date: ReportDate):
+    unknown_date: SnapshotDate = SnapshotDate(date.fromisoformat("1999-01-01"))
+
+    with pytest.raises(FileNotFoundError, match="No snapshot for 1999-01-01"):
+        collector_facade.report_snapshots(unknown_date, report_date)
