@@ -2,6 +2,7 @@ from typing import Optional
 
 from bs4 import ResultSet, Tag, BeautifulSoup
 
+from anki_addons_dataset.common.anki_version import AnkiVersionCodec
 from anki_addons_dataset.common.data_types import AddonHeader, AddonId, HtmlStr, AnkiVersion, URL, AddonRating, UpdateDate, \
     AddonTitle
 
@@ -28,6 +29,8 @@ class AddonsPageParser:
             rating: AddonRating = AddonRating(int(cells[1].text))
             update_date: UpdateDate = UpdateDate(cells[2].text)
             branches: AnkiVersion = AnkiVersion(cells[3].text)
-            addon_header: AddonHeader = AddonHeader(addon_id, addon_name, addon_page, rating, update_date, branches)
+            anki_point_version, anki_version_kind = AnkiVersionCodec.parse_header(branches)
+            addon_header: AddonHeader = AddonHeader(addon_id, addon_name, addon_page, rating, update_date, branches,
+                                                    anki_point_version, anki_version_kind)
             addon_rows.append(addon_header)
         return sorted(addon_rows, key=lambda header: header.id)

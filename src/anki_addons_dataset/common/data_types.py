@@ -1,6 +1,7 @@
 from datetime import datetime, date
 from typing import NewType, Optional
 from dataclasses import dataclass, field
+from enum import StrEnum
 
 SnapshotDate = NewType("SnapshotDate", date)
 ReportDate = NewType("ReportDate", datetime)
@@ -24,6 +25,7 @@ LastPostedAt = NewType("LastPostedAt", datetime)
 PostsCount = NewType("PostsCount", int)
 HuggingFaceFolder = NewType("HuggingFaceFolder", str)
 AnkiVersion = NewType("AnkiVersion", str)
+AnkiPointVersion = NewType("AnkiPointVersion", int)
 SpdxLicense = NewType("SpdxLicense", str)
 DependencyName = NewType("DependencyName", str)
 Topic = NewType("Topic", str)
@@ -35,6 +37,13 @@ AiTagGroup = NewType("AiTagGroup", str)
 AiModel = NewType("AiModel", str)
 
 
+class AnkiVersionKind(StrEnum):
+    HARD = "hard"
+    TESTED = "tested"
+    OPEN = "open"
+    UNKNOWN = "unknown"
+
+
 @dataclass
 class AddonHeader:
     id: AddonId
@@ -43,6 +52,8 @@ class AddonHeader:
     rating: AddonRating
     update_date: UpdateDate
     anki_version: AnkiVersion
+    anki_point_version: Optional[AnkiPointVersion] = None
+    anki_version_kind: AnkiVersionKind = AnkiVersionKind.UNKNOWN
 
 
 @dataclass
@@ -117,6 +128,9 @@ class AddonBranch:
     min_anki_version: AnkiVersion
     max_anki_version: Optional[AnkiVersion]
     updated: date
+    min_point_version: Optional[AnkiPointVersion] = None
+    max_point_version: Optional[AnkiPointVersion] = None
+    max_version_kind: AnkiVersionKind = AnkiVersionKind.UNKNOWN
 
 
 @dataclass

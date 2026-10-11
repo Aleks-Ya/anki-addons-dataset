@@ -10,7 +10,7 @@ from anki_addons_dataset.common.data_types import AddonInfo, AddonInfos, AddonHe
     GithubInfo, GitHubLink, GitHubUser, GithubRepo, AnkiForumInfo, AddonId, AnkiVersion, HtmlStr, URL, \
     GithubUserName, GithubRepoName, LanguageName, LanguageCode, TopicSlug, TopicId, LastPostedAt, PostsCount, \
     ScriptVersion, AddonRating, UpdateDate, AddonTitle, AddonDescription, AddonManifest, SpdxLicense, Topic, \
-    DependencyName, GithubReadme, AiInfo, AiSummary, AiModel, AiTag
+    DependencyName, GithubReadme, AiInfo, AiSummary, AiModel, AiTag, AnkiPointVersion, AnkiVersionKind
 
 
 class JsonHelper:
@@ -71,6 +71,8 @@ class JsonHelper:
             rating=AddonRating(data["rating"]),
             update_date=UpdateDate(data["update_date"]),
             anki_version=AnkiVersion(data["anki_version"]),
+            anki_point_version=JsonHelper.__point_version(data.get("anki_point_version")),
+            anki_version_kind=AnkiVersionKind(data.get("anki_version_kind", AnkiVersionKind.UNKNOWN)),
         )
 
     @staticmethod
@@ -96,7 +98,14 @@ class JsonHelper:
             min_anki_version=AnkiVersion(data["min_anki_version"]),
             max_anki_version=AnkiVersion(max_anki_version) if max_anki_version is not None else None,
             updated=date.fromisoformat(data["updated"]),
+            min_point_version=JsonHelper.__point_version(data.get("min_point_version")),
+            max_point_version=JsonHelper.__point_version(data.get("max_point_version")),
+            max_version_kind=AnkiVersionKind(data.get("max_version_kind", AnkiVersionKind.UNKNOWN)),
         )
+
+    @staticmethod
+    def __point_version(value: Optional[int]) -> Optional[AnkiPointVersion]:
+        return AnkiPointVersion(value) if value is not None else None
 
     @staticmethod
     def __github_info_from_dict(data: Optional[dict[str, Any]]) -> Optional[GithubInfo]:

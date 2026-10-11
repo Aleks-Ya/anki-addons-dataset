@@ -1,7 +1,7 @@
 from pathlib import Path
 
 from anki_addons_dataset.collector.ankiweb.addons_page_parser import AddonsPageParser
-from anki_addons_dataset.common.data_types import AddonHeader, AddonId, HtmlStr
+from anki_addons_dataset.common.data_types import AddonHeader, AddonId, HtmlStr, AnkiVersionKind
 
 
 def test_addons_number():
@@ -18,3 +18,12 @@ def test_addons_order():
     addon_ids: list[AddonId] = [addon_header.id for addon_header in addon_headers]
     sorted_addon_ids: list[AddonId] = sorted(addon_ids)
     assert addon_ids == sorted_addon_ids
+
+
+def test_addons_anki_version():
+    addons_html_file: Path = Path(__file__).parent / "addons_page.html"
+    addons_html: HtmlStr = HtmlStr(addons_html_file.read_text())
+    addon_headers: list[AddonHeader] = AddonsPageParser.parse_addons_page(addons_html)
+    assert [(header.anki_version, header.anki_point_version, header.anki_version_kind)
+            for header in addon_headers] == [("25.02.1~", 250201, AnkiVersionKind.TESTED),
+                                             ("23.12~", 231200, AnkiVersionKind.TESTED)]

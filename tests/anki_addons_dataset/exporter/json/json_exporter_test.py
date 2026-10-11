@@ -24,9 +24,14 @@ def test_export_addon_infos(json_exporter: JsonExporter, snapshot_dir: SnapshotD
                                       'description_language': None,
                                       'description_language_confidence': None,
                                       'anki_version': '25.09.2~',
-                                      'branches': [{'max_version': '25.09.2~',
+                                      'anki_point_version': 250902,
+                                      'anki_version_kind': 'tested',
+                                      'branches': [{'max_version': '25.09.2+',
                                                     'min_version': '24.04.1',
-                                                    'updated': '2023-03-15'}],
+                                                    'updated': '2023-03-15',
+                                                    'min_point_version': 240401,
+                                                    'max_point_version': 250902,
+                                                    'max_version_kind': 'tested'}],
                                       'dislikes': 0,
                                       'likes': 0,
                                       'links': [],
@@ -87,9 +92,14 @@ def test_export_addon_infos_empty_forum(json_exporter: JsonExporter, snapshot_di
                                       'description_language': None,
                                       'description_language_confidence': None,
                                       'anki_version': '25.09.2~',
-                                      'branches': [{'max_version': '25.09.2~',
+                                      'anki_point_version': 250902,
+                                      'anki_version_kind': 'tested',
+                                      'branches': [{'max_version': '25.09.2+',
                                                     'min_version': '24.04.1',
-                                                    'updated': '2023-03-15'}],
+                                                    'updated': '2023-03-15',
+                                                    'min_point_version': 240401,
+                                                    'max_point_version': 250902,
+                                                    'max_version_kind': 'tested'}],
                                       'dislikes': 0,
                                       'likes': 0,
                                       'links': [],
@@ -146,9 +156,14 @@ def test_export_addon_infos_empty_posts_count(json_exporter: JsonExporter, snaps
                                       'description_language': None,
                                       'description_language_confidence': None,
                                       'anki_version': '25.09.2~',
-                                      'branches': [{'max_version': '25.09.2~',
+                                      'anki_point_version': 250902,
+                                      'anki_version_kind': 'tested',
+                                      'branches': [{'max_version': '25.09.2+',
                                                     'min_version': '24.04.1',
-                                                    'updated': '2023-03-15'}],
+                                                    'updated': '2023-03-15',
+                                                    'min_point_version': 240401,
+                                                    'max_point_version': 250902,
+                                                    'max_version_kind': 'tested'}],
                                       'dislikes': 0,
                                       'likes': 0,
                                       'links': [],
@@ -221,7 +236,8 @@ def test_export_addon_infos_with_enrichment_fields(json_exporter: JsonExporter, 
     addon_info.github.language_bytes = {LanguageName("Python"): 5, LanguageName("Rust"): 2}
     addon_info.github.primary_language = LanguageName("Python")
     addon_info.github.manifest = AddonManifest(package="note_size", name="Note Size", conflicts=["123"],
-                                               min_point_version=45, homepage="https://example.com", mod=1678900000)
+                                               min_point_version=45, max_point_version=-250900,
+                                               homepage="https://example.com", mod=1678900000)
     addon_info.github.dependencies = [DependencyName("requests")]
     addon_info.github.readme = GithubReadme("# NoteSize")
 
@@ -234,6 +250,9 @@ def test_export_addon_infos_with_enrichment_fields(json_exporter: JsonExporter, 
     assert github["primary_language"] == "Python"
     assert github["language_bytes"] == [{"name": "Python", "bytes": 5}, {"name": "Rust", "bytes": 2}]
     assert github["manifest"]["package"] == "note_size"
+    assert github["manifest"]["min_version"] == "2.1.45"
+    assert github["manifest"]["max_version"] == "25.09"
+    assert github["manifest"]["max_version_kind"] == "hard"
     assert github["dependencies"] == ["requests"]
     assert github["readme"] == "# NoteSize"
 

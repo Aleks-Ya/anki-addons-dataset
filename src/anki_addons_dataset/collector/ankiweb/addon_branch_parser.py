@@ -4,7 +4,8 @@ from datetime import date
 from re import Match
 from typing import Optional
 
-from anki_addons_dataset.common.data_types import AddonBranch, AnkiVersion
+from anki_addons_dataset.common.anki_version import AnkiVersionCodec
+from anki_addons_dataset.common.data_types import AddonBranch, AnkiVersion, AnkiPointVersion, AnkiVersionKind
 
 
 class AddonBranchParser:
@@ -24,4 +25,17 @@ class AddonBranchParser:
         if max_addon_version is None and match.group("plus") is not None:
             max_addon_version = AnkiVersion("+")
         updated: date = datetime.date.fromisoformat(match.group("updated"))
-        return AddonBranch(min_anki_version=min_addon_version, max_anki_version=max_addon_version, updated=updated)
+        max_point_version, max_version_kind = AddonBranchParser.__parse_max(max_addon_version)
+        return AddonBranch(min_anki_version=min_addon_version, max_anki_version=max_addon_version, updated=updated,
+                           min_point_version=AnkiVersionCodec.to_point(min_addon_version),
+                           max_point_version=max_point_version, max_version_kind=max_version_kind)
+
+    @staticmethod
+    def __parse_max(max_addon_version: Optional[AnkiVersion]) -> tuple[Optional[AnkiPointVersion], AnkiVersionKind]:
+        if max_addon_version is None:
+            return None, AnkiVersionKind.UNKNOWN
+        if max_addon_version == "+":
+            return None, AnkiVersionKind.OPEN
+        if max_addon_version.endswith("+"):
+            return AnkiVersionCodec.to_point(max_addon_version.removesuffix("+")), AnkiVersionKind.TESTED
+        return AnkiVersionCodec.to_point(max_addon_version), AnkiVersionKind.HARD

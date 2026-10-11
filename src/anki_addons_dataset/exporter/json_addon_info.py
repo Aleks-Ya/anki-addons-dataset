@@ -1,7 +1,9 @@
 from dataclasses import dataclass
 from typing import Optional
 
-from anki_addons_dataset.common.data_types import AddonInfos, AddonInfo, AddonDescription, GithubInfo, AddonManifest
+from anki_addons_dataset.common.anki_version import AnkiVersionCodec
+from anki_addons_dataset.common.data_types import AddonInfos, AddonInfo, AddonDescription, GithubInfo, AddonManifest, \
+    AnkiPointVersion
 
 
 @dataclass
@@ -26,6 +28,9 @@ class Manifest:
     max_point_version: Optional[int]
     homepage: Optional[str]
     mod: Optional[int]
+    min_version: Optional[str]
+    max_version: Optional[str]
+    max_version_kind: str
 
 
 @dataclass
@@ -77,6 +82,9 @@ class Branch:
     min_version: Optional[str]
     max_version: Optional[str]
     updated: Optional[str]
+    min_point_version: Optional[int]
+    max_point_version: Optional[int]
+    max_version_kind: str
 
 
 @dataclass
@@ -89,6 +97,8 @@ class AnkiWeb:
     rating: int
     update_date: str
     anki_version: str
+    anki_point_version: Optional[int]
+    anki_version_kind: str
     branches: list[Branch]
     links: list[str]
     likes: int
@@ -117,7 +127,8 @@ class JsonAddonInfo:
             branches: list[Branch] = JsonAddonInfo.__branches(addon)
             anki_web: AnkiWeb = AnkiWeb(addon.header.title, addon.header.addon_page_url, addon.page.content,
                                         addon.page.contact_author_url, addon.page.description, addon.header.rating,
-                                        addon.header.update_date, addon.header.anki_version, branches,
+                                        addon.header.update_date, addon.header.anki_version,
+                                        addon.header.anki_point_version, str(addon.header.anki_version_kind), branches,
                                         addon.page.other_links, addon.page.like_number, addon.page.dislike_number,
                                         list(addon.page.ai_declaration_markers), addon.page.description_language,
                                         addon.page.description_language_confidence)
@@ -150,8 +161,13 @@ class JsonAddonInfo:
     def __manifest(manifest: Optional[AddonManifest]) -> Optional[Manifest]:
         if manifest is None:
             return None
+        min_version: Optional[str] = AnkiVersionCodec.to_str(AnkiPointVersion(manifest.min_point_version)) \
+            if manifest.min_point_version is not None and manifest.min_point_version > 0 else None
+        max_point_version, max_version_kind = AnkiVersionCodec.from_manifest_max(manifest.max_point_version)
+        max_version: Optional[str] = AnkiVersionCodec.to_str(max_point_version) if max_point_version else None
         return Manifest(manifest.package, manifest.name, list(manifest.conflicts), manifest.min_point_version,
-                        manifest.max_point_version, manifest.homepage, manifest.mod)
+                        manifest.max_point_version, manifest.homepage, manifest.mod, min_version, max_version,
+                        str(max_version_kind))
 
     @staticmethod
     def __forum(addon: AddonInfo) -> Optional[Forum]:
@@ -172,5 +188,6 @@ class JsonAddonInfo:
 
     @staticmethod
     def __branches(addon: AddonInfo) -> list[Branch]:
-        return [Branch(branch.min_anki_version, branch.max_anki_version, str(branch.updated))
+        return [Branch(branch.min_anki_version, branch.max_anki_version, str(branch.updated), branch.min_point_version,
+                       branch.max_point_version, str(branch.max_version_kind))
                 for branch in addon.page.branches]

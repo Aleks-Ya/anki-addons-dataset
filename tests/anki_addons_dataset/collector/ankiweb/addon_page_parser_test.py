@@ -5,7 +5,7 @@ from anki_addons_dataset.collector.ankiweb.addon_page_parser import AddonPagePar
 from anki_addons_dataset.collector.overrider.overrider import Overrider
 from anki_addons_dataset.common.data_types import AddonHeader, AddonInfo, AddonPage, GithubInfo, AddonId, GitHubLink, \
     URL, GitHubUser, GithubRepo, GithubUserName, GithubRepoName, AddonBranch, HtmlStr, AnkiForumInfo, AnkiVersion, \
-    AddonRating, UpdateDate, AddonTitle, AddonDescription
+    AnkiPointVersion, AnkiVersionKind, AddonRating, UpdateDate, AddonTitle, AddonDescription
 
 
 def test_parse_addon_page(overrider: Overrider):
@@ -36,7 +36,10 @@ def test_parse_addon_page(overrider: Overrider):
             dislike_number=0,
             branches=[AddonBranch(min_anki_version=AnkiVersion('24.04.1'),
                                   max_anki_version=AnkiVersion('25.02.1+'),
-                                  updated=datetime.date(2025, 4, 19))],
+                                  updated=datetime.date(2025, 4, 19),
+                                  min_point_version=AnkiPointVersion(240401),
+                                  max_point_version=AnkiPointVersion(250201),
+                                  max_version_kind=AnkiVersionKind.TESTED)],
             other_links=[
                 URL('https://ankiweb.net/logo.png'),
                 URL('https://ankiweb.net/_app/immutable/nodes/0.DbG5vJiZ.mjs'),

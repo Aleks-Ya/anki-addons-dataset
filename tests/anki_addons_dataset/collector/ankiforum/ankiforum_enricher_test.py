@@ -8,7 +8,7 @@ from anki_addons_dataset.collector.ankiforum.ankiforum_service import AnkiForumS
 from anki_addons_dataset.common.data_types import AddonInfo, AddonHeader, AddonId, AddonPage, GithubInfo, AddonInfos, \
     AnkiForumInfo, TopicSlug, TopicId, LastPostedAt, URL, PostsCount, LanguageName, GithubRepo, GithubUserName, \
     GithubRepoName, AnkiVersion, AddonBranch, HtmlStr, AddonRating, UpdateDate, AddonTitle, AddonDescription, \
-    AiInfo, AiSummary, AiModel, AiTag
+    AiInfo, AiSummary, AiModel, AiTag, AnkiPointVersion, AnkiVersionKind
 
 log: Logger = logging.getLogger(__name__)
 
@@ -29,15 +29,20 @@ def test_enrich(anki_forum_enricher: AnkiForumEnricher, anki_forum_service: Anki
             addon_page_url=URL("https://ankiweb.net/shared/info/1188705668"),
             rating=AddonRating(4),
             update_date=UpdateDate("2023-03-15"),
-            anki_version=AnkiVersion("25.09.2~")
+            anki_version=AnkiVersion("25.09.2~"),
+            anki_point_version=AnkiPointVersion(250902),
+            anki_version_kind=AnkiVersionKind.TESTED
         ),
         page=AddonPage(
             content=HtmlStr("<html><body><h1>Sample addon page content</h1></body></html>"),
             like_number=0,
             dislike_number=0,
             branches=[AddonBranch(min_anki_version=AnkiVersion("24.04.1"),
-                                  max_anki_version=AnkiVersion("25.09.2~"),
-                                  updated=date(2023, 3, 15))],
+                                  max_anki_version=AnkiVersion("25.09.2+"),
+                                  updated=date(2023, 3, 15),
+                                  min_point_version=AnkiPointVersion(240401),
+                                  max_point_version=AnkiPointVersion(250902),
+                                  max_version_kind=AnkiVersionKind.TESTED)],
             other_links=[],
             description=AddonDescription("Sample addon description for full text search"),
             ai_declaration_markers=["chatgpt"]

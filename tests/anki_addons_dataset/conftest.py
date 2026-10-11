@@ -22,9 +22,9 @@ from anki_addons_dataset.collector.github.github_service import GithubService
 from anki_addons_dataset.collector.overrider.overrider import Overrider
 from anki_addons_dataset.common.data_types import AddonId, GithubRepo, GithubUserName, GithubRepoName, LastPostedAt, \
     URL, PostsCount, AddonInfo, AddonHeader, AddonPage, GithubInfo, AnkiForumInfo, LanguageName, AddonInfos, \
-    DatasetSnapshotMetadata, RawMetadata, AnkiVersion, AddonBranch, HtmlStr, SnapshotDate, ReportDate, ScriptVersion, \
-    AddonRating, UpdateDate, AddonTitle, AddonDescription, PageLoadTimeout, ElementWaitTimeout, AiInfo, AiSummary, AiTag, \
-    AiModel
+    DatasetSnapshotMetadata, RawMetadata, AnkiVersion, AnkiPointVersion, AnkiVersionKind, AddonBranch, HtmlStr, \
+    SnapshotDate, ReportDate, ScriptVersion, AddonRating, UpdateDate, AddonTitle, AddonDescription, PageLoadTimeout, \
+    ElementWaitTimeout, AiInfo, AiSummary, AiTag, AiModel
 from anki_addons_dataset.common.working_dir import WorkingDir, SnapshotDir
 from anki_addons_dataset.config.app_config import AppConfig, AiConfig, GithubConfig, HuggingFaceConfig
 from anki_addons_dataset.exporter.json.json_exporter import JsonExporter
@@ -187,7 +187,9 @@ def addon_header(note_size_addon_id: AddonId) -> AddonHeader:
         addon_page_url=URL("https://ankiweb.net/shared/info/1188705668"),
         rating=AddonRating(4),
         update_date=UpdateDate("2023-03-15"),
-        anki_version=AnkiVersion("25.09.2~")
+        anki_version=AnkiVersion("25.09.2~"),
+        anki_point_version=AnkiPointVersion(250902),
+        anki_version_kind=AnkiVersionKind.TESTED
     )
 
 
@@ -201,8 +203,11 @@ def addon_info(addon_header: AddonHeader, github_repo: GithubRepo, topic_slug: T
             like_number=0,
             dislike_number=0,
             branches=[AddonBranch(min_anki_version=AnkiVersion("24.04.1"),
-                                  max_anki_version=AnkiVersion("25.09.2~"),
-                                  updated=date(2023, 3, 15))],
+                                  max_anki_version=AnkiVersion("25.09.2+"),
+                                  updated=date(2023, 3, 15),
+                                  min_point_version=AnkiPointVersion(240401),
+                                  max_point_version=AnkiPointVersion(250902),
+                                  max_version_kind=AnkiVersionKind.TESTED)],
             other_links=[],
             description=AddonDescription("Sample addon description for full text search"),
             ai_declaration_markers=["chatgpt"]
