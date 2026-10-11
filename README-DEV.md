@@ -1,5 +1,15 @@
 # Developer Guide
 
+## Documentation
+- [Running the pipeline](doc/pipeline.md) — `-d`, release vs working source, sample runs
+- [Configuration](doc/configuration.md) — config file, GitHub token, logging, browser timeouts
+- [AI summaries and tags](doc/ai.md) — the `ai` step, its cache and costs
+- [Anki versions](doc/anki-versions.md) — how addon version ranges are parsed
+- [Integration tests](doc/testing.md) — live tests and their requirements
+- [HuggingFace](doc/huggingface.md) — CLI login, the visualization Space
+- [Publish to PyPI](doc/pypi.md) — automated and manual publishing
+- [UML diagrams](doc/uml.md) — PlantUML sources in `doc/uml/`
+
 ## Install
 The released command comes from PyPI:
 
@@ -35,254 +45,8 @@ Upgrade all dependencies to their latest allowed versions (refreshes `uv.lock`):
 ## Unit-test
 Run locally: `uv run pytest`  
 Unit-tests are automatically executed in GitHub Actions.  
-All external services are mocked, so the whole suite runs without network access.
-
-## Integration tests
-Live tests against AnkiWeb, GitHub, the Anki Forum and HuggingFace. They exist to catch upstream
-breakage that no code change causes — changed AnkiWeb markup, a changed GitHub API response shape, a
-changed Discourse timestamp format, changed HuggingFace auth behaviour.
-
-Run locally: `uv run pytest tests_integration`, or use the `Integration tests` PyCharm run
-configuration (`.run/Integration tests.run.xml`). Individual files and tests run from the IDE gutter
-as usual.
-
-They are **never executed in GitHub Actions**: `pytest.ini` sets `testpaths = tests`, so the bare
-`uv run pytest` that CI runs does not collect `tests_integration/`.
-
-Requirements:
-- headless Chrome (resolved by Selenium Manager) for the AnkiWeb tests
-- a GitHub personal access token in `~/.github/token.txt` (see `github.token_file` in the config)
-- an AI API key in the file `ai.api_key_file` points at (the AI tests bill your account)
-- a write-capable HuggingFace token via `HF_TOKEN` or `hf auth login`
-
-Missing credentials make the tests **fail**, not skip — the point is to tell you the local setup is
-broken. All tests are read-only (nothing is uploaded, tagged or deleted on HuggingFace) and write
-only into a `tmp_path`, so `~/anki-addons-dataset/` is never touched.
-
-## UML diagrams
-PlantUML sources live in `doc/uml/`: `human/` is maintained by hand, `ai/` is generated from the code
-(`class-all.puml`, `class-addon-infos.puml`, `packages.puml`).
-
-The generated ones are refreshed **only on explicit request** — they are not part of the normal
-change or release flow, and no code change is expected to update them. Run the skill
-`/update-uml-diagrams` when you want them brought back in sync: it rebuilds the inventory from `src`,
-adds and deletes to match, and checks the result with `plantuml -checkonly` (requires the `plantuml`
-CLI: `brew install plantuml`). It never touches `doc/uml/human/`.
-
-## GitHub
-https://github.com/Aleks-Ya/anki-addons-dataset
-
-## Sonar Qube
-https://sonarcloud.io/project/overview?id=Aleks-Ya_anki-addons-dataset  
-Sonar report is automatically updated in GitHub Actions.
-
-## HuggingFace CLI
-1. Login: `hf auth login`
-2. Verify: `hf auth whoami`
-
-## HuggingFace Spaces
-Visualizations: https://huggingface.co/spaces/Ya-Alex/anki-addons
-
-The Space downloads the dataset parquet files from the Hub on startup and logs:
-
-```
-Warning: You are sending unauthenticated requests to the HF Hub.
-Please set a HF_TOKEN to enable higher rate limits and faster downloads.
-```
-
-It is harmless: the dataset is public, so anonymous downloads work. The warning only means the Space
-container has no `HF_TOKEN`, hence per-IP rate limits and no accelerated downloads. To silence it, add a
-read-only token as a Space secret named `HF_TOKEN` (Space -> Settings -> Variables and secrets);
-`huggingface_hub` reads it from the environment, no code change needed. This is unrelated to the
-credentials `upload` uses (`hf auth login`).
-
-## Configuration file
-Paths, credentials locations, the AI provider, the HuggingFace target and logging can be set in an
-optional YAML file at `~/.anki-addons-dataset.yaml` (or elsewhere, via `-c/--config`). Every key is
-optional; omitted keys keep the defaults shown below, and with no file at all the defaults apply:
-
-```yaml
-working_dir: ~/anki-addons-dataset       # where snapshots and the bundle are kept; -w overrides it
-github:
-  token_file: ~/.github/token.txt        # GitHub personal access token, read by download/parse
-ai:
-  endpoint: https://api.deepseek.com     # any OpenAI-compatible endpoint, used by the ai step
-  api_key_file: ~/.config/anki-addons-dataset/deepseek-api-key.txt
-  model: deepseek-flash
-  readme_max_chars: 8000                 # the README is cut to this length before entering the prompt
-huggingface:
-  repo_id: Ya-Alex/anki-addons           # the dataset upload targets
-  synced_dirs: [history, latest]         # the remote folders upload pushes and prunes
-logging:
-  level: INFO                            # console level; the log file always gets DEBUG
-  format: '%(asctime)-15s %(levelname)-8s [%(threadName)-10s] %(message)s'
-  file: logs/anki-addons-dataset.log     # name template; relative to working_dir, `false` disables file logging
-  keep: 30                               # delete all but the newest N run logs; `false` keeps them all
-sample:
-  addons: null                           # only the first N addons by id; --sample-addons overrides it
-  snapshots: null                        # only the newest N snapshots; --sample-snapshots overrides it
-```
-
-`config.yaml.example` in the repo root is a copy-ready version:
-
-```bash
-cp config.yaml.example ~/.anki-addons-dataset.yaml
-```
-
-`~` and `$VAR` are expanded in path values. An unknown or misspelled key is an error rather than a
-silent no-op, so typos surface immediately.
-
-Values resolve as **CLI flag > config file > default**: `-l WARNING` overrides `logging.level`,
-`-w/--working-dir` overrides `working_dir`, and `--sample-addons`/`--sample-snapshots` override the
-`sample` section, but the file still applies when a flag is absent. The `info` step prints the
-resolved values. The file deliberately lives outside the working directory, because the working
-directory is itself one of its keys.
-
-Pointing `working_dir` at a scratch directory and `huggingface.repo_id` at a personal scratch
-dataset is the safe way to try the pipeline without touching the published one. A single run can be
-redirected without touching the file at all:
-
-```bash
-uv run anki-addons-dataset init download -d 2026-01-01 -w ~/anki-addons-scratch
-```
-
-The HuggingFace token is not part of this file — `huggingface_hub` reads it from `HF_TOKEN` or from
-`hf auth login`.
-
-## GitHub token
-The `download` and `parse` steps call the GitHub REST API and need a personal access token
-(no scopes required for public repositories) in `~/.github/token.txt` (or wherever
-`github.token_file` points):
-
-```bash
-mkdir -p ~/.github
-echo '<personal-access-token>' > ~/.github/token.txt
-```
-
-The `info` step validates the token against `https://api.github.com/rate_limit` (a request GitHub
-does not count against the quota), so an absent, empty, expired or revoked token aborts `all`
-immediately instead of failing minutes later during `download`. It also verifies HuggingFace
-write access to the dataset (the same check `upload` runs), so both credentials are validated
-up front.
-
-## AI summaries and tags
-The `ai` step generates the one-sentence addon summary exported as `ai.summary` and the addon tags
-exported as `ai.tags`, picked from the vocabulary hard-coded in `AiTagger`. It is the only step
-that spends money, so it is separate from `download`: it reads the snapshots already in `history/`,
-builds a prompt from the addon title, the AnkiWeb description and the GitHub README, and
-writes every answer to `history/<date>/1-raw/4-ai/ai-cache.jsonl`. `parse` then reads that cache
-offline and attaches the summaries and tags to the dump; an addon with no cached answer simply gets
-no summary or tags, and `parse` logs how many answers were missing (two per addon).
-The step works on 50 addons at once, so up to 50 AI requests are in flight.
-
-The cache key is a hash of the model and the whole prompt, system prompt included, so editing a
-prompt template or `ai.readme_max_chars` invalidates every entry. Summaries and tags use different
-prompts, so editing the tag vocabulary re-buys only the tag answers. That is why the step stands on its own — refilling
-the cache costs AI tokens rather than a full re-scrape. The key holds no addon id or date, so an
-unchanged prompt has the same key in every snapshot: the step loads a shared index from *all*
-snapshots' caches and reuses any answer already bought anywhere in the history, copying each hit into
-the current snapshot's cache file. A steady-state run only pays for addons whose text actually moved,
-and re-running `ai` for an older snapshot, or reverting a prompt change, costs nothing.
-
-`1-raw/` is bundled into `raw.zip` and published, so the cache is part of the public dataset. That is
-what lets `init` restore it on a fresh machine. Each line holds the model, the answer and a SHA-256
-of the prompt; the prompt text itself is not stored.
-
-Without `-d` the step summarizes every snapshot, which is what a changed prompt needs; with `-d` it
-summarizes that one snapshot only:
-
-```bash
-anki-addons-dataset ai                  # all snapshots; watch the per-snapshot hit/miss counts
-anki-addons-dataset ai -d 2026-01-01    # one snapshot only
-```
-
-The date must name an existing snapshot, otherwise `ai` fails. Inside `all`, `-d` belongs to
-`download` alone: the `ai` step of `all` keeps summarizing every snapshot. `parse` and `report` take
-`-d` the same way, see [Running the pipeline](#running-the-pipeline).
-
-Against the default DeepSeek endpoint, `ai` refuses to run during DeepSeek's peak hours
-(01:00-04:00 and 06:00-10:00 UTC, Monday through Friday), when the rate is double the off-peak
-one, and fails with an error naming the window. Chinese public holidays are ignored: they only
-turn peak hours into off-peak ones, so the check never lets a peak-rate request through.
-
-## Anki versions
-The versions an addon supports are kept twice: the raw strings exactly as AnkiWeb shows them, and
-parsed values following the rules of Anki itself (`int_version()`/`int_version_to_str()` in
-`anki.utils`, `AddonMeta.compatible()` in `aqt/addons.py`). `AnkiVersionCodec` in
-`common/anki_version.py` holds the parsing.
-
-**Point version.** Anki encodes a version as one integer, which makes versions sortable (as strings,
-`2.1.66` > `23.10`):
-
-| Version | Point version | Rule |
-| --- | --- | --- |
-| `2.1.66` | `66` | `2.1.x` → `x` |
-| `23.10` | `231000` | `YY.MM` → `YYMM00` |
-| `25.09.2` | `250902` | `YY.MM.PP` → `YYMMPP` |
-| `26.05b1` | `260500` | a beta/rc suffix decodes to its base release |
-
-**Max version kind.** An addon's upper version has one of four meanings, exported as `max_version_kind`
-(`anki_version_kind` for the addons list):
-
-| Kind | Meaning | Anki's `max_point_version` |
-| --- | --- | --- |
-| `hard` | Anki disables the addon on any newer version | negative, `-B` |
-| `tested` | the author tested up to this version; newer ones still run it | positive, `B` |
-| `open` | no upper limit | — |
-| `unknown` | the author gave no upper version | `0` |
-
-**Where the values come from:**
-
-| Source | Raw text | Parsed |
-| --- | --- | --- |
-| addon page, branch | `A-B+` | min `A`, max `B`, `tested` |
-| | `A-B` | min `A`, max `B`, `hard` |
-| | `A+` | min `A`, no max, `open` |
-| | `A` | min `A`, no max, `unknown` |
-| addons list, "Versions" column (the newest branch) | `B~` | `B`, `tested` |
-| | `<=B` | `B`, `hard` |
-| | empty | no version, `unknown` |
-| GitHub `manifest.json` | `max_point_version: -B` | `B`, `hard` |
-| | `max_point_version: B` | `B`, `tested` |
-| | `max_point_version: 0` or absent | no version, `unknown` |
-
-Exported fields, next to the unchanged raw ones:
-- `anki_web`: `anki_point_version`, `anki_version_kind`
-- `anki_web.branches[]`: `min_point_version`, `max_point_version`, `max_version_kind`
-- `github.manifest`: `min_version`, `max_version`, `max_version_kind` (the raw point versions are converted
-  back to version strings, `min_point_version`/`max_point_version` keep the integers as written)
-
-An addons-list value that fits none of the forms is logged as a warning and becomes `unknown`; it never
-fails the parse. Manifest values are copied as the author wrote them and are often odd (`260000` gives
-"26.00"), so the AnkiWeb branches are the more reliable source. A dump written before these fields existed
-still loads, with the parsed values empty and `unknown`; re-run `parse` to fill them.
-
-## Logging
-Default console log level: INFO (`logging.level` in the config file)
-Set log level: `uv run anki-addons-dataset parse -l DEBUG` — the flag wins over the config file.
-It only moves the console level: the log file always receives DEBUG.
-Every run also writes its own log file under `<working_dir>/logs/`, so a run's output survives the
-terminal and is never mixed with another run's: the start timestamp goes into the name, giving
-`logs/anki-addons-dataset-2026-09-28-143005.log`. `logging.file` is the template the name is built
-from (a relative path stays relative to the working directory) and `logging.file: false` turns file
-logging off; `logging.keep` (30 by default, `false` for unlimited) deletes all but the newest N run
-logs at startup; `logging.format` sets the format.
-`init` leaves the log directory alone: it moves the other top-level entries of the working directory into
-`backups/YYYYmmdd-HHMMSS/`, so the log of the run that re-initialized the working directory stays in
-`<working_dir>/logs/` together with the earlier ones.
-
-## Browser timeouts
-`download` scrapes AnkiWeb with a headless Chrome driven by Selenium. Both of its timeouts (in
-seconds) can be raised on a slow network and are printed by the `info` step:
-
-| Option | Default | Meaning |
-| --- | --- | --- |
-| `--page-load-timeout` | 120 | passed to `driver.set_page_load_timeout()`; how long a single page may take to load before the browser gives up |
-| `--element-wait-timeout` | 120 | passed to `WebDriverWait`; how long to wait for the page content to appear after loading |
-
-```bash
-uv run anki-addons-dataset download -d 2026-01-01 --page-load-timeout 180 --element-wait-timeout 30
-```
+All external services are mocked, so the whole suite runs without network access.  
+Integration tests: [doc/testing.md](doc/testing.md).
 
 ## Running the pipeline
 
@@ -307,19 +71,6 @@ anki-addons-dataset bundle
 anki-addons-dataset upload
 ```
 
-`ai`, `parse` and `report` process every snapshot in `history/` by default. With `-d` they process
-that one snapshot only:
-
-```bash
-anki-addons-dataset ai -d 2026-01-01
-anki-addons-dataset parse -d 2026-01-01
-anki-addons-dataset report -d 2026-01-01
-anki-addons-dataset parse report -d 2026-01-01   # re-parse and re-report one snapshot
-```
-
-The date must name a snapshot that was already downloaded, otherwise the step fails. It also wins over
-`--sample-snapshots`. `bundle` ignores `-d` and always bundles the whole history.
-
 A single invocation also accepts any subset of steps (space-separated), running them in the given
 order, or the shorthand `all`, which expands to `info` followed by the full seven-step sequence in
 pipeline order:
@@ -331,73 +82,7 @@ anki-addons-dataset parse report               # run only the given steps
 anki-addons-dataset info                       # just print version and configuration
 ```
 
-Inside `all`, `-d` is the date `download` scrapes. The `ai`, `parse` and `report` steps of `all` still
-process every snapshot. They take the date only when they are named explicitly, as in
-`download parse report -d 2026-01-01`.
-
-There are three ways to run it, depending on which version you need, plus a sampled run for
-testing a change quickly:
-
-### 1. Full run on a release version (from PyPI)
-
-Latest release (default):
-```bash
-uvx anki-addons-dataset all -d 2026-01-01
-```
-
-A specific release:
-```bash
-uvx --from anki-addons-dataset==1.3.0 anki-addons-dataset all -d 2026-01-01
-```
-
-`uvx` runs the released package in an isolated, cached environment — it never touches the
-editable dev install. If a brand-new release is not picked up, add `--refresh` once.
-
-### 2. Given steps on a release version (from PyPI)
-
-```bash
-uvx anki-addons-dataset parse report                                   # latest release
-uvx --from anki-addons-dataset==1.3.0 anki-addons-dataset parse report  # pinned release
-```
-
-### 3. Given steps on the current working source
-
-`uv sync` installs the project in editable mode, so `uv run` executes your working tree:
-```bash
-uv run anki-addons-dataset parse report
-```
-
-Or run the source explicitly without relying on the install:
-```bash
-PYTHONPATH=src python -m anki_addons_dataset.addon_catalog parse report
-```
-
-### 4. Sample run: a slice of the dataset
-Testing a change end-to-end against the real working directory means thousands of addon pages per
-snapshot and the whole history re-parsed. Two limits cut that down to a slice of it, and combine
-freely; point `-w` at a scratch directory so the real one is never touched:
-
-| Option | Meaning |
-| --- | --- |
-| `--sample-addons` | download and parse only the first N addons, ordered by addon id |
-| `--sample-snapshots` | let `ai`/`parse`/`report` (without `-d`) and `bundle` process only the newest N snapshots |
-
-```bash
-WD=/tmp/anki-addons-sample
-uv run anki-addons-dataset init -w $WD
-uv run anki-addons-dataset download -d $(date +%F) -w $WD --sample-addons 20
-uv run anki-addons-dataset parse report bundle -w $WD
-```
-
-The `download` is a real scrape, just a short one, so it needs headless Chrome and the GitHub token.
-It records the addon limit in `1-raw/sample.json`, which is why the second command needs no flag: an
-offline `parse` of a sampled snapshot would otherwise ask for an addon page that was never
-downloaded. Add `ai` only when the AI path is what is being tested — it bills per addon.
-
-`--sample-snapshots` is the axis that matters once the scratch directory holds several dates.
-
-A sampled run never uploads: `upload` on its own is rejected, and `all` runs through `bundle` and
-skips it, so a partial dataset cannot reach HuggingFace.
+Snapshot dates, ways to run a release or the working source, and sample runs: [doc/pipeline.md](doc/pipeline.md)
 
 ## Create a new version of HuggingFace dataset **from sources** by steps
 1. Upgrade Python packages: `./uv_update.sh`
@@ -410,7 +95,7 @@ skips it, so a partial dataset cannot reach HuggingFace.
 7. Create a bundle: `uv run anki-addons-dataset bundle` (creates `~/anki-addons-dataset/bundle`)
 8. Upload the bundle: `uv run anki-addons-dataset upload` (syncs `~/anki-addons-dataset/bundle` to HuggingFace)
 9. Restart the visualization space: https://huggingface.co/spaces/Ya-Alex/anki-addons
-   (its startup log warns about `HF_TOKEN`, see [HuggingFace Spaces](#huggingface-spaces))
+   (its startup log warns about `HF_TOKEN`, see [HuggingFace Spaces](doc/huggingface.md#huggingface-spaces))
 10. Post on Anki Forum: https://forums.ankiweb.net/t/anki-addons-dataset-a-detailed-list-of-addons/63090
 
 ## Release a new version of this repository
@@ -431,20 +116,11 @@ skips it, so a partial dataset cannot reach HuggingFace.
     3. Wait for GitHub Actions to finish publishing to PyPI: https://github.com/Aleks-Ya/anki-addons-dataset/actions
     4. Verify the version: `uvx --refresh anki-addons-dataset info`
 
-## Publish to PyPI
-PyPi package: https://pypi.org/project/anki-addons-dataset
+Publishing to PyPI: [doc/pypi.md](doc/pypi.md).
 
-Publishing is automated: creating a GitHub release runs `.github/workflows/publish.yml`
-(PyPI Trusted Publishing, no API tokens).
+## GitHub
+https://github.com/Aleks-Ya/anki-addons-dataset
 
-One-time setup on [pypi.org](https://pypi.org/manage/account/publishing/): add a Trusted Publisher for
-this project pointing at repo `Aleks-Ya/anki-addons-dataset`, workflow `publish.yml`, environment
-`pypi` (add it as a "pending publisher" before the first release).
-
-Manual build/publish (fallback):
-```bash
-uv build                   # creates dist/*.whl and dist/*.tar.gz
-uv publish                 # requires a PyPI API token (UV_PUBLISH_TOKEN)
-```
-Note: builds from a `.dev0` checkout produce a development version; only released (non-`.dev`) tags
-yield a clean PyPI version.
+## Sonar Qube
+https://sonarcloud.io/project/overview?id=Aleks-Ya_anki-addons-dataset  
+Sonar report is automatically updated in GitHub Actions.

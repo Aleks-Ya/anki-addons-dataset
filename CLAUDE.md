@@ -128,4 +128,4 @@ explicit `upload` and drops UPLOAD from `all`, before the first step runs.
 
 ### Testing
 
-Live integration tests live in `tests_integration/`. They are outside `pytest.ini`'s `testpaths`, so the bare `uv run pytest` that CI runs never collects them; run them on demand with `uv run pytest tests_integration` or the `Integration tests` PyCharm run config. See README-DEV.md for requirements.
+Live integration tests live in `tests_integration/`. They are outside `pytest.ini`'s `testpaths`, so the bare `uv run pytest` that CI runs never collects them; run them on demand with `uv run pytest tests_integration` or the `Integration tests` PyCharm run config. See doc/testing.md for requirements.
