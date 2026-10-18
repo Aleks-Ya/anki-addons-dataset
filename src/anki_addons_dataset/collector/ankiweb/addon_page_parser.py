@@ -28,10 +28,10 @@ class AddonPageParser:
         github_links: list[GitHubLink] = UrlParser.find_github_links(description_links)
         contact_author_url: Optional[URL] = next(
             (link.url for link in links if link.section == PageLinkSection.CONTACT_AUTHOR), None)
-        github_repo: Optional[GithubRepo] = self.__deduct_github_repo_name(
+        github_repo: Optional[GithubRepo] = self.__deduce_github_repo_name(
             addon_header.id, github_links, contact_author_url)
         anki_forum_links: list[URL] = UrlParser.find_anki_forum_links(description_links)
-        anki_forum_url: Optional[URL] = self.__deduct_anki_forum_url(
+        anki_forum_url: Optional[URL] = self.__deduce_anki_forum_url(
             addon_header.id, anki_forum_links, contact_author_url)
         github_info: GithubInfo = GithubInfo(github_links, github_repo, [], 0, None, 0, 0)
         likes: int = self.__extract_likes(soup)
@@ -48,7 +48,7 @@ class AddonPageParser:
         addon_info: AddonInfo = AddonInfo(addon_header, addon_page, github_info, anki_forum_info)
         return addon_info
 
-    def __deduct_github_repo_name(self, addon_id: AddonId, github_urls: list[GitHubLink],
+    def __deduce_github_repo_name(self, addon_id: AddonId, github_urls: list[GitHubLink],
                                   contact_author_url: Optional[URL]) -> Optional[GithubRepo]:
         override_link: Optional[GitHubLink] = self.overrider.override_github_link(addon_id)
         if override_link:
@@ -67,7 +67,7 @@ class AddonPageParser:
         github_repo: GithubRepo = max_tuple[0]
         return github_repo
 
-    def __deduct_anki_forum_url(self, addon_id: AddonId, anki_forum_urls: list[URL],
+    def __deduce_anki_forum_url(self, addon_id: AddonId, anki_forum_urls: list[URL],
                                 contact_author_url: Optional[URL]) -> Optional[URL]:
         override_url: Optional[URL] = self.overrider.override_anki_forum_url(addon_id)
         if override_url:
