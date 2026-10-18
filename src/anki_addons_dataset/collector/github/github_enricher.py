@@ -50,8 +50,12 @@ class GithubEnricher(Enricher):
             decided: GithubInfo = self.__fetch(github_links, addon_info.github.github_repo)
             decided.repo_source = addon_info.github.repo_source
             return decided
-        candidates: list[GithubInfo] = [self.__fetch(github_links, repo)
-                                        for repo in self.__github_repo_selector.candidate_repos(github_links)]
+        # Fetching first lets DOWNLOAD fill the raw cache; a repo without data (404, or never downloaded
+        # into an old snapshot) would only show the AI an empty candidate.
+        fetched: list[GithubInfo] = [self.__fetch(github_links, repo)
+                                     for repo in self.__github_repo_selector.candidate_repos(github_links)]
+        candidates: list[GithubInfo] = [candidate for candidate in fetched
+                                        if self.__github_service.has_repo_data(candidate.github_repo)]
         return self.__github_repo_selector.select(addon_info, candidates)
 
     def __fetch(self, github_links: list[GitHubLink], github_repo: GithubRepo) -> GithubInfo:

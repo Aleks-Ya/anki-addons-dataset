@@ -53,6 +53,29 @@ def test_stars_count_200(github_service: GithubService, github_rest_client: Gith
     github_rest_client.get_from_url.assert_called_once()
 
 
+def test_has_repo_data_after_200(github_service: GithubService, github_rest_client: GithubRestClient,
+                                 github_repo: GithubRepo):
+    assert not github_service.has_repo_data(github_repo)
+    github_rest_client.get_from_url = __mock_content("""{"stargazers_count":5}""")
+    github_service.get_stars_count(github_repo)
+    assert github_service.has_repo_data(github_repo)
+
+
+def test_has_repo_data_after_404(github_service: GithubService, github_rest_client: GithubRestClient,
+                                 github_repo: GithubRepo):
+    github_rest_client.get_from_url = __mock_content("", status_code=404)
+    github_service.get_languages(github_repo)
+    github_service.get_stars_count(github_repo)
+    assert not github_service.has_repo_data(github_repo)
+
+
+def test_has_repo_data_offline_without_download(snapshot_dir: SnapshotDir, github_rest_client: GithubRestClient,
+                                                github_repo: GithubRepo):
+    offline_service: GithubService = GithubService(snapshot_dir, github_rest_client, offline=True)
+    offline_service.get_stars_count(github_repo)
+    assert not offline_service.has_repo_data(github_repo)
+
+
 def test_get_last_commit_200(github_service: GithubService, github_rest_client: GithubRestClient,
                              github_repo: GithubRepo):
     content: str = """[{"commit":{"committer":{"date":"2023-02-05T19:55:48Z"}}}]"""

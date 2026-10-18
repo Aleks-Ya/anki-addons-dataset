@@ -41,6 +41,10 @@ class GithubService:
         self.__repo_locks: dict[GithubRepoId, Lock] = {}
         self.__repo_locks_lock: Lock = Lock()
 
+    def has_repo_data(self, repo: GithubRepo) -> bool:
+        handler: RepoHandler = StarsRepoHandler(repo, self.__raw_dir, self.__stage_dir, self.__prev_raw_dir)
+        return handler.is_downloaded() and not handler.is_repo_marked_as_not_found()
+
     def get_languages(self, repo: GithubRepo) -> dict[LanguageName, int]:
         handler: RepoHandler = LanguagesRepoHandler(repo, self.__raw_dir, self.__stage_dir, self.__prev_raw_dir)
         languages: Optional[dict[LanguageName, int]] = self.__get_value(handler)
