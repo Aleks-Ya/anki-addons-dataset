@@ -64,6 +64,16 @@ def test_instructions_are_passed(create: MagicMock, sleep: MagicMock) -> None:
     assert create.call_args.kwargs["input"] == PROMPT
 
 
+@pytest.mark.parametrize("instructions", [None, AiInstructions("Answer briefly.")])
+def test_tools_are_disabled(instructions: Optional[AiInstructions], create: MagicMock, sleep: MagicMock) -> None:
+    create.return_value = __response()
+
+    __provider().response(PROMPT, instructions)
+
+    assert create.call_args.kwargs["tools"] == []
+    assert create.call_args.kwargs["tool_choice"] == "none"
+
+
 @pytest.mark.parametrize("status_code", [401, 402, 403])
 def test_fatal_status_fails_without_retry(status_code: int, create: MagicMock, sleep: MagicMock) -> None:
     create.side_effect = __status_error(status_code)

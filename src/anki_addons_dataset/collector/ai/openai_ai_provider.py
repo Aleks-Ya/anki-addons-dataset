@@ -37,7 +37,7 @@ class OpenAiAiProvider(AiProvider):
         return self.__api_key
 
     def response(self, prompt: AiPrompt, instructions: Optional[AiInstructions] = None) -> Optional[AiResponseText]:
-        arguments: dict[str, Any] = {"model": self.get_model(), "input": prompt}
+        arguments: dict[str, Any] = {"model": self.get_model(), "input": prompt, "tools": [], "tool_choice": "none"}
         if instructions is not None:
             arguments["instructions"] = instructions
         for attempt in range(1, self.__max_attempts + 1):
