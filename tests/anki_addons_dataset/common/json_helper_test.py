@@ -9,7 +9,8 @@ import pytest
 from anki_addons_dataset.common.data_types import AddonInfo, AddonInfos, AddonHeader, AddonPage, AddonBranch, \
     GithubInfo, GitHubLink, GitHubUser, GithubRepo, AddonId, AnkiVersion, HtmlStr, URL, \
     GithubUserName, GithubRepoName, LanguageName, LanguageCode, ScriptVersion, AddonRating, UpdateDate, AddonTitle, \
-    AddonManifest, SpdxLicense, Topic, DependencyName, GithubReadme, AiTag, AnkiVersionKind
+    AddonManifest, SpdxLicense, Topic, DependencyName, GithubReadme, AiTag, AnkiVersionKind, \
+    PageLink, PageLinkSection
 from anki_addons_dataset.common.json_helper import JsonHelper
 
 
@@ -51,7 +52,9 @@ def test_addon_infos_dump_round_trip_with_none_fields(script_version: ScriptVers
             content=HtmlStr("<html></html>"), like_number=0, dislike_number=0,
             branches=[AddonBranch(min_anki_version=AnkiVersion("24.04.1"), max_anki_version=None,
                                   updated=date(2024, 1, 1))],
-            other_links=[URL("https://example.com")]),
+            links=[PageLink(URL("https://example.com"), PageLinkSection.DESCRIPTION, 2, ["Example", "Site"]),
+                   PageLink(URL("https://example.com/contact"), PageLinkSection.CONTACT_AUTHOR, 1,
+                            ["Contact Author"])]),
         github=GithubInfo(
             github_links=[GitHubLink(url=URL("https://github.com/u/r"),
                                      user=GitHubUser(user_name=GithubUserName("u")),
@@ -67,6 +70,7 @@ def test_addon_infos_dump_round_trip_with_none_fields(script_version: ScriptVers
     _, read_addon_infos = JsonHelper.read_addon_infos_dump(dump_file)
 
     assert read_addon_infos == addon_infos
+    assert read_addon_infos[0].page.contact_author_url == URL("https://example.com/contact")
     assert read_addon_infos[0].github is not None
     assert read_addon_infos[0].github.github_repo is None
     assert read_addon_infos[0].forum is None

@@ -1,5 +1,6 @@
 from itertools import groupby
 from typing import Optional
+from urllib.parse import urljoin
 
 from bs4 import Tag, BeautifulSoup
 
@@ -9,7 +10,8 @@ from anki_addons_dataset.collector.ankiweb.ai_declaration_detector import AiDecl
 from anki_addons_dataset.collector.ankiweb.description_language_detector import DescriptionLanguageDetector
 from anki_addons_dataset.collector.overrider.overrider import Overrider
 from anki_addons_dataset.common.data_types import AddonHeader, AddonInfo, AddonId, URL, GitHubLink, GithubRepo, \
-    GithubInfo, AddonPage, AddonBranch, HtmlStr, AnkiForumInfo, AddonDescription, LanguageCode
+    GithubInfo, AddonPage, AddonBranch, HtmlStr, AnkiForumInfo, AddonDescription, LanguageCode, PageLink, \
+    PageLinkSection
 
 
 class AddonPageParser:
@@ -19,13 +21,13 @@ class AddonPageParser:
     def parse_addon_page(self, addon_header: AddonHeader, html: HtmlStr) -> AddonInfo:
         soup: BeautifulSoup = BeautifulSoup(html, 'html.parser')
         description_tag: Optional[Tag] = soup.find('div', class_='shared-item-description')
-        all_links: list[URL] = UrlParser.extract_all_links(html)
-        description_links: list[URL] = (
-            UrlParser.extract_all_links(HtmlStr(str(description_tag))) if description_tag is not None else [])
+        anchors: list[tuple[URL, PageLinkSection, str]] = self.__extract_anchors(
+            soup, description_tag, addon_header.addon_page_url)
+        links: list[PageLink] = self.__fold_anchors(anchors)
+        description_links: list[URL] = [url for url, section, _ in anchors if section == PageLinkSection.DESCRIPTION]
         github_links: list[GitHubLink] = UrlParser.find_github_links(description_links)
-        github_urls: set[URL] = {link.url for link in github_links}
-        other_links: list[URL] = [link for link in all_links if link not in github_urls]
-        contact_author_url: Optional[URL] = self.__extract_contact_author_url(soup)
+        contact_author_url: Optional[URL] = next(
+            (link.url for link in links if link.section == PageLinkSection.CONTACT_AUTHOR), None)
         github_repo: Optional[GithubRepo] = self.__deduct_github_repo_name(
             addon_header.id, github_links, contact_author_url)
         anki_forum_links: list[URL] = UrlParser.find_anki_forum_links(description_links)
@@ -41,8 +43,7 @@ class AddonPageParser:
         description_language_confidence: Optional[float]
         description_language, description_language_confidence = DescriptionLanguageDetector.detect(description)
         addon_page: AddonPage = AddonPage(
-            html, likes, dislikes, addon_branches, other_links, description, contact_author_url,
-            ai_declaration_markers, description_language, description_language_confidence)
+            html, likes, dislikes, addon_branches, links, description, ai_declaration_markers, description_language, description_language_confidence)
         anki_forum_info: AnkiForumInfo = AnkiForumInfo(anki_forum_url, None, None, None, None)
         addon_info: AddonInfo = AddonInfo(addon_header, addon_page, github_info, anki_forum_info)
         return addon_info
@@ -98,12 +99,49 @@ class AddonPageParser:
         return [link for link in links if not self.overrider.is_excluded_github_repo(link.url)]
 
     @staticmethod
-    def __extract_contact_author_url(soup: BeautifulSoup) -> Optional[URL]:
+    def __extract_anchors(soup: BeautifulSoup, description_tag: Optional[Tag],
+                          page_url: URL) -> list[tuple[URL, PageLinkSection, str]]:
+        tags: list[tuple[Tag, PageLinkSection]] = []
+        if description_tag is not None:
+            tags.extend((anchor, PageLinkSection.DESCRIPTION) for anchor in description_tag.find_all('a'))
+        contact_author_anchor: Optional[Tag] = AddonPageParser.__find_contact_author_anchor(soup)
+        if contact_author_anchor is not None:
+            tags.append((contact_author_anchor, PageLinkSection.CONTACT_AUTHOR))
+        anchors: list[tuple[URL, PageLinkSection, str]] = []
+        for tag, section in tags:
+            href: Optional[str] = tag.get('href')
+            if not href:
+                continue
+            url: URL = URL(urljoin(page_url, href.strip()))
+            if url.startswith(('http://', 'https://')):
+                anchors.append((url, section, AddonPageParser.__anchor_text(tag)))
+        return anchors
+
+    @staticmethod
+    def __fold_anchors(anchors: list[tuple[URL, PageLinkSection, str]]) -> list[PageLink]:
+        links: dict[tuple[URL, PageLinkSection], PageLink] = {}
+        for url, section, text in anchors:
+            link: PageLink = links.setdefault((url, section), PageLink(url, section, 0, []))
+            link.count += 1
+            if text and text not in link.texts:
+                link.texts.append(text)
+        return list(links.values())
+
+    @staticmethod
+    def __anchor_text(anchor: Tag) -> str:
+        text: str = " ".join(anchor.get_text(separator=' ', strip=True).split())
+        if text:
+            return text
+        image: Optional[Tag] = anchor.find('img')
+        if image is not None:
+            return " ".join(str(image.get('alt', '')).split())
+        return ""
+
+    @staticmethod
+    def __find_contact_author_anchor(soup: BeautifulSoup) -> Optional[Tag]:
         for anchor in soup.find_all('a'):
-            if anchor.get_text(strip=True) == 'Contact Author':
-                href: Optional[str] = anchor.get('href')
-                if href:
-                    return URL(href)
+            if anchor.get_text(strip=True) == 'Contact Author' and anchor.get('href'):
+                return anchor
         return None
 
     @staticmethod

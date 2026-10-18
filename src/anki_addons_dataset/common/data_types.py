@@ -44,6 +44,11 @@ class AnkiVersionKind(StrEnum):
     UNKNOWN = "unknown"
 
 
+class PageLinkSection(StrEnum):
+    DESCRIPTION = "description"
+    CONTACT_AUTHOR = "contact_author"
+
+
 @dataclass
 class AddonHeader:
     id: AddonId
@@ -134,17 +139,31 @@ class AddonBranch:
 
 
 @dataclass
+class PageLink:
+    url: URL
+    section: PageLinkSection
+    count: int = 1
+    texts: list[str] = field(default_factory=list)
+
+
+@dataclass
 class AddonPage:
     content: HtmlStr
     like_number: int
     dislike_number: int
     branches: list[AddonBranch]
-    other_links: list[URL]
+    links: list[PageLink]
     description: AddonDescription = AddonDescription("")
-    contact_author_url: Optional[URL] = None
     ai_declaration_markers: list[str] = field(default_factory=list)
     description_language: Optional[LanguageCode] = None
     description_language_confidence: Optional[float] = None
+
+    @property
+    def contact_author_url(self) -> Optional[URL]:
+        for link in self.links:
+            if link.section == PageLinkSection.CONTACT_AUTHOR:
+                return link.url
+        return None
 
 
 @dataclass

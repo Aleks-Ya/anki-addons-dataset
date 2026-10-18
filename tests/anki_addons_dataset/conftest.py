@@ -208,7 +208,7 @@ def addon_info(addon_header: AddonHeader, github_repo: GithubRepo, topic_slug: T
                                   min_point_version=AnkiPointVersion(240401),
                                   max_point_version=AnkiPointVersion(250902),
                                   max_version_kind=AnkiVersionKind.TESTED)],
-            other_links=[],
+            links=[],
             description=AddonDescription("Sample addon description for full text search"),
             ai_declaration_markers=["chatgpt"]
         ),

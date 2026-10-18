@@ -5,7 +5,8 @@ from anki_addons_dataset.collector.ankiweb.addon_page_parser import AddonPagePar
 from anki_addons_dataset.collector.overrider.overrider import Overrider
 from anki_addons_dataset.common.data_types import AddonHeader, AddonInfo, AddonPage, GithubInfo, AddonId, GitHubLink, \
     URL, GitHubUser, GithubRepo, GithubUserName, GithubRepoName, AddonBranch, HtmlStr, AnkiForumInfo, AnkiVersion, \
-    AnkiPointVersion, AnkiVersionKind, AddonRating, UpdateDate, AddonTitle, AddonDescription
+    AnkiPointVersion, AnkiVersionKind, AddonRating, UpdateDate, AddonTitle, AddonDescription, \
+    PageLink, PageLinkSection
 
 
 def test_parse_addon_page(overrider: Overrider):
@@ -28,6 +29,7 @@ def test_parse_addon_page(overrider: Overrider):
     addon_info.page.description_language_confidence = None
     github_user: GitHubUser = GitHubUser(GithubUserName("aleks-ya"))
     github_repo: GithubRepo = GithubRepo(GithubUserName("aleks-ya"), GithubRepoName("note-size-anki-addon"))
+    description: PageLinkSection = PageLinkSection.DESCRIPTION
     assert addon_info == AddonInfo(
         addon_header,
         AddonPage(
@@ -40,44 +42,22 @@ def test_parse_addon_page(overrider: Overrider):
                                   min_point_version=AnkiPointVersion(240401),
                                   max_point_version=AnkiPointVersion(250201),
                                   max_version_kind=AnkiVersionKind.TESTED)],
-            other_links=[
-                URL('https://ankiweb.net/logo.png'),
-                URL('https://ankiweb.net/_app/immutable/nodes/0.DbG5vJiZ.mjs'),
-                URL('https://ankiweb.net/_app/immutable/chunks/globals.D0QH3NT1.mjs'),
-                URL('https://ankiweb.net/_app/immutable/chunks/stores.BJ8ZxSZM.mjs'),
-                URL('https://ankiweb.net/_app/immutable/chunks/Alert.CUuPSeE_.mjs'),
-                URL('https://ankiweb.net/_app/immutable/chunks/index.C5cLDmO0.mjs'),
-                URL('https://ankiweb.net/_app/immutable/chunks/page.ByHWqWt2.mjs'),
-                URL('https://ankiweb.net/_app/immutable/chunks/progress.C5qn9CQ9.mjs'),
-                URL('https://ankiweb.net/_app/immutable/chunks/layout.CsEJWO6K.mjs'),
-                URL('https://ankiweb.net/_app/immutable/assets/0.Cjzb4GXD.css'),
-                URL('https://ankiweb.net/_app/immutable/nodes/1.ClqbUf4k.mjs'),
-                URL('https://ankiweb.net/_app/immutable/nodes/25.DTiY_S_r.mjs'),
-                URL('https://ankiweb.net/_app/immutable/chunks/frontend.DVIIEEoF.mjs'),
-                URL('https://ankiweb.net/_app/immutable/chunks/each.BzHth1_T.mjs'),
-                URL('https://ankiweb.net/_app/immutable/chunks/like.DEjprW7c.mjs'),
-                URL('https://ankiweb.net/_app/immutable/chunks/SubmitButton.CmZ4Zv8R.mjs'),
-                URL('https://ankiweb.net/_app/immutable/chunks/Title.D_1bBf-x.mjs'),
-                URL('https://ankiweb.net/_app/immutable/chunks/utils.FdcdUtur.mjs'),
-                URL('https://ankiweb.net/_app/immutable/assets/25.ClMJ9IEQ.css'),
-                URL('https://raw.githubusercontent.com/Aleks-Ya/note-size-anki-addon/main/docs/images/collection-size.png'),
-                URL('https://raw.githubusercontent.com/Aleks-Ya/note-size-anki-addon/main/docs/images/note-size-in-browser.png'),
-                URL('https://raw.githubusercontent.com/Aleks-Ya/note-size-anki-addon/main/docs/images/sort-notes-by-size.png'),
-                URL('https://raw.githubusercontent.com/Aleks-Ya/note-size-anki-addon/main/docs/images/notes-size.png'),
-                URL('https://raw.githubusercontent.com/Aleks-Ya/note-size-anki-addon/main/docs/images/deck-size.png'),
-                URL('https://raw.githubusercontent.com/Aleks-Ya/note-size-anki-addon/main/docs/images/add-note.png'),
-                URL('https://raw.githubusercontent.com/Aleks-Ya/note-size-anki-addon/main/docs/images/open-config.png'),
-                URL('https://forums.ankiweb.net/t/note-size-addon-support/46001'),
-                URL('https://forums.ankiweb.net/t/note-size-addon-support/46001'),
-                URL('https://forums.ankiweb.net/t/note-size-addon-support/46001'),
-                URL('https://forums.ankiweb.net/t/note-size-addon-support/46001'),
-                URL('https://sonarcloud.io/summary/new_code?id=Aleks-Ya_note-size-anki-addon'),
-                URL('https://sonarcloud.io/api/project_badges/measure?project=Aleks-Ya_note-size-anki-addon&amp;metric=alert_status'),
-                URL('https://sonarcloud.io/summary/new_code?id=Aleks-Ya_note-size-anki-addon'),
-                URL('https://sonarcloud.io/api/project_badges/measure?project=Aleks-Ya_note-size-anki-addon&amp;metric=coverage'),
-                URL('https://ankiweb.net/shared/info/1151815987'),
-                URL('https://github.com/Aleks-Ya/note-size-anki-addon/blob/main/description/configuration.md#logging-level'),
-                URL('https://apps.ankiweb.net')
+            links=[
+                PageLink(URL('https://forums.ankiweb.net/t/note-size-addon-support/46001'), description, 4,
+                         ['Support page at Anki Forum']),
+                PageLink(URL('https://github.com/Aleks-Ya/note-size-anki-addon/issues'), description, 2,
+                         ['GitHub bug tracker', 'Bug tracker']),
+                PageLink(URL('https://github.com/Aleks-Ya/note-size-anki-addon/blob/main/docs/user-manual.md'),
+                         description, 1, ['User Manual']),
+                PageLink(URL('https://github.com/Aleks-Ya/note-size-anki-addon'), description, 1, ['GitHub project']),
+                PageLink(URL('https://github.com/Aleks-Ya/note-size-anki-addon/blob/main/CHANGELOG.md'), description, 1,
+                         ['Changelog']),
+                PageLink(URL('https://github.com/Aleks-Ya/note-size-anki-addon/actions/workflows/unit-tests-linux.yml'),
+                         description, 1, ['Unit-tests (Linux)']),
+                PageLink(URL('https://sonarcloud.io/summary/new_code?id=Aleks-Ya_note-size-anki-addon'), description, 2,
+                         ['Quality Gate Status', 'Coverage']),
+                PageLink(URL('https://github.com/Aleks-Ya/note-size-anki-addon/issues'),
+                         PageLinkSection.CONTACT_AUTHOR, 1, ['Contact Author'])
             ],
             description=AddonDescription('"Note Size" addon displays detailed information about size ("in bytes") of your '
                         'collection and individual notes including attachments. Screenshots Size of collection, media '
@@ -86,8 +66,7 @@ def test_parse_addon_page(overrider: Overrider):
                         'If you have a question , please, reply at Support page at Anki Forum . If you met a bug , '
                         'create an issue at GitHub bug tracker or reply at Support page at Anki Forum . If you have a '
                         'feature request or another idea, reply at Support page at Anki Forum . For more details see '
-                        'User Manual . Links Support page at Anki Forum GitHub project Bug tracker Changelog'),
-            contact_author_url=URL('https://github.com/Aleks-Ya/note-size-anki-addon/issues')
+                        'User Manual . Links Support page at Anki Forum GitHub project Bug tracker Changelog')
         ),
         GithubInfo(
             github_links=[
@@ -100,9 +79,6 @@ def test_parse_addon_page(overrider: Overrider):
                            github_repo),
                 GitHubLink(
                     URL('https://github.com/Aleks-Ya/note-size-anki-addon/actions/workflows/unit-tests-linux.yml'),
-                    github_user, github_repo),
-                GitHubLink(
-                    URL('https://github.com/Aleks-Ya/note-size-anki-addon/actions/workflows/unit-tests-linux.yml/badge.svg'),
                     github_user, github_repo)
             ],
             github_repo=github_repo,

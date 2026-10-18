@@ -10,7 +10,8 @@ from anki_addons_dataset.common.data_types import AddonInfo, AddonInfos, AddonHe
     GithubInfo, GitHubLink, GitHubUser, GithubRepo, AnkiForumInfo, AddonId, AnkiVersion, HtmlStr, URL, \
     GithubUserName, GithubRepoName, LanguageName, LanguageCode, TopicSlug, TopicId, LastPostedAt, PostsCount, \
     ScriptVersion, AddonRating, UpdateDate, AddonTitle, AddonDescription, AddonManifest, SpdxLicense, Topic, \
-    DependencyName, GithubReadme, AiInfo, AiSummary, AiModel, AiTag, AnkiPointVersion, AnkiVersionKind
+    DependencyName, GithubReadme, AiInfo, AiSummary, AiModel, AiTag, AnkiPointVersion, AnkiVersionKind, \
+    PageLink, PageLinkSection
 
 
 class JsonHelper:
@@ -82,13 +83,21 @@ class JsonHelper:
             like_number=data["like_number"],
             dislike_number=data["dislike_number"],
             branches=[JsonHelper.__addon_branch_from_dict(branch) for branch in data["branches"]],
-            other_links=[URL(link) for link in data["other_links"]],
+            links=[JsonHelper.__page_link_from_dict(link) for link in data["links"]],
             description=AddonDescription(data.get("description", "")),
-            contact_author_url=URL(data["contact_author_url"]) if data.get("contact_author_url") is not None else None,
             ai_declaration_markers=list(data.get("ai_declaration_markers", [])),
             description_language=LanguageCode(data["description_language"])
             if data.get("description_language") is not None else None,
             description_language_confidence=data.get("description_language_confidence"),
+        )
+
+    @staticmethod
+    def __page_link_from_dict(data: dict[str, Any]) -> PageLink:
+        return PageLink(
+            url=URL(data["url"]),
+            section=PageLinkSection(data["section"]),
+            count=data["count"],
+            texts=list(data["texts"]),
         )
 
     @staticmethod

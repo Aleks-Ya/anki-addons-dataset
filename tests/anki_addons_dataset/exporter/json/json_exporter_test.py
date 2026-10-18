@@ -4,7 +4,7 @@ from typing import Any, Optional
 
 from anki_addons_dataset.common.data_types import Aggregation, AddonInfos, AddonInfo, AnkiForumInfo, PostsCount, \
     DatasetSnapshotMetadata, RawMetadata, AddonManifest, SpdxLicense, Topic, DependencyName, LanguageName, URL, GithubReadme, \
-    AiTagDefinition, AiTag, AiTagGroup
+    AiTagDefinition, AiTag, AiTagGroup, PageLink, PageLinkSection
 from anki_addons_dataset.common.working_dir import SnapshotDir
 from anki_addons_dataset.exporter.json.json_exporter import JsonExporter
 
@@ -240,11 +240,20 @@ def test_export_addon_infos_with_enrichment_fields(json_exporter: JsonExporter, 
                                                homepage="https://example.com", mod=1678900000)
     addon_info.github.dependencies = [DependencyName("requests")]
     addon_info.github.readme = GithubReadme("# NoteSize")
+    addon_info.page.links = [
+        PageLink(URL("https://forums.ankiweb.net/t/support/1"), PageLinkSection.DESCRIPTION, 2, ["Forum", "Support"]),
+        PageLink(URL("https://github.com/u/r/issues"), PageLinkSection.CONTACT_AUTHOR, 1, ["Contact Author"])]
 
     json_exporter.export_addon_infos(AddonInfos([addon_info]), dataset_snapshot_metadata, raw_metadata)
 
     act_file: Path = snapshot_dir.get_final_dir() / "json" / "data.json"
-    github: dict[str, Any] = json.loads(act_file.read_text())[0]["github"]
+    act_json: dict[str, Any] = json.loads(act_file.read_text())[0]
+    assert act_json["anki_web"]["links"] == [
+        {"url": "https://forums.ankiweb.net/t/support/1", "section": "description", "count": 2,
+         "texts": ["Forum", "Support"]},
+        {"url": "https://github.com/u/r/issues", "section": "contact_author", "count": 1, "texts": ["Contact Author"]}]
+    assert act_json["anki_web"]["contact_author_url"] == "https://github.com/u/r/issues"
+    github: dict[str, Any] = act_json["github"]
     assert github["license"] == "MIT"
     assert github["topics"] == ["anki"]
     assert github["primary_language"] == "Python"

@@ -30,12 +30,18 @@ class AddonPage <<dataclass>> {
   like_number : int
   dislike_number : int
   branches : list[AddonBranch]
-  other_links : list[URL]
+  links : list[PageLink]
   description : AddonDescription
-  contact_author_url : Optional[URL]
   ai_declaration_markers : list[str]
   description_language : Optional[LanguageCode]
   description_language_confidence : Optional[float]
+}
+
+class PageLink <<dataclass>> {
+  url : URL
+  section : PageLinkSection
+  count : int
+  texts : list[str]
 }
 
 class AddonBranch <<dataclass>> {
@@ -122,6 +128,7 @@ AddonInfo o-- "0..1" AnkiForumInfo
 AddonInfo o-- "0..1" AiInfo
 
 AddonPage "1" o-- "*" AddonBranch
+AddonPage "1" o-- "*" PageLink
 
 GithubInfo "1" o-- "*" GitHubLink
 GithubInfo o-- "0..1" GithubRepo

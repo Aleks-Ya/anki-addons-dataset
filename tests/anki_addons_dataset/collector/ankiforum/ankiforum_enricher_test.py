@@ -43,7 +43,7 @@ def test_enrich(anki_forum_enricher: AnkiForumEnricher, anki_forum_service: Anki
                                   min_point_version=AnkiPointVersion(240401),
                                   max_point_version=AnkiPointVersion(250902),
                                   max_version_kind=AnkiVersionKind.TESTED)],
-            other_links=[],
+            links=[],
             description=AddonDescription("Sample addon description for full text search"),
             ai_declaration_markers=["chatgpt"]
         ),

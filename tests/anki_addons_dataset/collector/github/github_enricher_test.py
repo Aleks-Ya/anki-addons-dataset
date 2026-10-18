@@ -31,7 +31,7 @@ def test_enrich(github_enricher: GithubEnricher, github_service: GithubService, 
             like_number=0,
             dislike_number=0,
             branches=[],
-            other_links=[]
+            links=[]
         ),
         github=GithubInfo(
             github_links=[],
@@ -90,7 +90,7 @@ def test_enrich(github_enricher: GithubEnricher, github_service: GithubService, 
             like_number=0,
             dislike_number=0,
             branches=[],
-            other_links=[]
+            links=[]
         ),
         github=GithubInfo(
             github_links=[],

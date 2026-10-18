@@ -132,7 +132,35 @@
           "links": {
             "type": "array",
             "items": {
-              "type": "string"
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "url": {
+                  "type": "string"
+                },
+                "section": {
+                  "type": "string",
+                  "enum": [
+                    "description",
+                    "contact_author"
+                  ]
+                },
+                "count": {
+                  "type": "integer"
+                },
+                "texts": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              },
+              "required": [
+                "count",
+                "section",
+                "texts",
+                "url"
+              ]
             }
           },
           "likes": {

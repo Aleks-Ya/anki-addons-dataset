@@ -14,6 +14,14 @@ class Link:
 
 
 @dataclass
+class AnkiWebLink:
+    url: str
+    section: str
+    count: int
+    texts: list[str]
+
+
+@dataclass
 class LanguageBytes:
     name: str
     bytes: int
@@ -100,7 +108,7 @@ class AnkiWeb:
     anki_point_version: Optional[int]
     anki_version_kind: str
     branches: list[Branch]
-    links: list[str]
+    links: list[AnkiWebLink]
     likes: int
     dislikes: int
     ai_declaration_markers: list[str]
@@ -129,12 +137,16 @@ class JsonAddonInfo:
                                         addon.page.contact_author_url, addon.page.description, addon.header.rating,
                                         addon.header.update_date, addon.header.anki_version,
                                         addon.header.anki_point_version, str(addon.header.anki_version_kind), branches,
-                                        addon.page.other_links, addon.page.like_number, addon.page.dislike_number,
+                                        JsonAddonInfo.__anki_web_links(addon), addon.page.like_number, addon.page.dislike_number,
                                         list(addon.page.ai_declaration_markers), addon.page.description_language,
                                         addon.page.description_language_confidence)
             json_obj: Details = Details(addon.header.id, anki_web, github, forum, JsonAddonInfo.__ai(addon))
             json_list.append(json_obj)
         return json_list
+
+    @staticmethod
+    def __anki_web_links(addon: AddonInfo) -> list[AnkiWebLink]:
+        return [AnkiWebLink(link.url, str(link.section), link.count, list(link.texts)) for link in addon.page.links]
 
     @staticmethod
     def __github(addon: AddonInfo) -> Optional[GitHub]:
