@@ -11,7 +11,7 @@ from anki_addons_dataset.collector.ankiweb.description_language_detector import 
 from anki_addons_dataset.collector.overrider.overrider import Overrider
 from anki_addons_dataset.common.data_types import AddonHeader, AddonInfo, AddonId, URL, GitHubLink, GithubRepo, \
     GithubInfo, AddonPage, AddonBranch, HtmlStr, AnkiForumInfo, AddonDescription, LanguageCode, PageLink, \
-    PageLinkSection
+    PageLinkSection, GithubRepoSource
 
 
 class AddonPageParser:
@@ -28,12 +28,14 @@ class AddonPageParser:
         github_links: list[GitHubLink] = UrlParser.find_github_links(description_links)
         contact_author_url: Optional[URL] = next(
             (link.url for link in links if link.section == PageLinkSection.CONTACT_AUTHOR), None)
-        github_repo: Optional[GithubRepo] = self.__deduce_github_repo_name(
-            addon_header.id, github_links, contact_author_url)
+        github_repo: Optional[GithubRepo]
+        github_repo_source: Optional[GithubRepoSource]
+        github_repo, github_repo_source = self.__decided_github_repo(addon_header.id, contact_author_url)
         anki_forum_links: list[URL] = UrlParser.find_anki_forum_links(description_links)
         anki_forum_url: Optional[URL] = self.__deduce_anki_forum_url(
             addon_header.id, anki_forum_links, contact_author_url)
-        github_info: GithubInfo = GithubInfo(github_links, github_repo, [], 0, None, 0, 0)
+        github_info: GithubInfo = GithubInfo(github_links, github_repo, [], 0, None, 0, 0,
+                                             repo_source=github_repo_source)
         likes: int = self.__extract_likes(soup)
         dislikes: int = self.__extract_dislikes(soup)
         addon_branches: list[AddonBranch] = self.__extract_addon_branches(soup)
@@ -48,24 +50,15 @@ class AddonPageParser:
         addon_info: AddonInfo = AddonInfo(addon_header, addon_page, github_info, anki_forum_info)
         return addon_info
 
-    def __deduce_github_repo_name(self, addon_id: AddonId, github_urls: list[GitHubLink],
-                                  contact_author_url: Optional[URL]) -> Optional[GithubRepo]:
+    def __decided_github_repo(self, addon_id: AddonId, contact_author_url: Optional[URL]
+                              ) -> tuple[Optional[GithubRepo], Optional[GithubRepoSource]]:
         override_link: Optional[GitHubLink] = self.overrider.override_github_link(addon_id)
         if override_link:
-            return override_link.repo
+            return override_link.repo, GithubRepoSource.OVERRIDE
         contact_repo: Optional[GithubRepo] = self.__contact_author_github_repo(contact_author_url)
         if contact_repo is not None:
-            return contact_repo
-        not_null_urls: list[GitHubLink] = [link for link in github_urls if link.repo is not None]
-        filtered_urls: list[GitHubLink] = self.__exclude_links(not_null_urls)
-        filtered_urls.sort(key=lambda link: link.repo.get_id())
-        grouped: groupby[GithubRepo, GitHubLink] = groupby(filtered_urls, key=lambda link: link.repo)
-        counts: dict[GithubRepo, int] = {k: len(list(v)) for k, v in grouped}
-        if len(counts) == 0:
-            return None
-        max_tuple: tuple[GithubRepo, int] = max(counts.items(), key=lambda item: item[1])
-        github_repo: GithubRepo = max_tuple[0]
-        return github_repo
+            return contact_repo, GithubRepoSource.CONTACT_AUTHOR
+        return None, None
 
     def __deduce_anki_forum_url(self, addon_id: AddonId, anki_forum_urls: list[URL],
                                 contact_author_url: Optional[URL]) -> Optional[URL]:

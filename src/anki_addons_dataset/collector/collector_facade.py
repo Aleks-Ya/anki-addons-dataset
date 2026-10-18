@@ -11,7 +11,9 @@ from anki_addons_dataset.collector.aggregator import Aggregator
 from anki_addons_dataset.collector.ai.ai_cache_index import AiCacheIndex
 from anki_addons_dataset.collector.ai.ai_cache_stats import AiCacheStats
 from anki_addons_dataset.collector.ai.ai_enricher import AiEnricher
+from anki_addons_dataset.collector.ai.ai_provider import AiProvider
 from anki_addons_dataset.collector.ai.ai_provider_factory import AiProviderFactory
+from anki_addons_dataset.collector.ai.ai_repo_selector import AiRepoSelector
 from anki_addons_dataset.collector.ai.ai_summarizer import AiSummarizer
 from anki_addons_dataset.collector.ai.ai_tag_vocabulary import AiTagVocabulary
 from anki_addons_dataset.collector.ai.ai_tagger import AiTagger
@@ -25,6 +27,7 @@ from anki_addons_dataset.collector.ankiweb.ankiweb_service import AnkiWebService
 from anki_addons_dataset.collector.ankiweb.page_downloader import PageDownloader
 from anki_addons_dataset.collector.dataset_metadata import DatasetMetadata
 from anki_addons_dataset.collector.github.github_enricher import GithubEnricher
+from anki_addons_dataset.collector.github.github_repo_selector import GithubRepoSelector
 from anki_addons_dataset.collector.github.github_rest_client import GithubRestClient
 from anki_addons_dataset.collector.github.github_service import GithubService
 from anki_addons_dataset.collector.overrider.overrider import Overrider
@@ -86,9 +89,9 @@ class CollectorFacade:
     def __summarize_snapshot(self, snapshot_dir: SnapshotDir, shared_index: AiCacheIndex) -> AiCacheStats:
         snapshot_date: SnapshotDate = snapshot_dir.snapshot_dir_to_snapshot_date()
         log.info(f"===== Summarize snapshot for {snapshot_date} =====")
-        # No create(): this step only fills 1-raw, and wiping 3-final would discard an existing report.
-        addon_infos: AddonInfos = self.__collect(snapshot_dir, True)
         ai_provider: CachedAiProvider = self.__ai_provider(snapshot_dir, False, shared_index)
+        # No create(): this step only fills 1-raw, and wiping 3-final would discard an existing report.
+        addon_infos: AddonInfos = self.__collect(snapshot_dir, True, ai_provider=ai_provider)
         self.__ai_enrich(addon_infos, ai_provider)  # The filled cache is the result; PARSE reads it back
         stats: AiCacheStats = ai_provider.get_cache_stats()
         log.info(f"AI cache hits: {stats.hit_count}, misses: {stats.miss_count}")
@@ -104,12 +107,12 @@ class CollectorFacade:
         log.info(f"===== Parse snapshot for {snapshot_date} =====")
         snapshot_dir: SnapshotDir = self.__working_dir.get_snapshot_dir(snapshot_date).create()
         script_version: ScriptVersion = self.__script_version()
-        addon_infos: AddonInfos = self.__collect(snapshot_dir, True)
         ai_provider: CachedAiProvider = self.__ai_provider(snapshot_dir, True)
+        addon_infos: AddonInfos = self.__collect(snapshot_dir, True, ai_provider=ai_provider)
         addon_infos = self.__ai_enrich(addon_infos, ai_provider)
         cache_miss_count: int = ai_provider.get_cache_stats().miss_count
         if cache_miss_count:
-            log.warning(f"{cache_miss_count} AI answers (summaries or tags) are missing from the cache. "
+            log.warning(f"{cache_miss_count} AI answers (repo choices, summaries or tags) are missing from the cache. "
                         f"Run the 'ai' operation to fill the cache.")
         JsonHelper.write_addon_infos_dump(addon_infos, script_version, snapshot_dir.get_addon_infos_dump())
         log.info(f"===== Parsed snapshot for {snapshot_date} =====\n")
@@ -163,7 +166,8 @@ class CollectorFacade:
         return ScriptVersion(version_file.read_text().strip())
 
     def __collect(self, snapshot_dir: SnapshotDir, offline: bool,
-                  prev_snapshot_dir: Optional[SnapshotDir] = None) -> AddonInfos:
+                  prev_snapshot_dir: Optional[SnapshotDir] = None,
+                  ai_provider: Optional[AiProvider] = None) -> AddonInfos:
         log.info(f"Offline: {offline}")
         overrider: Overrider = Overrider(snapshot_dir)
         addon_page_parser: AddonPageParser = AddonPageParser(overrider)
@@ -177,7 +181,9 @@ class CollectorFacade:
         discourse_client: DiscourseClient = DiscourseClient(host="https://forums.ankiweb.net",
                                                             api_username=None, api_key=None)
         anki_forum_service: AnkiForumService = AnkiForumService(discourse_client, snapshot_dir, offline)
-        github_enricher: GithubEnricher = GithubEnricher(snapshot_dir, github_service)
+        ai_repo_selector: Optional[AiRepoSelector] = AiRepoSelector(ai_provider) if ai_provider else None
+        github_repo_selector: GithubRepoSelector = GithubRepoSelector(overrider, ai_repo_selector)
+        github_enricher: GithubEnricher = GithubEnricher(snapshot_dir, github_service, github_repo_selector, offline)
         anki_forum_enricher: AnkiForumEnricher = AnkiForumEnricher(snapshot_dir, anki_forum_service)
         max_addons: Optional[int] = SampleCollector(snapshot_dir).effective_addons(
             self.__config.sample.addons) if offline else self.__config.sample.addons

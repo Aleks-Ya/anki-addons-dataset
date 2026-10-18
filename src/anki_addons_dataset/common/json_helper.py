@@ -11,7 +11,7 @@ from anki_addons_dataset.common.data_types import AddonInfo, AddonInfos, AddonHe
     GithubUserName, GithubRepoName, LanguageName, LanguageCode, TopicSlug, TopicId, LastPostedAt, PostsCount, \
     ScriptVersion, AddonRating, UpdateDate, AddonTitle, AddonDescription, AddonManifest, SpdxLicense, Topic, \
     DependencyName, GithubReadme, AiInfo, AiSummary, AiModel, AiTag, AnkiPointVersion, AnkiVersionKind, \
-    PageLink, PageLinkSection
+    PageLink, PageLinkSection, GithubRepoSource
 
 
 class JsonHelper:
@@ -125,6 +125,7 @@ class JsonHelper:
         primary_language: Optional[str] = data.get("primary_language")
         license_str: Optional[str] = data.get("license")
         readme: Optional[str] = data.get("readme")
+        repo_source: Optional[str] = data.get("repo_source")
         return GithubInfo(
             github_links=[JsonHelper.__github_link_from_dict(link) for link in data["github_links"]],
             github_repo=JsonHelper.__github_repo_from_dict(data["github_repo"]),
@@ -149,6 +150,7 @@ class JsonHelper:
             dependencies=[DependencyName(dependency) for dependency in data.get("dependencies", [])],
             readme=GithubReadme(readme) if readme is not None else None,
             ai_tooling_markers=list(data.get("ai_tooling_markers", [])),
+            repo_source=GithubRepoSource(repo_source) if repo_source is not None else None,
         )
 
     @staticmethod

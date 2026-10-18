@@ -3,13 +3,18 @@ import logging
 from logging import Logger
 from unittest.mock import Mock
 
+from anki_addons_dataset.collector.ai.ai_repo_selector import AiRepoSelector, AiRepoAnswer
 from anki_addons_dataset.collector.github.github_enricher import GithubEnricher
+from anki_addons_dataset.collector.github.github_repo_selector import GithubRepoSelector
 from anki_addons_dataset.collector.github.github_service import GithubService
 from anki_addons_dataset.collector.github.handler.repo_info_repo_handler import GithubRepoMeta
+from anki_addons_dataset.collector.overrider.overrider import Overrider
+from anki_addons_dataset.collector.url_parser import UrlParser
 from anki_addons_dataset.common.data_types import AddonInfo, AddonHeader, AddonId, AddonPage, GithubRepo, \
     LanguageName, GithubInfo, AddonInfos, AnkiForumInfo, TopicSlug, TopicId, LastPostedAt, PostsCount, AnkiVersion, \
     HtmlStr, URL, AddonRating, UpdateDate, AddonTitle, AddonManifest, SpdxLicense, Topic, DependencyName, \
-    GithubReadme
+    GithubReadme, GithubUserName, GithubRepoName, GitHubLink, GithubRepoSource
+from anki_addons_dataset.common.working_dir import SnapshotDir
 
 log: Logger = logging.getLogger(__name__)
 
@@ -127,3 +132,43 @@ def test_enrich(github_enricher: GithubEnricher, github_service: GithubService, 
     )
 
     assert act_addon_infos == [exp_addon_info]
+
+
+def test_enrich_fetches_every_candidate_and_keeps_the_selected(snapshot_dir: SnapshotDir,
+                                                               github_service: GithubService):
+    own_repo: GithubRepo = GithubRepo(GithubUserName("author"), GithubRepoName("my-addon"))
+    library_repo: GithubRepo = GithubRepo(GithubUserName("kerrickstaley"), GithubRepoName("genanki"))
+    github_links: list[GitHubLink] = UrlParser.find_github_links(
+        [URL("https://github.com/kerrickstaley/genanki"), URL("https://github.com/author/my-addon")])
+    addon_info: AddonInfo = AddonInfo(
+        AddonHeader(AddonId(1), AddonTitle("My Addon"), URL("https://ankiweb.net/shared/info/1"), AddonRating(0),
+                    UpdateDate("2026-01-01"), AnkiVersion("25.09")),
+        AddonPage(HtmlStr(""), 0, 0, [], []),
+        GithubInfo(github_links, None, [], 0, None, None, None), None)
+    github_service.get_languages = Mock(return_value={})
+    github_service.get_stars_count = Mock(return_value=0)
+    github_service.get_last_commit = Mock(return_value=None)
+    github_service.get_action_count = Mock(return_value=None)
+    github_service.get_tests_count = Mock(return_value=None)
+    github_service.get_repo_info = Mock(return_value=GithubRepoMeta())
+    github_service.get_manifest = Mock(return_value=None)
+    github_service.get_dependencies = Mock(return_value=[])
+    github_service.get_readme = Mock(side_effect=lambda repo: GithubReadme(f"README of {repo.get_id()}"))
+    github_service.get_ai_tooling_markers = Mock(return_value=[])
+    ai_repo_selector: Mock = Mock(spec=AiRepoSelector)
+    ai_repo_selector.select.return_value = AiRepoAnswer(own_repo)
+    github_enricher: GithubEnricher = GithubEnricher(
+        snapshot_dir, github_service, GithubRepoSelector(Overrider(snapshot_dir), ai_repo_selector), offline=True)
+
+    github_enricher.start()
+    github_enricher.download_in_background(addon_info)
+    github_enricher.wait_download_finish()
+    act_github: GithubInfo = github_enricher.enrich(AddonInfos([addon_info]))[0].github
+
+    assert [call.args[0] for call in github_service.get_readme.call_args_list] == [library_repo, own_repo]
+    assert [candidate.github_repo for candidate in ai_repo_selector.select.call_args.args[1]] == [library_repo,
+                                                                                                  own_repo]
+    assert act_github.github_repo == own_repo
+    assert act_github.readme == "README of author/my-addon"
+    assert act_github.repo_source == GithubRepoSource.AI
+    assert act_github.github_links == github_links

@@ -49,6 +49,14 @@ class PageLinkSection(StrEnum):
     CONTACT_AUTHOR = "contact_author"
 
 
+class GithubRepoSource(StrEnum):
+    OVERRIDE = "override"
+    CONTACT_AUTHOR = "contact_author"
+    SELF_REFERENCE = "self_reference"
+    AI = "ai"
+    MOST_LINKED = "most_linked"
+
+
 @dataclass
 class AddonHeader:
     id: AddonId
@@ -126,6 +134,7 @@ class GithubInfo:
     dependencies: list[DependencyName] = field(default_factory=list)
     readme: Optional[GithubReadme] = None
     ai_tooling_markers: list[str] = field(default_factory=list)
+    repo_source: Optional[GithubRepoSource] = None
 
 
 @dataclass

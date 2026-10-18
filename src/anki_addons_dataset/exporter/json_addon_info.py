@@ -67,6 +67,7 @@ class GitHub:
     dependencies: list[str]
     readme: Optional[str]
     ai_tooling_markers: list[str]
+    repo_source: Optional[str]
 
 
 @dataclass
@@ -167,7 +168,8 @@ class JsonAddonInfo:
                       github.tests_count, github.license, github.forks, github.open_issues, github.size_kb,
                       list(github.topics), github.repo_description, github.homepage, github.archived, pushed_at_str,
                       created_at_str, github.primary_language, language_bytes, manifest,
-                      list(github.dependencies), github.readme, list(github.ai_tooling_markers))
+                      list(github.dependencies), github.readme, list(github.ai_tooling_markers),
+                      str(github.repo_source) if github.repo_source else None)
 
     @staticmethod
     def __manifest(manifest: Optional[AddonManifest]) -> Optional[Manifest]:

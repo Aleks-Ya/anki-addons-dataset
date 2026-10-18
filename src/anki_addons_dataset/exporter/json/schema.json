@@ -440,6 +440,20 @@
                 "items": {
                   "type": "string"
                 }
+              },
+              "repo_source": {
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "enum": [
+                  "override",
+                  "contact_author",
+                  "self_reference",
+                  "ai",
+                  "most_linked",
+                  null
+                ]
               }
             }
           }

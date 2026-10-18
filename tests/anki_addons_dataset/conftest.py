@@ -17,6 +17,7 @@ from anki_addons_dataset.collector.ankiweb.page_downloader import PageDownloader
 from anki_addons_dataset.collector.collector_facade import CollectorFacade
 from anki_addons_dataset.collector.dataset_metadata import DatasetMetadata
 from anki_addons_dataset.collector.github.github_enricher import GithubEnricher
+from anki_addons_dataset.collector.github.github_repo_selector import GithubRepoSelector
 from anki_addons_dataset.collector.github.github_rest_client import GithubRestClient
 from anki_addons_dataset.collector.github.github_service import GithubService
 from anki_addons_dataset.collector.overrider.overrider import Overrider
@@ -260,7 +261,7 @@ def github_service(snapshot_dir: SnapshotDir, github_rest_client: GithubRestClie
 
 @pytest.fixture
 def github_enricher(snapshot_dir: SnapshotDir, github_service: GithubService) -> GithubEnricher:
-    return GithubEnricher(snapshot_dir, github_service)
+    return GithubEnricher(snapshot_dir, github_service, GithubRepoSelector(Overrider(snapshot_dir), None))
 
 
 @pytest.fixture
