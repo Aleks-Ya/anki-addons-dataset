@@ -166,6 +166,8 @@ class AddonPage:
     ai_declaration_markers: list[str] = field(default_factory=list)
     description_language: Optional[LanguageCode] = None
     description_language_confidence: Optional[float] = None
+    description_html: Optional[HtmlStr] = None
+    description_pre_wrap: bool = False
 
     @property
     def contact_author_url(self) -> Optional[URL]:

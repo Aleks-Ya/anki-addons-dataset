@@ -30,6 +30,13 @@ from a fixed vocabulary (function tags such as `scheduling` or `statistics`, and
 `obsolete` or `paid`). The full vocabulary with the meaning of every tag is the `tags` table
 (`latest/parquet/tags.parquet`, also in JSON and Excel). All other fields are collected, not generated.
 
+The `anki_web.description` field is the AnkiWeb description as plain text. The `anki_web.description_html`
+field is the same description as the author's HTML (the inner HTML of the description block, `null` when
+there is none). It is **not sanitized**: sanitize it before rendering. Relative links and image sources are
+made absolute against the addon's AnkiWeb page; images stay as URLs. `anki_web.description_pre_wrap` is
+`true` when AnkiWeb renders the description with preserved line breaks (CSS `white-space: pre-wrap`), which
+it does for addons last updated before August 2023.
+
 Questions, feedback, bugs: [Support page at Anki Forum](https://forums.ankiweb.net/t/anki-addons-dataset-a-detailed-list-of-addons/63090)
 
 ---

@@ -33,7 +33,9 @@
           "dislikes",
           "ai_declaration_markers",
           "description_language",
-          "description_language_confidence"
+          "description_language_confidence",
+          "description_html",
+          "description_pre_wrap"
         ],
         "patternProperties": {
           "^title$": {
@@ -186,6 +188,15 @@
               "null",
               "number"
             ]
+          },
+          "description_html": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "description_pre_wrap": {
+            "type": "boolean"
           }
         }
       },

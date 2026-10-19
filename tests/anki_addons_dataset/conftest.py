@@ -211,7 +211,9 @@ def addon_info(addon_header: AddonHeader, github_repo: GithubRepo, topic_slug: T
                                   max_version_kind=AnkiVersionKind.TESTED)],
             links=[],
             description=AddonDescription("Sample addon description for full text search"),
-            ai_declaration_markers=["chatgpt"]
+            ai_declaration_markers=["chatgpt"],
+            description_html=HtmlStr("<p>Sample addon <b>description</b> for full text search</p>"),
+            description_pre_wrap=True
         ),
         github=GithubInfo(
             github_links=[],

@@ -45,7 +45,9 @@ def test_enrich(anki_forum_enricher: AnkiForumEnricher, anki_forum_service: Anki
                                   max_version_kind=AnkiVersionKind.TESTED)],
             links=[],
             description=AddonDescription("Sample addon description for full text search"),
-            ai_declaration_markers=["chatgpt"]
+            ai_declaration_markers=["chatgpt"],
+            description_html=HtmlStr("<p>Sample addon <b>description</b> for full text search</p>"),
+            description_pre_wrap=True
         ),
         github=GithubInfo(
             github_links=[],

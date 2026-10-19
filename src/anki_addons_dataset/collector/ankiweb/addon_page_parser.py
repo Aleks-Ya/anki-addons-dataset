@@ -1,3 +1,5 @@
+import copy
+import re
 from itertools import groupby
 from typing import Optional
 from urllib.parse import urljoin
@@ -44,8 +46,12 @@ class AddonPageParser:
         description_language: Optional[LanguageCode]
         description_language_confidence: Optional[float]
         description_language, description_language_confidence = DescriptionLanguageDetector.detect(description)
+        description_html: Optional[HtmlStr] = self.__extract_description_html(
+            description_tag, addon_header.addon_page_url)
+        description_pre_wrap: bool = self.__extract_description_pre_wrap(description_tag)
         addon_page: AddonPage = AddonPage(
-            html, likes, dislikes, addon_branches, links, description, ai_declaration_markers, description_language, description_language_confidence)
+            html, likes, dislikes, addon_branches, links, description, ai_declaration_markers, description_language,
+            description_language_confidence, description_html, description_pre_wrap)
         anki_forum_info: AnkiForumInfo = AnkiForumInfo(anki_forum_url, None, None, None, None)
         addon_info: AddonInfo = AddonInfo(addon_header, addon_page, github_info, anki_forum_info)
         return addon_info
@@ -160,6 +166,42 @@ class AddonPageParser:
         if description_tag is None:
             return AddonDescription("")
         return AddonDescription(" ".join(description_tag.get_text(separator=' ', strip=True).split()))
+
+    @staticmethod
+    def __extract_description_html(description_tag: Optional[Tag], page_url: URL) -> Optional[HtmlStr]:
+        if description_tag is None:
+            return None
+        description_copy: Tag = copy.copy(description_tag)
+        for attribute in ('href', 'src'):
+            for tag in description_copy.find_all(attrs={attribute: True}):
+                tag[attribute] = AddonPageParser.__absolute_url(page_url, str(tag[attribute]))
+        for tag in description_copy.find_all(srcset=True):
+            tag['srcset'] = AddonPageParser.__absolute_srcset(page_url, str(tag['srcset']))
+        description_html: HtmlStr = HtmlStr(description_copy.decode_contents())
+        return description_html if description_html.strip() else None
+
+    @staticmethod
+    def __absolute_url(page_url: URL, url: str) -> URL:
+        stripped: str = url.strip()
+        if not stripped or stripped.startswith('#'):
+            return URL(url)
+        return URL(urljoin(page_url, stripped))
+
+    @staticmethod
+    def __absolute_srcset(page_url: URL, srcset: str) -> str:
+        candidates: list[str] = []
+        for candidate in re.split(r',\s+', srcset.strip()):
+            parts: list[str] = candidate.split()
+            if parts:
+                parts[0] = AddonPageParser.__absolute_url(page_url, parts[0])
+                candidates.append(" ".join(parts))
+        return ", ".join(candidates)
+
+    @staticmethod
+    def __extract_description_pre_wrap(description_tag: Optional[Tag]) -> bool:
+        if description_tag is None:
+            return False
+        return 'pre-wrap' in (description_tag.get('class') or [])
 
     @staticmethod
     def __extract_addon_branches(soup: BeautifulSoup) -> list[AddonBranch]:

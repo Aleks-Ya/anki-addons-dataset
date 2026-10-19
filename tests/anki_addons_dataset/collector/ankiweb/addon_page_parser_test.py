@@ -27,6 +27,12 @@ def test_parse_addon_page(overrider: Overrider):
     # Null the (deterministic but verbose) language fields so the structural comparison below stays focused.
     addon_info.page.description_language = None
     addon_info.page.description_language_confidence = None
+    assert addon_info.page.description_html is not None
+    assert addon_info.page.description_html.startswith('<p><strong>"Note Size" addon')
+    assert 'href="/' not in addon_info.page.description_html
+    assert 'src="/' not in addon_info.page.description_html
+    assert addon_info.page.description_pre_wrap is False
+    addon_info.page.description_html = None
     github_user: GitHubUser = GitHubUser(GithubUserName("aleks-ya"))
     github_repo: GithubRepo = GithubRepo(GithubUserName("aleks-ya"), GithubRepoName("note-size-anki-addon"))
     description: PageLinkSection = PageLinkSection.DESCRIPTION
@@ -113,6 +119,54 @@ def test_parse_addon_page_without_description(overrider: Overrider):
     assert addon_info.page.description == ""
     assert addon_info.page.description_language is None
     assert addon_info.page.description_language_confidence is None
+    assert addon_info.page.description_html is None
+    assert addon_info.page.description_pre_wrap is False
+
+
+def test_parse_addon_page_with_empty_description(overrider: Overrider):
+    parser: AddonPageParser = AddonPageParser(overrider)
+    html: HtmlStr = HtmlStr('<html><body><main><div class="shared-item-description"> \n </div></main></body></html>')
+    addon_info: AddonInfo = parser.parse_addon_page(__header(9), html)
+    assert addon_info.page.description_html is None
+    assert addon_info.page.description_pre_wrap is False
+
+
+def test_parse_addon_page_description_html(overrider: Overrider):
+    parser: AddonPageParser = AddonPageParser(overrider)
+    html: HtmlStr = HtmlStr(
+        '<html><body><main>'
+        '<div class="shared-item-description break-word">'
+        '<h2>Features</h2>'
+        '<p>See <a href="https://github.com/user/repo">GitHub</a> and <a href="/shared/info/2">other addon</a>.</p>'
+        '<p><a href="#usage">Usage</a> <a href="mailto:a@b.c">Mail</a></p>'
+        '<img src="/static/screenshot.png" alt="screenshot">'
+        '<img src="https://i.imgur.com/x.png" srcset="small.png 1x, /big.png 2x">'
+        '<img srcset="data:image/png;base64,AAAA 1x, /big.png 2x">'
+        '</div>'
+        '</main></body></html>')
+    addon_info: AddonInfo = parser.parse_addon_page(__header(10), html)
+    assert addon_info.page.description_html == (
+        '<h2>Features</h2>'
+        '<p>See <a href="https://github.com/user/repo">GitHub</a> and '
+        '<a href="https://ankiweb.net/shared/info/2">other addon</a>.</p>'
+        '<p><a href="#usage">Usage</a> <a href="mailto:a@b.c">Mail</a></p>'
+        '<img alt="screenshot" src="https://ankiweb.net/static/screenshot.png"/>'
+        '<img src="https://i.imgur.com/x.png" '
+        'srcset="https://ankiweb.net/shared/info/small.png 1x, https://ankiweb.net/big.png 2x"/>'
+        '<img srcset="data:image/png;base64,AAAA 1x, https://ankiweb.net/big.png 2x"/>')
+    assert addon_info.page.description_pre_wrap is False
+    assert addon_info.page.description == "Features See GitHub and other addon . Usage Mail"
+
+
+def test_parse_addon_page_description_pre_wrap(overrider: Overrider):
+    parser: AddonPageParser = AddonPageParser(overrider)
+    html: HtmlStr = HtmlStr(
+        '<html><body><main>'
+        '<div class="shared-item-description break-word pre-wrap">Line one\nLine two</div>'
+        '</main></body></html>')
+    addon_info: AddonInfo = parser.parse_addon_page(__header(11), html)
+    assert addon_info.page.description_pre_wrap is True
+    assert addon_info.page.description_html == "Line one\nLine two"
 
 
 def test_parse_addon_page_detects_non_english_description(overrider: Overrider):

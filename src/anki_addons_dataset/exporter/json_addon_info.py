@@ -3,7 +3,7 @@ from typing import Optional
 
 from anki_addons_dataset.common.anki_version import AnkiVersionCodec
 from anki_addons_dataset.common.data_types import AddonInfos, AddonInfo, AddonDescription, GithubInfo, AddonManifest, \
-    AnkiPointVersion
+    AnkiPointVersion, HtmlStr
 
 
 @dataclass
@@ -115,6 +115,8 @@ class AnkiWeb:
     ai_declaration_markers: list[str]
     description_language: Optional[str]
     description_language_confidence: Optional[float]
+    description_html: Optional[HtmlStr]
+    description_pre_wrap: bool
 
 
 @dataclass
@@ -140,7 +142,8 @@ class JsonAddonInfo:
                                         addon.header.anki_point_version, str(addon.header.anki_version_kind), branches,
                                         JsonAddonInfo.__anki_web_links(addon), addon.page.like_number, addon.page.dislike_number,
                                         list(addon.page.ai_declaration_markers), addon.page.description_language,
-                                        addon.page.description_language_confidence)
+                                        addon.page.description_language_confidence, addon.page.description_html,
+                                        addon.page.description_pre_wrap)
             json_obj: Details = Details(addon.header.id, anki_web, github, forum, JsonAddonInfo.__ai(addon))
             json_list.append(json_obj)
         return json_list

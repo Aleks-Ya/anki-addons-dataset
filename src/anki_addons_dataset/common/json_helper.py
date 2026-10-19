@@ -89,6 +89,9 @@ class JsonHelper:
             description_language=LanguageCode(data["description_language"])
             if data.get("description_language") is not None else None,
             description_language_confidence=data.get("description_language_confidence"),
+            description_html=HtmlStr(data["description_html"])
+            if data.get("description_html") is not None else None,
+            description_pre_wrap=bool(data.get("description_pre_wrap", False)),
         )
 
     @staticmethod

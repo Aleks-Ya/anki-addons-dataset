@@ -35,6 +35,8 @@ class AddonPage <<dataclass>> {
   ai_declaration_markers : list[str]
   description_language : Optional[LanguageCode]
   description_language_confidence : Optional[float]
+  description_html : Optional[str]
+  description_pre_wrap : bool
 }
 
 class PageLink <<dataclass>> {

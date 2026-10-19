@@ -162,6 +162,38 @@ def test_addon_infos_dump_reads_legacy_dump_without_description_language(
     assert read_addon_infos[0].page.description_language_confidence is None
 
 
+def test_addon_infos_dump_round_trip_preserves_description_html(addon_infos: AddonInfos,
+                                                                script_version: ScriptVersion,
+                                                                working_dir_path: Path):
+    addon_infos[0].page.description_html = HtmlStr('<h2>Title</h2><a href="https://ankiweb.net/shared/info/2">x</a>')
+    addon_infos[0].page.description_pre_wrap = True
+    dump_file: Path = working_dir_path / "addon-infos.json"
+
+    JsonHelper.write_addon_infos_dump(addon_infos, script_version, dump_file)
+    _, read_addon_infos = JsonHelper.read_addon_infos_dump(dump_file)
+
+    assert read_addon_infos[0].page.description_html == \
+           '<h2>Title</h2><a href="https://ankiweb.net/shared/info/2">x</a>'
+    assert read_addon_infos[0].page.description_pre_wrap is True
+
+
+def test_addon_infos_dump_reads_legacy_dump_without_description_html(
+        addon_infos: AddonInfos, script_version: ScriptVersion, working_dir_path: Path):
+    addon_infos[0].page.description_html = HtmlStr("<p>x</p>")
+    addon_infos[0].page.description_pre_wrap = True
+    dump_file: Path = working_dir_path / "addon-infos.json"
+    JsonHelper.write_addon_infos_dump(addon_infos, script_version, dump_file)
+    envelope: dict = json.loads(dump_file.read_text())
+    envelope["addon_infos"][0]["page"].pop("description_html")
+    envelope["addon_infos"][0]["page"].pop("description_pre_wrap")
+    dump_file.write_text(json.dumps(envelope))
+
+    _, read_addon_infos = JsonHelper.read_addon_infos_dump(dump_file)
+
+    assert read_addon_infos[0].page.description_html is None
+    assert read_addon_infos[0].page.description_pre_wrap is False
+
+
 def test_addon_infos_dump_reads_legacy_dump_without_page_ai_declaration_markers(
         addon_infos: AddonInfos, script_version: ScriptVersion, working_dir_path: Path):
     # An older dump has no `ai_declaration_markers` key in `page`; reading must default it to [].
