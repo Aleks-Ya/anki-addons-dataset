@@ -56,7 +56,8 @@ def test_export_aggregation(xlsx_exporter: XlsxExporter, snapshot_dir: SnapshotD
     aggregation: Aggregation = Aggregation(addon_number=5,
                                            addon_with_github_number=4,
                                            addon_with_anki_forum_page_number=3,
-                                           addon_with_unit_tests_number=2)
+                                           addon_with_unit_tests_number=2,
+                                           author_number=1)
     xlsx_exporter.export_aggregation(aggregation, dataset_snapshot_metadata, raw_metadata)
     act_file: Path = snapshot_dir.get_final_dir() / "xlsx" / "aggregation.xlsx"
     act_df: DataFrame = pandas.read_excel(act_file)

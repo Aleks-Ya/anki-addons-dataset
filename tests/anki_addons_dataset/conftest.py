@@ -13,6 +13,7 @@ from anki_addons_dataset.collector.ankiweb.addon_page_downloader import AddonPag
 from anki_addons_dataset.collector.ankiweb.addon_page_parser import AddonPageParser
 from anki_addons_dataset.collector.ankiweb.addons_page_downloader import AddonsPageDownloader
 from anki_addons_dataset.collector.ankiweb.ankiweb_service import AnkiWebService
+from anki_addons_dataset.collector.ankiweb.author_page_downloader import AuthorPageDownloader
 from anki_addons_dataset.collector.ankiweb.page_downloader import PageDownloader
 from anki_addons_dataset.collector.collector_facade import CollectorFacade
 from anki_addons_dataset.collector.dataset_metadata import DatasetMetadata
@@ -25,7 +26,7 @@ from anki_addons_dataset.common.data_types import AddonId, GithubRepo, GithubUse
     URL, PostsCount, AddonInfo, AddonHeader, AddonPage, GithubInfo, AnkiForumInfo, LanguageName, AddonInfos, \
     DatasetSnapshotMetadata, RawMetadata, AnkiVersion, AnkiPointVersion, AnkiVersionKind, AddonBranch, HtmlStr, \
     SnapshotDate, ReportDate, ScriptVersion, AddonRating, UpdateDate, AddonTitle, AddonDescription, PageLoadTimeout, \
-    ElementWaitTimeout, AiInfo, AiSummary, AiTag, AiModel
+    ElementWaitTimeout, AiInfo, AiSummary, AiTag, AiModel, AuthorInfo
 from anki_addons_dataset.common.working_dir import WorkingDir, SnapshotDir
 from anki_addons_dataset.config.app_config import AppConfig, AiConfig, GithubConfig, HuggingFaceConfig
 from anki_addons_dataset.exporter.json.json_exporter import JsonExporter
@@ -139,9 +140,15 @@ def addon_page_downloader(page_downloader: PageDownloader, snapshot_dir: Snapsho
 
 
 @pytest.fixture
-def ankiweb_service(addons_page_downloader: AddonsPageDownloader,
-                    addon_page_downloader: AddonPageDownloader) -> AnkiWebService:
-    return AnkiWebService(addons_page_downloader, addon_page_downloader)
+def author_page_downloader(page_downloader: PageDownloader, snapshot_dir: SnapshotDir,
+                           offline: bool) -> AuthorPageDownloader:
+    return AuthorPageDownloader(page_downloader, snapshot_dir, offline)
+
+
+@pytest.fixture
+def ankiweb_service(addons_page_downloader: AddonsPageDownloader, addon_page_downloader: AddonPageDownloader,
+                    author_page_downloader: AuthorPageDownloader) -> AnkiWebService:
+    return AnkiWebService(addons_page_downloader, addon_page_downloader, author_page_downloader)
 
 
 @pytest.fixture
@@ -213,7 +220,8 @@ def addon_info(addon_header: AddonHeader, github_repo: GithubRepo, topic_slug: T
             description=AddonDescription("Sample addon description for full text search"),
             ai_declaration_markers=["chatgpt"],
             description_html=HtmlStr("<p>Sample addon <b>description</b> for full text search</p>"),
-            description_pre_wrap=True
+            description_pre_wrap=True,
+            other_items_count=2
         ),
         github=GithubInfo(
             github_links=[],
@@ -236,6 +244,10 @@ def addon_info(addon_header: AddonHeader, github_repo: GithubRepo, topic_slug: T
             summary=AiSummary("Shows the size of the collection and of individual notes."),
             model=AiModel("test-model"),
             tags=[AiTag("statistics")]
+        ),
+        author=AuthorInfo(
+            author_id=AddonId(1188705668),
+            addon_ids=[AddonId(1188705668), AddonId(1312127886), AddonId(1956435337)]
         )
     )
 

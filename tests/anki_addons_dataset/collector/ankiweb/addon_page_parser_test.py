@@ -72,7 +72,8 @@ def test_parse_addon_page(overrider: Overrider):
                         'If you have a question , please, reply at Support page at Anki Forum . If you met a bug , '
                         'create an issue at GitHub bug tracker or reply at Support page at Anki Forum . If you have a '
                         'feature request or another idea, reply at Support page at Anki Forum . For more details see '
-                        'User Manual . Links Support page at Anki Forum GitHub project Bug tracker Changelog')
+                        'User Manual . Links Support page at Anki Forum GitHub project Bug tracker Changelog'),
+            other_items_count=2
         ),
         GithubInfo(
             github_links=[
@@ -121,6 +122,17 @@ def test_parse_addon_page_without_description(overrider: Overrider):
     assert addon_info.page.description_language_confidence is None
     assert addon_info.page.description_html is None
     assert addon_info.page.description_pre_wrap is False
+    assert addon_info.page.other_items_count == 0
+
+
+def test_parse_addon_page_other_items_count(overrider: Overrider):
+    parser: AddonPageParser = AddonPageParser(overrider)
+    html: HtmlStr = HtmlStr(
+        '<html><body><main>'
+        '<div><small>The author has shared <a href="/shared/by-author/12">17 other item(s)</a>.</small></div>'
+        '</main></body></html>')
+    addon_info: AddonInfo = parser.parse_addon_page(__header(12), html)
+    assert addon_info.page.other_items_count == 17
 
 
 def test_parse_addon_page_with_empty_description(overrider: Overrider):

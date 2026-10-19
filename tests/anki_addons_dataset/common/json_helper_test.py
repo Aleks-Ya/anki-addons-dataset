@@ -275,6 +275,22 @@ def test_addon_infos_dump_reads_legacy_dump_without_the_ai_block(addon_infos: Ad
     assert read_addon_infos[0].ai is None
 
 
+def test_addon_infos_dump_reads_legacy_dump_without_author_fields(addon_infos: AddonInfos,
+                                                                   script_version: ScriptVersion,
+                                                                   working_dir_path: Path):
+    dump_file: Path = working_dir_path / "addon-infos.json"
+    JsonHelper.write_addon_infos_dump(addon_infos, script_version, dump_file)
+    envelope: dict = json.loads(dump_file.read_text())
+    envelope["addon_infos"][0].pop("author")
+    envelope["addon_infos"][0]["page"].pop("other_items_count")
+    dump_file.write_text(json.dumps(envelope))
+
+    _, read_addon_infos = JsonHelper.read_addon_infos_dump(dump_file)
+
+    assert read_addon_infos[0].author is None
+    assert read_addon_infos[0].page.other_items_count is None
+
+
 def test_addon_infos_dump_round_trip_preserves_the_ai_tags(addon_infos: AddonInfos, script_version: ScriptVersion,
                                                            working_dir_path: Path):
     assert addon_infos[0].ai is not None

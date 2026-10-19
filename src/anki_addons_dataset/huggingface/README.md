@@ -37,6 +37,14 @@ made absolute against the addon's AnkiWeb page; images stay as URLs. `anki_web.d
 `true` when AnkiWeb renders the description with preserved line breaks (CSS `white-space: pre-wrap`), which
 it does for addons last updated before August 2023.
 
+AnkiWeb publishes no author names or IDs, so the `author` field is derived. Each addon page links to a list of
+the items its author has shared ("The author has shared N other item(s)"), and addons connected through these
+lists are grouped under one author. `author.id` is the smallest addon ID in the group: an anonymous label, not
+an AnkiWeb identifier. It changes when that addon is removed or the author publishes an addon with a smaller ID.
+`author.addon_count` is the number of the author's addons in the snapshot. `author` is `null` in snapshots
+collected before authors were tracked. `anki_web.other_items_count` is the "N" from the addon page, available
+in every snapshot; it counts shared decks as well as addons.
+
 Questions, feedback, bugs: [Support page at Anki Forum](https://forums.ankiweb.net/t/anki-addons-dataset-a-detailed-list-of-addons/63090)
 
 ---

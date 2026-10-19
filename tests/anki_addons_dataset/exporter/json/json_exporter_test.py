@@ -25,6 +25,7 @@ def test_export_addon_infos(json_exporter: JsonExporter, snapshot_dir: SnapshotD
                                       'description_language_confidence': None,
                                       'description_html': '<p>Sample addon <b>description</b> for full text search</p>',
                                       'description_pre_wrap': True,
+                                      'other_items_count': 2,
                                       'anki_version': '25.09.2~',
                                       'anki_point_version': 250902,
                                       'anki_version_kind': 'tested',
@@ -71,7 +72,8 @@ def test_export_addon_infos(json_exporter: JsonExporter, snapshot_dir: SnapshotD
                                    'posts_count': 42},
                          'ai': {'summary': 'Shows the size of the collection and of individual notes.',
                                 'model': 'test-model',
-                                'tags': ['statistics']}
+                                'tags': ['statistics']},
+                         'author': {'id': 1188705668, 'addon_count': 3}
                          }]
 
 
@@ -95,6 +97,7 @@ def test_export_addon_infos_empty_forum(json_exporter: JsonExporter, snapshot_di
                                       'description_language_confidence': None,
                                       'description_html': '<p>Sample addon <b>description</b> for full text search</p>',
                                       'description_pre_wrap': True,
+                                      'other_items_count': 2,
                                       'anki_version': '25.09.2~',
                                       'anki_point_version': 250902,
                                       'anki_version_kind': 'tested',
@@ -137,7 +140,8 @@ def test_export_addon_infos_empty_forum(json_exporter: JsonExporter, snapshot_di
                          'forum': None,
                          'ai': {'summary': 'Shows the size of the collection and of individual notes.',
                                 'model': 'test-model',
-                                'tags': ['statistics']}}]
+                                'tags': ['statistics']},
+                         'author': {'id': 1188705668, 'addon_count': 3}}]
 
 
 def test_export_addon_infos_empty_posts_count(json_exporter: JsonExporter, snapshot_dir: SnapshotDir,
@@ -161,6 +165,7 @@ def test_export_addon_infos_empty_posts_count(json_exporter: JsonExporter, snaps
                                       'description_language_confidence': None,
                                       'description_html': '<p>Sample addon <b>description</b> for full text search</p>',
                                       'description_pre_wrap': True,
+                                      'other_items_count': 2,
                                       'anki_version': '25.09.2~',
                                       'anki_point_version': 250902,
                                       'anki_version_kind': 'tested',
@@ -207,7 +212,8 @@ def test_export_addon_infos_empty_posts_count(json_exporter: JsonExporter, snaps
                                    'posts_count': None},
                          'ai': {'summary': 'Shows the size of the collection and of individual notes.',
                                 'model': 'test-model',
-                                'tags': ['statistics']}}]
+                                'tags': ['statistics']},
+                         'author': {'id': 1188705668, 'addon_count': 3}}]
 
 
 def test_export_addon_infos_empty_last_posted_at(json_exporter: JsonExporter, snapshot_dir: SnapshotDir,
@@ -277,7 +283,8 @@ def test_export_aggregation(json_exporter: JsonExporter, snapshot_dir: SnapshotD
     aggregation: Aggregation = Aggregation(addon_number=5,
                                            addon_with_github_number=4,
                                            addon_with_anki_forum_page_number=3,
-                                           addon_with_unit_tests_number=2)
+                                           addon_with_unit_tests_number=2,
+                                           author_number=1)
     json_exporter.export_aggregation(aggregation, dataset_snapshot_metadata, raw_metadata)
 
     act_file: Path = snapshot_dir.get_final_dir() / "json" / "aggregation.json"
@@ -285,7 +292,8 @@ def test_export_aggregation(json_exporter: JsonExporter, snapshot_dir: SnapshotD
     assert act_json == {'addon_number': 5,
                         'addon_with_anki_forum_page_number': 3,
                         'addon_with_github_number': 4,
-                        'addon_with_unit_tests_number': 2}
+                        'addon_with_unit_tests_number': 2,
+          'author_number': 1}
 
 
 def test_export_tags(json_exporter: JsonExporter, snapshot_dir: SnapshotDir,

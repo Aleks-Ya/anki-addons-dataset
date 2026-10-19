@@ -87,6 +87,12 @@ class Ai:
 
 
 @dataclass
+class Author:
+    id: int
+    addon_count: int
+
+
+@dataclass
 class Branch:
     min_version: Optional[str]
     max_version: Optional[str]
@@ -117,6 +123,7 @@ class AnkiWeb:
     description_language_confidence: Optional[float]
     description_html: Optional[HtmlStr]
     description_pre_wrap: bool
+    other_items_count: Optional[int]
 
 
 @dataclass
@@ -126,6 +133,7 @@ class Details:
     github: Optional[GitHub]
     forum: Optional[Forum]
     ai: Optional[Ai]
+    author: Optional[Author]
 
 
 class JsonAddonInfo:
@@ -143,8 +151,9 @@ class JsonAddonInfo:
                                         JsonAddonInfo.__anki_web_links(addon), addon.page.like_number, addon.page.dislike_number,
                                         list(addon.page.ai_declaration_markers), addon.page.description_language,
                                         addon.page.description_language_confidence, addon.page.description_html,
-                                        addon.page.description_pre_wrap)
-            json_obj: Details = Details(addon.header.id, anki_web, github, forum, JsonAddonInfo.__ai(addon))
+                                        addon.page.description_pre_wrap, addon.page.other_items_count)
+            json_obj: Details = Details(addon.header.id, anki_web, github, forum, JsonAddonInfo.__ai(addon),
+                                        JsonAddonInfo.__author(addon))
             json_list.append(json_obj)
         return json_list
 
@@ -202,6 +211,12 @@ class JsonAddonInfo:
         if not addon.ai:
             return None
         return Ai(addon.ai.summary, addon.ai.model, addon.ai.tags)
+
+    @staticmethod
+    def __author(addon: AddonInfo) -> Optional[Author]:
+        if not addon.author:
+            return None
+        return Author(addon.author.author_id, len(addon.author.addon_ids))
 
     @staticmethod
     def __branches(addon: AddonInfo) -> list[Branch]:

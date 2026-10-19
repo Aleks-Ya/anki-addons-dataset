@@ -16,6 +16,7 @@ log: Logger = logging.getLogger(__name__)
 class Overrider:
     __github_url_key: str = "GitHubUrl"
     __anki_forum_url_key: str = "AnkiForumUrl"
+    __same_author_key: str = "SameAuthorAs"
 
     def __init__(self, snapshot_dir: SnapshotDir):
         override_file: Path = Path(__file__).parent / "overrides.yaml"
@@ -40,6 +41,13 @@ class Overrider:
             addon_data: dict[str, Any] = self.addons_data[addon_id]
             if self.__anki_forum_url_key in addon_data:
                 return addon_data[self.__anki_forum_url_key]
+        return None
+
+    def override_same_author(self, addon_id: AddonId) -> Optional[AddonId]:
+        if addon_id in self.addons_data:
+            addon_data: dict[str, Any] = self.addons_data[addon_id]
+            if self.__same_author_key in addon_data:
+                return AddonId(int(addon_data[self.__same_author_key]))
         return None
 
     def is_excluded_github_repo(self, url: URL) -> bool:

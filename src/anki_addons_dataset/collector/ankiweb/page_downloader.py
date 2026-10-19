@@ -19,7 +19,7 @@ class PageDownloader:
     def __del__(self) -> None:
         self.__driver.quit()
 
-    def load_page(self, url: str) -> HtmlStr:
+    def load_page(self, url: str, wait_xpath: str = "/html/body/div/main") -> HtmlStr:
         self.__driver.get(url)
-        self.__wait.until(expected_conditions.presence_of_element_located((By.XPATH, "/html/body/div/main")))
+        self.__wait.until(expected_conditions.presence_of_element_located((By.XPATH, wait_xpath)))
         return HtmlStr(self.__driver.page_source)

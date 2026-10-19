@@ -10,7 +10,8 @@ def test_aggregate(aggregator: Aggregator, addon_infos: AddonInfos):
         addon_number=1,
         addon_with_github_number=1,
         addon_with_anki_forum_page_number=1,
-        addon_with_unit_tests_number=1
+        addon_with_unit_tests_number=1,
+        author_number=1
     )
 
 
@@ -20,7 +21,8 @@ def test_aggregate_empty(aggregator: Aggregator):
         addon_number=0,
         addon_with_github_number=0,
         addon_with_anki_forum_page_number=0,
-        addon_with_unit_tests_number=0
+        addon_with_unit_tests_number=0,
+        author_number=0
     )
 
 
@@ -33,5 +35,6 @@ def test_aggregate_empty_forum(aggregator: Aggregator, addon_info: AddonInfo):
         addon_number=1,
         addon_with_github_number=1,
         addon_with_anki_forum_page_number=0,
-        addon_with_unit_tests_number=1
+        addon_with_unit_tests_number=1,
+        author_number=1
     )

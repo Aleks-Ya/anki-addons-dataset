@@ -68,7 +68,8 @@ class AggregationSheet:
             "Addon number": aggregation.addon_number,
             "Addon with GitHub number": aggregation.addon_with_github_number,
             "Addon with Anki forum page number": aggregation.addon_with_anki_forum_page_number,
-            "Addon with unit-tests number": aggregation.addon_with_unit_tests_number
+            "Addon with unit-tests number": aggregation.addon_with_unit_tests_number,
+            "Author number": aggregation.author_number
         }
         for i, (name, value) in enumerate(values.items()):
             row: int = self.__header_row + i + 1

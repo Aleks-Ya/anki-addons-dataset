@@ -35,7 +35,8 @@
           "description_language",
           "description_language_confidence",
           "description_html",
-          "description_pre_wrap"
+          "description_pre_wrap",
+          "other_items_count"
         ],
         "patternProperties": {
           "^title$": {
@@ -197,6 +198,12 @@
           },
           "description_pre_wrap": {
             "type": "boolean"
+          },
+          "other_items_count": {
+            "type": [
+              "null",
+              "integer"
+            ]
           }
         }
       },
@@ -530,6 +537,25 @@
             "items": {
               "type": "string"
             }
+          }
+        }
+      },
+      "author": {
+        "type": [
+          "object",
+          "null"
+        ],
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "addon_count"
+        ],
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "addon_count": {
+            "type": "integer"
           }
         }
       }

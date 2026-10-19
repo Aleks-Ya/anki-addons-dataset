@@ -14,6 +14,7 @@ class AddonInfo <<dataclass>> {
   github : Optional[GithubInfo]
   forum : Optional[AnkiForumInfo]
   ai : Optional[AiInfo]
+  author : Optional[AuthorInfo]
 }
 
 class AddonHeader <<dataclass>> {
@@ -37,6 +38,7 @@ class AddonPage <<dataclass>> {
   description_language_confidence : Optional[float]
   description_html : Optional[str]
   description_pre_wrap : bool
+  other_items_count : Optional[int]
 }
 
 class PageLink <<dataclass>> {
@@ -121,6 +123,11 @@ class AiInfo <<dataclass>> {
   model : Optional[AiModel]
 }
 
+class AuthorInfo <<frozen dataclass>> {
+  author_id : AddonId
+  addon_ids : list[AddonId]
+}
+
 AddonInfos "1" o-- "*" AddonInfo
 
 AddonInfo *-- "1" AddonHeader
@@ -128,6 +135,7 @@ AddonInfo *-- "1" AddonPage
 AddonInfo o-- "0..1" GithubInfo
 AddonInfo o-- "0..1" AnkiForumInfo
 AddonInfo o-- "0..1" AiInfo
+AddonInfo o-- "0..1" AuthorInfo
 
 AddonPage "1" o-- "*" AddonBranch
 AddonPage "1" o-- "*" PageLink

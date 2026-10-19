@@ -11,7 +11,7 @@ from anki_addons_dataset.common.data_types import AddonInfo, AddonInfos, AddonHe
     GithubUserName, GithubRepoName, LanguageName, LanguageCode, TopicSlug, TopicId, LastPostedAt, PostsCount, \
     ScriptVersion, AddonRating, UpdateDate, AddonTitle, AddonDescription, AddonManifest, SpdxLicense, Topic, \
     DependencyName, GithubReadme, AiInfo, AiSummary, AiModel, AiTag, AnkiPointVersion, AnkiVersionKind, \
-    PageLink, PageLinkSection, GithubRepoSource
+    PageLink, PageLinkSection, GithubRepoSource, AuthorInfo
 
 
 class JsonHelper:
@@ -48,6 +48,7 @@ class JsonHelper:
             github=JsonHelper.__github_info_from_dict(data["github"]),
             forum=JsonHelper.__anki_forum_info_from_dict(data["forum"]),
             ai=JsonHelper.__ai_info_from_dict(data.get("ai")),  # get(): dumps written before the 'ai' step have none
+            author=JsonHelper.__author_info_from_dict(data.get("author")),
         )
 
     @staticmethod
@@ -61,6 +62,15 @@ class JsonHelper:
             summary=AiSummary(summary) if summary is not None else None,
             model=AiModel(model) if model is not None else None,
             tags=[AiTag(tag) for tag in tags] if tags is not None else None,
+        )
+
+    @staticmethod
+    def __author_info_from_dict(data: Optional[dict[str, Any]]) -> Optional[AuthorInfo]:
+        if data is None:
+            return None
+        return AuthorInfo(
+            author_id=AddonId(data["author_id"]),
+            addon_ids=[AddonId(addon_id) for addon_id in data["addon_ids"]],
         )
 
     @staticmethod
@@ -92,6 +102,7 @@ class JsonHelper:
             description_html=HtmlStr(data["description_html"])
             if data.get("description_html") is not None else None,
             description_pre_wrap=bool(data.get("description_pre_wrap", False)),
+            other_items_count=data.get("other_items_count"),
         )
 
     @staticmethod

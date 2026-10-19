@@ -49,9 +49,10 @@ class AddonPageParser:
         description_html: Optional[HtmlStr] = self.__extract_description_html(
             description_tag, addon_header.addon_page_url)
         description_pre_wrap: bool = self.__extract_description_pre_wrap(description_tag)
+        other_items_count: int = self.__extract_other_items_count(soup)
         addon_page: AddonPage = AddonPage(
             html, likes, dislikes, addon_branches, links, description, ai_declaration_markers, description_language,
-            description_language_confidence, description_html, description_pre_wrap)
+            description_language_confidence, description_html, description_pre_wrap, other_items_count)
         anki_forum_info: AnkiForumInfo = AnkiForumInfo(anki_forum_url, None, None, None, None)
         addon_info: AddonInfo = AddonInfo(addon_header, addon_page, github_info, anki_forum_info)
         return addon_info
@@ -142,6 +143,14 @@ class AddonPageParser:
             if anchor.get_text(strip=True) == 'Contact Author' and anchor.get('href'):
                 return anchor
         return None
+
+    @staticmethod
+    def __extract_other_items_count(soup: BeautifulSoup) -> int:
+        by_author_anchor: Optional[Tag] = soup.find('a', href=re.compile(r'^/shared/by-author/'))
+        if by_author_anchor is None:
+            return 0
+        match: Optional[re.Match[str]] = re.search(r'\d+', by_author_anchor.get_text())
+        return int(match.group()) if match else 0
 
     @staticmethod
     def __extract_likes(soup: BeautifulSoup) -> int:

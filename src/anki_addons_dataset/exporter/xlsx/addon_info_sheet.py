@@ -22,18 +22,19 @@ class AddonInfoSheet:
     __anki_web_url_col: int = 8
     __language_col: int = 9
     __ai_declaration_col: int = 10
-    __anki_forum_url_col: int = 11
-    __anki_forum_posts_count_col: int = 12
-    __anki_forum_last_posted_at_col: int = 13
-    __github_url_col: int = 14
-    __stars_col: int = 15
-    __last_commit_col: int = 16
-    __languages_col: int = 17
-    __actions_count_col: int = 18
-    __tests_count_col: int = 19
-    __ai_tools_col: int = 20
-    __ai_summary_col: int = 21
-    __ai_tags_col: int = 22
+    __author_col: int = 11
+    __anki_forum_url_col: int = 12
+    __anki_forum_posts_count_col: int = 13
+    __anki_forum_last_posted_at_col: int = 14
+    __github_url_col: int = 15
+    __stars_col: int = 16
+    __last_commit_col: int = 17
+    __languages_col: int = 18
+    __actions_count_col: int = 19
+    __tests_count_col: int = 20
+    __ai_tools_col: int = 21
+    __ai_summary_col: int = 22
+    __ai_tags_col: int = 23
 
     def __init__(self, workbook: Workbook):
         self.__workbook: Workbook = workbook
@@ -92,6 +93,7 @@ class AddonInfoSheet:
         worksheet.set_column(self.__tests_count_col, self.__tests_count_col, 8)
         worksheet.set_column(self.__ai_tools_col, self.__ai_tools_col, 13)
         worksheet.set_column(self.__ai_declaration_col, self.__ai_declaration_col, 13)
+        worksheet.set_column(self.__author_col, self.__author_col, 12)
         worksheet.set_column(self.__ai_summary_col, self.__ai_summary_col, 80)
         worksheet.set_column(self.__ai_tags_col, self.__ai_tags_col, 40)
 
@@ -102,7 +104,7 @@ class AddonInfoSheet:
 
         worksheet.merge_range(data="Anki Web", cell_format=header_format,
                               first_row=row1, last_row=row1,
-                              first_col=self.__id_col, last_col=self.__ai_declaration_col)
+                              first_col=self.__id_col, last_col=self.__author_col)
         worksheet.write_string(row2, self.__id_col, "ID", header_format)
         worksheet.write_string(row2, self.__name_col, "Title", header_format)
         worksheet.write_string(row2, self.__updated_col, "Updated", header_format)
@@ -126,6 +128,11 @@ class AddonInfoSheet:
                                 "AI tools the author declared building the add-on with, detected in the "
                                 "AnkiWeb page description. Populated even when there is no GitHub repo. "
                                 "Blank = no declaration detected, not proof AI was unused.")
+        worksheet.write_string(row2, self.__author_col, "Author", header_format)
+        worksheet.write_comment(row2, self.__author_col,
+                                "Derived author ID: the smallest ID among the add-ons of the same AnkiWeb "
+                                "author. AnkiWeb does not publish author names. "
+                                "Blank = unknown (snapshots collected before authors were tracked).")
 
         worksheet.merge_range(data="Anki Forum", cell_format=header_format,
                               first_row=row1, last_row=row1,
@@ -185,6 +192,8 @@ class AddonInfoSheet:
         worksheet.write_string(row, self.__language_col,
                                LanguageNameFormatter.name_of(addon.page.description_language) or "")
         worksheet.write_string(row, self.__ai_declaration_col, ", ".join(addon.page.ai_declaration_markers))
+        if addon.author:
+            worksheet.write_number(row, self.__author_col, addon.author.author_id)
         worksheet.write_string(row, self.__ai_summary_col, addon.ai.summary if addon.ai and addon.ai.summary else "")
         worksheet.write_string(row, self.__ai_tags_col, ", ".join(addon.ai.tags) if addon.ai and addon.ai.tags else "")
         self.__fill_anki_forum_row_columns(addon, row, worksheet)

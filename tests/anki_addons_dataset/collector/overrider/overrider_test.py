@@ -21,6 +21,12 @@ def test_override_anki_forum_url(overrider: Overrider, note_size_addon_id: Addon
         "https://forums.ankiweb.net/t/hypertts-spirtual-successor-to-awesometts/17143")
 
 
+def test_override_same_author(overrider: Overrider, note_size_addon_id: AddonId):
+    assert overrider.override_same_author(note_size_addon_id) is None
+    overrider.addons_data[AddonId(1)] = {"SameAuthorAs": 2}
+    assert overrider.override_same_author(AddonId(1)) == AddonId(2)
+
+
 def test_is_excluded_github_repo(overrider: Overrider):
     assert overrider.is_excluded_github_repo(URL("https://github.com/ankitects/anki")) is True
     assert overrider.is_excluded_github_repo(URL("https://github.com/ankitects/anki/issues")) is True

@@ -168,6 +168,7 @@ class AddonPage:
     description_language_confidence: Optional[float] = None
     description_html: Optional[HtmlStr] = None
     description_pre_wrap: bool = False
+    other_items_count: Optional[int] = None
 
     @property
     def contact_author_url(self) -> Optional[URL]:
@@ -200,6 +201,12 @@ class AiTagDefinition:
     description: str
 
 
+@dataclass(frozen=True)
+class AuthorInfo:
+    author_id: AddonId
+    addon_ids: list[AddonId]
+
+
 @dataclass
 class AddonInfo:
     header: AddonHeader
@@ -207,6 +214,7 @@ class AddonInfo:
     github: Optional[GithubInfo]
     forum: Optional[AnkiForumInfo]
     ai: Optional[AiInfo] = None
+    author: Optional[AuthorInfo] = None
 
 
 AddonInfos = NewType("AddonInfos", list[AddonInfo])
@@ -218,6 +226,7 @@ class Aggregation:
     addon_with_github_number: int
     addon_with_anki_forum_page_number: int
     addon_with_unit_tests_number: int
+    author_number: int
 
 
 @dataclass

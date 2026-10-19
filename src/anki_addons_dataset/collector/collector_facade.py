@@ -24,7 +24,9 @@ from anki_addons_dataset.collector.ankiweb.addon_page_downloader import AddonPag
 from anki_addons_dataset.collector.ankiweb.addon_page_parser import AddonPageParser
 from anki_addons_dataset.collector.ankiweb.addons_page_downloader import AddonsPageDownloader
 from anki_addons_dataset.collector.ankiweb.ankiweb_service import AnkiWebService
+from anki_addons_dataset.collector.ankiweb.author_page_downloader import AuthorPageDownloader
 from anki_addons_dataset.collector.ankiweb.page_downloader import PageDownloader
+from anki_addons_dataset.collector.author_resolver import AuthorResolver
 from anki_addons_dataset.collector.dataset_metadata import DatasetMetadata
 from anki_addons_dataset.collector.github.github_enricher import GithubEnricher
 from anki_addons_dataset.collector.github.github_repo_selector import GithubRepoSelector
@@ -175,7 +177,9 @@ class CollectorFacade:
         addons_page_downloader: AddonsPageDownloader = AddonsPageDownloader(page_downloader, snapshot_dir, offline)
         addon_page_downloader: AddonPageDownloader = AddonPageDownloader(
             page_downloader, snapshot_dir, addon_page_parser, offline)
-        ankiweb_service: AnkiWebService = AnkiWebService(addons_page_downloader, addon_page_downloader)
+        author_page_downloader: AuthorPageDownloader = AuthorPageDownloader(page_downloader, snapshot_dir, offline)
+        ankiweb_service: AnkiWebService = AnkiWebService(addons_page_downloader, addon_page_downloader,
+                                                         author_page_downloader)
         github_rest_client: GithubRestClient = GithubRestClient(offline, self.__config.github.token_file)
         github_service: GithubService = GithubService(snapshot_dir, github_rest_client, prev_snapshot_dir, offline)
         discourse_client: DiscourseClient = DiscourseClient(host="https://forums.ankiweb.net",
@@ -188,5 +192,5 @@ class CollectorFacade:
         max_addons: Optional[int] = SampleCollector(snapshot_dir).effective_addons(
             self.__config.sample.addons) if offline else self.__config.sample.addons
         addon_infos_collector: AddonInfosCollector = AddonInfosCollector(
-            ankiweb_service, github_enricher, anki_forum_enricher, max_addons)
+            ankiweb_service, github_enricher, anki_forum_enricher, AuthorResolver(overrider), max_addons)
         return addon_infos_collector.collect_addons()

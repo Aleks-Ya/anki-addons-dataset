@@ -13,5 +13,6 @@ class Aggregator:
                                                       if addon.forum and addon.forum.anki_forum_url])
         addon_with_unit_tests_number: int = len([addon for addon in addon_infos
                                                  if addon.github.tests_count and addon.github.tests_count > 0])
+        author_number: int = len({addon.author.author_id for addon in addon_infos if addon.author})
         return Aggregation(addon_number, addon_with_github_number, addon_with_anki_forum_page_number,
-                           addon_with_unit_tests_number)
+                           addon_with_unit_tests_number, author_number)

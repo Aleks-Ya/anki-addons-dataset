@@ -30,6 +30,7 @@ def test_export_addon_infos(snapshot_dir: SnapshotDir, addon_infos: AddonInfos,
                          'description_language_confidence': None,
                          'description_html': '<p>Sample addon <b>description</b> for full text search</p>',
                          'description_pre_wrap': True,
+                         'other_items_count': 2,
                          'anki_version': '25.09.2~',
                          'anki_point_version': 250902,
                          'anki_version_kind': 'tested',
@@ -76,7 +77,8 @@ def test_export_addon_infos(snapshot_dir: SnapshotDir, addon_infos: AddonInfos,
                       'posts_count': 42},
             'ai': {'summary': 'Shows the size of the collection and of individual notes.',
                    'model': 'test-model',
-                   'tags': ['statistics']}
+                   'tags': ['statistics']},
+            'author': {'id': 1188705668, 'addon_count': 3}
         }]
     )
     pdt.assert_frame_equal(act_df, exp_df)
@@ -87,7 +89,8 @@ def test_export_aggregation(snapshot_dir: SnapshotDir, dataset_snapshot_metadata
     aggregation: Aggregation = Aggregation(addon_number=5,
                                            addon_with_github_number=4,
                                            addon_with_anki_forum_page_number=3,
-                                           addon_with_unit_tests_number=2)
+                                           addon_with_unit_tests_number=2,
+                                           author_number=1)
     final_dir: Path = snapshot_dir.get_final_dir()
     exporter: ParquetExporter = ParquetExporter(final_dir)
     exporter.export_aggregation(aggregation, dataset_snapshot_metadata, raw_metadata)
@@ -98,7 +101,8 @@ def test_export_aggregation(snapshot_dir: SnapshotDir, dataset_snapshot_metadata
         [{'addon_number': 5,
           'addon_with_github_number': 4,
           'addon_with_anki_forum_page_number': 3,
-          'addon_with_unit_tests_number': 2}]
+          'addon_with_unit_tests_number': 2,
+          'author_number': 1}]
     )
     pdt.assert_frame_equal(act_df, exp_df)
 

@@ -1,3 +1,4 @@
+import copy
 import logging
 from logging import Logger
 from threading import Lock
@@ -51,5 +52,4 @@ class AiEnricher(Enricher):
                  tags: Optional[list[AiTag]]) -> AddonInfo:
         if summary is None and tags is None:
             return addon_info
-        return AddonInfo(addon_info.header, addon_info.page, addon_info.github, addon_info.forum,
-                         AiInfo(summary, self.__model, tags))
+        return copy.replace(addon_info, ai=AiInfo(summary, self.__model, tags))
