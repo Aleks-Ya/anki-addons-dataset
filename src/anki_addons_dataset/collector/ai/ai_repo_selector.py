@@ -111,7 +111,7 @@ class AiRepoSelector:
         github_link: Optional[GitHubLink] = UrlParser.parse_github_url(URL(f"https://github.com/{answer}"))
         answered_repo: Optional[GithubRepo] = github_link.repo if github_link is not None else None
         for candidate in candidates:
-            if candidate.github_repo == answered_repo:
+            if answered_repo is not None and candidate.github_repo.get_id().lower() == answered_repo.get_id():
                 return AiRepoAnswer(candidate.github_repo)
         log.debug(f"Unknown AI repo answer dropped: {ai_response!r}")
         return None

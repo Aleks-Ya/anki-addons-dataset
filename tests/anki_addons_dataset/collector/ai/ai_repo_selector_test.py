@@ -80,5 +80,12 @@ def test_unknown_answer_is_dropped(response: str) -> None:
     assert __select(response) is None
 
 
+def test_answer_matches_a_mixed_case_candidate() -> None:
+    mixed_case_repo: GithubRepo = GithubRepo(GithubUserName("Author"), GithubRepoName("My-Addon"))
+    provider: RecordingAiProvider = RecordingAiProvider(AiResponseText("Author/My-Addon"))
+    candidates: list[GithubInfo] = [GithubInfo([], mixed_case_repo, [], 3, None, None, None)]
+    assert AiRepoSelector(provider).select(__addon_info(), candidates) == AiRepoAnswer(mixed_case_repo)
+
+
 def test_missing_answer() -> None:
     assert __select(None) is None
