@@ -7,8 +7,8 @@ disable-model-invocation: true
 
 # release
 
-Automate README-DEV.md → "Release a new version of this repository" → **step 3. Increment version** and
-**step 4. Create a GitHub release**. This is the natural follow-on to `/push`.
+Automate README-DEV.md → "Release a new version of this repository" → **step 3. Increment the version
+and create a GitHub release**. This is the natural follow-on to `/push`.
 
 Offer the next versions, bump to the one the user picks, push the release tag, create the GitHub release
 (which triggers PyPI publishing), watch the publish workflow to green, and verify the released version is
