@@ -106,10 +106,9 @@ Snapshot dates, ways to run a release or the working source, and sample runs: [d
     3. Push changes: `git push`
     4. Review GitHub Actions: https://github.com/Aleks-Ya/anki-addons-dataset/actions
     5. Review Sonar Qube report: https://sonarcloud.io/summary/overall?id=Aleks-Ya_anki-addons-dataset&branch=main
-3. Increment version:
-    1. Show the next versions: `uv run bump-my-version show-bump`
-    2. Switch dev version to RELEASE (`0.1.1.dev0` -> `0.1.1`): `uv run bump-my-version bump release --tag`
-    3. Switch the RELEASE version to the next dev (`0.1.1` -> `0.2.0.dev0`): `uv run bump-my-version bump minor`
+3. Increment version (skill `/release`):
+    1. Choose the next version from the latest release tag (`v2.3.0`): patch `2.3.1`, minor `2.4.0` or major `3.0.0`
+    2. Bump to it and tag it: `uv run bump-my-version bump --new-version 2.4.0 --tag`
 4. Create a GitHub release (skill `/release`):
     1. Push branch and tags: `git push origin HEAD --tags`
     2. Create a release from the tag: https://github.com/Aleks-Ya/anki-addons-dataset/releases

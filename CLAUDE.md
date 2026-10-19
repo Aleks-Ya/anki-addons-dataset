@@ -56,9 +56,8 @@ uv sync
 # Upgrade all dependencies (refreshes uv.lock)
 ./uv_update.sh
 
-# Version bumping
-uv run bump-my-version bump release --tag   # dev → release (1.3.0.dev0 → 1.3.0)
-uv run bump-my-version bump minor            # release → next dev (1.3.0 → 1.4.0.dev0)
+# Version bumping (the /release skill offers patch/minor/major and runs it)
+uv run bump-my-version bump --new-version 2.4.0 --tag   # commit the new version and tag v2.4.0
 git push origin HEAD --tags
 ```
 
