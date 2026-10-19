@@ -54,4 +54,5 @@ class GithubRepoSelector:
     @staticmethod
     def __with_source(github_info: GithubInfo, repo_source: GithubRepoSource) -> GithubInfo:
         log.debug(f"Selected GitHub repo {github_info.github_repo.get_id()} by {repo_source}")
-        return dataclasses.replace(github_info, repo_source=repo_source)
+        selected: GithubInfo = dataclasses.replace(github_info, repo_source=repo_source)
+        return selected

@@ -18,6 +18,7 @@ class AiRepoAnswer:
 
 class AiRepoSelector:
     __none_answer: str = "none"
+    __missing_value: str = "None."
     __readme_max_chars: int = 2000
     __instructions: AiInstructions = AiInstructions(dedent("""
         You are identifying the GitHub repository that holds the source code of an addon for the Anki flashcard application.
@@ -57,7 +58,7 @@ class AiRepoSelector:
             </candidates>
             """).format(title=addon_info.header.title,
                         description=addon_info.page.description or 'No description provided.',
-                        contact_author_url=addon_info.page.contact_author_url or 'None.',
+                        contact_author_url=addon_info.page.contact_author_url or self.__missing_value,
                         candidates=candidate_blocks))
         ai_response: Optional[AiResponseText] = self.__ai_provider.response(prompt, self.__instructions)
         if ai_response is None:
@@ -81,9 +82,9 @@ class AiRepoSelector:
             </readme>
             </candidate>
             """).strip().format(repo_id=repo.get_id(),
-                                link_texts="; ".join(self.__link_texts(addon_info, repo)) or 'None.',
-                                repo_description=candidate.repo_description or 'None.',
-                                homepage=candidate.homepage or 'None.',
+                                link_texts="; ".join(self.__link_texts(addon_info, repo)) or self.__missing_value,
+                                repo_description=candidate.repo_description or self.__missing_value,
+                                homepage=candidate.homepage or self.__missing_value,
                                 stars=candidate.stars,
                                 archived="yes" if candidate.archived else "no",
                                 primary_language=candidate.primary_language or 'Unknown.',
