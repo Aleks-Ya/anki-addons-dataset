@@ -158,14 +158,22 @@ uv python install "$PYMIN"
 Then run the pinned check:
 
 ```bash
-uvx --refresh -p "$PYMIN" "anki-addons-dataset@<version>" info 2>&1 | grep "Version: <version>$" \
-  || { echo "FAILED: uvx did not run <version>"; exit 1; }
+OK=
+for i in $(seq 1 10); do
+  uvx --refresh -p "$PYMIN" "anki-addons-dataset@<version>" info 2>&1 | grep "Version: <version>$" && { OK=1; break; }
+  echo "attempt $i: <version> not resolvable yet"; sleep 20
+done
+[ -n "$OK" ] || { echo "FAILED: uvx did not run <version>"; exit 1; }
 ```
 
 `--refresh` bypasses uvx's cache so it fetches the newly published version; `@<version>` pins the release
 and `-p "$PYMIN"` picks an interpreter that release's `requires-python` accepts — without them, uv picks
 an interpreter first and silently falls back to an older release. The `grep` makes the app's own `info`
 output the pass condition, so the step cannot succeed on the wrong version.
+
+The loop is needed because a `200` from the JSON endpoint (6a) does not mean uv can resolve the version
+yet: the simple index uv reads lags behind it, and the first attempt can fail with "there is no version of
+anki-addons-dataset==<version>". Retry for a few minutes before reporting a failure.
 
 ### 6c. Check the bare command users actually type
 
@@ -175,8 +183,11 @@ to it. uvx selects an interpreter first and then the newest release compatible w
 version:
 
 ```bash
-uvx anki-addons-dataset info 2>&1 | grep -E '^.*Version: ' | head -1
+uvx --refresh anki-addons-dataset info 2>&1 | grep -E 'Version: |Python: ' | head -2
 ```
+
+`--refresh` is required here too: without it uvx reuses its cached environment and reports whatever
+version it last ran (e.g. the previous release), not what a fresh install would resolve to.
 
 This step is **informational — never fail the release on it.** If the reported version is not
 `<version>`, say so explicitly in the final report, name the cause (compare the release's
