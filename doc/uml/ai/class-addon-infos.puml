@@ -15,6 +15,7 @@ class AddonInfo <<dataclass>> {
   forum : Optional[AnkiForumInfo]
   ai : Optional[AiInfo]
   author : Optional[AuthorInfo]
+  forked_from : list[ForkRelation]
 }
 
 class AddonHeader <<dataclass>> {
@@ -78,6 +79,7 @@ class GithubInfo <<dataclass>> {
   dependencies : list[DependencyName]
   readme : Optional[GithubReadme]
   ai_tooling_markers : list[str]
+  fork_source : Optional[GithubRepo]
 }
 
 class AddonManifest <<dataclass>> {
@@ -121,11 +123,17 @@ class AnkiForumInfo <<dataclass>> {
 class AiInfo <<dataclass>> {
   summary : Optional[AiSummary]
   model : Optional[AiModel]
+  fork_labels : dict[AddonId, AiForkLabel]
 }
 
 class AuthorInfo <<frozen dataclass>> {
   author_id : AddonId
   addon_ids : list[AddonId]
+}
+
+class ForkRelation <<frozen dataclass>> {
+  addon_id : AddonId
+  evidence : ForkEvidence
 }
 
 AddonInfos "1" o-- "*" AddonInfo
@@ -136,6 +144,7 @@ AddonInfo o-- "0..1" GithubInfo
 AddonInfo o-- "0..1" AnkiForumInfo
 AddonInfo o-- "0..1" AiInfo
 AddonInfo o-- "0..1" AuthorInfo
+AddonInfo "1" o-- "*" ForkRelation
 
 AddonPage "1" o-- "*" AddonBranch
 AddonPage "1" o-- "*" PageLink

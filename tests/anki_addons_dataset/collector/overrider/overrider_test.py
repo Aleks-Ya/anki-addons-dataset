@@ -27,6 +27,16 @@ def test_override_same_author(overrider: Overrider, note_size_addon_id: AddonId)
     assert overrider.override_same_author(AddonId(1)) == AddonId(2)
 
 
+def test_override_fork_of(overrider: Overrider, note_size_addon_id: AddonId):
+    assert overrider.override_fork_of(note_size_addon_id) is None
+    overrider.addons_data[AddonId(1)] = {"ForkOf": 2}
+    overrider.addons_data[AddonId(3)] = {"ForkOf": [4, 5]}
+    overrider.addons_data[AddonId(6)] = {"ForkOf": []}
+    assert overrider.override_fork_of(AddonId(1)) == [AddonId(2)]
+    assert overrider.override_fork_of(AddonId(3)) == [AddonId(4), AddonId(5)]
+    assert overrider.override_fork_of(AddonId(6)) == []
+
+
 def test_is_excluded_github_repo(overrider: Overrider):
     assert overrider.is_excluded_github_repo(URL("https://github.com/ankitects/anki")) is True
     assert overrider.is_excluded_github_repo(URL("https://github.com/ankitects/anki/issues")) is True

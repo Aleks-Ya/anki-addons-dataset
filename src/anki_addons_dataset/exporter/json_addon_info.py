@@ -3,7 +3,7 @@ from typing import Optional
 
 from anki_addons_dataset.common.anki_version import AnkiVersionCodec
 from anki_addons_dataset.common.data_types import AddonInfos, AddonInfo, AddonDescription, GithubInfo, AddonManifest, \
-    AnkiPointVersion, HtmlStr
+    AnkiPointVersion, HtmlStr, AddonId
 
 
 @dataclass
@@ -68,6 +68,7 @@ class GitHub:
     readme: Optional[str]
     ai_tooling_markers: list[str]
     repo_source: Optional[str]
+    fork_source: Optional[str]
 
 
 @dataclass
@@ -90,6 +91,12 @@ class Ai:
 class Author:
     id: int
     addon_count: int
+
+
+@dataclass
+class ForkedFrom:
+    id: int
+    evidence: str
 
 
 @dataclass
@@ -134,12 +141,15 @@ class Details:
     forum: Optional[Forum]
     ai: Optional[Ai]
     author: Optional[Author]
+    forked_from: list[ForkedFrom]
+    forks: list[int]
 
 
 class JsonAddonInfo:
     @staticmethod
     def addon_infos_to_json(addon_infos: AddonInfos) -> list[Details]:
         json_list: list[Details] = []
+        forks: dict[AddonId, list[int]] = JsonAddonInfo.__forks(addon_infos)
         for addon in addon_infos:
             github: Optional[GitHub] = JsonAddonInfo.__github(addon)
             forum: Optional[Forum] = JsonAddonInfo.__forum(addon)
@@ -152,10 +162,20 @@ class JsonAddonInfo:
                                         list(addon.page.ai_declaration_markers), addon.page.description_language,
                                         addon.page.description_language_confidence, addon.page.description_html,
                                         addon.page.description_pre_wrap, addon.page.other_items_count)
+            forked_from: list[ForkedFrom] = [ForkedFrom(relation.addon_id, str(relation.evidence))
+                                             for relation in addon.forked_from]
             json_obj: Details = Details(addon.header.id, anki_web, github, forum, JsonAddonInfo.__ai(addon),
-                                        JsonAddonInfo.__author(addon))
+                                        JsonAddonInfo.__author(addon), forked_from, forks.get(addon.header.id, []))
             json_list.append(json_obj)
         return json_list
+
+    @staticmethod
+    def __forks(addon_infos: AddonInfos) -> dict[AddonId, list[int]]:
+        forks: dict[AddonId, list[int]] = {}
+        for addon in sorted(addon_infos, key=lambda addon_info: addon_info.header.id):
+            for relation in addon.forked_from:
+                forks.setdefault(relation.addon_id, []).append(addon.header.id)
+        return forks
 
     @staticmethod
     def __anki_web_links(addon: AddonInfo) -> list[AnkiWebLink]:
@@ -181,7 +201,8 @@ class JsonAddonInfo:
                       list(github.topics), github.repo_description, github.homepage, github.archived, pushed_at_str,
                       created_at_str, github.primary_language, language_bytes, manifest,
                       list(github.dependencies), github.readme, list(github.ai_tooling_markers),
-                      str(github.repo_source) if github.repo_source else None)
+                      str(github.repo_source) if github.repo_source else None,
+                      github.fork_source.get_id() if github.fork_source else None)
 
     @staticmethod
     def __manifest(manifest: Optional[AddonManifest]) -> Optional[Manifest]:

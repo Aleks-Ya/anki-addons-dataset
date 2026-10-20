@@ -11,7 +11,7 @@ from anki_addons_dataset.common.data_types import AddonInfo, AddonInfos, AddonHe
     GithubUserName, GithubRepoName, LanguageName, LanguageCode, TopicSlug, TopicId, LastPostedAt, PostsCount, \
     ScriptVersion, AddonRating, UpdateDate, AddonTitle, AddonDescription, AddonManifest, SpdxLicense, Topic, \
     DependencyName, GithubReadme, AiInfo, AiSummary, AiModel, AiTag, AnkiPointVersion, AnkiVersionKind, \
-    PageLink, PageLinkSection, GithubRepoSource, AuthorInfo
+    PageLink, PageLinkSection, GithubRepoSource, AuthorInfo, AiForkLabel, ForkEvidence, ForkRelation
 
 
 class JsonHelper:
@@ -49,7 +49,12 @@ class JsonHelper:
             forum=JsonHelper.__anki_forum_info_from_dict(data["forum"]),
             ai=JsonHelper.__ai_info_from_dict(data.get("ai")),  # get(): dumps written before the 'ai' step have none
             author=JsonHelper.__author_info_from_dict(data.get("author")),
+            forked_from=[JsonHelper.__fork_relation_from_dict(relation) for relation in data.get("forked_from", [])],
         )
+
+    @staticmethod
+    def __fork_relation_from_dict(data: dict[str, Any]) -> ForkRelation:
+        return ForkRelation(addon_id=AddonId(data["addon_id"]), evidence=ForkEvidence(data["evidence"]))
 
     @staticmethod
     def __ai_info_from_dict(data: Optional[dict[str, Any]]) -> Optional[AiInfo]:
@@ -62,6 +67,8 @@ class JsonHelper:
             summary=AiSummary(summary) if summary is not None else None,
             model=AiModel(model) if model is not None else None,
             tags=[AiTag(tag) for tag in tags] if tags is not None else None,
+            fork_labels={AddonId(int(addon_id)): AiForkLabel(label)
+                         for addon_id, label in data.get("fork_labels", {}).items()},
         )
 
     @staticmethod
@@ -165,6 +172,7 @@ class JsonHelper:
             readme=GithubReadme(readme) if readme is not None else None,
             ai_tooling_markers=list(data.get("ai_tooling_markers", [])),
             repo_source=GithubRepoSource(repo_source) if repo_source is not None else None,
+            fork_source=JsonHelper.__github_repo_from_dict(data.get("fork_source")),
         )
 
     @staticmethod

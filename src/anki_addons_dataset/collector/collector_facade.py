@@ -11,6 +11,7 @@ from anki_addons_dataset.collector.aggregator import Aggregator
 from anki_addons_dataset.collector.ai.ai_cache_index import AiCacheIndex
 from anki_addons_dataset.collector.ai.ai_cache_stats import AiCacheStats
 from anki_addons_dataset.collector.ai.ai_enricher import AiEnricher
+from anki_addons_dataset.collector.ai.ai_fork_classifier import AiForkClassifier
 from anki_addons_dataset.collector.ai.ai_provider import AiProvider
 from anki_addons_dataset.collector.ai.ai_provider_factory import AiProviderFactory
 from anki_addons_dataset.collector.ai.ai_repo_selector import AiRepoSelector
@@ -28,6 +29,7 @@ from anki_addons_dataset.collector.ankiweb.author_page_downloader import AuthorP
 from anki_addons_dataset.collector.ankiweb.page_downloader import PageDownloader
 from anki_addons_dataset.collector.author_resolver import AuthorResolver
 from anki_addons_dataset.collector.dataset_metadata import DatasetMetadata
+from anki_addons_dataset.collector.fork_resolver import ForkResolver
 from anki_addons_dataset.collector.github.github_enricher import GithubEnricher
 from anki_addons_dataset.collector.github.github_repo_selector import GithubRepoSelector
 from anki_addons_dataset.collector.github.github_rest_client import GithubRestClient
@@ -112,10 +114,11 @@ class CollectorFacade:
         ai_provider: CachedAiProvider = self.__ai_provider(snapshot_dir, True)
         addon_infos: AddonInfos = self.__collect(snapshot_dir, True, ai_provider=ai_provider)
         addon_infos = self.__ai_enrich(addon_infos, ai_provider)
+        addon_infos = ForkResolver(Overrider(snapshot_dir)).resolve(addon_infos)
         cache_miss_count: int = ai_provider.get_cache_stats().miss_count
         if cache_miss_count:
-            log.warning(f"{cache_miss_count} AI answers (repo choices, summaries or tags) are missing from the cache. "
-                        f"Run the 'ai' operation to fill the cache.")
+            log.warning(f"{cache_miss_count} AI answers (repo choices, summaries, tags or fork labels) are missing "
+                        f"from the cache. Run the 'ai' operation to fill the cache.")
         JsonHelper.write_addon_infos_dump(addon_infos, script_version, snapshot_dir.get_addon_infos_dump())
         log.info(f"===== Parsed snapshot for {snapshot_date} =====\n")
 
@@ -154,8 +157,10 @@ class CollectorFacade:
     def __ai_enrich(self, addon_infos: AddonInfos, ai_provider: CachedAiProvider) -> AddonInfos:
         ai_summarizer: AiSummarizer = AiSummarizer(ai_provider, self.__config.ai.readme_max_chars)
         ai_tagger: AiTagger = AiTagger(ai_provider, self.__config.ai.readme_max_chars)
-        ai_enricher: AiEnricher = AiEnricher(ai_summarizer, ai_tagger, ai_provider.get_model())
-        log.info(f"Summarizing and tagging {len(addon_infos)} addons")
+        ai_fork_classifier: AiForkClassifier = AiForkClassifier(
+            ai_provider, {addon_info.header.id: addon_info.header.title for addon_info in addon_infos})
+        ai_enricher: AiEnricher = AiEnricher(ai_summarizer, ai_tagger, ai_fork_classifier, ai_provider.get_model())
+        log.info(f"Summarizing, tagging and classifying forks of {len(addon_infos)} addons")
         ai_enricher.start()
         for addon_info in addon_infos:
             ai_enricher.download_in_background(addon_info)

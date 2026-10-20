@@ -4,11 +4,12 @@ from logging import Logger
 from threading import Lock
 from typing import Optional
 
+from anki_addons_dataset.collector.ai.ai_fork_classifier import AiForkClassifier
 from anki_addons_dataset.collector.ai.ai_summarizer import AiSummarizer
 from anki_addons_dataset.collector.ai.ai_tagger import AiTagger
 from anki_addons_dataset.collector.enricher import Enricher
 from anki_addons_dataset.common.data_types import AddonId, AddonInfo, AddonInfos, AiInfo, AiModel, AiSummary, \
-    AiTag, GithubReadme
+    AiTag, GithubReadme, AiForkLabel
 
 log: Logger = logging.getLogger(__name__)
 
@@ -17,12 +18,15 @@ class AiEnricher(Enricher):
     __name: str = "Ai"
     __pool_size: int = 50
 
-    def __init__(self, ai_summarizer: AiSummarizer, ai_tagger: AiTagger, model: AiModel):
+    def __init__(self, ai_summarizer: AiSummarizer, ai_tagger: AiTagger, ai_fork_classifier: AiForkClassifier,
+                 model: AiModel):
         super().__init__(name=self.__name, pool_size=self.__pool_size)
         self.__ai_summarizer: AiSummarizer = ai_summarizer
         self.__ai_tagger: AiTagger = ai_tagger
+        self.__ai_fork_classifier: AiForkClassifier = ai_fork_classifier
         self.__model: AiModel = model
-        self.__results: dict[AddonId, tuple[Optional[AiSummary], Optional[list[AiTag]]]] = {}
+        self.__results: dict[AddonId, tuple[Optional[AiSummary], Optional[list[AiTag]],
+                                            Optional[dict[AddonId, AiForkLabel]]]] = {}
         self.__lock: Lock = Lock()
 
     def enrich(self, addon_infos: AddonInfos) -> AddonInfos:
@@ -41,15 +45,19 @@ class AiEnricher(Enricher):
                 addon_info.header.title, addon_info.page.description, readme)
         except Exception as e:
             raise RuntimeError(f"Cannot tag addon: {addon_info.header.id}") from e
+        try:
+            fork_labels: Optional[dict[AddonId, AiForkLabel]] = self.__ai_fork_classifier.classify(addon_info)
+        except Exception as e:
+            raise RuntimeError(f"Cannot classify forks of addon: {addon_info.header.id}") from e
         with self.__lock:
-            self.__results[addon_info.header.id] = (summary, tags)
+            self.__results[addon_info.header.id] = (summary, tags, fork_labels)
 
     def _done(self) -> int:
         with self.__lock:
             return len(self.__results)
 
-    def __enrich(self, addon_info: AddonInfo, summary: Optional[AiSummary],
-                 tags: Optional[list[AiTag]]) -> AddonInfo:
-        if summary is None and tags is None:
+    def __enrich(self, addon_info: AddonInfo, summary: Optional[AiSummary], tags: Optional[list[AiTag]],
+                 fork_labels: Optional[dict[AddonId, AiForkLabel]]) -> AddonInfo:
+        if summary is None and tags is None and not fork_labels:
             return addon_info
-        return copy.replace(addon_info, ai=AiInfo(summary, self.__model, tags))
+        return copy.replace(addon_info, ai=AiInfo(summary, self.__model, tags, fork_labels or {}))

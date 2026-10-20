@@ -12,7 +12,7 @@ from anki_addons_dataset.collector.github.github_rest_client import GithubRestCl
 from anki_addons_dataset.collector.github.github_service import GithubService
 from anki_addons_dataset.collector.github.handler.repo_info_repo_handler import GithubRepoMeta
 from anki_addons_dataset.common.data_types import AddonManifest, DependencyName, GithubRepo, LanguageName, SnapshotDate, \
-    SpdxLicense, Topic
+    SpdxLicense, Topic, GithubRepoName, GithubUserName
 from anki_addons_dataset.common.working_dir import SnapshotDir, WorkingDir
 
 
@@ -117,6 +117,22 @@ def test_get_repo_info_200(github_service: GithubService, github_rest_client: Gi
                                   topics=[Topic("anki"), Topic("flashcards")], repo_description="An addon",
                                   homepage="https://example.com", archived=False,
                                   pushed_at=datetime(2023, 3, 16, 10, 0, 0), created_at=datetime(2020, 1, 1, 9, 0, 0))
+
+
+def test_get_repo_info_reads_the_fork_source(github_service: GithubService, github_rest_client: GithubRestClient,
+                                             github_repo: GithubRepo):
+    github_rest_client.get_from_url = __mock_content(
+        """{"fork":true,"parent":{"name":"mid","owner":{"login":"middle"}},
+        "source":{"name":"Pokemanki","owner":{"login":"origin"}}}""")
+    assert github_service.get_repo_info(github_repo).fork_source == GithubRepo(GithubUserName("origin"),
+                                                                              GithubRepoName("Pokemanki"))
+
+
+def test_get_repo_info_ignores_the_source_of_a_non_fork(github_service: GithubService,
+                                                        github_rest_client: GithubRestClient, github_repo: GithubRepo):
+    github_rest_client.get_from_url = __mock_content(
+        """{"fork":false,"source":{"name":"r","owner":{"login":"u"}}}""")
+    assert github_service.get_repo_info(github_repo).fork_source is None
 
 
 def test_get_repo_info_reuses_stars_info_cache(github_service: GithubService, github_rest_client: GithubRestClient,

@@ -69,7 +69,8 @@ def test_export_addon_infos(snapshot_dir: SnapshotDir, addon_infos: AddonInfos,
                        'manifest': None,
                        'dependencies': [],
                        'readme': None,
-                       'ai_tooling_markers': ['claude-code', 'cursor'], 'repo_source': None},
+                       'ai_tooling_markers': ['claude-code', 'cursor'], 'repo_source': None,
+                                    'fork_source': None},
             'forum': {'anki_forum_url': 'https://forums.ankiweb.net/t/note-size-addon-support/46001',
                       'topic_slug': 'note-size-addon-support',
                       'topic_id': 46001,
@@ -78,7 +79,9 @@ def test_export_addon_infos(snapshot_dir: SnapshotDir, addon_infos: AddonInfos,
             'ai': {'summary': 'Shows the size of the collection and of individual notes.',
                    'model': 'test-model',
                    'tags': ['statistics']},
-            'author': {'id': 1188705668, 'addon_count': 3}
+            'author': {'id': 1188705668, 'addon_count': 3},
+                         'forked_from': [],
+                         'forks': []
         }]
     )
     pdt.assert_frame_equal(act_df, exp_df)

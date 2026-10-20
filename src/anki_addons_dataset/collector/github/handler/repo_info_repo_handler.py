@@ -3,7 +3,7 @@ from datetime import datetime
 from typing import Any, Optional
 
 from anki_addons_dataset.collector.github.handler.repo_handler import RepoHandler
-from anki_addons_dataset.common.data_types import SpdxLicense, Topic, URL
+from anki_addons_dataset.common.data_types import GithubRepo, GithubRepoName, GithubUserName, SpdxLicense, Topic, URL
 
 
 @dataclass
@@ -19,6 +19,7 @@ class GithubRepoMeta:
     archived: Optional[bool] = None
     pushed_at: Optional[datetime] = None
     created_at: Optional[datetime] = None
+    fork_source: Optional[GithubRepo] = None
 
 
 class RepoInfoRepoHandler(RepoHandler):
@@ -47,6 +48,7 @@ class RepoInfoRepoHandler(RepoHandler):
             archived=content_obj.get("archived"),
             pushed_at=self.__parse_date(content_obj.get("pushed_at")),
             created_at=self.__parse_date(content_obj.get("created_at")),
+            fork_source=self.__parse_fork_source(content_obj),
         )
 
     def _prepare_stage_dict(self, return_value: GithubRepoMeta) -> dict[str, Any]:
@@ -61,10 +63,21 @@ class RepoInfoRepoHandler(RepoHandler):
             "archived": return_value.archived,
             "pushed_at": return_value.pushed_at,
             "created_at": return_value.created_at,
+            "fork_source": return_value.fork_source.get_id() if return_value.fork_source else None,
         }
 
     def get_not_found_return_value(self) -> GithubRepoMeta:
         return GithubRepoMeta()
+
+    @staticmethod
+    def __parse_fork_source(content_obj: dict[str, Any]) -> Optional[GithubRepo]:
+        source: Optional[dict[str, Any]] = content_obj.get("source")
+        if not content_obj.get("fork") or not source:
+            return None
+        owner: dict[str, Any] = source.get("owner") or {}
+        if not owner.get("login") or not source.get("name"):
+            return None
+        return GithubRepo(GithubUserName(owner["login"]), GithubRepoName(source["name"]))
 
     @staticmethod
     def __parse_date(value: Optional[str]) -> Optional[datetime]:

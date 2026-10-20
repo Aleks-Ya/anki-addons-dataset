@@ -472,6 +472,12 @@
                   "most_linked",
                   null
                 ]
+              },
+              "fork_source": {
+                "type": [
+                  "string",
+                  "null"
+                ]
               }
             }
           }
@@ -557,6 +563,36 @@
           "addon_count": {
             "type": "integer"
           }
+        }
+      },
+      "forked_from": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "id",
+            "evidence"
+          ],
+          "properties": {
+            "id": {
+              "type": "integer"
+            },
+            "evidence": {
+              "type": "string",
+              "enum": [
+                "github_fork",
+                "ai",
+                "override"
+              ]
+            }
+          }
+        }
+      },
+      "forks": {
+        "type": "array",
+        "items": {
+          "type": "integer"
         }
       }
     }

@@ -5,12 +5,14 @@ from typing import Optional
 import pytest
 
 from anki_addons_dataset.collector.ai.ai_enricher import AiEnricher
+from anki_addons_dataset.collector.ai.ai_fork_classifier import AiForkClassifier
 from anki_addons_dataset.collector.ai.ai_provider import AiProvider, AiPrompt, AiResponseText, AiInstructions
 from anki_addons_dataset.collector.ai.ai_summarizer import AiSummarizer
 from anki_addons_dataset.collector.ai.ai_tagger import AiTagger
 from anki_addons_dataset.collector.ai.cached_ai_provider import CachedAiProvider
 from anki_addons_dataset.collector.ai.no_ai_provider import NoAiProvider
-from anki_addons_dataset.common.data_types import AddonId, AddonInfo, AddonInfos, AiModel, GithubReadme
+from anki_addons_dataset.common.data_types import AddonId, AddonInfo, AddonInfos, AiModel, GithubReadme, AiForkLabel, \
+    AddonTitle, PageLink, PageLinkSection, URL
 
 MODEL: AiModel = AiModel("test-model")
 
@@ -45,7 +47,7 @@ class FailingAiProvider(AiProvider):
 
 def __enricher(ai_provider: AiProvider) -> AiEnricher:
     return AiEnricher(AiSummarizer(ai_provider, readme_max_chars=8000),
-                      AiTagger(ai_provider, readme_max_chars=8000), MODEL)
+                      AiTagger(ai_provider, readme_max_chars=8000), AiForkClassifier(ai_provider, {}), MODEL)
 
 
 def __enrich(ai_provider: AiProvider, addon_infos: AddonInfos) -> AddonInfos:
@@ -136,6 +138,44 @@ def test_failed_tag_request_names_the_addon(addon_info: AddonInfo) -> None:
     enricher: AiEnricher = __enricher(TagFailingAiProvider())
 
     with pytest.raises(RuntimeError, match=f"Cannot tag addon: {addon_info.header.id}") as exc_info:
+        enricher._download(addon_info)
+
+    assert exc_info.value.__cause__ is error
+
+
+def test_fork_labels_are_added(addon_info: AddonInfo) -> None:
+    addon_info.ai = None
+    addon_info.page.links = [PageLink(URL("https://ankiweb.net/shared/info/10"), PageLinkSection.DESCRIPTION)]
+    provider: StubAiProvider = StubAiProvider(summary=None, tags=AiResponseText("10 fork_of"))
+    enricher: AiEnricher = AiEnricher(AiSummarizer(provider, readme_max_chars=8000),
+                                      AiTagger(provider, readme_max_chars=8000),
+                                      AiForkClassifier(provider, {AddonId(10): AddonTitle("Original")}), MODEL)
+
+    enricher.start()
+    enricher.download_in_background(addon_info)
+    enricher.wait_download_finish()
+    enriched: AddonInfos = enricher.enrich(AddonInfos([addon_info]))
+
+    assert enriched[0].ai.fork_labels == {AddonId(10): AiForkLabel.FORK_OF}
+    assert len(provider.prompts) == 3
+
+
+def test_failed_fork_request_names_the_addon(addon_info: AddonInfo) -> None:
+    error: ValueError = ValueError("Content Exists Risk")
+    addon_info.page.links = [PageLink(URL("https://ankiweb.net/shared/info/10"), PageLinkSection.DESCRIPTION)]
+
+    class ForkFailingAiProvider(StubAiProvider):
+        def response(self, prompt: AiPrompt, instructions: Optional[AiInstructions] = None) -> Optional[AiResponseText]:
+            if "<linked_addons>" in prompt:
+                raise error
+            return super().response(prompt, instructions)
+
+    provider: ForkFailingAiProvider = ForkFailingAiProvider()
+    enricher: AiEnricher = AiEnricher(AiSummarizer(provider, readme_max_chars=8000),
+                                      AiTagger(provider, readme_max_chars=8000),
+                                      AiForkClassifier(provider, {AddonId(10): AddonTitle("Original")}), MODEL)
+
+    with pytest.raises(RuntimeError, match=f"Cannot classify forks of addon: {addon_info.header.id}") as exc_info:
         enricher._download(addon_info)
 
     assert exc_info.value.__cause__ is error

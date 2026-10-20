@@ -57,6 +57,18 @@ class GithubRepoSource(StrEnum):
     MOST_LINKED = "most_linked"
 
 
+class AiForkLabel(StrEnum):
+    FORK_OF = "fork_of"
+    BASED_ON_IDEA = "based_on_idea"
+    OTHER = "other"
+
+
+class ForkEvidence(StrEnum):
+    GITHUB_FORK = "github_fork"
+    AI = "ai"
+    OVERRIDE = "override"
+
+
 @dataclass
 class AddonHeader:
     id: AddonId
@@ -135,6 +147,7 @@ class GithubInfo:
     readme: Optional[GithubReadme] = None
     ai_tooling_markers: list[str] = field(default_factory=list)
     repo_source: Optional[GithubRepoSource] = None
+    fork_source: Optional[GithubRepo] = None
 
 
 @dataclass
@@ -192,6 +205,7 @@ class AiInfo:
     summary: Optional[AiSummary] = None
     model: Optional[AiModel] = None
     tags: Optional[list[AiTag]] = None
+    fork_labels: dict[AddonId, AiForkLabel] = field(default_factory=dict)
 
 
 @dataclass
@@ -207,6 +221,12 @@ class AuthorInfo:
     addon_ids: list[AddonId]
 
 
+@dataclass(frozen=True)
+class ForkRelation:
+    addon_id: AddonId
+    evidence: ForkEvidence
+
+
 @dataclass
 class AddonInfo:
     header: AddonHeader
@@ -215,6 +235,7 @@ class AddonInfo:
     forum: Optional[AnkiForumInfo]
     ai: Optional[AiInfo] = None
     author: Optional[AuthorInfo] = None
+    forked_from: list[ForkRelation] = field(default_factory=list)
 
 
 AddonInfos = NewType("AddonInfos", list[AddonInfo])
