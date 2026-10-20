@@ -113,6 +113,7 @@ Snapshot dates, ways to run a release or the working source, and sample runs: [d
     4. Create a release from the tag: https://github.com/Aleks-Ya/anki-addons-dataset/releases
     5. Wait for GitHub Actions to finish publishing to PyPI: https://github.com/Aleks-Ya/anki-addons-dataset/actions
     6. Verify the version: `uvx --refresh anki-addons-dataset info`
+    7. Bump to the next development version and push: `uv run bump-my-version bump patch && git push`
 
 Publishing to PyPI: [doc/pypi.md](doc/pypi.md).
 

@@ -1,6 +1,6 @@
 ---
 name: release
-description: Bump the version (offering the next major, minor and patch versions to choose from), then create the GitHub release and see it published — push the release tag, create a GitHub release with auto-generated notes, wait for the PyPI publish workflow, and verify the released version with uvx. Use when the user says "release", "/release", or asks to create/publish the GitHub release.
+description: Bump the version (offering the next major, minor and patch versions to choose from), then create the GitHub release and see it published — push the release tag, create a GitHub release with auto-generated notes, wait for the PyPI publish workflow, verify the released version with uvx, and bump `main` to the next development version. Use when the user says "release", "/release", or asks to create/publish the GitHub release.
 allowed-tools: Bash(git *) Bash(gh *) Bash(uv *) Bash(uvx *) Bash(curl *) Bash(python3 *) Bash(grep *)
 disable-model-invocation: true
 ---
@@ -11,8 +11,10 @@ Automate README-DEV.md → "Release a new version of this repository" → **step
 and create a GitHub release**. This is the natural follow-on to `/push`.
 
 Offer the next versions, bump to the one the user picks, push the release tag, create the GitHub release
-(which triggers PyPI publishing), watch the publish workflow to green, and verify the released version is
-live. Work through the steps in order; stop and report if a step can't be completed.
+(which triggers PyPI publishing), watch the publish workflow to green, verify the released version is
+live, and bump `main` to the next development version. Work through the steps in order; stop and report
+if a step can't be completed — except that once step 4 has created the release, step 7 still runs before
+you report.
 
 ## 1. Preconditions
 
@@ -195,8 +197,26 @@ This step is **informational — never fail the release on it.** If the reported
 (`uvx -p <PYMIN> anki-addons-dataset info`, or pin `anki-addons-dataset@<version>`). A `requires-python`
 bump makes this expected, not a defect — but it must be surfaced, not discovered later.
 
+## 7. Bump to the next development version
+
+Move `main` off the release version so later builds are not mistaken for it (doc/pypi.md: only
+non-`.dev` checkouts build release versions). Do this whenever step 4 created the release, even if step 5
+or 6 failed — the tag is already published either way.
+
+```bash
+uv run bump-my-version bump patch
+cat src/anki_addons_dataset/version.txt
+git push origin HEAD
+```
+
+`bump patch` produces `MAJOR.MINOR.(PATCH+1).dev0` (e.g. `2.4.0` → `2.4.1.dev0`) and commits it without a
+tag (`tag = false`). Patch is always the right default: the next `/release` sets the real version with
+`--new-version`. If the bump fails, report its output. If the push is rejected, **stop and report**. Do
+not force-push on your own initiative.
+
 ## Done
 
 Report the final state: the bumped version, the pushed tag, the release URL, the publish-workflow result, the verified pinned
-`uvx` version, and what the bare `uvx anki-addons-dataset info` resolves to (with the cause if it is not
-the new release) — or the first step that failed and why.
+`uvx` version, what the bare `uvx anki-addons-dataset info` resolves to (with the cause if it is not
+the new release), and the development version `main` now holds and whether it was pushed — or the first
+step that failed and why.
