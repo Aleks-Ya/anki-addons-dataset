@@ -15,7 +15,7 @@ class AiForkClassifier:
     __addon_url: re.Pattern[str] = re.compile(r'^https?://(?:www\.)?ankiweb\.net/shared/info/(\d+)(?:[/?#].*)?$')
     __readme_addon_url: re.Pattern[str] = re.compile(r'https?://(?:www\.)?ankiweb\.net/shared/info/(\d+)')
     __readme_markdown_link: re.Pattern[str] = re.compile(
-        r'\[([^\]]+)]\(\s*https?://(?:www\.)?ankiweb\.net/shared/info/(\d+)[^)]*\)')
+        r'\[([^\[\]]+)]\(\s*https?://(?:www\.)?ankiweb\.net/shared/info/(\d+)(?:[^\d)][^)]*)?\)')
     __answer_line: re.Pattern[str] = re.compile(r'(\d+)\W+([a-z_]+)')
     __missing_value: str = "None."
     __instructions: AiInstructions = AiInstructions(dedent("""
