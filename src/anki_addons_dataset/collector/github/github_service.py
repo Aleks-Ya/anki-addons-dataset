@@ -19,6 +19,7 @@ from anki_addons_dataset.collector.github.handler.readme_repo_handler import Rea
 from anki_addons_dataset.collector.github.handler.repo_handler import RepoHandler
 from anki_addons_dataset.collector.github.handler.repo_info_repo_handler import GithubRepoMeta, RepoInfoRepoHandler
 from anki_addons_dataset.collector.github.handler.stars_repo_handler import StarsRepoHandler
+from anki_addons_dataset.collector.github.handler.tag_names_repo_handler import TagNamesRepoHandler
 from anki_addons_dataset.collector.github.handler.tests_repo_handler import TestsRepoHandler
 from anki_addons_dataset.collector.github.handler.tree_entries_repo_handler import TreeEntriesRepoHandler
 from anki_addons_dataset.common.data_types import AddonManifest, DependencyName, GithubReadme, GithubRepo, \
@@ -80,6 +81,10 @@ class GithubService:
     def get_readme(self, repo: GithubRepo) -> Optional[GithubReadme]:
         handler: RepoHandler = ReadmeRepoHandler(repo, self.__raw_dir, self.__stage_dir, self.__prev_raw_dir)
         return self.__get_value(handler)
+
+    def get_tag_names(self, repo: GithubRepo) -> list[str]:
+        handler: RepoHandler = TagNamesRepoHandler(repo, self.__raw_dir, self.__stage_dir, self.__prev_raw_dir)
+        return self.__get_value(handler) or []
 
     def get_manifest(self, repo: GithubRepo) -> Optional[AddonManifest]:
         path: Optional[str] = self.__find_file(repo, "manifest.json")

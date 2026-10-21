@@ -5,7 +5,7 @@ from pandas import DataFrame
 import pandas.testing as pdt
 
 from anki_addons_dataset.common.data_types import Aggregation, AddonInfos, DatasetSnapshotMetadata, RawMetadata, \
-    AiTagDefinition, AiTag, AiTagGroup
+    AiTagDefinition, AiTag, AiTagGroup, AnkiRelease, AnkiVersion, AnkiPointVersion
 from anki_addons_dataset.common.working_dir import SnapshotDir
 from anki_addons_dataset.exporter.parquet.parquet_exporter import ParquetExporter
 
@@ -125,3 +125,30 @@ def test_export_tags(snapshot_dir: SnapshotDir, dataset_snapshot_metadata: Datas
          {'name': 'paid', 'group': 'status', 'description': 'Patreon-only'}]
     )
     pdt.assert_frame_equal(act_df, exp_df)
+
+
+def test_export_anki_versions(snapshot_dir: SnapshotDir, dataset_snapshot_metadata: DatasetSnapshotMetadata,
+                              raw_metadata: RawMetadata):
+    anki_versions: list[AnkiRelease] = [AnkiRelease(AnkiVersion("25.09.2"), AnkiPointVersion(250902)),
+                                        AnkiRelease(AnkiVersion("2.1.66"), AnkiPointVersion(66))]
+    final_dir: Path = snapshot_dir.get_final_dir()
+    exporter: ParquetExporter = ParquetExporter(final_dir)
+    exporter.export_anki_versions(anki_versions, dataset_snapshot_metadata, raw_metadata)
+
+    act_file: Path = final_dir / "parquet" / "anki_versions.parquet"
+    act_df: DataFrame = pandas.read_parquet(act_file)
+    exp_df: DataFrame = DataFrame([{'version': '25.09.2', 'point_version': 250902},
+                                   {'version': '2.1.66', 'point_version': 66}])
+    pdt.assert_frame_equal(act_df, exp_df)
+
+
+def test_export_anki_versions_empty(snapshot_dir: SnapshotDir, dataset_snapshot_metadata: DatasetSnapshotMetadata,
+                                    raw_metadata: RawMetadata):
+    final_dir: Path = snapshot_dir.get_final_dir()
+    exporter: ParquetExporter = ParquetExporter(final_dir)
+    exporter.export_anki_versions([], dataset_snapshot_metadata, raw_metadata)
+
+    act_df: DataFrame = pandas.read_parquet(final_dir / "parquet" / "anki_versions.parquet")
+    assert list(act_df.columns) == ['version', 'point_version']
+    assert str(act_df['point_version'].dtype) == 'int64'
+    assert act_df.empty

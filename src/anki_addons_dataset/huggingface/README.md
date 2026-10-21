@@ -13,6 +13,8 @@ configs:
     data_files: latest/parquet/data.parquet
   - config_name: tags
     data_files: latest/parquet/tags.parquet
+  - config_name: anki_versions
+    data_files: latest/parquet/anki_versions.parquet
 ---
 
 ## Introduction
@@ -53,6 +55,14 @@ set by hand. `forks` is the reverse: the addons that were forked from this one. 
 that neither uses a GitHub fork nor links the original from its description is not found, and `ai` evidence
 may be inaccurate.
 
+The `anki_versions` table (`latest/parquet/anki_versions.parquet`, also in JSON and Excel) lists the stable
+Anki releases from 2.1.0 on, newest first, taken from the tags of the [Anki repository](https://github.com/ankitects/anki)
+when the snapshot was collected (betas and release candidates are left out). `version` is the version as Anki
+writes it (`25.09.2`, `2.1.66`), `point_version` is Anki's integer encoding of it, which sorts correctly
+(`2.1.x` → `x`, `YY.MM.PP` → `YYMMPP`, so `2.1.66` → `66` and `25.09.2` → `250902`), the same encoding as the
+`*_point_version` fields of the addons. Snapshots collected before the table was introduced have no
+`anki_versions` files.
+
 Questions, feedback, bugs: [Support page at Anki Forum](https://forums.ankiweb.net/t/anki-addons-dataset-a-detailed-list-of-addons/63090)
 
 ---
@@ -69,15 +79,18 @@ Folder `latest` contains the most recent day from `history`.
 │   ├── YYYY-MM-DD
 │   │   ├── json
 │   │   │   ├── aggregation.json
+│   │   │   ├── anki_versions.json
 │   │   │   ├── data.json
 │   │   │   ├── schema.json
 │   │   │   └── tags.json
 │   │   ├── parquet
 │   │   │   ├── aggregation.parquet
+│   │   │   ├── anki_versions.parquet
 │   │   │   ├── data.parquet
 │   │   │   └── tags.parquet
 │   │   ├── xlsx
 │   │   │   ├── aggregation.xlsx
+│   │   │   ├── anki_versions.xlsx
 │   │   │   ├── data.xlsx
 │   │   │   └── tags.xlsx
 │   │   ├── metadata.json
@@ -86,15 +99,18 @@ Folder `latest` contains the most recent day from `history`.
 ├── latest
 │   ├── json
 │   │   ├── aggregation.json
+│   │   ├── anki_versions.json
 │   │   ├── data.json
 │   │   ├── schema.json
 │   │   └── tags.json
 │   ├── parquet
 │   │   ├── aggregation.parquet
+│   │   ├── anki_versions.parquet
 │   │   ├── data.parquet
 │   │   └── tags.parquet
 │   ├── xlsx
 │   │   ├── aggregation.xlsx
+│   │   ├── anki_versions.xlsx
 │   │   ├── data.xlsx
 │   │   └── tags.xlsx
 │   └── metadata.json
@@ -118,7 +134,8 @@ JSON schema: `latest/json/schema.json`, `history/YYYY-MM-DD/json/schema.json`
 
 ## Raw and Stage data
 Raw data (collected during the dataset construction) are available in `history/YYYY-MM-DD/raw.zip`.  
-It includes HTML pages of the Addon Catalog, responses of GitHub REST API, responses of Anki Forum API,
+It includes HTML pages of the Addon Catalog, responses of GitHub REST API (including the tag list of the
+Anki repository behind the `anki_versions` table), responses of Anki Forum API,
 and the cached AI answers behind `ai.summary` and `ai.tags` (each keyed by a hash of the prompt, which is not stored).  
 Structure of the raw data:
 ```
@@ -132,6 +149,7 @@ raw-metadata.json
     languages.json
     last-commit.json
     tree.json
+2-github/ankitects/anki/tags.json
 3-forum/topic/{topic_id}.json
 4-ai/ai-cache.jsonl
 ```

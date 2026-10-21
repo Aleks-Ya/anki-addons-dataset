@@ -19,6 +19,7 @@ from anki_addons_dataset.collector.ai.ai_summarizer import AiSummarizer
 from anki_addons_dataset.collector.ai.ai_tag_vocabulary import AiTagVocabulary
 from anki_addons_dataset.collector.ai.ai_tagger import AiTagger
 from anki_addons_dataset.collector.ai.cached_ai_provider import CachedAiProvider
+from anki_addons_dataset.collector.anki_versions_collector import AnkiVersionsCollector
 from anki_addons_dataset.collector.ankiforum.ankiforum_enricher import AnkiForumEnricher
 from anki_addons_dataset.collector.ankiforum.ankiforum_service import AnkiForumService
 from anki_addons_dataset.collector.ankiweb.addon_page_downloader import AddonPageDownloader
@@ -38,7 +39,7 @@ from anki_addons_dataset.collector.overrider.overrider import Overrider
 from anki_addons_dataset.collector.raw_metadata_collector import RawMetadataCollector
 from anki_addons_dataset.collector.sample_collector import SampleCollector
 from anki_addons_dataset.common.data_types import Aggregation, AddonInfos, DatasetSnapshotMetadata, RawMetadata, \
-    SnapshotDate, ReportDate, ScriptVersion, PageLoadTimeout, ElementWaitTimeout
+    AnkiRelease, SnapshotDate, ReportDate, ScriptVersion, PageLoadTimeout, ElementWaitTimeout
 from anki_addons_dataset.common.json_helper import JsonHelper
 from anki_addons_dataset.common.working_dir import SnapshotDir, WorkingDir
 from anki_addons_dataset.config.app_config import AppConfig
@@ -66,6 +67,8 @@ class CollectorFacade:
         if not raw_metadata_collector.read_metadata().start_timestamp:
             raw_metadata_collector.set_script_version(script_version)
             raw_metadata_collector.set_start_datetime(datetime.now().replace(microsecond=0))
+        github_rest_client: GithubRestClient = GithubRestClient(False, self.__config.github.token_file)
+        AnkiVersionsCollector(GithubService(snapshot_dir, github_rest_client, prev_snapshot_dir)).download()
         self.__collect(snapshot_dir, False, prev_snapshot_dir)
         SampleCollector(snapshot_dir).set_addons(self.__config.sample.addons)
         if not raw_metadata_collector.read_metadata().finish_timestamp:
@@ -145,8 +148,12 @@ class CollectorFacade:
         DatasetMetadata.write_snapshot_metadata_to_json(snapshot_dir, dataset_snapshot_metadata)
         raw_metadata_collector: RawMetadataCollector = RawMetadataCollector(snapshot_dir)
         raw_metadata: RawMetadata = raw_metadata_collector.read_metadata()
-        exporter_facade.export_all(addon_infos, aggregation, AiTagVocabulary.definitions(), dataset_snapshot_metadata,
-                                   raw_metadata)
+        anki_versions: Optional[list[AnkiRelease]] = AnkiVersionsCollector.read(snapshot_dir)
+        if anki_versions is None:
+            log.warning(f"No Anki tags in {snapshot_dir.get_raw_dir()}, the anki_versions table is skipped. "
+                        f"Run the 'download -d {snapshot_date}' operation to fetch them.")
+        exporter_facade.export_all(addon_infos, aggregation, AiTagVocabulary.definitions(), anki_versions,
+                                   dataset_snapshot_metadata, raw_metadata)
         log.info(f"===== Reported snapshot for {snapshot_date} =====\n")
 
     def __ai_provider(self, snapshot_dir: SnapshotDir, offline: bool,

@@ -216,6 +216,12 @@ class AiTagDefinition:
 
 
 @dataclass(frozen=True)
+class AnkiRelease:
+    version: AnkiVersion
+    point_version: AnkiPointVersion
+
+
+@dataclass(frozen=True)
 class AuthorInfo:
     author_id: AddonId
     addon_ids: list[AddonId]

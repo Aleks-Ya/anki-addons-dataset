@@ -5,9 +5,10 @@ from logging import Logger
 from xlsxwriter import Workbook
 
 from anki_addons_dataset.common.data_types import Aggregation, AddonInfos, DatasetSnapshotMetadata, RawMetadata, \
-    AiTagDefinition
+    AiTagDefinition, AnkiRelease
 from anki_addons_dataset.exporter.exporter import Exporter
 from anki_addons_dataset.exporter.xlsx.addon_info_sheet import AddonInfoSheet
+from anki_addons_dataset.exporter.xlsx.anki_versions_sheet import AnkiVersionsSheet
 from anki_addons_dataset.exporter.xlsx.aggregation_sheet import AggregationSheet
 from anki_addons_dataset.exporter.xlsx.tags_sheet import TagsSheet
 
@@ -44,5 +45,14 @@ class XlsxExporter(Exporter):
         workbook: Workbook = Workbook(output_file, {"default_format_properties": {"font_name": self.__font}})
         tags_sheet: TagsSheet = TagsSheet(workbook)
         tags_sheet.create_sheet(tags)
+        workbook.close()
+        log.info(f"Write XLSX to file: {output_file}")
+
+    def export_anki_versions(self, anki_versions: list[AnkiRelease], dataset_snapshot_metadata: DatasetSnapshotMetadata,
+                             raw_metadata: RawMetadata) -> None:
+        output_file: Path = self._final_dir / "anki_versions.xlsx"
+        workbook: Workbook = Workbook(output_file, {"default_format_properties": {"font_name": self.__font}})
+        anki_versions_sheet: AnkiVersionsSheet = AnkiVersionsSheet(workbook)
+        anki_versions_sheet.create_sheet(anki_versions)
         workbook.close()
         log.info(f"Write XLSX to file: {output_file}")

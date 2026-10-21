@@ -4,7 +4,7 @@ from typing import Any, Optional
 
 from anki_addons_dataset.common.data_types import Aggregation, AddonInfos, AddonInfo, AnkiForumInfo, PostsCount, \
     DatasetSnapshotMetadata, RawMetadata, AddonManifest, SpdxLicense, Topic, DependencyName, LanguageName, URL, GithubReadme, \
-    AiTagDefinition, AiTag, AiTagGroup, PageLink, PageLinkSection
+    AiTagDefinition, AiTag, AiTagGroup, PageLink, PageLinkSection, AnkiRelease, AnkiVersion, AnkiPointVersion
 from anki_addons_dataset.common.working_dir import SnapshotDir
 from anki_addons_dataset.exporter.json.json_exporter import JsonExporter
 
@@ -315,3 +315,15 @@ def test_export_tags(json_exporter: JsonExporter, snapshot_dir: SnapshotDir,
     act_json: list[dict[str, Any]] = json.loads(act_file.read_text())
     assert act_json == [{'name': 'statistics', 'group': 'function', 'description': 'Graphs'},
                         {'name': 'paid', 'group': 'status', 'description': 'Patreon-only'}]
+
+
+def test_export_anki_versions(json_exporter: JsonExporter, snapshot_dir: SnapshotDir,
+                              dataset_snapshot_metadata: DatasetSnapshotMetadata, raw_metadata: RawMetadata):
+    anki_versions: list[AnkiRelease] = [AnkiRelease(AnkiVersion("25.09.2"), AnkiPointVersion(250902)),
+                                        AnkiRelease(AnkiVersion("2.1.66"), AnkiPointVersion(66))]
+    json_exporter.export_anki_versions(anki_versions, dataset_snapshot_metadata, raw_metadata)
+
+    act_file: Path = snapshot_dir.get_final_dir() / "json" / "anki_versions.json"
+    act_json: list[dict[str, Any]] = json.loads(act_file.read_text())
+    assert act_json == [{'version': '25.09.2', 'point_version': 250902},
+                        {'version': '2.1.66', 'point_version': 66}]

@@ -49,3 +49,30 @@ An addons-list value that fits none of the forms is logged as a warning and beco
 fails the parse. Manifest values are copied as the author wrote them and are often odd (`260000` gives
 "26.00"), so the AnkiWeb branches are the more reliable source. A dump written before these fields existed
 still loads, with the parsed values empty and `unknown`; re-run `parse` to fill them.
+
+## The `anki_versions` table
+Every snapshot publishes the stable Anki releases as `anki_versions.{json,parquet,xlsx}` in `3-final/`
+(published as the `anki_versions` HF config), for consumers that need the list of Anki versions without
+reading addon data, such as the MCP server. Columns: `version` (the tag name, e.g. `25.09.2`, `2.1.66`) and
+`point_version` (`AnkiVersionCodec.to_point`). Rows are newest first.
+
+- **DOWNLOAD** fetches every tag of `ankitects/anki` with one request
+  (`/repos/ankitects/anki/git/matching-refs/tags`, unpaginated) into
+  `1-raw/2-github/ankitects/anki/tags.json` (`TagNamesRepoHandler`, so the ETag reuse of the previous
+  snapshot applies).
+- **REPORT** reads that raw file (`AnkiVersionsCollector.read`) and keeps the stable releases from 2.1.0 on:
+  a tag must be `X.Y` or `X.Y.Z` (betas and release candidates are dropped), and a `2.x` tag must be `2.1.z`
+  (2.0 and older are dropped). REPORT needs no GitHub token, and changing the filter needs only REPORT.
+- A snapshot without the raw file (downloaded before the table existed) gets no `anki_versions` files;
+  REPORT logs a warning. The history is not backfilled: the tag list carries no dates, so today's list
+  would show releases that did not exist yet when an old snapshot was collected.
+
+**Adding the table to an existing snapshot.** DOWNLOAD skips every raw file that already exists, so re-running
+it on the snapshot's date fetches only the missing tag list:
+```bash
+uv run anki-addons-dataset download -d 2026-10-01   # only fetches 1-raw/2-github/ankitects/anki/tags.json
+uv run anki-addons-dataset report -d 2026-10-01     # no parse needed
+uv run anki-addons-dataset bundle upload
+```
+Use the same `--sample-addons` as the original download (none for a published snapshot): DOWNLOAD rewrites
+`1-raw/sample.json`. Do this for the latest snapshot only, for the reason above.

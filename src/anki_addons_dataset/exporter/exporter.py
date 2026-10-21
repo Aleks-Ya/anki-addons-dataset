@@ -2,7 +2,7 @@ from abc import abstractmethod, ABC
 from pathlib import Path
 
 from anki_addons_dataset.common.data_types import Aggregation, AddonInfos, DatasetSnapshotMetadata, RawMetadata, \
-    AiTagDefinition
+    AiTagDefinition, AnkiRelease
 
 
 class Exporter(ABC):
@@ -23,4 +23,9 @@ class Exporter(ABC):
     @abstractmethod
     def export_tags(self, tags: list[AiTagDefinition], dataset_snapshot_metadata: DatasetSnapshotMetadata,
                     raw_metadata: RawMetadata) -> None:
+        ...
+
+    @abstractmethod
+    def export_anki_versions(self, anki_versions: list[AnkiRelease], dataset_snapshot_metadata: DatasetSnapshotMetadata,
+                             raw_metadata: RawMetadata) -> None:
         ...

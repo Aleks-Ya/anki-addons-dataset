@@ -44,6 +44,23 @@ def test_get_languages_409(github_service: GithubService, github_rest_client: Gi
     github_rest_client.get_from_url.assert_called_once()
 
 
+def test_get_tag_names_200(github_service: GithubService, github_rest_client: GithubRestClient,
+                           github_repo: GithubRepo):
+    content: str = """[{"ref":"refs/tags/2.1.66","object":{"sha":"a"}},{"ref":"refs/tags/25.09.2","object":{"sha":"b"}}]"""
+    github_rest_client.get_from_url = __mock_content(content)
+    exp: list[str] = ["2.1.66", "25.09.2"]
+    assert github_service.get_tag_names(github_repo) == exp
+    assert github_service.get_tag_names(github_repo) == exp  # cached
+    github_rest_client.get_from_url.assert_called_once_with(
+        "https://api.github.com/repos/John/app/git/matching-refs/tags", None)
+
+
+def test_get_tag_names_404(github_service: GithubService, github_rest_client: GithubRestClient,
+                           github_repo: GithubRepo):
+    github_rest_client.get_from_url = __mock_content("", status_code=404)
+    assert github_service.get_tag_names(github_repo) == []
+
+
 def test_stars_count_200(github_service: GithubService, github_rest_client: GithubRestClient, github_repo: GithubRepo):
     content: str = """{"stargazers_count":5}"""
     github_rest_client.get_from_url = __mock_content(content)

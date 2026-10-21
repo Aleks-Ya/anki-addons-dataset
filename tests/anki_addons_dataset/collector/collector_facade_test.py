@@ -1,3 +1,4 @@
+import json
 import logging
 from datetime import date
 from pathlib import Path
@@ -41,6 +42,39 @@ def test_report_snapshots_generates_final_from_dump_without_raw(
     assert snapshot_dir.get_metadata_json().exists()
     assert stage_marker.exists()
     assert not snapshot_dir.get_raw_dir().joinpath("1-anki-web").exists()
+
+
+def test_report_snapshots_exports_anki_versions(
+        collector_facade: CollectorFacade, snapshot_dir: SnapshotDir, addon_infos: AddonInfos,
+        script_version: ScriptVersion, report_date: ReportDate):
+    JsonHelper.write_addon_infos_dump(addon_infos, script_version, snapshot_dir.get_addon_infos_dump())
+    tags_file: Path = snapshot_dir.get_raw_dir() / "2-github" / "ankitects" / "anki" / "tags.json"
+    tags_file.parent.mkdir(parents=True)
+    tags_file.write_text('[{"ref": "refs/tags/2.1.66"}, {"ref": "refs/tags/25.09.2"}]')
+
+    collector_facade.report_snapshots(None, report_date)
+
+    final_dir = snapshot_dir.get_final_dir()
+    assert json.loads((final_dir / "json" / "anki_versions.json").read_text()) == [
+        {"version": "25.09.2", "point_version": 250902}, {"version": "2.1.66", "point_version": 66}]
+    assert (final_dir / "parquet" / "anki_versions.parquet").exists()
+    assert (final_dir / "xlsx" / "anki_versions.xlsx").exists()
+
+
+def test_report_snapshots_without_anki_tags_skips_anki_versions(
+        collector_facade: CollectorFacade, snapshot_dir: SnapshotDir, addon_infos: AddonInfos,
+        script_version: ScriptVersion, report_date: ReportDate, caplog: pytest.LogCaptureFixture):
+    JsonHelper.write_addon_infos_dump(addon_infos, script_version, snapshot_dir.get_addon_infos_dump())
+
+    with caplog.at_level(logging.WARNING):
+        collector_facade.report_snapshots(None, report_date)
+
+    final_dir = snapshot_dir.get_final_dir()
+    assert (final_dir / "json" / "tags.json").exists()
+    assert not (final_dir / "json" / "anki_versions.json").exists()
+    assert not (final_dir / "parquet" / "anki_versions.parquet").exists()
+    assert not (final_dir / "xlsx" / "anki_versions.xlsx").exists()
+    assert "the anki_versions table is skipped" in caplog.text
 
 
 def test_report_snapshots_missing_dump_raises(
