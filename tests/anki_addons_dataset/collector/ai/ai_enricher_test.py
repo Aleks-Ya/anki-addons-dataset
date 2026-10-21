@@ -47,7 +47,7 @@ class FailingAiProvider(AiProvider):
 
 def __enricher(ai_provider: AiProvider) -> AiEnricher:
     return AiEnricher(AiSummarizer(ai_provider, readme_max_chars=8000),
-                      AiTagger(ai_provider, readme_max_chars=8000), AiForkClassifier(ai_provider, {}), MODEL)
+                      AiTagger(ai_provider, readme_max_chars=8000), AiForkClassifier(ai_provider, {}, 8000), MODEL)
 
 
 def __enrich(ai_provider: AiProvider, addon_infos: AddonInfos) -> AddonInfos:
@@ -149,7 +149,7 @@ def test_fork_labels_are_added(addon_info: AddonInfo) -> None:
     provider: StubAiProvider = StubAiProvider(summary=None, tags=AiResponseText("10 fork_of"))
     enricher: AiEnricher = AiEnricher(AiSummarizer(provider, readme_max_chars=8000),
                                       AiTagger(provider, readme_max_chars=8000),
-                                      AiForkClassifier(provider, {AddonId(10): AddonTitle("Original")}), MODEL)
+                                      AiForkClassifier(provider, {AddonId(10): AddonTitle("Original")}, 8000), MODEL)
 
     enricher.start()
     enricher.download_in_background(addon_info)
@@ -173,7 +173,7 @@ def test_failed_fork_request_names_the_addon(addon_info: AddonInfo) -> None:
     provider: ForkFailingAiProvider = ForkFailingAiProvider()
     enricher: AiEnricher = AiEnricher(AiSummarizer(provider, readme_max_chars=8000),
                                       AiTagger(provider, readme_max_chars=8000),
-                                      AiForkClassifier(provider, {AddonId(10): AddonTitle("Original")}), MODEL)
+                                      AiForkClassifier(provider, {AddonId(10): AddonTitle("Original")}, 8000), MODEL)
 
     with pytest.raises(RuntimeError, match=f"Cannot classify forks of addon: {addon_info.header.id}") as exc_info:
         enricher._download(addon_info)

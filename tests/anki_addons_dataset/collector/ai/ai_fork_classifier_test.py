@@ -3,8 +3,8 @@ from typing import Optional
 
 from anki_addons_dataset.collector.ai.ai_fork_classifier import AiForkClassifier
 from anki_addons_dataset.collector.ai.ai_provider import AiProvider, AiPrompt, AiResponseText, AiInstructions
-from anki_addons_dataset.common.data_types import AddonId, AddonInfo, AddonTitle, AiForkLabel, AiModel, PageLink, \
-    PageLinkSection, URL
+from anki_addons_dataset.common.data_types import AddonId, AddonInfo, AddonTitle, AiForkLabel, AiModel, GithubReadme, \
+    PageLink, PageLinkSection, URL
 
 CATALOG: dict[AddonId, AddonTitle] = {AddonId(10): AddonTitle("Original Addon"),
                                       AddonId(20): AddonTitle("Unrelated Addon"),
@@ -27,8 +27,17 @@ class RecordingAiProvider(AiProvider):
         return None
 
 
+def __classifier(provider: AiProvider, readme_max_chars: int = 8000) -> AiForkClassifier:
+    return AiForkClassifier(provider, CATALOG, readme_max_chars=readme_max_chars)
+
+
 def __with_links(addon_info: AddonInfo, *links: PageLink) -> AddonInfo:
     return replace(addon_info, page=replace(addon_info.page, links=list(links)))
+
+
+def __with_readme(addon_info: AddonInfo, readme: str) -> AddonInfo:
+    assert addon_info.github is not None
+    return replace(addon_info, github=replace(addon_info.github, readme=GithubReadme(readme)))
 
 
 def __link(url: str, *texts: str, section: PageLinkSection = PageLinkSection.DESCRIPTION) -> PageLink:
@@ -42,7 +51,7 @@ def test_prompt_lists_the_linked_catalog_addons(addon_info: AddonInfo) -> None:
                                     __link("https://ankiweb.net/shared/info/10?ref=x", "original add-on"),
                                     __link("https://ankiweb.net/shared/info/10", "here"))
 
-    labels: Optional[dict[AddonId, AiForkLabel]] = AiForkClassifier(provider, CATALOG).classify(addon)
+    labels: Optional[dict[AddonId, AiForkLabel]] = __classifier(provider).classify(addon)
 
     assert labels == {AddonId(10): AiForkLabel.FORK_OF, AddonId(20): AiForkLabel.OTHER}
     prompt: AiPrompt = provider.prompts[0]
@@ -61,7 +70,7 @@ def test_own_author_group_unknown_and_contact_links_are_skipped(addon_info: Addo
                                     __link("https://ankiweb.net/shared/info/10", section=PageLinkSection.CONTACT_AUTHOR),
                                     __link("https://ankiweb.net/shared/decks/10", "a deck"))
 
-    labels: Optional[dict[AddonId, AiForkLabel]] = AiForkClassifier(provider, CATALOG).classify(addon)
+    labels: Optional[dict[AddonId, AiForkLabel]] = __classifier(provider).classify(addon)
 
     assert labels == {}
     assert provider.prompts == []
@@ -72,7 +81,7 @@ def test_unknown_ids_and_labels_are_dropped(addon_info: AddonInfo) -> None:
     addon: AddonInfo = __with_links(addon_info, __link("https://ankiweb.net/shared/info/10"),
                                     __link("https://ankiweb.net/shared/info/20"))
 
-    labels: Optional[dict[AddonId, AiForkLabel]] = AiForkClassifier(provider, CATALOG).classify(addon)
+    labels: Optional[dict[AddonId, AiForkLabel]] = __classifier(provider).classify(addon)
 
     assert labels == {AddonId(10): AiForkLabel.FORK_OF}
 
@@ -81,4 +90,50 @@ def test_missing_answer_is_none(addon_info: AddonInfo) -> None:
     provider: RecordingAiProvider = RecordingAiProvider(None)
     addon: AddonInfo = __with_links(addon_info, __link("https://ankiweb.net/shared/info/10"))
 
-    assert AiForkClassifier(provider, CATALOG).classify(addon) is None
+    assert __classifier(provider).classify(addon) is None
+
+
+def test_readme_links_are_candidates_and_the_readme_is_in_the_prompt(addon_info: AddonInfo) -> None:
+    provider: RecordingAiProvider = RecordingAiProvider()
+    addon: AddonInfo = __with_readme(addon_info, "Fork of [the original](https://ankiweb.net/shared/info/10).\n"
+                                                 "See also https://ankiweb.net/shared/info/20")
+
+    labels: Optional[dict[AddonId, AiForkLabel]] = __classifier(provider).classify(addon)
+
+    assert labels == {AddonId(10): AiForkLabel.FORK_OF, AddonId(20): AiForkLabel.OTHER}
+    prompt: AiPrompt = provider.prompts[0]
+    assert "<addon_github_readme>\nFork of [the original]" in prompt
+    assert '<linked_addon id="10">\n<title>Original Addon</title>\n<link_texts>the original</link_texts>' in prompt
+    assert '<linked_addon id="20">\n<title>Unrelated Addon</title>\n<link_texts>None.</link_texts>' in prompt
+
+
+def test_description_and_readme_links_to_one_addon_are_merged(addon_info: AddonInfo) -> None:
+    provider: RecordingAiProvider = RecordingAiProvider()
+    addon: AddonInfo = __with_readme(__with_links(addon_info, __link("https://ankiweb.net/shared/info/10", "here")),
+                                     "Based on [Original](https://ankiweb.net/shared/info/10) "
+                                     "and [here](https://ankiweb.net/shared/info/10)")
+
+    __classifier(provider).classify(addon)
+
+    assert provider.prompts[0].count("<linked_addon ") == 1
+    assert "<link_texts>here; Original</link_texts>" in provider.prompts[0]
+
+
+def test_own_author_group_and_unknown_readme_links_are_skipped(addon_info: AddonInfo) -> None:
+    provider: RecordingAiProvider = RecordingAiProvider()
+    addon: AddonInfo = __with_readme(addon_info, "[mine](https://ankiweb.net/shared/info/1312127886) "
+                                                 "https://ankiweb.net/shared/info/99")
+
+    assert __classifier(provider).classify(addon) == {}
+    assert provider.prompts == []
+
+
+def test_link_past_the_readme_limit_is_still_a_candidate(addon_info: AddonInfo) -> None:
+    provider: RecordingAiProvider = RecordingAiProvider()
+    addon: AddonInfo = __with_readme(addon_info, "x" * 20 + " https://ankiweb.net/shared/info/10")
+
+    labels: Optional[dict[AddonId, AiForkLabel]] = __classifier(provider, readme_max_chars=10).classify(addon)
+
+    assert labels == {AddonId(10): AiForkLabel.FORK_OF}
+    assert "x" * 10 + "\n\n(README truncated.)" in provider.prompts[0]
+    assert "x" * 11 not in provider.prompts[0]

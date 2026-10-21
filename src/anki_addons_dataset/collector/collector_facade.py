@@ -158,7 +158,8 @@ class CollectorFacade:
         ai_summarizer: AiSummarizer = AiSummarizer(ai_provider, self.__config.ai.readme_max_chars)
         ai_tagger: AiTagger = AiTagger(ai_provider, self.__config.ai.readme_max_chars)
         ai_fork_classifier: AiForkClassifier = AiForkClassifier(
-            ai_provider, {addon_info.header.id: addon_info.header.title for addon_info in addon_infos})
+            ai_provider, {addon_info.header.id: addon_info.header.title for addon_info in addon_infos},
+            self.__config.ai.readme_max_chars)
         ai_enricher: AiEnricher = AiEnricher(ai_summarizer, ai_tagger, ai_fork_classifier, ai_provider.get_model())
         log.info(f"Summarizing, tagging and classifying forks of {len(addon_infos)} addons")
         ai_enricher.start()

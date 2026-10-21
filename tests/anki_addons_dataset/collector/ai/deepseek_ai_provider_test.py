@@ -91,7 +91,7 @@ def test_peak_hours_abort_the_whole_enrichment(addon_info: AddonInfo, tmp_path: 
     cache_file: Path = tmp_path / "4-ai" / "ai-cache.jsonl"
     provider: CachedAiProvider = CachedAiProvider(__provider(), cache_file)
     enricher: AiEnricher = AiEnricher(AiSummarizer(provider, readme_max_chars=8000),
-                                      AiTagger(provider, readme_max_chars=8000), AiForkClassifier(provider, {}),
+                                      AiTagger(provider, readme_max_chars=8000), AiForkClassifier(provider, {}, 8000),
                                       MODEL)
 
     with pytest.raises(RuntimeError, match=f"Cannot summarize addon: {addon_info.header.id}") as exc_info:
