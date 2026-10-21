@@ -4,6 +4,7 @@ from logging import Logger
 from textwrap import dedent
 from typing import Optional
 
+from anki_addons_dataset.collector.ai.ai_addon_material import AiAddonMaterial
 from anki_addons_dataset.collector.ai.ai_provider import AiProvider, AiPrompt, AiResponseText, AiInstructions
 from anki_addons_dataset.common.data_types import AddonId, AddonInfo, AddonTitle, AiForkLabel, GithubReadme, \
     PageLinkSection
@@ -41,7 +42,7 @@ class AiForkClassifier:
     def __init__(self, ai_provider: AiProvider, catalog_titles: dict[AddonId, AddonTitle], readme_max_chars: int):
         self.__ai_provider: AiProvider = ai_provider
         self.__catalog_titles: dict[AddonId, AddonTitle] = catalog_titles
-        self.__readme_max_chars: int = readme_max_chars
+        self.__material: AiAddonMaterial = AiAddonMaterial(readme_max_chars)
 
     def classify(self, addon_info: AddonInfo) -> Optional[dict[AddonId, AiForkLabel]]:
         readme: Optional[GithubReadme] = addon_info.github.readme if addon_info.github else None
@@ -50,24 +51,12 @@ class AiForkClassifier:
             return {}
         linked_blocks: str = "\n\n".join(self.__format_linked(addon_id, texts) for addon_id, texts in linked.items())
         prompt: AiPrompt = AiPrompt(dedent("""
-            <addon_title>
-            {title}
-            </addon_title>
-
-            <addon_description>
-            {description}
-            </addon_description>
-
-            <addon_github_readme>
-            {readme}
-            </addon_github_readme>
+            {material}
 
             <linked_addons>
             {linked}
             </linked_addons>
-            """).format(title=addon_info.header.title,
-                        description=addon_info.page.description or 'No description provided.',
-                        readme=self.__truncate(readme) or 'No README provided.',
+            """).format(material=self.__material.format(addon_info.header.title, addon_info.page.description, readme),
                         linked=linked_blocks))
         ai_response: Optional[AiResponseText] = self.__ai_provider.response(prompt, self.__instructions)
         if ai_response is None:
@@ -92,11 +81,6 @@ class AiForkClassifier:
             texts: list[str] = linked.setdefault(addon_id, [])
             texts.extend(text for text in link_texts if text and text not in texts)
         return dict(sorted(linked.items()))
-
-    def __truncate(self, github_readme: Optional[GithubReadme]) -> Optional[GithubReadme]:
-        if github_readme is None or len(github_readme) <= self.__readme_max_chars:
-            return github_readme
-        return GithubReadme(f"{github_readme[:self.__readme_max_chars]}\n\n(README truncated.)")
 
     def __format_linked(self, addon_id: AddonId, texts: list[str]) -> str:
         return dedent("""

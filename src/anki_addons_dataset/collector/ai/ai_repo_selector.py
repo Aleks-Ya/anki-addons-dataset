@@ -4,9 +4,10 @@ from logging import Logger
 from textwrap import dedent
 from typing import Optional
 
+from anki_addons_dataset.collector.ai.ai_addon_material import AiAddonMaterial
 from anki_addons_dataset.collector.ai.ai_provider import AiProvider, AiPrompt, AiResponseText, AiInstructions
 from anki_addons_dataset.collector.url_parser import UrlParser
-from anki_addons_dataset.common.data_types import AddonInfo, GithubInfo, GithubRepo, GithubReadme, GitHubLink, URL
+from anki_addons_dataset.common.data_types import AddonInfo, GithubInfo, GithubRepo, GitHubLink, URL
 
 log: Logger = logging.getLogger(__name__)
 
@@ -19,7 +20,7 @@ class AiRepoAnswer:
 class AiRepoSelector:
     __none_answer: str = "none"
     __missing_value: str = "None."
-    __readme_max_chars: int = 2000
+    __material: AiAddonMaterial = AiAddonMaterial(2000)
     __instructions: AiInstructions = AiInstructions(dedent("""
         You are identifying the GitHub repository that holds the source code of an addon for the Anki flashcard application.
 
@@ -89,7 +90,7 @@ class AiRepoSelector:
                                 archived="yes" if candidate.archived else "no",
                                 primary_language=candidate.primary_language or 'Unknown.',
                                 has_manifest=has_manifest,
-                                readme=self.__truncate(candidate.readme) or 'No README provided.')
+                                readme=self.__material.truncate(candidate.readme) or 'No README provided.')
 
     @staticmethod
     def __link_texts(addon_info: AddonInfo, repo: GithubRepo) -> list[str]:
@@ -99,11 +100,6 @@ class AiRepoSelector:
             if github_link is not None and github_link.repo == repo:
                 texts.extend(text for text in link.texts if text not in texts)
         return texts
-
-    def __truncate(self, readme: Optional[GithubReadme]) -> Optional[GithubReadme]:
-        if readme is None or len(readme) <= self.__readme_max_chars:
-            return readme
-        return GithubReadme(f"{readme[:self.__readme_max_chars]}\n\n(README truncated.)")
 
     def __parse_answer(self, ai_response: AiResponseText, candidates: list[GithubInfo]) -> Optional[AiRepoAnswer]:
         answer: str = ai_response.strip().strip("`'\".").strip().lower().removeprefix("https://github.com/")

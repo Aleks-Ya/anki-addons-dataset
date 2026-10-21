@@ -3,6 +3,7 @@ from logging import Logger
 from textwrap import dedent
 from typing import Optional
 
+from anki_addons_dataset.collector.ai.ai_addon_material import AiAddonMaterial
 from anki_addons_dataset.collector.ai.ai_provider import AiProvider, AiPrompt, AiResponseText, AiInstructions
 from anki_addons_dataset.common.data_types import AddonTitle, AddonDescription, GithubReadme, AiSummary
 
@@ -27,32 +28,13 @@ class AiSummarizer:
 
     def __init__(self, ai_provider: AiProvider, readme_max_chars: int):
         self.__ai_provider: AiProvider = ai_provider
-        self.__readme_max_chars: int = readme_max_chars
+        self.__material: AiAddonMaterial = AiAddonMaterial(readme_max_chars)
 
     def summarize(self, title: AddonTitle, addon_description: AddonDescription,
                   github_readme: Optional[GithubReadme]) -> Optional[AiSummary]:
-        readme: Optional[GithubReadme] = self.__truncate(github_readme)
-        prompt: AiPrompt = AiPrompt(dedent(f"""
-            <addon_title>
-            {title}
-            </addon_title>
-
-            <addon_description>
-            {addon_description if addon_description else 'No description provided.'}
-            </addon_description>
-
-            <addon_github_readme>
-            {readme if readme else 'No README provided.'}
-            </addon_github_readme>
-            """))
+        prompt: AiPrompt = AiPrompt(self.__material.format(title, addon_description, github_readme))
         ai_response: Optional[AiResponseText] = self.__ai_provider.response(prompt, self.__instructions)
         if ai_response is None:
             return None
         summary: str = ai_response.strip()
         return AiSummary(summary) if summary else None
-
-    def __truncate(self, github_readme: Optional[GithubReadme]) -> Optional[GithubReadme]:
-        """READMEs run to tens of kilobytes, and a one-sentence summary rarely needs more than the opening."""
-        if github_readme is None or len(github_readme) <= self.__readme_max_chars:
-            return github_readme
-        return GithubReadme(f"{github_readme[:self.__readme_max_chars]}\n\n(README truncated.)")
