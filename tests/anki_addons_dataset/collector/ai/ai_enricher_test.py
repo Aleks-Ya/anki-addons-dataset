@@ -27,7 +27,7 @@ class StubAiProvider(AiProvider):
 
     def response(self, prompt: AiPrompt, instructions: Optional[AiInstructions] = None) -> Optional[AiResponseText]:
         self.prompts.append(prompt)
-        return self.__summary if instructions is None else self.__tags
+        return self.__summary if "You are summarizing" in instructions else self.__tags
 
     def verify_access(self) -> Optional[str]:
         return None
@@ -131,7 +131,7 @@ def test_failed_tag_request_names_the_addon(addon_info: AddonInfo) -> None:
 
     class TagFailingAiProvider(StubAiProvider):
         def response(self, prompt: AiPrompt, instructions: Optional[AiInstructions] = None) -> Optional[AiResponseText]:
-            if instructions is not None:
+            if "<function_tags>" in instructions:
                 raise error
             return super().response(prompt, instructions)
 

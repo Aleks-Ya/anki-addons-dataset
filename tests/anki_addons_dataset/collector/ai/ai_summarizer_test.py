@@ -10,13 +10,29 @@ class RecordingAiProvider(AiProvider):
         super().__init__(AiModel("stub-model"))
         self.__response: Optional[AiResponseText] = response
         self.prompt: Optional[AiPrompt] = None
+        self.instructions: Optional[AiInstructions] = None
 
     def response(self, prompt: AiPrompt, instructions: Optional[AiInstructions] = None) -> Optional[AiResponseText]:
         self.prompt = prompt
+        self.instructions = instructions
         return self.__response
 
     def verify_access(self) -> Optional[str]:
         return None
+
+
+def test_instructions_hold_the_guidelines_and_no_addon_texts() -> None:
+    provider: RecordingAiProvider = RecordingAiProvider()
+    summarizer: AiSummarizer = AiSummarizer(provider, readme_max_chars=8000)
+
+    summarizer.summarize(AddonTitle("Note Size"), AddonDescription("Displays the size of notes."),
+                         GithubReadme("A README."))
+
+    assert "<guidelines>" in provider.instructions
+    assert "<guidelines>" not in provider.prompt
+    for addon_text in ["Note Size", "Displays the size of notes.", "A README."]:
+        assert addon_text not in provider.instructions
+        assert addon_text in provider.prompt
 
 
 def test_prompt_carries_the_addon_texts() -> None:
