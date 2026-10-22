@@ -59,7 +59,8 @@ def test_providers_for_two_models_share_one_cache_file(tmp_path: Path) -> None:
     pro: StubAiProvider = StubAiProvider(AiModel("pro"))
     assert CachedAiProvider(flash, cache_file).response(prompt) == "answer-1 to Question"
     assert CachedAiProvider(pro, cache_file).response(prompt) == "answer-1 to Question"
-    assert flash.call_count == 0 and pro.call_count == 0
+    assert flash.call_count == 0
+    assert pro.call_count == 0
     assert [line["model"] for line in read_lines(cache_file)] == ["flash", "pro"]
 
 
