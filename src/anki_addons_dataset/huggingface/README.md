@@ -47,11 +47,12 @@ an AnkiWeb identifier. It changes when that addon is removed or the author publi
 collected before authors were tracked. `anki_web.other_items_count` is the "N" from the addon page, available
 in every snapshot; it counts shared decks as well as addons.
 
-Abandoned addons are often forked and republished under a new name. `forked_from` lists the addons an addon
-was forked from, each with its `evidence`: `github_fork` when the addon's GitHub repo is a GitHub fork of
+Abandoned addons are often forked and republished under a new name. `forked_from` is the addon an addon was
+forked from, or `null`, with its `evidence`: `github_fork` when the addon's GitHub repo is a GitHub fork of
 another addon's repo (`github.fork_source` holds the root repo), `ai` when a large language model read the
 AnkiWeb description and found that the addon is a modified copy of an addon it links to, or `override` when
-set by hand. `forks` is the reverse: the addons that were forked from this one. Detection is incomplete: a fork
+set by hand. An addon has at most one parent; when GitHub and the AI disagree, GitHub wins. `forks` is the
+reverse: the addons that were forked from this one, any number of them. Detection is incomplete: a fork
 that neither uses a GitHub fork nor links the original from its description is not found, and `ai` evidence
 may be inaccurate.
 

@@ -1,4 +1,5 @@
 import shutil
+from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Optional
 import logging
@@ -11,6 +12,11 @@ from anki_addons_dataset.common.data_types import AddonId, URL, GitHubLink
 from anki_addons_dataset.common.working_dir import SnapshotDir
 
 log: Logger = logging.getLogger(__name__)
+
+
+@dataclass(frozen=True)
+class ForkOverride:
+    parent: Optional[AddonId]
 
 
 class Overrider:
@@ -51,12 +57,12 @@ class Overrider:
                 return AddonId(int(addon_data[self.__same_author_key]))
         return None
 
-    def override_fork_of(self, addon_id: AddonId) -> Optional[list[AddonId]]:
+    def override_fork_of(self, addon_id: AddonId) -> Optional[ForkOverride]:
         if addon_id in self.addons_data:
             addon_data: dict[str, Any] = self.addons_data[addon_id]
             if self.__fork_of_key in addon_data:
                 fork_of: Any = addon_data[self.__fork_of_key]
-                return [AddonId(int(parent_id)) for parent_id in (fork_of if isinstance(fork_of, list) else [fork_of])]
+                return ForkOverride(AddonId(int(fork_of)) if fork_of is not None else None)
         return None
 
     def is_excluded_github_repo(self, url: URL) -> bool:

@@ -566,26 +566,26 @@
         }
       },
       "forked_from": {
-        "type": "array",
-        "items": {
-          "type": "object",
-          "additionalProperties": false,
-          "required": [
-            "id",
-            "evidence"
-          ],
-          "properties": {
-            "id": {
-              "type": "integer"
-            },
-            "evidence": {
-              "type": "string",
-              "enum": [
-                "github_fork",
-                "ai",
-                "override"
-              ]
-            }
+        "type": [
+          "object",
+          "null"
+        ],
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "evidence"
+        ],
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "evidence": {
+            "type": "string",
+            "enum": [
+              "github_fork",
+              "ai",
+              "override"
+            ]
           }
         }
       },

@@ -80,7 +80,7 @@ def test_export_addon_infos(snapshot_dir: SnapshotDir, addon_infos: AddonInfos,
                    'model': 'test-model',
                    'tags': ['statistics']},
             'author': {'id': 1188705668, 'addon_count': 3},
-                         'forked_from': [],
+                         'forked_from': None,
                          'forks': []
         }]
     )

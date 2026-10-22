@@ -11,7 +11,7 @@ from anki_addons_dataset.common.data_types import AddonInfo, AddonInfos, AddonHe
     GithubUserName, GithubRepoName, LanguageName, LanguageCode, TopicSlug, TopicId, LastPostedAt, PostsCount, \
     ScriptVersion, AddonRating, UpdateDate, AddonTitle, AddonDescription, AddonManifest, SpdxLicense, Topic, \
     DependencyName, GithubReadme, AiInfo, AiSummary, AiModel, AiTag, AnkiPointVersion, AnkiVersionKind, \
-    PageLink, PageLinkSection, GithubRepoSource, AuthorInfo, AiForkLabel, ForkEvidence, ForkRelation
+    PageLink, PageLinkSection, GithubRepoSource, AuthorInfo, ForkEvidence, ForkRelation
 
 
 class JsonHelper:
@@ -49,7 +49,7 @@ class JsonHelper:
             forum=JsonHelper.__anki_forum_info_from_dict(data["forum"]),
             ai=JsonHelper.__ai_info_from_dict(data.get("ai")),  # get(): dumps written before the 'ai' step have none
             author=JsonHelper.__author_info_from_dict(data.get("author")),
-            forked_from=[JsonHelper.__fork_relation_from_dict(relation) for relation in data.get("forked_from", [])],
+            forked_from=JsonHelper.__fork_relation_from_dict(data["forked_from"]) if data.get("forked_from") else None,
         )
 
     @staticmethod
@@ -63,12 +63,12 @@ class JsonHelper:
         summary: Optional[str] = data.get("summary")
         model: Optional[str] = data.get("model")
         tags: Optional[list[str]] = data.get("tags")
+        fork_of: Optional[int] = data.get("fork_of")
         return AiInfo(
             summary=AiSummary(summary) if summary is not None else None,
             model=AiModel(model) if model is not None else None,
             tags=[AiTag(tag) for tag in tags] if tags is not None else None,
-            fork_labels={AddonId(int(addon_id)): AiForkLabel(label)
-                         for addon_id, label in data.get("fork_labels", {}).items()},
+            fork_of=AddonId(fork_of) if fork_of is not None else None,
         )
 
     @staticmethod

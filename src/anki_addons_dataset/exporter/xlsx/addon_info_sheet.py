@@ -137,7 +137,7 @@ class AddonInfoSheet:
                                 "Blank = unknown (snapshots collected before authors were tracked).")
         worksheet.write_string(row2, self.__forked_from_col, "Forked from", header_format)
         worksheet.write_comment(row2, self.__forked_from_col,
-                                "IDs of the add-ons this add-on was forked from, detected from GitHub fork "
+                                "ID of the add-on this add-on was forked from, detected from GitHub fork "
                                 "metadata and an AI reading of the AnkiWeb description. "
                                 "Blank = no fork detected, not proof the add-on is original.")
 
@@ -201,8 +201,8 @@ class AddonInfoSheet:
         worksheet.write_string(row, self.__ai_declaration_col, ", ".join(addon.page.ai_declaration_markers))
         if addon.author:
             worksheet.write_number(row, self.__author_col, addon.author.author_id)
-        worksheet.write_string(row, self.__forked_from_col,
-                               ", ".join(str(relation.addon_id) for relation in addon.forked_from))
+        if addon.forked_from is not None:
+            worksheet.write_number(row, self.__forked_from_col, addon.forked_from.addon_id)
         worksheet.write_string(row, self.__ai_summary_col, addon.ai.summary if addon.ai and addon.ai.summary else "")
         worksheet.write_string(row, self.__ai_tags_col, ", ".join(addon.ai.tags) if addon.ai and addon.ai.tags else "")
         self.__fill_anki_forum_row_columns(addon, row, worksheet)

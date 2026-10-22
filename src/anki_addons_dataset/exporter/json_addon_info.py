@@ -141,7 +141,7 @@ class Details:
     forum: Optional[Forum]
     ai: Optional[Ai]
     author: Optional[Author]
-    forked_from: list[ForkedFrom]
+    forked_from: Optional[ForkedFrom]
     forks: list[int]
 
 
@@ -162,8 +162,8 @@ class JsonAddonInfo:
                                         list(addon.page.ai_declaration_markers), addon.page.description_language,
                                         addon.page.description_language_confidence, addon.page.description_html,
                                         addon.page.description_pre_wrap, addon.page.other_items_count)
-            forked_from: list[ForkedFrom] = [ForkedFrom(relation.addon_id, str(relation.evidence))
-                                             for relation in addon.forked_from]
+            forked_from: Optional[ForkedFrom] = ForkedFrom(addon.forked_from.addon_id, str(addon.forked_from.evidence)) \
+                if addon.forked_from is not None else None
             json_obj: Details = Details(addon.header.id, anki_web, github, forum, JsonAddonInfo.__ai(addon),
                                         JsonAddonInfo.__author(addon), forked_from, forks.get(addon.header.id, []))
             json_list.append(json_obj)
@@ -173,8 +173,8 @@ class JsonAddonInfo:
     def __forks(addon_infos: AddonInfos) -> dict[AddonId, list[int]]:
         forks: dict[AddonId, list[int]] = {}
         for addon in sorted(addon_infos, key=lambda addon_info: addon_info.header.id):
-            for relation in addon.forked_from:
-                forks.setdefault(relation.addon_id, []).append(addon.header.id)
+            if addon.forked_from is not None:
+                forks.setdefault(addon.forked_from.addon_id, []).append(addon.header.id)
         return forks
 
     @staticmethod

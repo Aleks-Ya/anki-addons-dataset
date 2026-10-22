@@ -11,8 +11,8 @@ from anki_addons_dataset.collector.ai.ai_summarizer import AiSummarizer
 from anki_addons_dataset.collector.ai.ai_tagger import AiTagger
 from anki_addons_dataset.collector.ai.cached_ai_provider import CachedAiProvider
 from anki_addons_dataset.collector.ai.no_ai_provider import NoAiProvider
-from anki_addons_dataset.common.data_types import AddonId, AddonInfo, AddonInfos, AiModel, GithubReadme, AiForkLabel, \
-    AddonTitle, PageLink, PageLinkSection, URL
+from anki_addons_dataset.common.data_types import AddonId, AddonInfo, AddonInfos, AiModel, GithubReadme, AddonTitle, \
+    PageLink, PageLinkSection, URL
 
 MODEL: AiModel = AiModel("test-model")
 
@@ -143,10 +143,10 @@ def test_failed_tag_request_names_the_addon(addon_info: AddonInfo) -> None:
     assert exc_info.value.__cause__ is error
 
 
-def test_fork_labels_are_added(addon_info: AddonInfo) -> None:
+def test_fork_parent_is_added(addon_info: AddonInfo) -> None:
     addon_info.ai = None
     addon_info.page.links = [PageLink(URL("https://ankiweb.net/shared/info/10"), PageLinkSection.DESCRIPTION)]
-    provider: StubAiProvider = StubAiProvider(summary=None, tags=AiResponseText("10 fork_of"))
+    provider: StubAiProvider = StubAiProvider(summary=None, tags=AiResponseText("10"))
     enricher: AiEnricher = AiEnricher(AiSummarizer(provider, readme_max_chars=8000),
                                       AiTagger(provider, readme_max_chars=8000),
                                       AiForkClassifier(provider, {AddonId(10): AddonTitle("Original")}, 8000), MODEL)
@@ -156,7 +156,7 @@ def test_fork_labels_are_added(addon_info: AddonInfo) -> None:
     enricher.wait_download_finish()
     enriched: AddonInfos = enricher.enrich(AddonInfos([addon_info]))
 
-    assert enriched[0].ai.fork_labels == {AddonId(10): AiForkLabel.FORK_OF}
+    assert enriched[0].ai.fork_of == AddonId(10)
     assert len(provider.prompts) == 3
 
 

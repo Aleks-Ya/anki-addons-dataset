@@ -1,6 +1,6 @@
 from typing import Optional
 
-from anki_addons_dataset.collector.overrider.overrider import Overrider
+from anki_addons_dataset.collector.overrider.overrider import Overrider, ForkOverride
 from anki_addons_dataset.common.data_types import URL, GitHubLink, AddonId, GitHubUser, GithubUserName, GithubRepo, \
     GithubRepoName
 from anki_addons_dataset.common.working_dir import SnapshotDir
@@ -30,11 +30,9 @@ def test_override_same_author(overrider: Overrider, note_size_addon_id: AddonId)
 def test_override_fork_of(overrider: Overrider, note_size_addon_id: AddonId):
     assert overrider.override_fork_of(note_size_addon_id) is None
     overrider.addons_data[AddonId(1)] = {"ForkOf": 2}
-    overrider.addons_data[AddonId(3)] = {"ForkOf": [4, 5]}
-    overrider.addons_data[AddonId(6)] = {"ForkOf": []}
-    assert overrider.override_fork_of(AddonId(1)) == [AddonId(2)]
-    assert overrider.override_fork_of(AddonId(3)) == [AddonId(4), AddonId(5)]
-    assert overrider.override_fork_of(AddonId(6)) == []
+    overrider.addons_data[AddonId(3)] = {"ForkOf": None}
+    assert overrider.override_fork_of(AddonId(1)) == ForkOverride(AddonId(2))
+    assert overrider.override_fork_of(AddonId(3)) == ForkOverride(None)
 
 
 def test_is_excluded_github_repo(overrider: Overrider):

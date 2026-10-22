@@ -57,13 +57,6 @@ class GithubRepoSource(StrEnum):
     MOST_LINKED = "most_linked"
 
 
-class AiForkLabel(StrEnum):
-    FORK_OF = "fork_of"
-    BASED_ON_CODE = "based_on_code"
-    BASED_ON_IDEA = "based_on_idea"
-    OTHER = "other"
-
-
 class ForkEvidence(StrEnum):
     GITHUB_FORK = "github_fork"
     AI = "ai"
@@ -206,7 +199,7 @@ class AiInfo:
     summary: Optional[AiSummary] = None
     model: Optional[AiModel] = None
     tags: Optional[list[AiTag]] = None
-    fork_labels: dict[AddonId, AiForkLabel] = field(default_factory=dict)
+    fork_of: Optional[AddonId] = None
 
 
 @dataclass
@@ -242,7 +235,7 @@ class AddonInfo:
     forum: Optional[AnkiForumInfo]
     ai: Optional[AiInfo] = None
     author: Optional[AuthorInfo] = None
-    forked_from: list[ForkRelation] = field(default_factory=list)
+    forked_from: Optional[ForkRelation] = None
 
 
 AddonInfos = NewType("AddonInfos", list[AddonInfo])

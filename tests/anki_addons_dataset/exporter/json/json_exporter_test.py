@@ -1,10 +1,12 @@
 import json
+from dataclasses import replace
 from pathlib import Path
 from typing import Any, Optional
 
 from anki_addons_dataset.common.data_types import Aggregation, AddonInfos, AddonInfo, AnkiForumInfo, PostsCount, \
     DatasetSnapshotMetadata, RawMetadata, AddonManifest, SpdxLicense, Topic, DependencyName, LanguageName, URL, GithubReadme, \
-    AiTagDefinition, AiTag, AiTagGroup, PageLink, PageLinkSection, AnkiRelease, AnkiVersion, AnkiPointVersion
+    AiTagDefinition, AiTag, AiTagGroup, PageLink, PageLinkSection, AnkiRelease, AnkiVersion, AnkiPointVersion, \
+    AddonId, ForkRelation, ForkEvidence
 from anki_addons_dataset.common.working_dir import SnapshotDir
 from anki_addons_dataset.exporter.json.json_exporter import JsonExporter
 
@@ -75,7 +77,7 @@ def test_export_addon_infos(json_exporter: JsonExporter, snapshot_dir: SnapshotD
                                 'model': 'test-model',
                                 'tags': ['statistics']},
                          'author': {'id': 1188705668, 'addon_count': 3},
-                         'forked_from': [],
+                         'forked_from': None,
                          'forks': []
                          }]
 
@@ -146,7 +148,7 @@ def test_export_addon_infos_empty_forum(json_exporter: JsonExporter, snapshot_di
                                 'model': 'test-model',
                                 'tags': ['statistics']},
                          'author': {'id': 1188705668, 'addon_count': 3},
-                         'forked_from': [],
+                         'forked_from': None,
                          'forks': []}]
 
 
@@ -221,7 +223,7 @@ def test_export_addon_infos_empty_posts_count(json_exporter: JsonExporter, snaps
                                 'model': 'test-model',
                                 'tags': ['statistics']},
                          'author': {'id': 1188705668, 'addon_count': 3},
-                         'forked_from': [],
+                         'forked_from': None,
                          'forks': []}]
 
 
@@ -286,6 +288,26 @@ def test_export_addon_infos_with_enrichment_fields(json_exporter: JsonExporter, 
     assert github["dependencies"] == ["requests"]
     assert github["readme"] == "# NoteSize"
 
+
+
+def test_export_addon_infos_one_parent_with_several_forks(json_exporter: JsonExporter, snapshot_dir: SnapshotDir,
+                                                          addon_info: AddonInfo,
+                                                          dataset_snapshot_metadata: DatasetSnapshotMetadata,
+                                                          raw_metadata: RawMetadata):
+    def addon(addon_id: int, forked_from: Optional[ForkRelation]) -> AddonInfo:
+        return replace(addon_info, header=replace(addon_info.header, id=AddonId(addon_id)), forked_from=forked_from)
+
+    json_exporter.export_addon_infos(AddonInfos([
+        addon(10, None),
+        addon(20, ForkRelation(AddonId(10), ForkEvidence.GITHUB_FORK)),
+        addon(30, ForkRelation(AddonId(10), ForkEvidence.AI))]), dataset_snapshot_metadata, raw_metadata)
+
+    act_file: Path = snapshot_dir.get_final_dir() / "json" / "data.json"
+    act_json: list[dict[str, Any]] = json.loads(act_file.read_text())
+    assert [(item["id"], item["forked_from"], item["forks"]) for item in act_json] == [
+        (10, None, [20, 30]),
+        (20, {"id": 10, "evidence": "github_fork"}, []),
+        (30, {"id": 10, "evidence": "ai"}, [])]
 
 def test_export_aggregation(json_exporter: JsonExporter, snapshot_dir: SnapshotDir,
                             dataset_snapshot_metadata: DatasetSnapshotMetadata, raw_metadata: RawMetadata):

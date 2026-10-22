@@ -10,7 +10,7 @@ from anki_addons_dataset.common.data_types import AddonInfo, AddonInfos, AddonHe
     GithubInfo, GitHubLink, GitHubUser, GithubRepo, AddonId, AnkiVersion, HtmlStr, URL, \
     GithubUserName, GithubRepoName, LanguageName, LanguageCode, ScriptVersion, AddonRating, UpdateDate, AddonTitle, \
     AddonManifest, SpdxLicense, Topic, DependencyName, GithubReadme, AiTag, AnkiVersionKind, \
-    PageLink, PageLinkSection, AiForkLabel, ForkEvidence, ForkRelation
+    PageLink, PageLinkSection, ForkEvidence, ForkRelation
 from anki_addons_dataset.common.json_helper import JsonHelper
 
 
@@ -123,8 +123,8 @@ def test_addon_infos_dump_round_trip_with_enrichment_fields(addon_info: AddonInf
 def test_addon_infos_dump_round_trip_with_fork_fields(addon_info: AddonInfo, script_version: ScriptVersion,
                                                       working_dir_path: Path):
     addon_info.github.fork_source = GithubRepo(GithubUserName("origin"), GithubRepoName("pokemanki"))
-    addon_info.ai.fork_labels = {AddonId(2): AiForkLabel.FORK_OF, AddonId(3): AiForkLabel.BASED_ON_IDEA}
-    addon_info.forked_from = [ForkRelation(AddonId(2), ForkEvidence.GITHUB_FORK)]
+    addon_info.ai.fork_of = AddonId(2)
+    addon_info.forked_from = ForkRelation(AddonId(2), ForkEvidence.GITHUB_FORK)
     addon_infos: AddonInfos = AddonInfos([addon_info])
     dump_file: Path = working_dir_path / "addon-infos.json"
 
