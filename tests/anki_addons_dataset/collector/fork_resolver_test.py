@@ -61,7 +61,7 @@ def test_ai_fork_label_without_github(addon_info: AddonInfo):
     forked_from: dict[int, list[ForkRelation]] = __resolve([
         __addon(addon_info, 10),
         __addon(addon_info, 20, fork_labels={10: AiForkLabel.FORK_OF, 30: AiForkLabel.BASED_ON_IDEA,
-                                             40: AiForkLabel.OTHER})])
+                                             40: AiForkLabel.OTHER, 50: AiForkLabel.BASED_ON_CODE})])
 
     assert forked_from[20] == [ForkRelation(AddonId(10), ForkEvidence.AI)]
 

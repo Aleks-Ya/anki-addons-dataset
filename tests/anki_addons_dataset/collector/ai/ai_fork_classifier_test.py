@@ -59,6 +59,7 @@ def test_prompt_lists_the_linked_catalog_addons(addon_info: AddonInfo) -> None:
     assert '<linked_addon id="10">\n<title>Original Addon</title>\n<link_texts>original add-on; here</link_texts>' in prompt
     assert prompt.index('id="10"') < prompt.index('id="20"')
     assert '<label name="fork_of">' in provider.instructions
+    assert '<label name="based_on_code">' in provider.instructions
 
 
 def test_own_author_group_unknown_and_contact_links_are_skipped(addon_info: AddonInfo) -> None:
@@ -84,6 +85,16 @@ def test_unknown_ids_and_labels_are_dropped(addon_info: AddonInfo) -> None:
     labels: Optional[dict[AddonId, AiForkLabel]] = __classifier(provider).classify(addon)
 
     assert labels == {AddonId(10): AiForkLabel.FORK_OF}
+
+
+def test_based_on_code_label(addon_info: AddonInfo) -> None:
+    provider: RecordingAiProvider = RecordingAiProvider(AiResponseText("10 based_on_code\n20 fork_of"))
+    addon: AddonInfo = __with_links(addon_info, __link("https://ankiweb.net/shared/info/10"),
+                                    __link("https://ankiweb.net/shared/info/20"))
+
+    labels: Optional[dict[AddonId, AiForkLabel]] = __classifier(provider).classify(addon)
+
+    assert labels == {AddonId(10): AiForkLabel.BASED_ON_CODE, AddonId(20): AiForkLabel.FORK_OF}
 
 
 def test_missing_answer_is_none(addon_info: AddonInfo) -> None:

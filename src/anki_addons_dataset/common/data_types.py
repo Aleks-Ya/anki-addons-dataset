@@ -59,6 +59,7 @@ class GithubRepoSource(StrEnum):
 
 class AiForkLabel(StrEnum):
     FORK_OF = "fork_of"
+    BASED_ON_CODE = "based_on_code"
     BASED_ON_IDEA = "based_on_idea"
     OTHER = "other"
 
