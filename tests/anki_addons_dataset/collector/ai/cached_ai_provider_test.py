@@ -49,6 +49,20 @@ def test_miss_then_hit(tmp_path: Path) -> None:
     assert lines[0]["response"] == "answer-1 to What is the capital of France?"
 
 
+def test_providers_for_two_models_share_one_cache_file(tmp_path: Path) -> None:
+    cache_file: Path = tmp_path / "ai-cache.jsonl"
+    prompt: AiPrompt = AiPrompt("Question")
+    CachedAiProvider(StubAiProvider(AiModel("flash")), cache_file).response(prompt)
+    CachedAiProvider(StubAiProvider(AiModel("pro")), cache_file).response(prompt)
+
+    flash: StubAiProvider = StubAiProvider(AiModel("flash"))
+    pro: StubAiProvider = StubAiProvider(AiModel("pro"))
+    assert CachedAiProvider(flash, cache_file).response(prompt) == "answer-1 to Question"
+    assert CachedAiProvider(pro, cache_file).response(prompt) == "answer-1 to Question"
+    assert flash.call_count == 0 and pro.call_count == 0
+    assert [line["model"] for line in read_lines(cache_file)] == ["flash", "pro"]
+
+
 def test_cache_survives_a_restart(tmp_path: Path) -> None:
     cache_file: Path = tmp_path / "ai-cache.jsonl"
     prompt: AiPrompt = AiPrompt("Question")

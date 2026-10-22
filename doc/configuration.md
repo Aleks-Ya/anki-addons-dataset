@@ -14,6 +14,7 @@ ai:
   api_key_file: ~/.config/anki-addons-dataset/deepseek-api-key.txt
   model: deepseek-flash
   readme_max_chars: 8000                 # the README is cut to this length before entering the prompt
+  fork_verify_model: deepseek-v4-pro     # re-asks a fork answer that names a parent; `false` disables it
 huggingface:
   repo_id: Ya-Alex/anki-addons           # the dataset upload targets
   synced_dirs: [history, latest]         # the remote folders upload pushes and prunes

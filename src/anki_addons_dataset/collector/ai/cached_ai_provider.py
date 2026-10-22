@@ -15,13 +15,14 @@ log: Logger = logging.getLogger(__name__)
 
 
 class CachedAiProvider(AiProvider):
+    __write_lock: threading.Lock = threading.Lock()
+
     def __init__(self, ai_provider: AiProvider, cache_file: Path,
                  shared_index: Optional[AiCacheIndex] = None, offline: bool = False):
         super().__init__(ai_provider.get_model())
         self.__ai_provider: AiProvider = ai_provider
         self.__cache_file: Path = cache_file
         self.__offline: bool = offline
-        self.__write_lock: threading.Lock = threading.Lock()
         self.__stats_lock: threading.Lock = threading.Lock()
         self.__shared_index: AiCacheIndex = shared_index if shared_index is not None else AiCacheIndex()
         self.__current: AiCacheIndex = AiCacheIndex.load([cache_file])

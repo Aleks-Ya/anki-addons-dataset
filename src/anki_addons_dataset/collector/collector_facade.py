@@ -97,10 +97,11 @@ class CollectorFacade:
         snapshot_date: SnapshotDate = snapshot_dir.snapshot_dir_to_snapshot_date()
         log.info(f"===== Summarize snapshot for {snapshot_date} =====")
         ai_provider: CachedAiProvider = self.__ai_provider(snapshot_dir, False, shared_index)
+        fork_verifier: Optional[CachedAiProvider] = self.__fork_verifier(snapshot_dir, False, shared_index)
         # No create(): this step only fills 1-raw, and wiping 3-final would discard an existing report.
         addon_infos: AddonInfos = self.__collect(snapshot_dir, True, ai_provider=ai_provider)
-        self.__ai_enrich(addon_infos, ai_provider)  # The filled cache is the result; PARSE reads it back
-        stats: AiCacheStats = ai_provider.get_cache_stats()
+        self.__ai_enrich(addon_infos, ai_provider, fork_verifier)  # The filled cache is the result; PARSE reads it back
+        stats: AiCacheStats = self.__cache_stats(ai_provider, fork_verifier)
         log.info(f"AI cache hits: {stats.hit_count}, misses: {stats.miss_count}")
         log.info(f"===== Summarized snapshot for {snapshot_date} =====\n")
         return stats
@@ -115,10 +116,11 @@ class CollectorFacade:
         snapshot_dir: SnapshotDir = self.__working_dir.get_snapshot_dir(snapshot_date).create()
         script_version: ScriptVersion = self.__script_version()
         ai_provider: CachedAiProvider = self.__ai_provider(snapshot_dir, True)
+        fork_verifier: Optional[CachedAiProvider] = self.__fork_verifier(snapshot_dir, True)
         addon_infos: AddonInfos = self.__collect(snapshot_dir, True, ai_provider=ai_provider)
-        addon_infos = self.__ai_enrich(addon_infos, ai_provider)
+        addon_infos = self.__ai_enrich(addon_infos, ai_provider, fork_verifier)
         addon_infos = ForkResolver(Overrider(snapshot_dir)).resolve(addon_infos)
-        cache_miss_count: int = ai_provider.get_cache_stats().miss_count
+        cache_miss_count: int = self.__cache_stats(ai_provider, fork_verifier).miss_count
         if cache_miss_count:
             log.warning(f"{cache_miss_count} AI answers (repo choices, summaries, tags or fork labels) are missing "
                         f"from the cache. Run the 'ai' operation to fill the cache.")
@@ -156,17 +158,28 @@ class CollectorFacade:
                                    dataset_snapshot_metadata, raw_metadata)
         log.info(f"===== Reported snapshot for {snapshot_date} =====\n")
 
-    def __ai_provider(self, snapshot_dir: SnapshotDir, offline: bool,
-                      shared_index: Optional[AiCacheIndex] = None) -> CachedAiProvider:
-        return CachedAiProvider(AiProviderFactory.create(self.__config.ai, offline),
+    def __ai_provider(self, snapshot_dir: SnapshotDir, offline: bool, shared_index: Optional[AiCacheIndex] = None,
+                      model_name: Optional[str] = None) -> CachedAiProvider:
+        return CachedAiProvider(AiProviderFactory.create(self.__config.ai, offline, model_name),
                                 snapshot_dir.get_ai_cache_file(), shared_index, offline)
 
-    def __ai_enrich(self, addon_infos: AddonInfos, ai_provider: CachedAiProvider) -> AddonInfos:
+    def __fork_verifier(self, snapshot_dir: SnapshotDir, offline: bool,
+                        shared_index: Optional[AiCacheIndex] = None) -> Optional[CachedAiProvider]:
+        model_name: Optional[str] = self.__config.ai.fork_verify_model
+        return self.__ai_provider(snapshot_dir, offline, shared_index, model_name) if model_name else None
+
+    @staticmethod
+    def __cache_stats(ai_provider: CachedAiProvider, fork_verifier: Optional[CachedAiProvider]) -> AiCacheStats:
+        stats: AiCacheStats = ai_provider.get_cache_stats()
+        return stats + fork_verifier.get_cache_stats() if fork_verifier else stats
+
+    def __ai_enrich(self, addon_infos: AddonInfos, ai_provider: CachedAiProvider,
+                    fork_verifier: Optional[CachedAiProvider]) -> AddonInfos:
         ai_summarizer: AiSummarizer = AiSummarizer(ai_provider, self.__config.ai.readme_max_chars)
         ai_tagger: AiTagger = AiTagger(ai_provider, self.__config.ai.readme_max_chars)
         ai_fork_classifier: AiForkClassifier = AiForkClassifier(
             ai_provider, {addon_info.header.id: addon_info.header.title for addon_info in addon_infos},
-            self.__config.ai.readme_max_chars)
+            self.__config.ai.readme_max_chars, fork_verifier, ForkResolver.github_fork_owners(addon_infos))
         ai_enricher: AiEnricher = AiEnricher(ai_summarizer, ai_tagger, ai_fork_classifier, ai_provider.get_model())
         log.info(f"Summarizing, tagging and classifying forks of {len(addon_infos)} addons")
         ai_enricher.start()

@@ -32,6 +32,7 @@ class AiConfig:
     api_key_file: Path
     model: str
     readme_max_chars: int
+    fork_verify_model: Optional[str] = None
 
 
 @dataclass(frozen=True)
@@ -88,7 +89,7 @@ class AppConfig:
             github=GithubConfig(token_file=Path.home() / ".github" / "token.txt"),
             ai=AiConfig(endpoint="https://api.deepseek.com",
                         api_key_file=Path.home() / ".config" / "anki-addons-dataset" / "deepseek-api-key.txt",
-                        model="deepseek-flash", readme_max_chars=8000),
+                        model="deepseek-flash", readme_max_chars=8000, fork_verify_model="deepseek-v4-pro"),
             huggingface=HuggingFaceConfig(repo_id="Ya-Alex/anki-addons", synced_dirs=["history", "latest"]),
             logging=LoggingConfig(level=logging.INFO, format=DEFAULT_LOG_FORMAT, file=DEFAULT_LOG_FILE,
                                   keep=DEFAULT_LOG_KEEP),
@@ -126,14 +127,22 @@ class ConfigLoader:
     @staticmethod
     def __ai(raw: dict[str, Any], config_file: Path, defaults: AiConfig) -> AiConfig:
         section: dict[str, Any] = ConfigLoader.__section(raw, "ai", config_file)
-        ConfigLoader.__reject_unknown(section, ["endpoint", "api_key_file", "model", "readme_max_chars"],
-                                      "ai", config_file)
+        ConfigLoader.__reject_unknown(section, ["endpoint", "api_key_file", "model", "readme_max_chars",
+                                                "fork_verify_model"], "ai", config_file)
         return AiConfig(
             endpoint=ConfigLoader.__string(section, "endpoint", "ai", config_file, defaults.endpoint),
             api_key_file=ConfigLoader.__path(section, "api_key_file", "ai", config_file, defaults.api_key_file),
             model=ConfigLoader.__string(section, "model", "ai", config_file, defaults.model),
             readme_max_chars=ConfigLoader.__positive_int(section, "readme_max_chars", "ai", config_file,
-                                                         defaults.readme_max_chars))
+                                                         defaults.readme_max_chars),
+            fork_verify_model=ConfigLoader.__fork_verify_model(section, config_file, defaults.fork_verify_model))
+
+    @staticmethod
+    def __fork_verify_model(section: dict[str, Any], config_file: Path, default: Optional[str]) -> Optional[str]:
+        if section.get("fork_verify_model") is False:
+            return None
+        model: str = ConfigLoader.__string(section, "fork_verify_model", "ai", config_file, "")
+        return model or default
 
     @staticmethod
     def __hugging_face(raw: dict[str, Any], config_file: Path, defaults: HuggingFaceConfig) -> HuggingFaceConfig:

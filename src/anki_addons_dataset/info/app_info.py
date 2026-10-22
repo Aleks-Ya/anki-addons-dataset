@@ -42,6 +42,7 @@ class AppInfo:
         log.info(f"GitHub token file: {self.__config.github.token_file}")
         log.info(f"AI endpoint: {self.__config.ai.endpoint}")
         log.info(f"AI model: {self.__config.ai.model}")
+        log.info(f"AI fork verify model: {self.__config.ai.fork_verify_model or 'disabled'}")
         log.info(f"AI key file: {self.__config.ai.api_key_file}")
         log.info(f"Snapshot date: {snapshot_date}")
         log.info(f"Report date: {report_date}")
@@ -53,6 +54,7 @@ class AppInfo:
         self.__verify_github_token()
         self.__verify_ai_key_file()
         self.__verify_ai_provider()
+        self.__verify_fork_verify_model()
         self.__verify_hugging_face_access()
 
     def __verify_github_token(self) -> None:
@@ -74,6 +76,13 @@ class AppInfo:
         details: Optional[str] = ai_provider.verify_access()
         log.info(f"AI provider: OK ({self.__config.ai.endpoint}, model {self.__config.ai.model}"
                  f"{f', {details}' if details else ''})")
+
+    def __verify_fork_verify_model(self) -> None:
+        model_name: Optional[str] = self.__config.ai.fork_verify_model
+        if model_name is None:
+            return
+        AiProviderFactory.create(self.__config.ai, offline=False, model_name=model_name).verify_access()
+        log.info(f"AI fork verify model: OK ({model_name})")
 
     def __verify_hugging_face_access(self) -> None:
         self.__hugging_face_client.verify_write_access()

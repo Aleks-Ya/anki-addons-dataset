@@ -8,6 +8,13 @@ offline and attaches the summaries and tags to the dump; an addon with no cached
 no summary or tags, and `parse` logs how many answers were missing (two per addon).
 The step works on 50 addons at once, so up to 50 AI requests are in flight.
 
+For an addon whose description or README links other catalog addons, a third request asks which one
+of them, if any, the addon is a fork of. When that answer names a parent, the same prompt is asked
+again of `ai.fork_verify_model` (`deepseek-v4-pro` by default), and the stronger model's answer is
+final. Only a few hundred answers per snapshot name a parent, so this costs little. It is skipped when
+the addon is a GitHub fork that already decides the parent, because `parse` then ignores the AI
+answer. Set `fork_verify_model: false` to keep the first answer.
+
 The cache key is a hash of the model and the whole prompt, system prompt included, so editing a
 prompt template or `ai.readme_max_chars` invalidates every entry. Summaries and tags use different
 prompts, so editing the tag vocabulary re-buys only the tag answers. That is why the step stands on its own — refilling

@@ -25,6 +25,9 @@ ai:
   # The GitHub README is truncated to this many characters before going into the prompt.
   # Changing it changes the prompt, which invalidates the cached answers: see the `ai` step.
   readme_max_chars: 8000
+  # When the fork answer names a parent, the same prompt is asked again of this stronger model,
+  # and its answer is final. Not asked when a GitHub fork already decides the parent. `false` disables it.
+  fork_verify_model: deepseek-v4-pro
 
 huggingface:
   # The dataset the upload step pushes to. Point this at a scratch dataset of your

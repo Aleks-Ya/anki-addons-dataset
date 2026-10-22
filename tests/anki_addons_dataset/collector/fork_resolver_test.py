@@ -118,3 +118,21 @@ def test_addon_without_github_and_ai_has_no_parent(addon_info: AddonInfo):
     addon: AddonInfo = replace(addon_info, github=None, ai=None)
 
     assert __resolve([addon]) == {addon_info.header.id: None}
+
+
+def test_github_fork_owners(addon_info: AddonInfo):
+    owners: dict[AddonId, list[AddonId]] = ForkResolver.github_fork_owners(AddonInfos([
+        __addon(addon_info, 10, "glutanimate/misc"),
+        __addon(addon_info, 11, "glutanimate/misc", fork_source="other/misc"),
+        __addon(addon_info, 20, "fixer/misc", fork_source="Glutanimate/Misc"),
+        __addon(addon_info, 30, "glutanimate/misc", fork_source="glutanimate/misc"),
+        __addon(addon_info, 40, "fixer/b", fork_source="nobody/b")]))
+
+    assert owners == {AddonId(20): [AddonId(10), AddonId(11), AddonId(30)]}
+
+
+def test_github_parent():
+    assert ForkResolver.github_parent([AddonId(10)], AddonId(20)) == AddonId(10)
+    assert ForkResolver.github_parent([AddonId(10), AddonId(11)], AddonId(11)) == AddonId(11)
+    assert ForkResolver.github_parent([AddonId(10), AddonId(11)], AddonId(20)) is None
+    assert ForkResolver.github_parent([], AddonId(20)) is None

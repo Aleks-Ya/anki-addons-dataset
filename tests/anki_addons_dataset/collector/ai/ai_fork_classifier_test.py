@@ -153,3 +153,66 @@ def test_link_past_the_readme_limit_is_still_a_candidate(addon_info: AddonInfo) 
     assert answer == AiForkAnswer(AddonId(10))
     assert "x" * 10 + "\n\n(README truncated.)" in provider.prompts[0]
     assert "x" * 11 not in provider.prompts[0]
+
+
+def __verified(addon_info: AddonInfo, first: str, second: Optional[str],
+               github_fork_owners: Optional[dict[AddonId, list[AddonId]]] = None
+               ) -> tuple[Optional[AiForkAnswer], RecordingAiProvider, RecordingAiProvider]:
+    provider: RecordingAiProvider = RecordingAiProvider(AiResponseText(first))
+    verifier: RecordingAiProvider = RecordingAiProvider(AiResponseText(second) if second is not None else None)
+    addon: AddonInfo = __with_links(addon_info, __link("https://ankiweb.net/shared/info/10"),
+                                    __link("https://ankiweb.net/shared/info/20"))
+    answer: Optional[AiForkAnswer] = AiForkClassifier(provider, CATALOG, 8000, verifier,
+                                                      github_fork_owners).classify(addon)
+    return answer, provider, verifier
+
+
+@pytest.mark.parametrize("second, expected", [
+    ("10", AiForkAnswer(AddonId(10))),
+    ("none", AiForkAnswer(None)),
+    ("20", AiForkAnswer(AddonId(20))),
+    ("30", None),
+    (None, None),
+])
+def test_verifier_answer_is_final(addon_info: AddonInfo, second: Optional[str],
+                                  expected: Optional[AiForkAnswer]) -> None:
+    answer, provider, verifier = __verified(addon_info, "10", second)
+
+    assert answer == expected
+    assert verifier.prompts == provider.prompts
+    assert verifier.instructions == provider.instructions
+
+
+@pytest.mark.parametrize("first, expected", [
+    ("none", AiForkAnswer(None)),
+    ("30", None),
+])
+def test_verifier_is_asked_only_about_a_parent(addon_info: AddonInfo, first: str,
+                                               expected: Optional[AiForkAnswer]) -> None:
+    answer, _, verifier = __verified(addon_info, first, "10")
+
+    assert answer == expected
+    assert verifier.prompts == []
+
+
+def test_verifier_is_not_asked_without_linked_addons(addon_info: AddonInfo) -> None:
+    verifier: RecordingAiProvider = RecordingAiProvider()
+
+    answer: Optional[AiForkAnswer] = AiForkClassifier(RecordingAiProvider(), CATALOG, 8000, verifier).classify(
+        addon_info)
+
+    assert answer == AiForkAnswer(None)
+    assert verifier.prompts == []
+
+
+@pytest.mark.parametrize("owners, verified", [
+    ([AddonId(20)], False),
+    ([AddonId(10), AddonId(30)], False),
+    ([AddonId(20), AddonId(30)], True),
+])
+def test_verifier_is_not_asked_when_a_github_fork_gives_the_parent(addon_info: AddonInfo, owners: list[AddonId],
+                                                                   verified: bool) -> None:
+    answer, _, verifier = __verified(addon_info, "10", "none", {addon_info.header.id: owners})
+
+    assert answer == (AiForkAnswer(None) if verified else AiForkAnswer(AddonId(10)))
+    assert bool(verifier.prompts) == verified

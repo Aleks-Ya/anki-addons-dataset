@@ -7,6 +7,7 @@ from typing import Optional
 
 from anki_addons_dataset.collector.ai.ai_addon_material import AiAddonMaterial
 from anki_addons_dataset.collector.ai.ai_provider import AiProvider, AiPrompt, AiResponseText, AiInstructions
+from anki_addons_dataset.collector.fork_resolver import ForkResolver
 from anki_addons_dataset.common.data_types import AddonId, AddonInfo, AddonTitle, GithubReadme, PageLinkSection
 
 log: Logger = logging.getLogger(__name__)
@@ -40,10 +41,14 @@ class AiForkClassifier:
         </guidelines>
         """))
 
-    def __init__(self, ai_provider: AiProvider, catalog_titles: dict[AddonId, AddonTitle], readme_max_chars: int):
+    def __init__(self, ai_provider: AiProvider, catalog_titles: dict[AddonId, AddonTitle], readme_max_chars: int,
+                 verifier: Optional[AiProvider] = None,
+                 github_fork_owners: Optional[dict[AddonId, list[AddonId]]] = None):
         self.__ai_provider: AiProvider = ai_provider
         self.__catalog_titles: dict[AddonId, AddonTitle] = catalog_titles
         self.__material: AiAddonMaterial = AiAddonMaterial(readme_max_chars)
+        self.__verifier: Optional[AiProvider] = verifier
+        self.__github_fork_owners: dict[AddonId, list[AddonId]] = github_fork_owners or {}
 
     def classify(self, addon_info: AddonInfo) -> Optional[AiForkAnswer]:
         readme: Optional[GithubReadme] = addon_info.github.readme if addon_info.github else None
@@ -59,7 +64,17 @@ class AiForkClassifier:
             </linked_addons>
             """).format(material=self.__material.format(addon_info.header.title, addon_info.page.description, readme),
                         linked=linked_blocks))
-        ai_response: Optional[AiResponseText] = self.__ai_provider.response(prompt, self.__instructions)
+        answer: Optional[AiForkAnswer] = self.__ask(self.__ai_provider, prompt, linked)
+        if answer is None or answer.parent is None or self.__verifier is None:
+            return answer
+        owners: list[AddonId] = self.__github_fork_owners.get(addon_info.header.id, [])
+        if ForkResolver.github_parent(owners, answer.parent) is not None:
+            return answer
+        return self.__ask(self.__verifier, prompt, linked)
+
+    def __ask(self, ai_provider: AiProvider, prompt: AiPrompt,
+              linked: dict[AddonId, list[str]]) -> Optional[AiForkAnswer]:
+        ai_response: Optional[AiResponseText] = ai_provider.response(prompt, self.__instructions)
         if ai_response is None:
             return None
         return self.__parse_answer(ai_response, linked)

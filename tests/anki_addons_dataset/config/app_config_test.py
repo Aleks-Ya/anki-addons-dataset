@@ -52,6 +52,7 @@ ai:
   api_key_file: /secrets/ai.txt
   model: some-model
   readme_max_chars: 1234
+  fork_verify_model: some-pro-model
 huggingface:
   repo_id: Someone/scratch
   synced_dirs: [history]
@@ -69,7 +70,7 @@ sample:
         working_dir=Path("/data/anki"),
         github=GithubConfig(token_file=Path("/secrets/gh.txt")),
         ai=AiConfig(endpoint="https://ai.example.com", api_key_file=Path("/secrets/ai.txt"), model="some-model",
-                    readme_max_chars=1234),
+                    readme_max_chars=1234, fork_verify_model="some-pro-model"),
         huggingface=HuggingFaceConfig(repo_id="Someone/scratch", synced_dirs=["history"]),
         logging=LoggingConfig(level=logging.DEBUG, format="%(message)s", file=Path("/var/log/anki.log"), keep=5),
         sample=SampleConfig(addons=20, snapshots=2))
@@ -119,6 +120,22 @@ def test_unknown_ai_key_is_rejected(tmp_path: Path):
 def test_removed_ai_worker_count_is_rejected(tmp_path: Path):
     config_file: Path = __write(tmp_path, "ai:\n  workers: 4\n")
     with pytest.raises(ValueError, match="Unknown key 'ai.workers'"):
+        ConfigLoader.load(config_file)
+
+
+def test_fork_verify_model_defaults_to_the_pro_model(tmp_path: Path):
+    config: AppConfig = ConfigLoader.load(__write(tmp_path, "ai:\n  model: some-model\n"))
+    assert config.ai.fork_verify_model == "deepseek-v4-pro"
+
+
+def test_false_fork_verify_model_disables_the_verification(tmp_path: Path):
+    config: AppConfig = ConfigLoader.load(__write(tmp_path, "ai:\n  fork_verify_model: false\n"))
+    assert config.ai.fork_verify_model is None
+
+
+def test_non_string_fork_verify_model_is_rejected(tmp_path: Path):
+    config_file: Path = __write(tmp_path, "ai:\n  fork_verify_model: 5\n")
+    with pytest.raises(ValueError, match="Invalid value for 'ai.fork_verify_model'"):
         ConfigLoader.load(config_file)
 
 

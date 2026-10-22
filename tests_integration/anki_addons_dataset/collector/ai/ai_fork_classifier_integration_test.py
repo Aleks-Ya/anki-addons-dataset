@@ -5,10 +5,11 @@ from typing import Optional
 from anki_addons_dataset.collector.ai.ai_fork_classifier import AiForkClassifier, AiForkAnswer
 from anki_addons_dataset.collector.ai.ai_provider import AiProvider
 from anki_addons_dataset.collector.ai.cached_ai_provider import CachedAiProvider
+from anki_addons_dataset.collector.ai.openai_ai_provider import OpenAiAiProvider
 from anki_addons_dataset.common.data_types import AddonInfo, AddonHeader, AddonId, AddonTitle, URL, AddonRating, \
-    UpdateDate, AnkiVersion, AddonPage, HtmlStr, PageLink, PageLinkSection, AddonDescription
+    UpdateDate, AnkiVersion, AddonPage, HtmlStr, PageLink, PageLinkSection, AddonDescription, AiModel
 from anki_addons_dataset.common.working_dir import SnapshotDir
-from anki_addons_dataset.config.app_config import AppConfig
+from anki_addons_dataset.config.app_config import AppConfig, AiConfig
 
 log: Logger = logging.getLogger(__name__)
 
@@ -101,8 +102,13 @@ def __classify(ai_provider: AiProvider, snapshot_dir: SnapshotDir, integration_c
             for linked_id, text in links.items()], AddonDescription(description)),
         None, None)
     cached_ai_provider: CachedAiProvider = CachedAiProvider(ai_provider, snapshot_dir.get_ai_cache_file())
+    ai: AiConfig = integration_config.ai
+    assert ai.fork_verify_model is not None
+    verifier: CachedAiProvider = CachedAiProvider(
+        OpenAiAiProvider(ai.endpoint, ai.api_key_file.read_text().strip(), AiModel(ai.fork_verify_model)),
+        snapshot_dir.get_ai_cache_file())
     answer: Optional[AiForkAnswer] = AiForkClassifier(
-        cached_ai_provider, catalog, integration_config.ai.readme_max_chars).classify(addon_info)
+        cached_ai_provider, catalog, ai.readme_max_chars, verifier).classify(addon_info)
     log.info(f"Answer: {answer}")
     assert answer is not None
     return answer.parent

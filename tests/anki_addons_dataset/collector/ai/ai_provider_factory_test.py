@@ -46,3 +46,10 @@ def test_offline_creates_the_no_ai_provider(tmp_path: Path) -> None:
 
     assert isinstance(provider, NoAiProvider)
     assert provider.get_model() == MODEL
+
+
+def test_model_name_overrides_the_configured_model(tmp_path: Path) -> None:
+    config: AiConfig = __ai_config(__api_key_file(tmp_path), "https://api.deepseek.com")
+
+    assert AiProviderFactory.create(config, offline=False, model_name="pro-model").get_model() == "pro-model"
+    assert AiProviderFactory.create(config, offline=True, model_name="pro-model").get_model() == "pro-model"

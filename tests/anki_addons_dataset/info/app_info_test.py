@@ -46,7 +46,7 @@ def __config(tmp_path: Path) -> AppConfig:
 def __ai_config(tmp_path: Path, endpoint: str = "https://ai.example.com") -> AiConfig:
     defaults: AiConfig = AppConfig.defaults().ai
     return AiConfig(endpoint=endpoint, api_key_file=__ai_api_key_file(tmp_path), model=defaults.model,
-                    readme_max_chars=defaults.readme_max_chars)
+                    readme_max_chars=defaults.readme_max_chars, fork_verify_model=defaults.fork_verify_model)
 
 
 def __ai_api_key_file(tmp_path: Path) -> Path:
@@ -149,6 +149,8 @@ def test_print_info(working_dir: WorkingDir, tmp_path: Path, caplog: pytest.LogC
     assert "secret-ai-key" not in messages  # the key value itself is never logged
     assert f"AI API key: OK ({api_key_file})" in messages
     assert "AI provider: OK (https://ai.example.com, model deepseek-flash)" in messages
+    assert "AI fork verify model: deepseek-v4-pro" in messages
+    assert "AI fork verify model: OK (deepseek-v4-pro)" in messages
     assert "HuggingFace write access: OK (Ya-Alex/anki-addons)" in messages
 
 
