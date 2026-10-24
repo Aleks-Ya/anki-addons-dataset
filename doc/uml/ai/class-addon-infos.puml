@@ -15,7 +15,7 @@ class AddonInfo <<dataclass>> {
   forum : Optional[AnkiForumInfo]
   ai : Optional[AiInfo]
   author : Optional[AuthorInfo]
-  forked_from : list[ForkRelation]
+  forked_from : Optional[ForkRelation]
 }
 
 class AddonHeader <<dataclass>> {
@@ -25,6 +25,8 @@ class AddonHeader <<dataclass>> {
   rating : AddonRating
   update_date : UpdateDate
   anki_version : AnkiVersion
+  anki_point_version : Optional[AnkiPointVersion]
+  anki_version_kind : AnkiVersionKind
 }
 
 class AddonPage <<dataclass>> {
@@ -37,9 +39,12 @@ class AddonPage <<dataclass>> {
   ai_declaration_markers : list[str]
   description_language : Optional[LanguageCode]
   description_language_confidence : Optional[float]
-  description_html : Optional[str]
+  description_html : Optional[HtmlStr]
   description_pre_wrap : bool
   other_items_count : Optional[int]
+  reviews : list[AddonReview]
+  --
+  contact_author_url : Optional[URL]
 }
 
 class PageLink <<dataclass>> {
@@ -49,10 +54,20 @@ class PageLink <<dataclass>> {
   texts : list[str]
 }
 
+class AddonReview <<frozen dataclass>> {
+  vote : ReviewVote
+  date : date
+  text : str
+  author_reply : Optional[str]
+}
+
 class AddonBranch <<dataclass>> {
   min_anki_version : AnkiVersion
   max_anki_version : Optional[AnkiVersion]
   updated : date
+  min_point_version : Optional[AnkiPointVersion]
+  max_point_version : Optional[AnkiPointVersion]
+  max_version_kind : AnkiVersionKind
 }
 
 class GithubInfo <<dataclass>> {
@@ -79,6 +94,7 @@ class GithubInfo <<dataclass>> {
   dependencies : list[DependencyName]
   readme : Optional[GithubReadme]
   ai_tooling_markers : list[str]
+  repo_source : Optional[GithubRepoSource]
   fork_source : Optional[GithubRepo]
 }
 
@@ -124,7 +140,8 @@ class AnkiForumInfo <<dataclass>> {
 class AiInfo <<dataclass>> {
   summary : Optional[AiSummary]
   model : Optional[AiModel]
-  fork_labels : dict[AddonId, AiForkLabel]
+  tags : Optional[list[AiTag]]
+  fork_of : Optional[AddonId]
 }
 
 class AuthorInfo <<frozen dataclass>> {
@@ -145,10 +162,11 @@ AddonInfo o-- "0..1" GithubInfo
 AddonInfo o-- "0..1" AnkiForumInfo
 AddonInfo o-- "0..1" AiInfo
 AddonInfo o-- "0..1" AuthorInfo
-AddonInfo "1" o-- "*" ForkRelation
+AddonInfo o-- "0..1" ForkRelation
 
 AddonPage "1" o-- "*" AddonBranch
 AddonPage "1" o-- "*" PageLink
+AddonPage "1" o-- "*" AddonReview
 
 GithubInfo "1" o-- "*" GitHubLink
 GithubInfo o-- "0..1" GithubRepo

@@ -10,7 +10,11 @@ folder src {
         folder argument
         folder bundle
         folder collector {
-            folder ai
+            folder ai {
+                folder cache
+                folder provider
+                folder question
+            }
             folder ankiforum
             folder ankiweb
             folder github {
@@ -21,7 +25,6 @@ folder src {
         folder common
         folder config
         folder exporter {
-            folder json
             folder parquet
             folder xlsx
         }
@@ -33,9 +36,17 @@ folder src {
 }
 
 ai --> common
-ai --> config
+
+cache --> provider
+
+provider --> common
+provider --> config
+
+question --> common
+question --> provider
 
 ankiforum --> common
+ankiforum --> question
 
 ankiweb --> common
 ankiweb --> overrider
@@ -65,21 +76,22 @@ facade --> info
 facade --> initializer
 
 github --> common
+github --> overrider
+github --> question
 handler --> common
 
 huggingface --> common
 huggingface --> config
 
-info --> ai
 info --> common
 info --> config
 info --> github
 info --> huggingface
+info --> provider
 
 initializer --> common
 initializer --> huggingface
 
-json --> common
 parquet --> common
 xlsx --> common
 
