@@ -1,10 +1,10 @@
 from dataclasses import dataclass
 from datetime import datetime
-from typing import Optional
+from typing import Any, Optional
 
 from anki_addons_dataset.common.anki_version import AnkiVersionCodec
 from anki_addons_dataset.common.data_types import AddonInfos, AddonInfo, AddonDescription, GithubInfo, AddonManifest, \
-    AnkiPointVersion, HtmlStr, AddonId, GithubRelease
+    AnkiPointVersion, HtmlStr, AddonId, GithubRelease, GithubContributor
 
 
 @dataclass
@@ -240,18 +240,35 @@ class JsonAddonInfo:
                       list(github.dependencies), github.readme, list(github.ai_tooling_markers),
                       str(github.repo_source) if github.repo_source else None,
                       github.fork_source.get_id() if github.fork_source else None,
-                      len(releases) if releases is not None else None,
+                      JsonAddonInfo.__optional_len(releases),
                       latest_release.tag_name if latest_release else None,
-                      latest_release.published_at.isoformat()
-                      if latest_release and latest_release.published_at else None,
-                      sum(asset.download_count for release in releases for asset in release.assets)
-                      if releases is not None else None,
+                      JsonAddonInfo.__published_at(latest_release),
+                      JsonAddonInfo.__release_downloads(releases),
                       JsonAddonInfo.__releases(releases),
-                      len(github.contributors) if github.contributors is not None else None,
-                      [Contributor(contributor.login, contributor.contributions)
-                       for contributor in github.contributors] if github.contributors is not None else None,
+                      JsonAddonInfo.__optional_len(github.contributors),
+                      JsonAddonInfo.__contributors(github.contributors),
                       sum(github.weekly_commits) if github.weekly_commits is not None else None,
-                      list(github.weekly_commits) if github.weekly_commits is not None else None)
+                      github.weekly_commits)
+
+    @staticmethod
+    def __optional_len(items: Optional[list[Any]]) -> Optional[int]:
+        return len(items) if items is not None else None
+
+    @staticmethod
+    def __published_at(release: Optional[GithubRelease]) -> Optional[str]:
+        return release.published_at.isoformat() if release and release.published_at else None
+
+    @staticmethod
+    def __release_downloads(releases: Optional[list[GithubRelease]]) -> Optional[int]:
+        if releases is None:
+            return None
+        return sum(asset.download_count for release in releases for asset in release.assets)
+
+    @staticmethod
+    def __contributors(contributors: Optional[list[GithubContributor]]) -> Optional[list[Contributor]]:
+        if contributors is None:
+            return None
+        return [Contributor(contributor.login, contributor.contributions) for contributor in contributors]
 
     @staticmethod
     def __latest_release(releases: Optional[list[GithubRelease]]) -> Optional[GithubRelease]:
