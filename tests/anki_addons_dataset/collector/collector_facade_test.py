@@ -1,10 +1,12 @@
-import json
 import logging
 from datetime import date
 from pathlib import Path
 from unittest.mock import patch
 
+import pandas
+import pandas.testing as pdt
 import pytest
+from pandas import DataFrame
 
 from anki_addons_dataset.collector.ai.ai_cache_stats import AiCacheStats
 from anki_addons_dataset.collector.collector_facade import CollectorFacade
@@ -34,11 +36,11 @@ def test_report_snapshots_generates_final_from_dump_without_raw(
     collector_facade.report_snapshots(None, report_date)
 
     final_dir = snapshot_dir.get_final_dir()
-    assert (final_dir / "json" / "data.json").exists()
-    assert (final_dir / "json" / "aggregation.json").exists()
-    assert (final_dir / "json" / "tags.json").exists()
+    assert (final_dir / "parquet" / "data.parquet").exists()
+    assert (final_dir / "parquet" / "aggregation.parquet").exists()
     assert (final_dir / "parquet" / "tags.parquet").exists()
     assert (final_dir / "xlsx" / "tags.xlsx").exists()
+    assert not (final_dir / "json").exists()
     assert snapshot_dir.get_metadata_json().exists()
     assert stage_marker.exists()
     assert not snapshot_dir.get_raw_dir().joinpath("1-anki-web").exists()
@@ -55,9 +57,8 @@ def test_report_snapshots_exports_anki_versions(
     collector_facade.report_snapshots(None, report_date)
 
     final_dir = snapshot_dir.get_final_dir()
-    assert json.loads((final_dir / "json" / "anki_versions.json").read_text()) == [
-        {"version": "25.09.2", "point_version": 250902}, {"version": "2.1.66", "point_version": 66}]
-    assert (final_dir / "parquet" / "anki_versions.parquet").exists()
+    pdt.assert_frame_equal(pandas.read_parquet(final_dir / "parquet" / "anki_versions.parquet"), DataFrame([
+        {"version": "25.09.2", "point_version": 250902}, {"version": "2.1.66", "point_version": 66}]))
     assert (final_dir / "xlsx" / "anki_versions.xlsx").exists()
 
 
@@ -72,11 +73,10 @@ def test_report_snapshots_exports_reviews_newest_first(
 
     final_dir = snapshot_dir.get_final_dir()
     addon_id: int = addon_infos[0].header.id
-    assert json.loads((final_dir / "json" / "reviews.json").read_text()) == [
-        {"addon_id": addon_id, "date": "2026-07-05", "vote": "dislike", "text": "Produces errors",
+    pdt.assert_frame_equal(pandas.read_parquet(final_dir / "parquet" / "reviews.parquet"), DataFrame([
+        {"addon_id": addon_id, "date": date(2026, 7, 5), "vote": "dislike", "text": "Produces errors",
          "author_reply": None},
-        {"addon_id": addon_id, "date": "2025-06-06", "vote": "like", "text": "Works", "author_reply": "Thank you!"}]
-    assert (final_dir / "parquet" / "reviews.parquet").exists()
+        {"addon_id": addon_id, "date": date(2025, 6, 6), "vote": "like", "text": "Works", "author_reply": "Thank you!"}]))
     assert not (final_dir / "xlsx" / "reviews.xlsx").exists()
 
 
@@ -89,8 +89,7 @@ def test_report_snapshots_without_anki_tags_skips_anki_versions(
         collector_facade.report_snapshots(None, report_date)
 
     final_dir = snapshot_dir.get_final_dir()
-    assert (final_dir / "json" / "tags.json").exists()
-    assert not (final_dir / "json" / "anki_versions.json").exists()
+    assert (final_dir / "parquet" / "tags.parquet").exists()
     assert not (final_dir / "parquet" / "anki_versions.parquet").exists()
     assert not (final_dir / "xlsx" / "anki_versions.xlsx").exists()
     assert "the anki_versions table is skipped" in caplog.text
@@ -210,8 +209,8 @@ def test_report_snapshots_honours_the_snapshot_sample(
 
     CollectorFacade(working_dir, app_config, page_load_timeout, element_wait_timeout).report_snapshots(None, report_date)
 
-    assert (new_dir.get_final_dir() / "json" / "data.json").exists()
-    assert not (old_dir.get_final_dir() / "json" / "data.json").exists()
+    assert (new_dir.get_final_dir() / "parquet" / "data.parquet").exists()
+    assert not (old_dir.get_final_dir() / "parquet" / "data.parquet").exists()
 
 
 def test_report_snapshots_with_a_date_reports_only_that_snapshot(

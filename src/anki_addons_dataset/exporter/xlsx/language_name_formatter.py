@@ -7,7 +7,7 @@ from anki_addons_dataset.common.data_types import LanguageCode
 
 class LanguageNameFormatter:
     """Renders a stored ISO-639-1 description-language code (e.g. "en") as a full English language
-    name (e.g. "English") for the human-readable XLSX export. JSON/Parquet keep the raw code.
+    name (e.g. "English") for the human-readable XLSX export. Parquet keeps the raw code.
     """
 
     @staticmethod

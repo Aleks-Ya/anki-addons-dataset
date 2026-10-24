@@ -26,7 +26,6 @@ dependencies = [
     "mdutils",
     "pyyaml",
     "XlsxWriter",
-    "jsonschema",
     "selenium",
     "huggingface-hub",
     "pandas",

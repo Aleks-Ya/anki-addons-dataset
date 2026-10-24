@@ -32,7 +32,7 @@ it is recorded in `ai.model`. It may be inaccurate: treat it as a convenience fo
 statement by the author. The `ai.tags` field is generated the same way: the model picks the addon's tags
 from a fixed vocabulary (function tags such as `scheduling` or `statistics`, and status tags such as
 `obsolete` or `paid`). The full vocabulary with the meaning of every tag is the `tags` table
-(`latest/parquet/tags.parquet`, also in JSON and Excel). All other fields are collected, not generated.
+(`latest/parquet/tags.parquet`, also in Excel). All other fields are collected, not generated.
 
 The `anki_web.description` field is the AnkiWeb description as plain text. The `anki_web.description_html`
 field is the same description as the author's HTML (the inner HTML of the description block, `null` when
@@ -58,7 +58,7 @@ reverse: the addons that were forked from this one, any number of them. Detectio
 that neither uses a GitHub fork nor links the original from its description is not found, and `ai` evidence
 may be inaccurate.
 
-The `anki_versions` table (`latest/parquet/anki_versions.parquet`, also in JSON and Excel) lists the stable
+The `anki_versions` table (`latest/parquet/anki_versions.parquet`, also in Excel) lists the stable
 Anki releases from 2.1.0 on, newest first, taken from the tags of the [Anki repository](https://github.com/ankitects/anki)
 when the snapshot was collected (betas and release candidates are left out). `version` is the version as Anki
 writes it (`25.09.2`, `2.1.66`), `point_version` is Anki's integer encoding of it, which sorts correctly
@@ -66,7 +66,7 @@ writes it (`25.09.2`, `2.1.66`), `point_version` is Anki's integer encoding of i
 `*_point_version` fields of the addons. Snapshots collected before the table was introduced have no
 `anki_versions` files.
 
-The `reviews` table (`latest/parquet/reviews.parquet`, also in JSON) holds the user reviews from the AnkiWeb
+The `reviews` table (`latest/parquet/reviews.parquet`) holds the user reviews from the AnkiWeb
 addon pages, one row per review, sorted by `addon_id` and then newest first: `addon_id`, `date`, `vote`
 (`like` or `dislike`), `text` (empty for a review left without text) and `author_reply` (the addon author's
 comment, or `null`). AnkiWeb does not show who wrote a review, so the table has no reviewer column. The page-wide
@@ -86,13 +86,6 @@ Folder `latest` contains the most recent day from `history`.
 ```
 ├── history
 │   ├── YYYY-MM-DD
-│   │   ├── json
-│   │   │   ├── aggregation.json
-│   │   │   ├── anki_versions.json
-│   │   │   ├── data.json
-│   │   │   ├── reviews.json
-│   │   │   ├── schema.json
-│   │   │   └── tags.json
 │   │   ├── parquet
 │   │   │   ├── aggregation.parquet
 │   │   │   ├── anki_versions.parquet
@@ -108,13 +101,6 @@ Folder `latest` contains the most recent day from `history`.
 │   │   ├── raw.zip
 │   │   └── stage.zip
 ├── latest
-│   ├── json
-│   │   ├── aggregation.json
-│   │   ├── anki_versions.json
-│   │   ├── data.json
-│   │   ├── reviews.json
-│   │   ├── schema.json
-│   │   └── tags.json
 │   ├── parquet
 │   │   ├── aggregation.parquet
 │   │   ├── anki_versions.parquet
@@ -136,12 +122,11 @@ Location: `latest/xlsx/data.xlsx`, `history/YYYY-MM-DD/xlsx/data.xlsx`
 
 ### Parquet
 The best for **programmatic analysis** by Python, etc.  
-Location: `latest/parquet/data.parquet`, `history/YYYY-MM-DD/xlsx/data.xlsx`
+Location: `latest/parquet/data.parquet`, `history/YYYY-MM-DD/parquet/data.parquet`
 
 ### JSON
-Exported from the Parquet file.   
-Location: `latest/json/data.json`  , `history/YYYY-MM-DD/json/data.json`  
-JSON schema: `latest/json/schema.json`, `history/YYYY-MM-DD/json/schema.json`
+No longer published: Parquet holds the same data. The JSON files of the snapshots up to 2026-10-01 remain
+in the Git history of this repository.
 
 ---
 

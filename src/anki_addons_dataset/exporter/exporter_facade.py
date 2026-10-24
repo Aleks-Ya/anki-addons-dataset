@@ -5,7 +5,6 @@ from anki_addons_dataset.common.data_types import Aggregation, AddonInfos, Datas
     AiTagDefinition, AnkiRelease, ReviewRow
 from anki_addons_dataset.common.working_dir import SnapshotDir
 from anki_addons_dataset.exporter.exporter import Exporter
-from anki_addons_dataset.exporter.json.json_exporter import JsonExporter
 from anki_addons_dataset.exporter.parquet.parquet_exporter import ParquetExporter
 from anki_addons_dataset.exporter.xlsx.xlsx_exporter import XlsxExporter
 
@@ -13,10 +12,8 @@ from anki_addons_dataset.exporter.xlsx.xlsx_exporter import XlsxExporter
 class ExporterFacade:
     def __init__(self, snapshot_dir: SnapshotDir):
         final_dir: Path = snapshot_dir.get_final_dir()
-        self.json_exporter: JsonExporter = JsonExporter(final_dir)
         self.parquet_exporter: ParquetExporter = ParquetExporter(final_dir)
         self.exporters: list[Exporter] = [
-            self.json_exporter,
             XlsxExporter(final_dir),
             self.parquet_exporter
         ]
@@ -30,5 +27,4 @@ class ExporterFacade:
             exporter.export_tags(tags, dataset_snapshot_metadata, raw_metadata)
             if anki_versions is not None:
                 exporter.export_anki_versions(anki_versions, dataset_snapshot_metadata, raw_metadata)
-        self.json_exporter.export_reviews(reviews)
         self.parquet_exporter.export_reviews(reviews)

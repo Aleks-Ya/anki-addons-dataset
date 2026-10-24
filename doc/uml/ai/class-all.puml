@@ -144,10 +144,6 @@ package "anki_addons_dataset" {
     class AnkiWeb <<dataclass>>
     class Details <<dataclass>>
 
-    package "json" {
-      class JsonExporter
-    }
-
     package "parquet" {
       class ParquetExporter
     }
@@ -305,10 +301,8 @@ CachedAiProvider --> AiCacheStats
 
 ' Export flow
 ExporterFacade --> Exporter
-JsonExporter --|> Exporter
 ParquetExporter --|> Exporter
 XlsxExporter --|> Exporter
-JsonExporter --> JsonAddonInfo
 ParquetExporter --> JsonAddonInfo
 JsonAddonInfo --> Details
 Details *-- AnkiWeb
@@ -322,7 +316,6 @@ GitHub *-- Manifest
 XlsxExporter --> AddonInfoSheet
 XlsxExporter --> AggregationSheet
 AddonInfoSheet --> LanguageNameFormatter
-ExporterFacade --> JsonExporter
 ExporterFacade --> ParquetExporter
 ExporterFacade --> XlsxExporter
 

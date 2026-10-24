@@ -51,7 +51,7 @@ fails the parse. Manifest values are copied as the author wrote them and are oft
 still loads, with the parsed values empty and `unknown`; re-run `parse` to fill them.
 
 ## The `anki_versions` table
-Every snapshot publishes the stable Anki releases as `anki_versions.{json,parquet,xlsx}` in `3-final/`
+Every snapshot publishes the stable Anki releases as `anki_versions.{parquet,xlsx}` in `3-final/`
 (published as the `anki_versions` HF config), for consumers that need the list of Anki versions without
 reading addon data, such as the MCP server. Columns: `version` (the tag name, e.g. `25.09.2`, `2.1.66`) and
 `point_version` (`AnkiVersionCodec.to_point`). Rows are newest first.

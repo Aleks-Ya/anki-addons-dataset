@@ -29,7 +29,6 @@ from anki_addons_dataset.common.data_types import AddonId, GithubRepo, GithubUse
     ElementWaitTimeout, AiInfo, AiSummary, AiTag, AiModel, AuthorInfo, AnkiForumTopicSource
 from anki_addons_dataset.common.working_dir import WorkingDir, SnapshotDir
 from anki_addons_dataset.config.app_config import AppConfig, AiConfig, GithubConfig, HuggingFaceConfig
-from anki_addons_dataset.exporter.json.json_exporter import JsonExporter
 from anki_addons_dataset.exporter.xlsx.xlsx_exporter import XlsxExporter
 from anki_addons_dataset.facade.facade import Facade
 from anki_addons_dataset.huggingface.hugging_face_client import HuggingFaceClient
@@ -292,11 +291,6 @@ def github_repo() -> GithubRepo:
 @pytest.fixture
 def aggregator() -> Aggregator:
     return Aggregator()
-
-
-@pytest.fixture
-def json_exporter(snapshot_dir: SnapshotDir) -> JsonExporter:
-    return JsonExporter(snapshot_dir.get_final_dir())
 
 
 @pytest.fixture
