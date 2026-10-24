@@ -1,3 +1,4 @@
+import time
 from datetime import datetime
 from pathlib import Path
 from threading import Lock
@@ -11,10 +12,12 @@ from anki_addons_dataset.collector.github.github_rest_client import GithubRestCl
 from anki_addons_dataset.collector.github.handler.actions_repo_handler import ActionsRepoHandler
 from anki_addons_dataset.collector.github.handler.ai_tooling_detector import AiToolingDetector
 from anki_addons_dataset.collector.github.handler.contents_repo_handler import ContentsRepoHandler
+from anki_addons_dataset.collector.github.handler.contributors_repo_handler import ContributorsRepoHandler
 from anki_addons_dataset.collector.github.handler.dependencies_parser import DependenciesParser
 from anki_addons_dataset.collector.github.handler.languages_repo_handler import LanguagesRepoHandler
 from anki_addons_dataset.collector.github.handler.last_commit_repo_handler import LastCommitRepoHandler
 from anki_addons_dataset.collector.github.handler.manifest_parser import ManifestParser
+from anki_addons_dataset.collector.github.handler.participation_repo_handler import ParticipationRepoHandler
 from anki_addons_dataset.collector.github.handler.readme_repo_handler import ReadmeRepoHandler
 from anki_addons_dataset.collector.github.handler.releases_repo_handler import ReleasesRepoHandler
 from anki_addons_dataset.collector.github.handler.repo_handler import RepoHandler
@@ -24,13 +27,14 @@ from anki_addons_dataset.collector.github.handler.tag_names_repo_handler import 
 from anki_addons_dataset.collector.github.handler.tests_repo_handler import TestsRepoHandler
 from anki_addons_dataset.collector.github.handler.tree_entries_repo_handler import TreeEntriesRepoHandler
 from anki_addons_dataset.common.data_types import AddonManifest, DependencyName, GithubReadme, GithubRepo, \
-    GithubRepoId, LanguageName, GithubRelease
+    GithubRepoId, LanguageName, GithubRelease, GithubContributor
 from anki_addons_dataset.common.working_dir import SnapshotDir
 
 log: Logger = logging.getLogger(__name__)
 
 
 class GithubService:
+    __computing_retry_delays: tuple[int, ...] = (2, 5, 10)
 
     def __init__(self, snapshot_dir: SnapshotDir, github_rest_client: GithubRestClient,
                  prev_snapshot_dir: Optional[SnapshotDir] = None, offline: bool = False):
@@ -85,6 +89,14 @@ class GithubService:
 
     def get_releases(self, repo: GithubRepo) -> Optional[list[GithubRelease]]:
         handler: RepoHandler = ReleasesRepoHandler(repo, self.__raw_dir, self.__stage_dir, self.__prev_raw_dir)
+        return self.__get_value(handler)
+
+    def get_contributors(self, repo: GithubRepo) -> Optional[list[GithubContributor]]:
+        handler: RepoHandler = ContributorsRepoHandler(repo, self.__raw_dir, self.__stage_dir, self.__prev_raw_dir)
+        return self.__get_value(handler)
+
+    def get_weekly_commits(self, repo: GithubRepo) -> Optional[list[int]]:
+        handler: RepoHandler = ParticipationRepoHandler(repo, self.__raw_dir, self.__stage_dir, self.__prev_raw_dir)
         return self.__get_value(handler)
 
     def get_tag_names(self, repo: GithubRepo) -> list[str]:
@@ -147,9 +159,14 @@ class GithubService:
                 return handler.get_not_found_return_value()
             url: str = handler.get_url()
             etag: Optional[str] = handler.get_prev_etag()
-            response: Response = self.__github_rest_client.get_from_url(url, etag)
+            response: Response = self.__get_computed(url, etag)
             if response.status_code == 200:
                 handler.status_200(response)
+            elif response.status_code == 202:
+                handler.status_202()
+                return handler.get_not_found_return_value()
+            elif response.status_code == 204:
+                handler.status_204(response)
             elif response.status_code == 304:
                 handler.status_304()
             elif response.status_code == 404:
@@ -161,3 +178,14 @@ class GithubService:
         return_value: Optional[Any] = handler.extract_return_value()
         handler.write_stage(return_value)
         return return_value
+
+    def __get_computed(self, url: str, etag: Optional[str]) -> Response:
+        # GitHub answers 202 while it computes repository statistics in the background.
+        response: Response = self.__github_rest_client.get_from_url(url, etag)
+        for delay in self.__computing_retry_delays:
+            if response.status_code != 202:
+                break
+            log.info(f"GitHub is computing {url}, retrying in {delay}s")
+            time.sleep(delay)
+            response = self.__github_rest_client.get_from_url(url, etag)
+        return response

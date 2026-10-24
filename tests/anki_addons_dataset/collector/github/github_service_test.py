@@ -3,7 +3,7 @@ import time
 from concurrent.futures import Future, ThreadPoolExecutor
 from datetime import date, datetime
 from typing import Optional
-from unittest.mock import Mock
+from unittest.mock import Mock, patch
 
 import pytest
 from requests import Response
@@ -12,7 +12,7 @@ from anki_addons_dataset.collector.github.github_rest_client import GithubRestCl
 from anki_addons_dataset.collector.github.github_service import GithubService
 from anki_addons_dataset.collector.github.handler.repo_info_repo_handler import GithubRepoMeta
 from anki_addons_dataset.common.data_types import AddonManifest, DependencyName, GithubRepo, LanguageName, SnapshotDate, \
-    SpdxLicense, Topic, GithubRepoName, GithubUserName, GithubRelease, GithubReleaseAsset
+    SpdxLicense, Topic, GithubRepoName, GithubUserName, GithubRelease, GithubReleaseAsset, GithubContributor
 from anki_addons_dataset.common.working_dir import SnapshotDir, WorkingDir
 
 
@@ -132,6 +132,70 @@ def test_get_releases_404(github_service: GithubService, github_rest_client: Git
                           github_repo: GithubRepo):
     github_rest_client.get_from_url = __mock_content("", status_code=404)
     assert github_service.get_releases(github_repo) is None
+
+
+def test_get_contributors_200(github_service: GithubService, github_rest_client: GithubRestClient,
+                              github_repo: GithubRepo):
+    content: str = """[{"login":"John","type":"User","contributions":40},
+                       {"login":"Jane","type":"User","contributions":2}]"""
+    github_rest_client.get_from_url = __mock_content(content)
+    exp: list[GithubContributor] = [GithubContributor("John", 40), GithubContributor("Jane", 2)]
+    assert github_service.get_contributors(github_repo) == exp
+    assert github_service.get_contributors(github_repo) == exp  # cached
+    github_rest_client.get_from_url.assert_called_once_with(
+        "https://api.github.com/repos/John/app/contributors?per_page=100", None)
+
+
+def test_get_contributors_of_an_empty_repo(github_service: GithubService, github_rest_client: GithubRestClient,
+                                           github_repo: GithubRepo):
+    github_rest_client.get_from_url = __mock_content("", status_code=204)
+    assert github_service.get_contributors(github_repo) == []
+    assert github_service.get_contributors(github_repo) == []  # cached
+    github_rest_client.get_from_url.assert_called_once()
+
+
+def test_get_contributors_404(github_service: GithubService, github_rest_client: GithubRestClient,
+                              github_repo: GithubRepo):
+    github_rest_client.get_from_url = __mock_content("", status_code=404)
+    assert github_service.get_contributors(github_repo) is None
+
+
+def test_get_weekly_commits_200(github_service: GithubService, github_rest_client: GithubRestClient,
+                                github_repo: GithubRepo):
+    weekly_commits: list[int] = [0] * 50 + [3, 1]
+    github_rest_client.get_from_url = __mock_content(f'{{"all":{weekly_commits},"owner":{[0] * 52}}}')
+    assert github_service.get_weekly_commits(github_repo) == weekly_commits
+    assert github_service.get_weekly_commits(github_repo) == weekly_commits  # cached
+    github_rest_client.get_from_url.assert_called_once_with(
+        "https://api.github.com/repos/John/app/stats/participation", None)
+
+
+def test_get_weekly_commits_retries_while_github_computes(github_service: GithubService,
+                                                         github_rest_client: GithubRestClient,
+                                                         github_repo: GithubRepo):
+    github_rest_client.get_from_url = Mock(side_effect=[
+        __response("{}", 202), __response("{}", 202), __response(f'{{"all":{[1] * 52}}}', 200)])
+    with patch("anki_addons_dataset.collector.github.github_service.time.sleep") as sleep:
+        assert github_service.get_weekly_commits(github_repo) == [1] * 52
+    assert [call.args[0] for call in sleep.call_args_list] == [2, 5]
+    assert github_rest_client.get_from_url.call_count == 3
+
+
+def test_get_weekly_commits_gives_up_while_github_computes(github_service: GithubService,
+                                                          github_rest_client: GithubRestClient,
+                                                          github_repo: GithubRepo):
+    github_rest_client.get_from_url = Mock(side_effect=lambda _url, _etag=None: __response("{}", 202))
+    with patch("anki_addons_dataset.collector.github.github_service.time.sleep"):
+        assert github_service.get_weekly_commits(github_repo) is None
+        assert github_rest_client.get_from_url.call_count == 4
+        assert github_service.get_weekly_commits(github_repo) is None
+    assert github_rest_client.get_from_url.call_count == 8
+
+
+def test_get_weekly_commits_404(github_service: GithubService, github_rest_client: GithubRestClient,
+                                github_repo: GithubRepo):
+    github_rest_client.get_from_url = __mock_content("", status_code=404)
+    assert github_service.get_weekly_commits(github_repo) is None
 
 
 def test_get_action_count_200(github_service: GithubService, github_rest_client: GithubRestClient,
@@ -256,6 +320,8 @@ def test_offline_returns_empties_without_downloading(snapshot_dir: SnapshotDir,
     assert offline_service.get_manifest(github_repo) is None
     assert offline_service.get_dependencies(github_repo) == []
     assert offline_service.get_releases(github_repo) is None
+    assert offline_service.get_contributors(github_repo) is None
+    assert offline_service.get_weekly_commits(github_repo) is None
     github_rest_client.get_from_url.assert_not_called()
 
 
@@ -306,6 +372,13 @@ def __mock_slow_content(content: str) -> Mock:
         return response
 
     return Mock(side_effect=side_effect)
+
+
+def __response(content: str, status_code: int) -> Response:
+    response: Response = Response()
+    response.status_code = status_code
+    response._content = content.encode("utf-8")
+    return response
 
 
 def __mock_content(content: str, status_code: int = 200, etag: Optional[str] = None) -> Mock:

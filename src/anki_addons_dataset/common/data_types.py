@@ -142,6 +142,12 @@ class GithubRelease:
     assets: list[GithubReleaseAsset]
 
 
+@dataclass(frozen=True)
+class GithubContributor:
+    login: str
+    contributions: int
+
+
 @dataclass
 class GithubInfo:
     github_links: list[GitHubLink]
@@ -171,6 +177,8 @@ class GithubInfo:
     repo_source: Optional[GithubRepoSource] = None
     fork_source: Optional[GithubRepo] = None
     releases: Optional[list[GithubRelease]] = None
+    contributors: Optional[list[GithubContributor]] = None
+    weekly_commits: Optional[list[int]] = None
 
 
 @dataclass

@@ -26,7 +26,7 @@ from anki_addons_dataset.common.data_types import AddonId, GithubRepo, GithubUse
     DatasetSnapshotMetadata, RawMetadata, AnkiVersion, AnkiPointVersion, AnkiVersionKind, AddonBranch, HtmlStr, \
     SnapshotDate, ReportDate, ScriptVersion, AddonRating, UpdateDate, AddonTitle, AddonDescription, PageLoadTimeout, \
     ElementWaitTimeout, AiInfo, AiSummary, AiTag, AiModel, AuthorInfo, AnkiForumTopicSource, GithubRelease, \
-    GithubReleaseAsset
+    GithubReleaseAsset, GithubContributor
 from anki_addons_dataset.common.working_dir import WorkingDir, SnapshotDir
 from anki_addons_dataset.config.app_config import AppConfig, AiConfig, GithubConfig, HuggingFaceConfig
 from anki_addons_dataset.exporter.xlsx.xlsx_exporter import XlsxExporter
@@ -235,7 +235,9 @@ def addon_info(addon_header: AddonHeader, github_repo: GithubRepo, topic_slug: T
             releases=[GithubRelease("v1.1-beta", None, datetime(2023, 3, 10, 9, 0, 0), True,
                                     [GithubReleaseAsset("note_size.ankiaddon", 2048, 3)]),
                       GithubRelease("v1.0", "First release", datetime(2023, 3, 1, 8, 0, 0), False,
-                                    [GithubReleaseAsset("note_size.ankiaddon", 1024, 9)])]
+                                    [GithubReleaseAsset("note_size.ankiaddon", 1024, 9)])],
+            contributors=[GithubContributor("John", 40), GithubContributor("Jane", 2)],
+            weekly_commits=[0] * 50 + [3, 1]
         ),
         forum=AnkiForumInfo(
             anki_forum_url=URL("https://forums.ankiweb.net/t/note-size-addon-support/46001"),

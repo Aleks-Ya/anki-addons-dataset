@@ -59,6 +59,13 @@ prerelease, and `github.release_downloads` is the sum of the asset downloads ove
 numbers, but only for addons distributed through GitHub releases. All five are `null` in snapshots collected before
 releases were tracked.
 
+The `github.contributors` field lists the GitHub accounts that committed to the repo, with their number of
+contributions, most active first. Commits made without a GitHub account are not counted, and the list stops at
+100 contributors. `github.contributor_count` is its length. `github.weekly_commits` holds the number of commits to
+the default branch in each of the last 52 weeks, oldest week first, and `github.commits_last_year` is their sum.
+These fields are `null` in snapshots collected before they were tracked, and `github.weekly_commits` is also `null`
+when GitHub was still computing the statistics at collection time.
+
 Abandoned addons are often forked and republished under a new name. `forked_from` is the addon an addon was
 forked from, or `null`, with its `evidence`: `github_fork` when the addon's GitHub repo is a GitHub fork of
 another addon's repo (`github.fork_source` holds the root repo), `ai` when a large language model read the

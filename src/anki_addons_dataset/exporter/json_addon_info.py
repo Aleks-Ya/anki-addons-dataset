@@ -59,6 +59,12 @@ class Release:
 
 
 @dataclass
+class Contributor:
+    login: str
+    contributions: int
+
+
+@dataclass
 class GitHub:
     user: Optional[str]
     repo: Optional[str]
@@ -91,6 +97,10 @@ class GitHub:
     latest_release_at: Optional[str]
     release_downloads: Optional[int]
     releases: Optional[list[Release]]
+    contributor_count: Optional[int]
+    contributors: Optional[list[Contributor]]
+    commits_last_year: Optional[int]
+    weekly_commits: Optional[list[int]]
 
 
 @dataclass
@@ -236,7 +246,12 @@ class JsonAddonInfo:
                       if latest_release and latest_release.published_at else None,
                       sum(asset.download_count for release in releases for asset in release.assets)
                       if releases is not None else None,
-                      JsonAddonInfo.__releases(releases))
+                      JsonAddonInfo.__releases(releases),
+                      len(github.contributors) if github.contributors is not None else None,
+                      [Contributor(contributor.login, contributor.contributions)
+                       for contributor in github.contributors] if github.contributors is not None else None,
+                      sum(github.weekly_commits) if github.weekly_commits is not None else None,
+                      list(github.weekly_commits) if github.weekly_commits is not None else None)
 
     @staticmethod
     def __latest_release(releases: Optional[list[GithubRelease]]) -> Optional[GithubRelease]:

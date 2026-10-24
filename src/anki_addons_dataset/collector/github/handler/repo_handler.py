@@ -52,6 +52,12 @@ class RepoHandler(ABC):
         JsonHelper.write_dict_to_file({}, raw_file)
         self.__get_not_found_file().touch()
 
+    def status_202(self) -> None:
+        log.warning(f"GitHub is still computing {self.get_url()}, skipped")
+
+    def status_204(self, response: Response) -> None:
+        self.status_other(response)
+
     def status_409(self, response: Response) -> None:
         self.status_other(response)
 

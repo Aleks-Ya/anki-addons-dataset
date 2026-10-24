@@ -12,7 +12,7 @@ from anki_addons_dataset.common.data_types import AddonInfo, AddonInfos, AddonHe
     ScriptVersion, AddonRating, UpdateDate, AddonTitle, AddonDescription, AddonManifest, SpdxLicense, Topic, \
     DependencyName, GithubReadme, AiInfo, AiSummary, AiModel, AiTag, AnkiPointVersion, AnkiVersionKind, \
     PageLink, PageLinkSection, GithubRepoSource, AnkiForumTopicSource, AuthorInfo, ForkEvidence, ForkRelation, \
-    AddonReview, ReviewVote, GithubRelease, GithubReleaseAsset
+    AddonReview, ReviewVote, GithubRelease, GithubReleaseAsset, GithubContributor
 
 
 class JsonHelper:
@@ -187,6 +187,10 @@ class JsonHelper:
             fork_source=JsonHelper.__github_repo_from_dict(data.get("fork_source")),
             releases=[JsonHelper.__github_release_from_dict(release) for release in data["releases"]]
             if data.get("releases") is not None else None,
+            contributors=[GithubContributor(contributor["login"], contributor["contributions"])
+                          for contributor in data["contributors"]]
+            if data.get("contributors") is not None else None,
+            weekly_commits=list(data["weekly_commits"]) if data.get("weekly_commits") is not None else None,
         )
 
     @staticmethod

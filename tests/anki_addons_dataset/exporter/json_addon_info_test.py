@@ -78,7 +78,12 @@ def test_addon_infos_to_json(addon_infos: AddonInfos):
                                         {'tag_name': 'v1.0', 'name': 'First release',
                                          'published_at': '2023-03-01T08:00:00', 'prerelease': False,
                                          'assets': [{'name': 'note_size.ankiaddon', 'size': 1024,
-                                                     'download_count': 9}]}]},
+                                                     'download_count': 9}]}],
+                                    'contributor_count': 2,
+                                    'contributors': [{'login': 'John', 'contributions': 40},
+                                                     {'login': 'Jane', 'contributions': 2}],
+                                    'commits_last_year': 4,
+                                    'weekly_commits': [0] * 50 + [3, 1]},
                          'forum': {'anki_forum_url': 'https://forums.ankiweb.net/t/note-size-addon-support/46001',
                                    'topic_slug': 'note-size-addon-support',
                                    'topic_id': 46001,
@@ -163,7 +168,12 @@ def test_addon_infos_to_json_empty_forum(addon_info: AddonInfo):
                                         {'tag_name': 'v1.0', 'name': 'First release',
                                          'published_at': '2023-03-01T08:00:00', 'prerelease': False,
                                          'assets': [{'name': 'note_size.ankiaddon', 'size': 1024,
-                                                     'download_count': 9}]}]},
+                                                     'download_count': 9}]}],
+                                    'contributor_count': 2,
+                                    'contributors': [{'login': 'John', 'contributions': 40},
+                                                     {'login': 'Jane', 'contributions': 2}],
+                                    'commits_last_year': 4,
+                                    'weekly_commits': [0] * 50 + [3, 1]},
                          'forum': None,
                          'ai': {'summary': 'Shows the size of the collection and of individual notes.',
                                 'model': 'test-model',
@@ -243,7 +253,12 @@ def test_addon_infos_to_json_empty_posts_count(addon_info: AddonInfo):
                                         {'tag_name': 'v1.0', 'name': 'First release',
                                          'published_at': '2023-03-01T08:00:00', 'prerelease': False,
                                          'assets': [{'name': 'note_size.ankiaddon', 'size': 1024,
-                                                     'download_count': 9}]}]},
+                                                     'download_count': 9}]}],
+                                    'contributor_count': 2,
+                                    'contributors': [{'login': 'John', 'contributions': 40},
+                                                     {'login': 'Jane', 'contributions': 2}],
+                                    'commits_last_year': 4,
+                                    'weekly_commits': [0] * 50 + [3, 1]},
                          'forum': {'anki_forum_url': 'https://forums.ankiweb.net/t/note-size-addon-support/46001',
                                    'topic_slug': 'note-size-addon-support',
                                    'topic_id': 46001,
@@ -313,6 +328,15 @@ def test_addon_infos_to_json_releases_not_collected(addon_info: AddonInfo):
     github: dict[str, Any] = to_dicts(AddonInfos([addon_info]))[0]["github"]
     assert [github[key] for key in ("release_count", "latest_release_tag", "latest_release_at",
                                     "release_downloads", "releases")] == [None] * 5
+
+
+def test_addon_infos_to_json_activity_not_collected(addon_info: AddonInfo):
+    assert addon_info.github is not None
+    addon_info.github.contributors = None
+    addon_info.github.weekly_commits = None
+    github: dict[str, Any] = to_dicts(AddonInfos([addon_info]))[0]["github"]
+    assert [github[key] for key in ("contributor_count", "contributors", "commits_last_year",
+                                    "weekly_commits")] == [None] * 4
 
 
 def test_addon_infos_to_json_only_prereleases(addon_info: AddonInfo):
