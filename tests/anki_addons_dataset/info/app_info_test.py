@@ -73,7 +73,7 @@ def __patch_ai_api(side_effect: Optional[Exception] = None):
         client.responses.create.return_value = __ai_response()
     else:
         client.responses.create.side_effect = side_effect
-    return patch("anki_addons_dataset.collector.ai.openai_ai_provider.OpenAI", return_value=client)
+    return patch("anki_addons_dataset.collector.ai.provider.openai_ai_provider.OpenAI", return_value=client)
 
 
 def __ai_status_error(status_code: int) -> APIStatusError:
@@ -90,7 +90,7 @@ def __balance_response(payload: dict[str, Any]) -> Response:
 
 
 def __patch_deepseek_balance(payload: dict[str, Any]):
-    return patch("anki_addons_dataset.collector.ai.deepseek_ai_provider.requests.get",
+    return patch("anki_addons_dataset.collector.ai.provider.deepseek_ai_provider.requests.get",
                  return_value=__balance_response(payload))
 
 
@@ -305,7 +305,7 @@ def test_print_info_fails_when_the_ai_provider_stays_silent(working_dir: Working
     report_date: ReportDate = ReportDate(datetime(2026, 1, 2, 3, 4, 5))
     __write_token(tmp_path)
     __write_ai_api_key(tmp_path)
-    mocker.patch("anki_addons_dataset.collector.ai.openai_ai_provider.time.sleep")
+    mocker.patch("anki_addons_dataset.collector.ai.provider.openai_ai_provider.time.sleep")
 
     with __patch_github_api(), __patch_ai_api(ValueError("Service Unavailable")):
         with pytest.raises(RuntimeError, match="AI provider did not answer"):

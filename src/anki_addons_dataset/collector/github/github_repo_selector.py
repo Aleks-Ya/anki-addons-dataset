@@ -4,7 +4,7 @@ import re
 from logging import Logger
 from typing import Optional
 
-from anki_addons_dataset.collector.ai.ai_repo_selector import AiRepoSelector, AiRepoAnswer
+from anki_addons_dataset.collector.ai.question.ai_repo_selector import AiRepoSelector, AiRepoAnswer
 from anki_addons_dataset.collector.overrider.overrider import Overrider
 from anki_addons_dataset.common.data_types import AddonInfo, AddonId, GithubInfo, GithubRepo, GithubRepoSource, \
     GitHubLink

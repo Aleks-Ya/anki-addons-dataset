@@ -5,7 +5,7 @@ from typing import Optional
 import logging
 from logging import Logger
 
-from anki_addons_dataset.collector.ai.ai_forum_verifier import AiForumVerifier, AiForumAnswer
+from anki_addons_dataset.collector.ai.question.ai_forum_verifier import AiForumVerifier, AiForumAnswer
 from anki_addons_dataset.collector.ankiforum.ankiforum_service import AnkiForumService
 from anki_addons_dataset.collector.ankiforum.ankiforum_topic import AnkiForumTopic
 from anki_addons_dataset.collector.enricher import Enricher

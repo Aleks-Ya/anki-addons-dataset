@@ -6,8 +6,8 @@ from pathlib import Path
 from typing import Optional
 
 from anki_addons_dataset import __version__
-from anki_addons_dataset.collector.ai.ai_provider import AiProvider
-from anki_addons_dataset.collector.ai.ai_provider_factory import AiProviderFactory
+from anki_addons_dataset.collector.ai.provider.ai_provider import AiProvider
+from anki_addons_dataset.collector.ai.provider.ai_provider_factory import AiProviderFactory
 from anki_addons_dataset.collector.github.github_rest_client import GithubRestClient
 from anki_addons_dataset.common.data_types import SnapshotDate, ReportDate, PageLoadTimeout, ElementWaitTimeout
 from anki_addons_dataset.common.log import Log

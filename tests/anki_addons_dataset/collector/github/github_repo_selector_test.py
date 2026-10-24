@@ -1,7 +1,7 @@
 from typing import Optional
 from unittest.mock import Mock
 
-from anki_addons_dataset.collector.ai.ai_repo_selector import AiRepoSelector, AiRepoAnswer
+from anki_addons_dataset.collector.ai.question.ai_repo_selector import AiRepoSelector, AiRepoAnswer
 from anki_addons_dataset.collector.github.github_repo_selector import GithubRepoSelector
 from anki_addons_dataset.collector.overrider.overrider import Overrider
 from anki_addons_dataset.collector.url_parser import UrlParser

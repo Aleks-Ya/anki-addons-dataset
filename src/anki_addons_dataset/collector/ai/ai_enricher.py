@@ -4,9 +4,9 @@ from logging import Logger
 from threading import Lock
 from typing import Optional
 
-from anki_addons_dataset.collector.ai.ai_fork_classifier import AiForkClassifier, AiForkAnswer
-from anki_addons_dataset.collector.ai.ai_summarizer import AiSummarizer
-from anki_addons_dataset.collector.ai.ai_tagger import AiTagger
+from anki_addons_dataset.collector.ai.question.ai_fork_classifier import AiForkClassifier, AiForkAnswer
+from anki_addons_dataset.collector.ai.question.ai_summarizer import AiSummarizer
+from anki_addons_dataset.collector.ai.question.ai_tagger import AiTagger
 from anki_addons_dataset.collector.enricher import Enricher
 from anki_addons_dataset.common.data_types import AddonId, AddonInfo, AddonInfos, AiInfo, AiModel, AiSummary, \
     AiTag, GithubReadme

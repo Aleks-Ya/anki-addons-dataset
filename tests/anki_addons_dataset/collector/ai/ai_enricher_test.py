@@ -5,12 +5,12 @@ from typing import Optional
 import pytest
 
 from anki_addons_dataset.collector.ai.ai_enricher import AiEnricher
-from anki_addons_dataset.collector.ai.ai_fork_classifier import AiForkClassifier
-from anki_addons_dataset.collector.ai.ai_provider import AiProvider, AiPrompt, AiResponseText, AiInstructions
-from anki_addons_dataset.collector.ai.ai_summarizer import AiSummarizer
-from anki_addons_dataset.collector.ai.ai_tagger import AiTagger
-from anki_addons_dataset.collector.ai.cached_ai_provider import CachedAiProvider
-from anki_addons_dataset.collector.ai.no_ai_provider import NoAiProvider
+from anki_addons_dataset.collector.ai.question.ai_fork_classifier import AiForkClassifier
+from anki_addons_dataset.collector.ai.provider.ai_provider import AiProvider, AiPrompt, AiResponseText, AiInstructions
+from anki_addons_dataset.collector.ai.question.ai_summarizer import AiSummarizer
+from anki_addons_dataset.collector.ai.question.ai_tagger import AiTagger
+from anki_addons_dataset.collector.ai.cache.cached_ai_provider import CachedAiProvider
+from anki_addons_dataset.collector.ai.provider.no_ai_provider import NoAiProvider
 from anki_addons_dataset.common.data_types import AddonId, AddonInfo, AddonInfos, AiModel, GithubReadme, AddonTitle, \
     PageLink, PageLinkSection, URL
 

@@ -7,8 +7,8 @@ import pytest
 from huggingface_hub import HfApi
 from pydiscourse import DiscourseClient
 
-from anki_addons_dataset.collector.ai.ai_provider import AiProvider
-from anki_addons_dataset.collector.ai.openai_ai_provider import OpenAiAiProvider
+from anki_addons_dataset.collector.ai.provider.ai_provider import AiProvider
+from anki_addons_dataset.collector.ai.provider.openai_ai_provider import OpenAiAiProvider
 from anki_addons_dataset.collector.ankiweb.page_downloader import PageDownloader
 from anki_addons_dataset.collector.github.github_rest_client import GithubRestClient
 from anki_addons_dataset.common.data_types import AddonId, AiModel, ElementWaitTimeout, GithubRepo, GithubRepoName, \

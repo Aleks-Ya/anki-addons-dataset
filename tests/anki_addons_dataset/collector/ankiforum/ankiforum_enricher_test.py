@@ -7,7 +7,7 @@ from unittest.mock import Mock
 
 import pytest
 
-from anki_addons_dataset.collector.ai.ai_forum_verifier import AiForumVerifier, AiForumAnswer
+from anki_addons_dataset.collector.ai.question.ai_forum_verifier import AiForumVerifier, AiForumAnswer
 from anki_addons_dataset.collector.ankiforum.ankiforum_enricher import AnkiForumEnricher
 from anki_addons_dataset.collector.ankiforum.ankiforum_service import AnkiForumService
 from anki_addons_dataset.common.data_types import AddonInfo, AddonHeader, AddonId, AddonPage, GithubInfo, AddonInfos, \

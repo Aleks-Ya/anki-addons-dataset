@@ -8,7 +8,7 @@ import pandas.testing as pdt
 import pytest
 from pandas import DataFrame
 
-from anki_addons_dataset.collector.ai.ai_cache_stats import AiCacheStats
+from anki_addons_dataset.collector.ai.cache.ai_cache_stats import AiCacheStats
 from anki_addons_dataset.collector.collector_facade import CollectorFacade
 from anki_addons_dataset.common.data_types import AddonInfos, ElementWaitTimeout, PageLoadTimeout, ReportDate, \
     ScriptVersion, SnapshotDate, AddonReview, ReviewVote
