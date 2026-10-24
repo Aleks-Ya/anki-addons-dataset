@@ -132,7 +132,7 @@ wheels = [
 
 [[package]]
 name = "bump-my-version"
-version = "1.6.4"
+version = "1.6.5"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "click" },
@@ -145,9 +145,9 @@ dependencies = [
     { name = "tomlkit" },
     { name = "wcmatch" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/ab/fa/d19af795a245e5d102acee5439dc2aaec4f33b689e57952ac09be34137d1/bump_my_version-1.6.4.tar.gz", hash = "sha256:9699550488ecddddbf3ce246d764a218c0e66b79528cda620d7ff46a0d1bdd93", size = 1147338, upload-time = "2026-10-24T12:51:25.783Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/a9/65/338597a14c53ae2b9d004031dbcb61a0641484b20469b5b7bd5250a37a34/bump_my_version-1.6.5.tar.gz", hash = "sha256:0fd40347bca359bdee9999c93e101d2ad4612cf10319bc5e81181e57fc313e0d", size = 1158255, upload-time = "2026-10-24T14:02:28.037Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/23/7b/3bd6547b88f66e1e30f82b40f92ed38d3995bf5e4405d41893db5f408067/bump_my_version-1.6.4-py3-none-any.whl", hash = "sha256:83d7442d49110272cbe9e246270b601f8207e9c83d827337d0673ae8cf9f808c", size = 67399, upload-time = "2026-10-24T12:51:24.417Z" },
+    { url = "https://files.pythonhosted.org/packages/15/bd/a8698a2143cccd7d5a5f23e7ec8520c2133e4083ccda1799531490fad17d/bump_my_version-1.6.5-py3-none-any.whl", hash = "sha256:7fc77cfa499edfa18072aaf7cc9e6697b8a66c7ba76f467c3c4fba4c554f2521", size = 67396, upload-time = "2026-10-24T14:02:26.214Z" },
 ]
 
 [[package]]
