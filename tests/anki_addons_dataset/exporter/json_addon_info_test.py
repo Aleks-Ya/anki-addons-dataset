@@ -316,7 +316,8 @@ def test_addon_infos_to_json_releases_not_collected(addon_info: AddonInfo):
 
 
 def test_addon_infos_to_json_only_prereleases(addon_info: AddonInfo):
-    assert addon_info.github is not None and addon_info.github.releases is not None
+    assert addon_info.github is not None
+    assert addon_info.github.releases is not None
     addon_info.github.releases = [addon_info.github.releases[0]]
     github: dict[str, Any] = to_dicts(AddonInfos([addon_info]))[0]["github"]
     assert github["release_count"] == 1

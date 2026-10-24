@@ -336,7 +336,8 @@ def test_addon_infos_dump_round_trip_preserves_releases(addon_infos: AddonInfos,
     JsonHelper.write_addon_infos_dump(addon_infos, script_version, dump_file)
     _, read_addon_infos = JsonHelper.read_addon_infos_dump(dump_file)
 
-    assert read_addon_infos[0].github is not None and addon_infos[0].github is not None
+    assert read_addon_infos[0].github is not None
+    assert addon_infos[0].github is not None
     assert read_addon_infos[0].github.releases == addon_infos[0].github.releases
 
 
