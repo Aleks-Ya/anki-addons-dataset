@@ -37,7 +37,6 @@ def test_report_snapshots_generates_final_from_dump_without_raw(
 
     final_dir = snapshot_dir.get_final_dir()
     assert (final_dir / "parquet" / "data.parquet").exists()
-    assert (final_dir / "parquet" / "aggregation.parquet").exists()
     assert (final_dir / "parquet" / "tags.parquet").exists()
     assert (final_dir / "xlsx" / "tags.xlsx").exists()
     assert not (final_dir / "json").exists()

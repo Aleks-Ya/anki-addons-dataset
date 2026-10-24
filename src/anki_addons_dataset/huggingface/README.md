@@ -87,13 +87,11 @@ Folder `latest` contains the most recent day from `history`.
 ├── history
 │   ├── YYYY-MM-DD
 │   │   ├── parquet
-│   │   │   ├── aggregation.parquet
 │   │   │   ├── anki_versions.parquet
 │   │   │   ├── data.parquet
 │   │   │   ├── reviews.parquet
 │   │   │   └── tags.parquet
 │   │   ├── xlsx
-│   │   │   ├── aggregation.xlsx
 │   │   │   ├── anki_versions.xlsx
 │   │   │   ├── data.xlsx
 │   │   │   └── tags.xlsx
@@ -102,13 +100,11 @@ Folder `latest` contains the most recent day from `history`.
 │   │   └── stage.zip
 ├── latest
 │   ├── parquet
-│   │   ├── aggregation.parquet
 │   │   ├── anki_versions.parquet
 │   │   ├── data.parquet
 │   │   ├── reviews.parquet
 │   │   └── tags.parquet
 │   ├── xlsx
-│   │   ├── aggregation.xlsx
 │   │   ├── anki_versions.xlsx
 │   │   ├── data.xlsx
 │   │   └── tags.xlsx

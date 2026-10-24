@@ -7,7 +7,6 @@ from typing import Optional
 from pydiscourse import DiscourseClient
 
 from anki_addons_dataset.collector.addon_infos_collector import AddonInfosCollector
-from anki_addons_dataset.collector.aggregator import Aggregator
 from anki_addons_dataset.collector.ai.ai_cache_index import AiCacheIndex
 from anki_addons_dataset.collector.ai.ai_cache_stats import AiCacheStats
 from anki_addons_dataset.collector.ai.ai_enricher import AiEnricher
@@ -39,7 +38,7 @@ from anki_addons_dataset.collector.github.github_service import GithubService
 from anki_addons_dataset.collector.overrider.overrider import Overrider
 from anki_addons_dataset.collector.raw_metadata_collector import RawMetadataCollector
 from anki_addons_dataset.collector.sample_collector import SampleCollector
-from anki_addons_dataset.common.data_types import Aggregation, AddonInfos, DatasetSnapshotMetadata, RawMetadata, \
+from anki_addons_dataset.common.data_types import AddonInfos, DatasetSnapshotMetadata, RawMetadata, \
     AnkiRelease, SnapshotDate, ReportDate, ScriptVersion, PageLoadTimeout, ElementWaitTimeout, ReviewRow
 from anki_addons_dataset.common.json_helper import JsonHelper
 from anki_addons_dataset.common.working_dir import SnapshotDir, WorkingDir
@@ -144,7 +143,6 @@ class CollectorFacade:
         if script_version != current_script_version:
             log.warning(f"Dump was parsed with script version {script_version}, "
                         f"current version is {current_script_version}. Re-run 'parse' if the parsing logic changed.")
-        aggregation: Aggregation = Aggregator.aggregate(addon_infos)
         exporter_facade: ExporterFacade = ExporterFacade(snapshot_dir)
         dataset_snapshot_metadata: DatasetSnapshotMetadata = DatasetMetadata.create_dataset_snapshot_metadata(
             snapshot_dir, script_version, report_date)
@@ -155,7 +153,7 @@ class CollectorFacade:
         if anki_versions is None:
             log.warning(f"No Anki tags in {snapshot_dir.get_raw_dir()}, the anki_versions table is skipped. "
                         f"Run the 'download -d {snapshot_date}' operation to fetch them.")
-        exporter_facade.export_all(addon_infos, aggregation, AiTagVocabulary.definitions(), anki_versions,
+        exporter_facade.export_all(addon_infos, AiTagVocabulary.definitions(), anki_versions,
                                    self.__review_rows(addon_infos), dataset_snapshot_metadata, raw_metadata)
         log.info(f"===== Reported snapshot for {snapshot_date} =====\n")
 

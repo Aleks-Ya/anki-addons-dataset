@@ -34,7 +34,6 @@ package "anki_addons_dataset" {
     class AnkiForumInfo <<dataclass>>
     class AiInfo <<dataclass>>
     class AddonInfo <<dataclass>>
-    class Aggregation <<dataclass>>
     class RawMetadata <<dataclass>>
     class DatasetSnapshotMetadata <<dataclass>>
   }
@@ -59,7 +58,6 @@ package "anki_addons_dataset" {
 
   package "collector" {
     class AddonInfosCollector
-    class Aggregator
     class CollectorFacade
     class DatasetMetadata
     abstract class Enricher
@@ -150,7 +148,6 @@ package "anki_addons_dataset" {
 
     package "xlsx" {
       class AddonInfoSheet
-      class AggregationSheet
       class LanguageNameFormatter
       class XlsxExporter
     }
@@ -182,7 +179,6 @@ Facade --> WorkingDirBackup
 Facade --> WorkingDirInitializer
 CollectorFacade --> WorkingDir
 CollectorFacade --> AddonInfosCollector
-CollectorFacade --> Aggregator
 CollectorFacade --> DatasetMetadata
 CollectorFacade --> ExporterFacade
 CollectorFacade --> JsonHelper
@@ -314,13 +310,11 @@ GitHub *-- Link
 GitHub *-- LanguageBytes
 GitHub *-- Manifest
 XlsxExporter --> AddonInfoSheet
-XlsxExporter --> AggregationSheet
 AddonInfoSheet --> LanguageNameFormatter
 ExporterFacade --> ParquetExporter
 ExporterFacade --> XlsxExporter
 
 ' Metadata and persistence helpers
-Aggregator --> Aggregation
 DatasetMetadata --> DatasetSnapshotMetadata
 DatasetMetadata --> JsonHelper
 DatasetMetadata --> SnapshotDir

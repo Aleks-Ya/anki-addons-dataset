@@ -21,7 +21,6 @@ group Downloading {
             :Enrich AddonInfos;
             :Override AddonInfos;
         }
-        :Prepare Aggregation;
         :Export Snapshot to a directory;
         :Create HuggingFace metadata;
     endwhile

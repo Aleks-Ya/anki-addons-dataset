@@ -6,7 +6,6 @@ from unittest.mock import Mock
 import pytest
 from pydiscourse import DiscourseClient
 
-from anki_addons_dataset.collector.aggregator import Aggregator
 from anki_addons_dataset.collector.ankiforum.ankiforum_enricher import AnkiForumEnricher
 from anki_addons_dataset.collector.ankiforum.ankiforum_service import TopicSlug, TopicId, AnkiForumService
 from anki_addons_dataset.collector.ankiweb.addon_page_downloader import AddonPageDownloader
@@ -286,11 +285,6 @@ def anki_forum_enricher(snapshot_dir: SnapshotDir, anki_forum_service: AnkiForum
 @pytest.fixture
 def github_repo() -> GithubRepo:
     return GithubRepo(GithubUserName("John"), GithubRepoName("app"))
-
-
-@pytest.fixture
-def aggregator() -> Aggregator:
-    return Aggregator()
 
 
 @pytest.fixture

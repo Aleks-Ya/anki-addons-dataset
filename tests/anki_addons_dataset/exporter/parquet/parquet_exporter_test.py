@@ -5,7 +5,7 @@ import pandas
 from pandas import DataFrame
 import pandas.testing as pdt
 
-from anki_addons_dataset.common.data_types import Aggregation, AddonInfos, DatasetSnapshotMetadata, RawMetadata, \
+from anki_addons_dataset.common.data_types import AddonInfos, DatasetSnapshotMetadata, RawMetadata, \
     AiTagDefinition, AiTag, AiTagGroup, AnkiRelease, AnkiVersion, AnkiPointVersion, ReviewRow, ReviewVote, AddonId
 from anki_addons_dataset.common.working_dir import SnapshotDir
 from anki_addons_dataset.exporter.parquet.parquet_exporter import ParquetExporter
@@ -84,29 +84,6 @@ def test_export_addon_infos(snapshot_dir: SnapshotDir, addon_infos: AddonInfos,
                          'forked_from': None,
                          'forks': []
         }]
-    )
-    pdt.assert_frame_equal(act_df, exp_df)
-
-
-def test_export_aggregation(snapshot_dir: SnapshotDir, dataset_snapshot_metadata: DatasetSnapshotMetadata,
-                            raw_metadata: RawMetadata):
-    aggregation: Aggregation = Aggregation(addon_number=5,
-                                           addon_with_github_number=4,
-                                           addon_with_anki_forum_page_number=3,
-                                           addon_with_unit_tests_number=2,
-                                           author_number=1)
-    final_dir: Path = snapshot_dir.get_final_dir()
-    exporter: ParquetExporter = ParquetExporter(final_dir)
-    exporter.export_aggregation(aggregation, dataset_snapshot_metadata, raw_metadata)
-
-    act_file: Path = final_dir / "parquet" / "aggregation.parquet"
-    act_df: DataFrame = pandas.read_parquet(act_file)
-    exp_df: DataFrame = DataFrame(
-        [{'addon_number': 5,
-          'addon_with_github_number': 4,
-          'addon_with_anki_forum_page_number': 3,
-          'addon_with_unit_tests_number': 2,
-          'author_number': 1}]
     )
     pdt.assert_frame_equal(act_df, exp_df)
 

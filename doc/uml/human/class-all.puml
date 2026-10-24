@@ -23,7 +23,6 @@ package anki_addons_dataset {
         class AddonPage
         class AddonInfo
         class AnkiForumInfo
-        class Aggregation
     }
     package facade {
         class Facade
@@ -45,9 +44,6 @@ package anki_addons_dataset {
         package enricher {
             class Enricher
         }
-    }
-    package aggregator {
-        class Aggregator
     }
     package exporter {
         class ExporterFacade
@@ -74,7 +70,6 @@ AddonCollector --> AnkiWebService
 AddonCollector --> Overrider
 Enricher --> GithubService
 AddonCollector --> Enricher
-Facade --> Aggregator
 Facade --> ExporterFacade
 Facade --> HuggingFace
 Facade --> DatasetBundle
