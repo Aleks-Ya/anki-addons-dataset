@@ -1,9 +1,10 @@
 from dataclasses import dataclass
+from datetime import datetime
 from typing import Optional
 
 from anki_addons_dataset.common.anki_version import AnkiVersionCodec
 from anki_addons_dataset.common.data_types import AddonInfos, AddonInfo, AddonDescription, GithubInfo, AddonManifest, \
-    AnkiPointVersion, HtmlStr, AddonId
+    AnkiPointVersion, HtmlStr, AddonId, GithubRelease
 
 
 @dataclass
@@ -42,6 +43,22 @@ class Manifest:
 
 
 @dataclass
+class ReleaseAsset:
+    name: str
+    size: int
+    download_count: int
+
+
+@dataclass
+class Release:
+    tag_name: str
+    name: Optional[str]
+    published_at: Optional[str]
+    prerelease: bool
+    assets: list[ReleaseAsset]
+
+
+@dataclass
 class GitHub:
     user: Optional[str]
     repo: Optional[str]
@@ -69,6 +86,11 @@ class GitHub:
     ai_tooling_markers: list[str]
     repo_source: Optional[str]
     fork_source: Optional[str]
+    release_count: Optional[int]
+    latest_release_tag: Optional[str]
+    latest_release_at: Optional[str]
+    release_downloads: Optional[int]
+    releases: Optional[list[Release]]
 
 
 @dataclass
@@ -199,13 +221,38 @@ class JsonAddonInfo:
         manifest: Optional[Manifest] = JsonAddonInfo.__manifest(github.manifest)
         language_bytes: list[LanguageBytes] = [LanguageBytes(name, count)
                                                for name, count in github.language_bytes.items()]
+        releases: Optional[list[GithubRelease]] = github.releases
+        latest_release: Optional[GithubRelease] = JsonAddonInfo.__latest_release(releases)
         return GitHub(user, repo_str, github.languages, github.stars, last_commit_str, links, github.action_count,
                       github.tests_count, github.license, github.forks, github.open_issues, github.size_kb,
                       list(github.topics), github.repo_description, github.homepage, github.archived, pushed_at_str,
                       created_at_str, github.primary_language, language_bytes, manifest,
                       list(github.dependencies), github.readme, list(github.ai_tooling_markers),
                       str(github.repo_source) if github.repo_source else None,
-                      github.fork_source.get_id() if github.fork_source else None)
+                      github.fork_source.get_id() if github.fork_source else None,
+                      len(releases) if releases is not None else None,
+                      latest_release.tag_name if latest_release else None,
+                      latest_release.published_at.isoformat()
+                      if latest_release and latest_release.published_at else None,
+                      sum(asset.download_count for release in releases for asset in release.assets)
+                      if releases is not None else None,
+                      JsonAddonInfo.__releases(releases))
+
+    @staticmethod
+    def __latest_release(releases: Optional[list[GithubRelease]]) -> Optional[GithubRelease]:
+        stable: list[tuple[datetime, GithubRelease]] = [
+            (release.published_at, release) for release in releases or []
+            if not release.prerelease and release.published_at is not None]
+        return max(stable, key=lambda pair: pair[0])[1] if stable else None
+
+    @staticmethod
+    def __releases(releases: Optional[list[GithubRelease]]) -> Optional[list[Release]]:
+        if releases is None:
+            return None
+        return [Release(release.tag_name, release.name,
+                        release.published_at.isoformat() if release.published_at else None, release.prerelease,
+                        [ReleaseAsset(asset.name, asset.size, asset.download_count) for asset in release.assets])
+                for release in releases]
 
     @staticmethod
     def __manifest(manifest: Optional[AddonManifest]) -> Optional[Manifest]:

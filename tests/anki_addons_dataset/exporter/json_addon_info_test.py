@@ -65,7 +65,20 @@ def test_addon_infos_to_json(addon_infos: AddonInfos):
                                     'dependencies': [],
                                     'readme': None,
                                     'ai_tooling_markers': ['claude-code', 'cursor'], 'repo_source': None,
-                                    'fork_source': None},
+                                    'fork_source': None,
+                                    'release_count': 2,
+                                    'latest_release_tag': 'v1.0',
+                                    'latest_release_at': '2023-03-01T08:00:00',
+                                    'release_downloads': 12,
+                                    'releases': [
+                                        {'tag_name': 'v1.1-beta', 'name': None,
+                                         'published_at': '2023-03-10T09:00:00', 'prerelease': True,
+                                         'assets': [{'name': 'note_size.ankiaddon', 'size': 2048,
+                                                     'download_count': 3}]},
+                                        {'tag_name': 'v1.0', 'name': 'First release',
+                                         'published_at': '2023-03-01T08:00:00', 'prerelease': False,
+                                         'assets': [{'name': 'note_size.ankiaddon', 'size': 1024,
+                                                     'download_count': 9}]}]},
                          'forum': {'anki_forum_url': 'https://forums.ankiweb.net/t/note-size-addon-support/46001',
                                    'topic_slug': 'note-size-addon-support',
                                    'topic_id': 46001,
@@ -137,7 +150,20 @@ def test_addon_infos_to_json_empty_forum(addon_info: AddonInfo):
                                     'dependencies': [],
                                     'readme': None,
                                     'ai_tooling_markers': ['claude-code', 'cursor'], 'repo_source': None,
-                                    'fork_source': None},
+                                    'fork_source': None,
+                                    'release_count': 2,
+                                    'latest_release_tag': 'v1.0',
+                                    'latest_release_at': '2023-03-01T08:00:00',
+                                    'release_downloads': 12,
+                                    'releases': [
+                                        {'tag_name': 'v1.1-beta', 'name': None,
+                                         'published_at': '2023-03-10T09:00:00', 'prerelease': True,
+                                         'assets': [{'name': 'note_size.ankiaddon', 'size': 2048,
+                                                     'download_count': 3}]},
+                                        {'tag_name': 'v1.0', 'name': 'First release',
+                                         'published_at': '2023-03-01T08:00:00', 'prerelease': False,
+                                         'assets': [{'name': 'note_size.ankiaddon', 'size': 1024,
+                                                     'download_count': 9}]}]},
                          'forum': None,
                          'ai': {'summary': 'Shows the size of the collection and of individual notes.',
                                 'model': 'test-model',
@@ -204,7 +230,20 @@ def test_addon_infos_to_json_empty_posts_count(addon_info: AddonInfo):
                                     'dependencies': [],
                                     'readme': None,
                                     'ai_tooling_markers': ['claude-code', 'cursor'], 'repo_source': None,
-                                    'fork_source': None},
+                                    'fork_source': None,
+                                    'release_count': 2,
+                                    'latest_release_tag': 'v1.0',
+                                    'latest_release_at': '2023-03-01T08:00:00',
+                                    'release_downloads': 12,
+                                    'releases': [
+                                        {'tag_name': 'v1.1-beta', 'name': None,
+                                         'published_at': '2023-03-10T09:00:00', 'prerelease': True,
+                                         'assets': [{'name': 'note_size.ankiaddon', 'size': 2048,
+                                                     'download_count': 3}]},
+                                        {'tag_name': 'v1.0', 'name': 'First release',
+                                         'published_at': '2023-03-01T08:00:00', 'prerelease': False,
+                                         'assets': [{'name': 'note_size.ankiaddon', 'size': 1024,
+                                                     'download_count': 9}]}]},
                          'forum': {'anki_forum_url': 'https://forums.ankiweb.net/t/note-size-addon-support/46001',
                                    'topic_slug': 'note-size-addon-support',
                                    'topic_id': 46001,
@@ -267,6 +306,23 @@ def test_addon_infos_to_json_with_enrichment_fields(addon_info: AddonInfo):
     assert github["dependencies"] == ["requests"]
     assert github["readme"] == "# NoteSize"
 
+
+def test_addon_infos_to_json_releases_not_collected(addon_info: AddonInfo):
+    assert addon_info.github is not None
+    addon_info.github.releases = None
+    github: dict[str, Any] = to_dicts(AddonInfos([addon_info]))[0]["github"]
+    assert [github[key] for key in ("release_count", "latest_release_tag", "latest_release_at",
+                                    "release_downloads", "releases")] == [None] * 5
+
+
+def test_addon_infos_to_json_only_prereleases(addon_info: AddonInfo):
+    assert addon_info.github is not None and addon_info.github.releases is not None
+    addon_info.github.releases = [addon_info.github.releases[0]]
+    github: dict[str, Any] = to_dicts(AddonInfos([addon_info]))[0]["github"]
+    assert github["release_count"] == 1
+    assert github["latest_release_tag"] is None
+    assert github["latest_release_at"] is None
+    assert github["release_downloads"] == 3
 
 
 def test_addon_infos_to_json_one_parent_with_several_forks(addon_info: AddonInfo):

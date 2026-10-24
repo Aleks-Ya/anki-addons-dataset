@@ -52,6 +52,13 @@ in every snapshot; it counts shared decks as well as addons.
 The `anki_web.package_size_kb` field is the addon package size shown on the AnkiWeb page, in kB (AnkiWeb rounds
 it to 10 kB). `0` means under 10 kB, `null` means the page showed no size.
 
+The `github.releases` field lists the GitHub releases of the addon's repo (the newest 100, drafts excluded), with
+the download count of every attached asset (such as a `.ankiaddon` file). `github.release_count` is the length of
+that list, `github.latest_release_tag` and `github.latest_release_at` describe the newest release that is not a
+prerelease, and `github.release_downloads` is the sum of the asset downloads over the listed releases: actual install
+numbers, but only for addons distributed through GitHub releases. All five are `null` in snapshots collected before
+releases were tracked.
+
 Abandoned addons are often forked and republished under a new name. `forked_from` is the addon an addon was
 forked from, or `null`, with its `evidence`: `github_fork` when the addon's GitHub repo is a GitHub fork of
 another addon's repo (`github.fork_source` holds the root repo), `ai` when a large language model read the

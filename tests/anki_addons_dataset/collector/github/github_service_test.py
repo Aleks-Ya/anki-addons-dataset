@@ -12,7 +12,7 @@ from anki_addons_dataset.collector.github.github_rest_client import GithubRestCl
 from anki_addons_dataset.collector.github.github_service import GithubService
 from anki_addons_dataset.collector.github.handler.repo_info_repo_handler import GithubRepoMeta
 from anki_addons_dataset.common.data_types import AddonManifest, DependencyName, GithubRepo, LanguageName, SnapshotDate, \
-    SpdxLicense, Topic, GithubRepoName, GithubUserName
+    SpdxLicense, Topic, GithubRepoName, GithubUserName, GithubRelease, GithubReleaseAsset
 from anki_addons_dataset.common.working_dir import SnapshotDir, WorkingDir
 
 
@@ -101,6 +101,37 @@ def test_get_last_commit_200(github_service: GithubService, github_rest_client: 
     assert github_service.get_last_commit(github_repo) == exp
     assert github_service.get_last_commit(github_repo) == exp  # cached
     github_rest_client.get_from_url.assert_called_once()
+
+
+def test_get_releases_200(github_service: GithubService, github_rest_client: GithubRestClient,
+                          github_repo: GithubRepo):
+    content: str = """[
+        {"tag_name":"v2.0","name":"","draft":true,"prerelease":false,"published_at":null,"assets":[]},
+        {"tag_name":"v1.1","name":"Beta","draft":false,"prerelease":true,"published_at":"2023-03-10T09:00:00Z",
+         "assets":[]},
+        {"tag_name":"v1.0","name":"","draft":false,"prerelease":false,"published_at":"2023-03-01T08:00:00Z",
+         "assets":[{"name":"app.ankiaddon","size":1024,"download_count":9}]}]"""
+    github_rest_client.get_from_url = __mock_content(content)
+    exp: list[GithubRelease] = [
+        GithubRelease("v1.1", "Beta", datetime(2023, 3, 10, 9, 0, 0), True, []),
+        GithubRelease("v1.0", None, datetime(2023, 3, 1, 8, 0, 0), False,
+                      [GithubReleaseAsset("app.ankiaddon", 1024, 9)])]
+    assert github_service.get_releases(github_repo) == exp
+    assert github_service.get_releases(github_repo) == exp  # cached
+    github_rest_client.get_from_url.assert_called_once_with(
+        "https://api.github.com/repos/John/app/releases?per_page=100", None)
+
+
+def test_get_releases_none_published(github_service: GithubService, github_rest_client: GithubRestClient,
+                                     github_repo: GithubRepo):
+    github_rest_client.get_from_url = __mock_content("[]")
+    assert github_service.get_releases(github_repo) == []
+
+
+def test_get_releases_404(github_service: GithubService, github_rest_client: GithubRestClient,
+                          github_repo: GithubRepo):
+    github_rest_client.get_from_url = __mock_content("", status_code=404)
+    assert github_service.get_releases(github_repo) is None
 
 
 def test_get_action_count_200(github_service: GithubService, github_rest_client: GithubRestClient,
@@ -224,6 +255,7 @@ def test_offline_returns_empties_without_downloading(snapshot_dir: SnapshotDir,
     assert offline_service.get_readme(github_repo) is None
     assert offline_service.get_manifest(github_repo) is None
     assert offline_service.get_dependencies(github_repo) == []
+    assert offline_service.get_releases(github_repo) is None
     github_rest_client.get_from_url.assert_not_called()
 
 

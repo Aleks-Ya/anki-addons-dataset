@@ -1,6 +1,7 @@
 from datetime import date
 from pathlib import Path
 
+import numpy
 import pandas
 from pandas import DataFrame
 import pandas.testing as pdt
@@ -72,7 +73,20 @@ def test_export_addon_infos(snapshot_dir: SnapshotDir, addon_infos: AddonInfos,
                        'dependencies': [],
                        'readme': None,
                        'ai_tooling_markers': ['claude-code', 'cursor'], 'repo_source': None,
-                                    'fork_source': None},
+                                    'fork_source': None,
+                                    'release_count': 2,
+                                    'latest_release_tag': 'v1.0',
+                                    'latest_release_at': '2023-03-01T08:00:00',
+                                    'release_downloads': 12,
+                                    'releases': [
+                                        {'tag_name': 'v1.1-beta', 'name': None,
+                                         'published_at': '2023-03-10T09:00:00', 'prerelease': True,
+                                         'assets': numpy.array([{'name': 'note_size.ankiaddon', 'size': 2048,
+                                                                 'download_count': 3}])},
+                                        {'tag_name': 'v1.0', 'name': 'First release',
+                                         'published_at': '2023-03-01T08:00:00', 'prerelease': False,
+                                         'assets': numpy.array([{'name': 'note_size.ankiaddon', 'size': 1024,
+                                                                 'download_count': 9}])}]},
             'forum': {'anki_forum_url': 'https://forums.ankiweb.net/t/note-size-addon-support/46001',
                       'topic_slug': 'note-size-addon-support',
                       'topic_id': 46001,

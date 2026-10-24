@@ -13,7 +13,7 @@ from anki_addons_dataset.collector.url_parser import UrlParser
 from anki_addons_dataset.common.data_types import AddonInfo, AddonHeader, AddonId, AddonPage, GithubRepo, \
     LanguageName, GithubInfo, AddonInfos, AnkiForumInfo, TopicSlug, TopicId, LastPostedAt, PostsCount, AnkiVersion, \
     HtmlStr, URL, AddonRating, UpdateDate, AddonTitle, AddonManifest, SpdxLicense, Topic, DependencyName, \
-    GithubReadme, GithubUserName, GithubRepoName, GitHubLink, GithubRepoSource
+    GithubReadme, GithubUserName, GithubRepoName, GitHubLink, GithubRepoSource, GithubRelease, GithubReleaseAsset
 from anki_addons_dataset.common.working_dir import SnapshotDir
 
 log: Logger = logging.getLogger(__name__)
@@ -75,6 +75,9 @@ def test_enrich(github_enricher: GithubEnricher, github_service: GithubService, 
     github_service.get_dependencies = Mock(return_value=[DependencyName("requests"), DependencyName("beautifulsoup4")])
     github_service.get_readme = Mock(return_value=GithubReadme("# NoteSize\nExample readme"))
     github_service.get_ai_tooling_markers = Mock(return_value=["claude-code"])
+    releases: list[GithubRelease] = [GithubRelease("v1.0", "First", datetime(2023, 3, 1, 8, 0, 0), False,
+                                                   [GithubReleaseAsset("note_size.ankiaddon", 1024, 9)])]
+    github_service.get_releases = Mock(return_value=releases)
 
     github_enricher.start()
     github_enricher.download_in_background(addon_info)
@@ -120,7 +123,8 @@ def test_enrich(github_enricher: GithubEnricher, github_service: GithubService, 
             manifest=manifest,
             dependencies=[DependencyName("requests"), DependencyName("beautifulsoup4")],
             readme=GithubReadme("# NoteSize\nExample readme"),
-            ai_tooling_markers=["claude-code"]
+            ai_tooling_markers=["claude-code"],
+            releases=releases
         ),
         forum=AnkiForumInfo(
             anki_forum_url=None,
@@ -155,6 +159,7 @@ def test_enrich_fetches_every_candidate_and_keeps_the_selected(snapshot_dir: Sna
     github_service.get_dependencies = Mock(return_value=[])
     github_service.get_readme = Mock(side_effect=lambda repo: GithubReadme(f"README of {repo.get_id()}"))
     github_service.get_ai_tooling_markers = Mock(return_value=[])
+    github_service.get_releases = Mock(return_value=[])
     github_service.has_repo_data = Mock(return_value=True)
     ai_repo_selector: Mock = Mock(spec=AiRepoSelector)
     ai_repo_selector.select.return_value = AiRepoAnswer(own_repo)
@@ -196,6 +201,7 @@ def test_enrich_drops_candidates_without_data(snapshot_dir: SnapshotDir, github_
     github_service.get_dependencies = Mock(return_value=[])
     github_service.get_readme = Mock(return_value=None)
     github_service.get_ai_tooling_markers = Mock(return_value=[])
+    github_service.get_releases = Mock(return_value=[])
     github_service.has_repo_data = Mock(side_effect=lambda repo: repo != gone_repo)
     github_enricher: GithubEnricher = GithubEnricher(
         snapshot_dir, github_service, GithubRepoSelector(Overrider(snapshot_dir), None), offline=True)

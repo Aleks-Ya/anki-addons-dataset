@@ -9,7 +9,7 @@ from logging import Logger
 from anki_addons_dataset.collector.enricher import Enricher
 from anki_addons_dataset.collector.github.handler.repo_info_repo_handler import GithubRepoMeta
 from anki_addons_dataset.common.data_types import AddonInfo, LanguageName, GithubInfo, AddonId, \
-    AddonInfos, GithubRepo, GitHubLink, AddonManifest, DependencyName, GithubReadme
+    AddonInfos, GithubRepo, GitHubLink, AddonManifest, DependencyName, GithubReadme, GithubRelease
 from anki_addons_dataset.collector.github.github_repo_selector import GithubRepoSelector
 from anki_addons_dataset.collector.github.github_service import GithubService
 from anki_addons_dataset.common.json_helper import JsonHelper
@@ -72,6 +72,7 @@ class GithubEnricher(Enricher):
         dependencies: list[DependencyName] = self.__github_service.get_dependencies(github_repo)
         readme: Optional[GithubReadme] = self.__github_service.get_readme(github_repo)
         ai_tooling_markers: list[str] = self.__github_service.get_ai_tooling_markers(github_repo, readme)
+        releases: Optional[list[GithubRelease]] = self.__github_service.get_releases(github_repo)
         return GithubInfo(
             github_links, github_repo, list(language_bytes.keys()), stars, last_commit, action_count, tests_count,
             license=repo_meta.license, forks=repo_meta.forks, open_issues=repo_meta.open_issues,
@@ -79,7 +80,7 @@ class GithubEnricher(Enricher):
             homepage=repo_meta.homepage, archived=repo_meta.archived, pushed_at=repo_meta.pushed_at,
             created_at=repo_meta.created_at, primary_language=self.__primary_language(language_bytes),
             language_bytes=language_bytes, manifest=manifest, dependencies=dependencies, readme=readme,
-            ai_tooling_markers=ai_tooling_markers, fork_source=repo_meta.fork_source)
+            ai_tooling_markers=ai_tooling_markers, fork_source=repo_meta.fork_source, releases=releases)
 
     def _done(self) -> int:
         with self.__lock:

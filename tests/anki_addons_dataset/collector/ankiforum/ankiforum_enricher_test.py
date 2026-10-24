@@ -14,7 +14,7 @@ from anki_addons_dataset.common.data_types import AddonInfo, AddonHeader, AddonI
     AnkiForumInfo, TopicSlug, TopicId, LastPostedAt, URL, PostsCount, LanguageName, GithubRepo, GithubUserName, \
     GithubRepoName, AnkiVersion, AddonBranch, HtmlStr, AddonRating, UpdateDate, AddonTitle, AddonDescription, \
     AiInfo, AiSummary, AiModel, AiTag, AnkiPointVersion, AnkiVersionKind, AuthorInfo, AnkiForumTopicSource, \
-    AnkiForumTopicContent, AnkiForumPost
+    AnkiForumTopicContent, AnkiForumPost, GithubRelease, GithubReleaseAsset
 from anki_addons_dataset.common.working_dir import SnapshotDir
 
 log: Logger = logging.getLogger(__name__)
@@ -66,7 +66,11 @@ def test_enrich(anki_forum_enricher: AnkiForumEnricher, anki_forum_service: Anki
             last_commit=datetime(2023, 3, 15, 12, 0),
             action_count=5,
             tests_count=7,
-            ai_tooling_markers=["claude-code", "cursor"]
+            ai_tooling_markers=["claude-code", "cursor"],
+            releases=[GithubRelease("v1.1-beta", None, datetime(2023, 3, 10, 9, 0, 0), True,
+                                    [GithubReleaseAsset("note_size.ankiaddon", 2048, 3)]),
+                      GithubRelease("v1.0", "First release", datetime(2023, 3, 1, 8, 0, 0), False,
+                                    [GithubReleaseAsset("note_size.ankiaddon", 1024, 9)])]
         ),
         forum=AnkiForumInfo(
             anki_forum_url=URL('https://forums.ankiweb.net/t/note-size-addon-support/46001'),

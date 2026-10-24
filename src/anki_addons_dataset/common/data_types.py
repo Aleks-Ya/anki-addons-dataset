@@ -126,6 +126,22 @@ class AddonManifest:
     mod: Optional[int] = None
 
 
+@dataclass(frozen=True)
+class GithubReleaseAsset:
+    name: str
+    size: int
+    download_count: int
+
+
+@dataclass(frozen=True)
+class GithubRelease:
+    tag_name: str
+    name: Optional[str]
+    published_at: Optional[datetime]
+    prerelease: bool
+    assets: list[GithubReleaseAsset]
+
+
 @dataclass
 class GithubInfo:
     github_links: list[GitHubLink]
@@ -154,6 +170,7 @@ class GithubInfo:
     ai_tooling_markers: list[str] = field(default_factory=list)
     repo_source: Optional[GithubRepoSource] = None
     fork_source: Optional[GithubRepo] = None
+    releases: Optional[list[GithubRelease]] = None
 
 
 @dataclass

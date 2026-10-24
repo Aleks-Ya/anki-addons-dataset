@@ -16,6 +16,7 @@ from anki_addons_dataset.collector.github.handler.languages_repo_handler import 
 from anki_addons_dataset.collector.github.handler.last_commit_repo_handler import LastCommitRepoHandler
 from anki_addons_dataset.collector.github.handler.manifest_parser import ManifestParser
 from anki_addons_dataset.collector.github.handler.readme_repo_handler import ReadmeRepoHandler
+from anki_addons_dataset.collector.github.handler.releases_repo_handler import ReleasesRepoHandler
 from anki_addons_dataset.collector.github.handler.repo_handler import RepoHandler
 from anki_addons_dataset.collector.github.handler.repo_info_repo_handler import GithubRepoMeta, RepoInfoRepoHandler
 from anki_addons_dataset.collector.github.handler.stars_repo_handler import StarsRepoHandler
@@ -23,7 +24,7 @@ from anki_addons_dataset.collector.github.handler.tag_names_repo_handler import 
 from anki_addons_dataset.collector.github.handler.tests_repo_handler import TestsRepoHandler
 from anki_addons_dataset.collector.github.handler.tree_entries_repo_handler import TreeEntriesRepoHandler
 from anki_addons_dataset.common.data_types import AddonManifest, DependencyName, GithubReadme, GithubRepo, \
-    GithubRepoId, LanguageName
+    GithubRepoId, LanguageName, GithubRelease
 from anki_addons_dataset.common.working_dir import SnapshotDir
 
 log: Logger = logging.getLogger(__name__)
@@ -80,6 +81,10 @@ class GithubService:
 
     def get_readme(self, repo: GithubRepo) -> Optional[GithubReadme]:
         handler: RepoHandler = ReadmeRepoHandler(repo, self.__raw_dir, self.__stage_dir, self.__prev_raw_dir)
+        return self.__get_value(handler)
+
+    def get_releases(self, repo: GithubRepo) -> Optional[list[GithubRelease]]:
+        handler: RepoHandler = ReleasesRepoHandler(repo, self.__raw_dir, self.__stage_dir, self.__prev_raw_dir)
         return self.__get_value(handler)
 
     def get_tag_names(self, repo: GithubRepo) -> list[str]:

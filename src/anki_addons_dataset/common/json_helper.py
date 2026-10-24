@@ -12,7 +12,7 @@ from anki_addons_dataset.common.data_types import AddonInfo, AddonInfos, AddonHe
     ScriptVersion, AddonRating, UpdateDate, AddonTitle, AddonDescription, AddonManifest, SpdxLicense, Topic, \
     DependencyName, GithubReadme, AiInfo, AiSummary, AiModel, AiTag, AnkiPointVersion, AnkiVersionKind, \
     PageLink, PageLinkSection, GithubRepoSource, AnkiForumTopicSource, AuthorInfo, ForkEvidence, ForkRelation, \
-    AddonReview, ReviewVote
+    AddonReview, ReviewVote, GithubRelease, GithubReleaseAsset
 
 
 class JsonHelper:
@@ -185,6 +185,19 @@ class JsonHelper:
             ai_tooling_markers=list(data.get("ai_tooling_markers", [])),
             repo_source=GithubRepoSource(repo_source) if repo_source is not None else None,
             fork_source=JsonHelper.__github_repo_from_dict(data.get("fork_source")),
+            releases=[JsonHelper.__github_release_from_dict(release) for release in data["releases"]]
+            if data.get("releases") is not None else None,
+        )
+
+    @staticmethod
+    def __github_release_from_dict(data: dict[str, Any]) -> GithubRelease:
+        return GithubRelease(
+            tag_name=data["tag_name"],
+            name=data.get("name"),
+            published_at=JsonHelper.__parse_datetime(data.get("published_at")),
+            prerelease=data["prerelease"],
+            assets=[GithubReleaseAsset(asset["name"], asset["size"], asset["download_count"])
+                    for asset in data["assets"]],
         )
 
     @staticmethod

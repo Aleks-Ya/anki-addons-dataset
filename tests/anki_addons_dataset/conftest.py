@@ -25,7 +25,8 @@ from anki_addons_dataset.common.data_types import AddonId, GithubRepo, GithubUse
     URL, PostsCount, AddonInfo, AddonHeader, AddonPage, GithubInfo, AnkiForumInfo, LanguageName, AddonInfos, \
     DatasetSnapshotMetadata, RawMetadata, AnkiVersion, AnkiPointVersion, AnkiVersionKind, AddonBranch, HtmlStr, \
     SnapshotDate, ReportDate, ScriptVersion, AddonRating, UpdateDate, AddonTitle, AddonDescription, PageLoadTimeout, \
-    ElementWaitTimeout, AiInfo, AiSummary, AiTag, AiModel, AuthorInfo, AnkiForumTopicSource
+    ElementWaitTimeout, AiInfo, AiSummary, AiTag, AiModel, AuthorInfo, AnkiForumTopicSource, GithubRelease, \
+    GithubReleaseAsset
 from anki_addons_dataset.common.working_dir import WorkingDir, SnapshotDir
 from anki_addons_dataset.config.app_config import AppConfig, AiConfig, GithubConfig, HuggingFaceConfig
 from anki_addons_dataset.exporter.xlsx.xlsx_exporter import XlsxExporter
@@ -230,7 +231,11 @@ def addon_info(addon_header: AddonHeader, github_repo: GithubRepo, topic_slug: T
             last_commit=datetime(2023, 3, 15, 12, 0, 0, 0),
             action_count=5,
             tests_count=7,
-            ai_tooling_markers=["claude-code", "cursor"]
+            ai_tooling_markers=["claude-code", "cursor"],
+            releases=[GithubRelease("v1.1-beta", None, datetime(2023, 3, 10, 9, 0, 0), True,
+                                    [GithubReleaseAsset("note_size.ankiaddon", 2048, 3)]),
+                      GithubRelease("v1.0", "First release", datetime(2023, 3, 1, 8, 0, 0), False,
+                                    [GithubReleaseAsset("note_size.ankiaddon", 1024, 9)])]
         ),
         forum=AnkiForumInfo(
             anki_forum_url=URL("https://forums.ankiweb.net/t/note-size-addon-support/46001"),
