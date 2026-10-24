@@ -111,6 +111,7 @@ class JsonHelper:
             if data.get("description_html") is not None else None,
             description_pre_wrap=bool(data.get("description_pre_wrap", False)),
             other_items_count=data.get("other_items_count"),
+            package_size_kb=data.get("package_size_kb"),
             reviews=[JsonHelper.__addon_review_from_dict(review) for review in data.get("reviews", [])],
         )
 

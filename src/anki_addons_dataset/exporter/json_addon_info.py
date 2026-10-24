@@ -132,6 +132,7 @@ class AnkiWeb:
     description_html: Optional[HtmlStr]
     description_pre_wrap: bool
     other_items_count: Optional[int]
+    package_size_kb: Optional[int]
 
 
 @dataclass
@@ -162,7 +163,8 @@ class JsonAddonInfo:
                                         JsonAddonInfo.__anki_web_links(addon), addon.page.like_number, addon.page.dislike_number,
                                         list(addon.page.ai_declaration_markers), addon.page.description_language,
                                         addon.page.description_language_confidence, addon.page.description_html,
-                                        addon.page.description_pre_wrap, addon.page.other_items_count)
+                                        addon.page.description_pre_wrap, addon.page.other_items_count,
+                                        addon.page.package_size_kb)
             forked_from: Optional[ForkedFrom] = ForkedFrom(addon.forked_from.addon_id, str(addon.forked_from.evidence)) \
                 if addon.forked_from is not None else None
             json_obj: Details = Details(addon.header.id, anki_web, github, forum, JsonAddonInfo.__ai(addon),

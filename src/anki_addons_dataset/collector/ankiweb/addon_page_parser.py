@@ -54,9 +54,11 @@ class AddonPageParser:
         description_pre_wrap: bool = self.__extract_description_pre_wrap(description_tag)
         other_items_count: int = self.__extract_other_items_count(soup)
         reviews: list[AddonReview] = self.__extract_reviews(soup)
+        package_size_kb: Optional[int] = self.__extract_package_size_kb(soup)
         addon_page: AddonPage = AddonPage(
             html, likes, dislikes, addon_branches, links, description, ai_declaration_markers, description_language,
-            description_language_confidence, description_html, description_pre_wrap, other_items_count, reviews)
+            description_language_confidence, description_html, description_pre_wrap, other_items_count, reviews,
+            package_size_kb=package_size_kb)
         anki_forum_info: AnkiForumInfo = AnkiForumInfo(anki_forum_url, None, None, None, None,
                                                        topic_source=anki_forum_source)
         addon_info: AddonInfo = AddonInfo(addon_header, addon_page, github_info, anki_forum_info)
@@ -157,6 +159,15 @@ class AddonPageParser:
             return 0
         match: Optional[re.Match[str]] = re.search(r'\d+', by_author_anchor.get_text())
         return int(match.group()) if match else 0
+
+    @staticmethod
+    def __extract_package_size_kb(soup: BeautifulSoup) -> Optional[int]:
+        size_pattern: re.Pattern[str] = re.compile(r'^\s*(?:<(\d+)kB|(\d+(?:\.\d+)?)MB)\. Updated')
+        for small_tag in soup.find_all('small'):
+            match: Optional[re.Match[str]] = size_pattern.match(small_tag.get_text())
+            if match:
+                return 0 if match.group(1) else round(float(match.group(2)) * 1000)
+        return None
 
     @staticmethod
     def __extract_likes(soup: BeautifulSoup) -> int:

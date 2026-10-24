@@ -197,6 +197,7 @@ class AddonPage:
     description_pre_wrap: bool = False
     other_items_count: Optional[int] = None
     reviews: list[AddonReview] = field(default_factory=list)
+    package_size_kb: Optional[int] = None
 
     @property
     def contact_author_url(self) -> Optional[URL]:

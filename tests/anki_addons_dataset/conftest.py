@@ -219,7 +219,8 @@ def addon_info(addon_header: AddonHeader, github_repo: GithubRepo, topic_slug: T
             ai_declaration_markers=["chatgpt"],
             description_html=HtmlStr("<p>Sample addon <b>description</b> for full text search</p>"),
             description_pre_wrap=True,
-            other_items_count=2
+            other_items_count=2,
+            package_size_kb=230
         ),
         github=GithubInfo(
             github_links=[],

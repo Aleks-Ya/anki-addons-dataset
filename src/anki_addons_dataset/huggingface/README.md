@@ -49,6 +49,9 @@ an AnkiWeb identifier. It changes when that addon is removed or the author publi
 collected before authors were tracked. `anki_web.other_items_count` is the "N" from the addon page, available
 in every snapshot; it counts shared decks as well as addons.
 
+The `anki_web.package_size_kb` field is the addon package size shown on the AnkiWeb page, in kB (AnkiWeb rounds
+it to 10 kB). `0` means under 10 kB, `null` means the page showed no size.
+
 Abandoned addons are often forked and republished under a new name. `forked_from` is the addon an addon was
 forked from, or `null`, with its `evidence`: `github_fork` when the addon's GitHub repo is a GitHub fork of
 another addon's repo (`github.fork_source` holds the root repo), `ai` when a large language model read the
