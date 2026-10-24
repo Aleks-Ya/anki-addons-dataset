@@ -54,8 +54,7 @@ class JsonExporter(Exporter):
         output_file.write_text(json_str)
         log.info(f"Write JSON to file: {output_file}")
 
-    def export_reviews(self, reviews: list[ReviewRow], dataset_snapshot_metadata: DatasetSnapshotMetadata,
-                       raw_metadata: RawMetadata) -> None:
+    def export_reviews(self, reviews: list[ReviewRow]) -> None:
         output_file: Path = self._final_dir / "reviews.json"
         json_str: str = json.dumps([dataclasses.asdict(review) for review in reviews], indent=2, default=str)
         output_file.write_text(json_str)

@@ -352,12 +352,11 @@ def test_export_anki_versions(json_exporter: JsonExporter, snapshot_dir: Snapsho
                         {'version': '2.1.66', 'point_version': 66}]
 
 
-def test_export_reviews(json_exporter: JsonExporter, snapshot_dir: SnapshotDir,
-                        dataset_snapshot_metadata: DatasetSnapshotMetadata, raw_metadata: RawMetadata):
+def test_export_reviews(json_exporter: JsonExporter, snapshot_dir: SnapshotDir):
     reviews: list[ReviewRow] = [
         ReviewRow(AddonId(1188705668), date(2026, 7, 5), ReviewVote.DISLIKE, "Produces errors", None),
         ReviewRow(AddonId(1188705668), date(2025, 6, 6), ReviewVote.LIKE, "Works\nfine", "Thank you!")]
-    json_exporter.export_reviews(reviews, dataset_snapshot_metadata, raw_metadata)
+    json_exporter.export_reviews(reviews)
 
     act_file: Path = snapshot_dir.get_final_dir() / "json" / "reviews.json"
     act_json: list[dict[str, Any]] = json.loads(act_file.read_text())

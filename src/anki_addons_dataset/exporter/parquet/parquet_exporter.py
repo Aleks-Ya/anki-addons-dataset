@@ -45,8 +45,7 @@ class ParquetExporter(Exporter):
             .to_parquet(output_file, compression="zstd")
         log.info(f"Write Parquet to file: {output_file}")
 
-    def export_reviews(self, reviews: list[ReviewRow], dataset_snapshot_metadata: DatasetSnapshotMetadata,
-                       raw_metadata: RawMetadata) -> None:
+    def export_reviews(self, reviews: list[ReviewRow]) -> None:
         output_file: Path = self._final_dir / "reviews.parquet"
         DataFrame([dataclasses.asdict(review) for review in reviews],
                   columns=["addon_id", "date", "vote", "text", "author_reply"]) \

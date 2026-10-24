@@ -155,14 +155,13 @@ def test_export_anki_versions_empty(snapshot_dir: SnapshotDir, dataset_snapshot_
     assert act_df.empty
 
 
-def test_export_reviews(snapshot_dir: SnapshotDir, dataset_snapshot_metadata: DatasetSnapshotMetadata,
-                        raw_metadata: RawMetadata):
+def test_export_reviews(snapshot_dir: SnapshotDir):
     reviews: list[ReviewRow] = [
         ReviewRow(AddonId(1188705668), date(2026, 7, 5), ReviewVote.DISLIKE, "Produces errors", None),
         ReviewRow(AddonId(1188705668), date(2025, 6, 6), ReviewVote.LIKE, "Works\nfine", "Thank you!")]
     final_dir: Path = snapshot_dir.get_final_dir()
     exporter: ParquetExporter = ParquetExporter(final_dir)
-    exporter.export_reviews(reviews, dataset_snapshot_metadata, raw_metadata)
+    exporter.export_reviews(reviews)
 
     act_df: DataFrame = pandas.read_parquet(final_dir / "parquet" / "reviews.parquet")
     exp_df: DataFrame = DataFrame([
@@ -173,11 +172,10 @@ def test_export_reviews(snapshot_dir: SnapshotDir, dataset_snapshot_metadata: Da
     pdt.assert_frame_equal(act_df, exp_df)
 
 
-def test_export_reviews_empty(snapshot_dir: SnapshotDir, dataset_snapshot_metadata: DatasetSnapshotMetadata,
-                              raw_metadata: RawMetadata):
+def test_export_reviews_empty(snapshot_dir: SnapshotDir):
     final_dir: Path = snapshot_dir.get_final_dir()
     exporter: ParquetExporter = ParquetExporter(final_dir)
-    exporter.export_reviews([], dataset_snapshot_metadata, raw_metadata)
+    exporter.export_reviews([])
 
     act_df: DataFrame = pandas.read_parquet(final_dir / "parquet" / "reviews.parquet")
     assert list(act_df.columns) == ['addon_id', 'date', 'vote', 'text', 'author_reply']

@@ -30,5 +30,5 @@ class ExporterFacade:
             exporter.export_tags(tags, dataset_snapshot_metadata, raw_metadata)
             if anki_versions is not None:
                 exporter.export_anki_versions(anki_versions, dataset_snapshot_metadata, raw_metadata)
-        self.json_exporter.export_reviews(reviews, dataset_snapshot_metadata, raw_metadata)
-        self.parquet_exporter.export_reviews(reviews, dataset_snapshot_metadata, raw_metadata)
+        self.json_exporter.export_reviews(reviews)
+        self.parquet_exporter.export_reviews(reviews)
