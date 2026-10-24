@@ -26,7 +26,7 @@ from anki_addons_dataset.common.data_types import AddonId, GithubRepo, GithubUse
     URL, PostsCount, AddonInfo, AddonHeader, AddonPage, GithubInfo, AnkiForumInfo, LanguageName, AddonInfos, \
     DatasetSnapshotMetadata, RawMetadata, AnkiVersion, AnkiPointVersion, AnkiVersionKind, AddonBranch, HtmlStr, \
     SnapshotDate, ReportDate, ScriptVersion, AddonRating, UpdateDate, AddonTitle, AddonDescription, PageLoadTimeout, \
-    ElementWaitTimeout, AiInfo, AiSummary, AiTag, AiModel, AuthorInfo
+    ElementWaitTimeout, AiInfo, AiSummary, AiTag, AiModel, AuthorInfo, AnkiForumTopicSource
 from anki_addons_dataset.common.working_dir import WorkingDir, SnapshotDir
 from anki_addons_dataset.config.app_config import AppConfig, AiConfig, GithubConfig, HuggingFaceConfig
 from anki_addons_dataset.exporter.json.json_exporter import JsonExporter
@@ -238,7 +238,8 @@ def addon_info(addon_header: AddonHeader, github_repo: GithubRepo, topic_slug: T
             topic_slug=topic_slug,
             topic_id=topic_id,
             last_posted_at=last_posted_at,
-            posts_count=posts_count
+            posts_count=posts_count,
+            topic_source=AnkiForumTopicSource.CONTACT_AUTHOR
         ),
         ai=AiInfo(
             summary=AiSummary("Shows the size of the collection and of individual notes."),

@@ -12,6 +12,7 @@ from anki_addons_dataset.collector.ai.ai_cache_index import AiCacheIndex
 from anki_addons_dataset.collector.ai.ai_cache_stats import AiCacheStats
 from anki_addons_dataset.collector.ai.ai_enricher import AiEnricher
 from anki_addons_dataset.collector.ai.ai_fork_classifier import AiForkClassifier
+from anki_addons_dataset.collector.ai.ai_forum_verifier import AiForumVerifier
 from anki_addons_dataset.collector.ai.ai_provider import AiProvider
 from anki_addons_dataset.collector.ai.ai_provider_factory import AiProviderFactory
 from anki_addons_dataset.collector.ai.ai_repo_selector import AiRepoSelector
@@ -122,8 +123,8 @@ class CollectorFacade:
         addon_infos = ForkResolver(Overrider(snapshot_dir)).resolve(addon_infos)
         cache_miss_count: int = self.__cache_stats(ai_provider, fork_verifier).miss_count
         if cache_miss_count:
-            log.warning(f"{cache_miss_count} AI answers (repo choices, summaries, tags or fork labels) are missing "
-                        f"from the cache. Run the 'ai' operation to fill the cache.")
+            log.warning(f"{cache_miss_count} AI answers (repo choices, forum topic checks, summaries, tags or "
+                        f"fork labels) are missing from the cache. Run the 'ai' operation to fill the cache.")
         JsonHelper.write_addon_infos_dump(addon_infos, script_version, snapshot_dir.get_addon_infos_dump())
         log.info(f"===== Parsed snapshot for {snapshot_date} =====\n")
 
@@ -221,7 +222,9 @@ class CollectorFacade:
         ai_repo_selector: Optional[AiRepoSelector] = AiRepoSelector(ai_provider) if ai_provider else None
         github_repo_selector: GithubRepoSelector = GithubRepoSelector(overrider, ai_repo_selector)
         github_enricher: GithubEnricher = GithubEnricher(snapshot_dir, github_service, github_repo_selector, offline)
-        anki_forum_enricher: AnkiForumEnricher = AnkiForumEnricher(snapshot_dir, anki_forum_service)
+        ai_forum_verifier: Optional[AiForumVerifier] = AiForumVerifier(ai_provider) if ai_provider else None
+        anki_forum_enricher: AnkiForumEnricher = AnkiForumEnricher(
+            snapshot_dir, anki_forum_service, ai_forum_verifier, offline)
         max_addons: Optional[int] = SampleCollector(snapshot_dir).effective_addons(
             self.__config.sample.addons) if offline else self.__config.sample.addons
         addon_infos_collector: AddonInfosCollector = AddonInfosCollector(

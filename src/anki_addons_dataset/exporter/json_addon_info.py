@@ -78,6 +78,7 @@ class Forum:
     topic_id: Optional[int]
     last_posted_at: Optional[str]
     posts_count: Optional[int]
+    topic_source: Optional[str]
 
 
 @dataclass
@@ -225,7 +226,8 @@ class JsonAddonInfo:
         topic_id: Optional[int] = addon.forum.topic_id
         last_posted_at: Optional[str] = str(addon.forum.last_posted_at) if addon.forum.last_posted_at else None
         posts_count: Optional[int] = addon.forum.posts_count
-        return Forum(anki_forum_url, slug, topic_id, last_posted_at, posts_count)
+        topic_source: Optional[str] = str(addon.forum.topic_source) if addon.forum.topic_source else None
+        return Forum(anki_forum_url, slug, topic_id, last_posted_at, posts_count, topic_source)
 
     @staticmethod
     def __ai(addon: AddonInfo) -> Optional[Ai]:

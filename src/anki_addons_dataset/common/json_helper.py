@@ -11,7 +11,8 @@ from anki_addons_dataset.common.data_types import AddonInfo, AddonInfos, AddonHe
     GithubUserName, GithubRepoName, LanguageName, LanguageCode, TopicSlug, TopicId, LastPostedAt, PostsCount, \
     ScriptVersion, AddonRating, UpdateDate, AddonTitle, AddonDescription, AddonManifest, SpdxLicense, Topic, \
     DependencyName, GithubReadme, AiInfo, AiSummary, AiModel, AiTag, AnkiPointVersion, AnkiVersionKind, \
-    PageLink, PageLinkSection, GithubRepoSource, AuthorInfo, ForkEvidence, ForkRelation, AddonReview, ReviewVote
+    PageLink, PageLinkSection, GithubRepoSource, AnkiForumTopicSource, AuthorInfo, ForkEvidence, ForkRelation, \
+    AddonReview, ReviewVote
 
 
 class JsonHelper:
@@ -225,12 +226,14 @@ class JsonHelper:
         topic_slug: Optional[str] = data["topic_slug"]
         last_posted_at: Optional[str] = data["last_posted_at"]
         posts_count: Optional[int] = data["posts_count"]
+        topic_source: Optional[str] = data.get("topic_source")
         return AnkiForumInfo(
             anki_forum_url=URL(anki_forum_url) if anki_forum_url is not None else None,
             topic_slug=TopicSlug(topic_slug) if topic_slug is not None else None,
             topic_id=TopicId(data["topic_id"]) if data["topic_id"] is not None else None,
             last_posted_at=LastPostedAt(datetime.fromisoformat(last_posted_at)) if last_posted_at is not None else None,
             posts_count=PostsCount(posts_count) if posts_count is not None else None,
+            topic_source=AnkiForumTopicSource(topic_source) if topic_source is not None else None,
         )
 
     @staticmethod

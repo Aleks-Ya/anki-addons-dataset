@@ -118,6 +118,7 @@ class AnkiForumInfo <<dataclass>> {
   topic_id : Optional[TopicId]
   last_posted_at : Optional[LastPostedAt]
   posts_count : Optional[PostsCount]
+  topic_source : Optional[AnkiForumTopicSource]
 }
 
 class AiInfo <<dataclass>> {

@@ -14,7 +14,7 @@ from anki_addons_dataset.collector.ankiweb.description_language_detector import 
 from anki_addons_dataset.collector.overrider.overrider import Overrider
 from anki_addons_dataset.common.data_types import AddonHeader, AddonInfo, AddonId, URL, GitHubLink, GithubRepo, \
     GithubInfo, AddonPage, AddonBranch, HtmlStr, AnkiForumInfo, AddonDescription, LanguageCode, PageLink, \
-    PageLinkSection, GithubRepoSource, AddonReview, ReviewVote
+    PageLinkSection, GithubRepoSource, AddonReview, ReviewVote, AnkiForumTopicSource
 
 
 class AddonPageParser:
@@ -35,7 +35,9 @@ class AddonPageParser:
         github_repo_source: Optional[GithubRepoSource]
         github_repo, github_repo_source = self.__decided_github_repo(addon_header.id, contact_author_url)
         anki_forum_links: list[URL] = UrlParser.find_anki_forum_links(description_links)
-        anki_forum_url: Optional[URL] = self.__deduce_anki_forum_url(
+        anki_forum_url: Optional[URL]
+        anki_forum_source: Optional[AnkiForumTopicSource]
+        anki_forum_url, anki_forum_source = self.__deduce_anki_forum_url(
             addon_header.id, anki_forum_links, contact_author_url)
         github_info: GithubInfo = GithubInfo(github_links, github_repo, [], 0, None, 0, 0,
                                              repo_source=github_repo_source)
@@ -55,7 +57,8 @@ class AddonPageParser:
         addon_page: AddonPage = AddonPage(
             html, likes, dislikes, addon_branches, links, description, ai_declaration_markers, description_language,
             description_language_confidence, description_html, description_pre_wrap, other_items_count, reviews)
-        anki_forum_info: AnkiForumInfo = AnkiForumInfo(anki_forum_url, None, None, None, None)
+        anki_forum_info: AnkiForumInfo = AnkiForumInfo(anki_forum_url, None, None, None, None,
+                                                       topic_source=anki_forum_source)
         addon_info: AddonInfo = AddonInfo(addon_header, addon_page, github_info, anki_forum_info)
         return addon_info
 
@@ -70,22 +73,23 @@ class AddonPageParser:
         return None, None
 
     def __deduce_anki_forum_url(self, addon_id: AddonId, anki_forum_urls: list[URL],
-                                contact_author_url: Optional[URL]) -> Optional[URL]:
+                                contact_author_url: Optional[URL]
+                                ) -> tuple[Optional[URL], Optional[AnkiForumTopicSource]]:
         override_url: Optional[URL] = self.overrider.override_anki_forum_url(addon_id)
         if override_url:
-            return override_url
+            return override_url, AnkiForumTopicSource.OVERRIDE
         if contact_author_url is not None:
             contact_forum_urls: list[URL] = UrlParser.find_anki_forum_links([contact_author_url])
             if contact_forum_urls:
-                return contact_forum_urls[0]
+                return contact_forum_urls[0], AnkiForumTopicSource.CONTACT_AUTHOR
         urls_sorted: list[URL] = list(anki_forum_urls)
         urls_sorted.sort()
         grouped: groupby[URL, URL] = groupby(urls_sorted)
         counts: dict[URL, int] = {k: len(list(v)) for k, v in grouped}
         if len(counts) == 0:
-            return None
+            return None, None
         max_tuple: tuple[URL, int] = max(counts.items(), key=lambda item: item[1])
-        return max_tuple[0]
+        return max_tuple[0], AnkiForumTopicSource.MOST_LINKED
 
     def __contact_author_github_repo(self, contact_author_url: Optional[URL]) -> Optional[GithubRepo]:
         if contact_author_url is None:

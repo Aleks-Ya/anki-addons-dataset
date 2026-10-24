@@ -513,6 +513,19 @@
               "integer",
               "null"
             ]
+          },
+          "topic_source": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "enum": [
+              "override",
+              "contact_author",
+              "ai",
+              "most_linked",
+              null
+            ]
           }
         }
       },

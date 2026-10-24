@@ -4,7 +4,8 @@ from pydiscourse import DiscourseClient
 from pytest_mock import MockerFixture
 
 from anki_addons_dataset.collector.ankiforum.ankiforum_service import AnkiForumService
-from anki_addons_dataset.common.data_types import TopicId, TopicSlug, LastPostedAt, PostsCount
+from anki_addons_dataset.common.data_types import TopicId, TopicSlug, LastPostedAt, PostsCount, AnkiForumTopicContent, \
+    AnkiForumPost, URL
 from anki_addons_dataset.common.working_dir import SnapshotDir
 
 
@@ -58,3 +59,28 @@ def test_get_posts_count_offline(snapshot_dir: SnapshotDir, discourse_client: Di
     offline: bool = True
     anki_forum_service: AnkiForumService = AnkiForumService(discourse_client, snapshot_dir, offline)
     assert anki_forum_service.get_posts_count(topic_slug, topic_id) is None
+
+
+def test_get_topic_content(anki_forum_service: AnkiForumService, discourse_client: DiscourseClient,
+                           topic_slug: TopicSlug, topic_id: TopicId, mocker: MockerFixture):
+    mocker.patch.object(discourse_client, 'topic', return_value={
+        'title': 'Note Size addon support',
+        'posts_count': 42,
+        'details': {'created_by': {'username': 'author'}},
+        'post_stream': {'posts': [
+            {'post_number': 1, 'username': 'author', 'cooked': '<p>Support for <b>Note Size</b>.</p>'},
+            {'post_number': 2, 'username': 'user',
+             'cooked': '<p>Try <a href="https://ankiweb.net/shared/info/1188705668">this</a></p>'},
+        ]}
+    })
+    assert anki_forum_service.get_topic_content(topic_slug, topic_id) == AnkiForumTopicContent(
+        'Note Size addon support', 'author', 42, [
+            AnkiForumPost(1, 'author', 'Support for Note Size .', []),
+            AnkiForumPost(2, 'user', 'Try this', [URL('https://ankiweb.net/shared/info/1188705668')]),
+        ])
+
+
+def test_get_topic_content_none(anki_forum_service: AnkiForumService, discourse_client: DiscourseClient,
+                                topic_slug: TopicSlug, topic_id: TopicId, mocker: MockerFixture):
+    mocker.patch.object(discourse_client, 'topic', return_value=None)
+    assert anki_forum_service.get_topic_content(topic_slug, topic_id) is None

@@ -73,7 +73,7 @@ def test_export_addon_infos(json_exporter: JsonExporter, snapshot_dir: SnapshotD
                                    'topic_slug': 'note-size-addon-support',
                                    'topic_id': 46001,
                                    'last_posted_at': '2023-09-10 12:00:00+00:00',
-                                   'posts_count': 42},
+                                   'posts_count': 42, 'topic_source': 'contact_author'},
                          'ai': {'summary': 'Shows the size of the collection and of individual notes.',
                                 'model': 'test-model',
                                 'tags': ['statistics']},
@@ -219,7 +219,7 @@ def test_export_addon_infos_empty_posts_count(json_exporter: JsonExporter, snaps
                                    'topic_slug': 'note-size-addon-support',
                                    'topic_id': 46001,
                                    'last_posted_at': '2023-09-10 12:00:00+00:00',
-                                   'posts_count': None},
+                                   'posts_count': None, 'topic_source': 'contact_author'},
                          'ai': {'summary': 'Shows the size of the collection and of individual notes.',
                                 'model': 'test-model',
                                 'tags': ['statistics']},
@@ -243,7 +243,7 @@ def test_export_addon_infos_empty_last_posted_at(json_exporter: JsonExporter, sn
                                     'topic_slug': 'note-size-addon-support',
                                     'topic_id': 46001,
                                     'last_posted_at': None,
-                                    'posts_count': 42}
+                                    'posts_count': 42, 'topic_source': 'contact_author'}
 
 
 def test_export_addon_infos_with_enrichment_fields(json_exporter: JsonExporter, snapshot_dir: SnapshotDir,

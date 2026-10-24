@@ -5,9 +5,11 @@ from logging import Logger
 from pathlib import Path
 from typing import Optional
 
+from bs4 import BeautifulSoup
 from pydiscourse import DiscourseClient
 
-from anki_addons_dataset.common.data_types import TopicId, TopicSlug, LastPostedAt, PostsCount
+from anki_addons_dataset.common.data_types import TopicId, TopicSlug, LastPostedAt, PostsCount, AnkiForumPost, \
+    AnkiForumTopicContent, URL
 from anki_addons_dataset.common.working_dir import SnapshotDir
 
 log: Logger = logging.getLogger(__name__)
@@ -38,6 +40,22 @@ class AnkiForumService:
             return None
         posts_count_str: str = topic_dict['posts_count']
         return PostsCount(int(posts_count_str))
+
+    def get_topic_content(self, topic_slug: Optional[TopicSlug], topic_id: Optional[TopicId]
+                          ) -> Optional[AnkiForumTopicContent]:
+        topic_dict: Optional[dict] = self.__read_topic_json(topic_slug, topic_id)
+        if not topic_dict or 'title' not in topic_dict:
+            return None
+        created_by: Optional[str] = topic_dict.get('details', {}).get('created_by', {}).get('username')
+        posts: list[AnkiForumPost] = [self.__post(post) for post in topic_dict.get('post_stream', {}).get('posts', [])]
+        return AnkiForumTopicContent(topic_dict['title'], created_by, int(topic_dict.get('posts_count', len(posts))),
+                                     posts)
+
+    @staticmethod
+    def __post(post: dict) -> AnkiForumPost:
+        soup: BeautifulSoup = BeautifulSoup(post['cooked'], 'html.parser')
+        links: list[URL] = [URL(str(anchor['href'])) for anchor in soup.find_all('a', href=True)]
+        return AnkiForumPost(post['post_number'], post['username'], soup.get_text(" ", strip=True), links)
 
     def __read_topic_json(self, topic_slug: Optional[TopicSlug], topic_id: Optional[TopicId]) -> Optional[dict]:
         json_file: Path = self.__topic / f"{topic_id}.json"

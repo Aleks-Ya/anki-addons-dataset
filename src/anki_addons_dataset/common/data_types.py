@@ -57,6 +57,13 @@ class GithubRepoSource(StrEnum):
     MOST_LINKED = "most_linked"
 
 
+class AnkiForumTopicSource(StrEnum):
+    OVERRIDE = "override"
+    CONTACT_AUTHOR = "contact_author"
+    AI = "ai"
+    MOST_LINKED = "most_linked"
+
+
 class ForkEvidence(StrEnum):
     GITHUB_FORK = "github_fork"
     AI = "ai"
@@ -206,6 +213,23 @@ class AnkiForumInfo:
     topic_id: Optional[TopicId]
     last_posted_at: Optional[LastPostedAt]
     posts_count: Optional[PostsCount]
+    topic_source: Optional[AnkiForumTopicSource] = None
+
+
+@dataclass(frozen=True)
+class AnkiForumPost:
+    number: int
+    username: str
+    text: str
+    links: list[URL]
+
+
+@dataclass(frozen=True)
+class AnkiForumTopicContent:
+    title: str
+    created_by: Optional[str]
+    posts_count: int
+    posts: list[AnkiForumPost]
 
 
 @dataclass

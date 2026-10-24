@@ -5,7 +5,8 @@ that spends money, so it is separate from `download`: it reads the snapshots alr
 builds a prompt from the addon title, the AnkiWeb description and the GitHub README, and
 writes every answer to `history/<date>/1-raw/4-ai/ai-cache.jsonl`. `parse` then reads that cache
 offline and attaches the summaries and tags to the dump; an addon with no cached answer simply gets
-no summary or tags, and `parse` logs how many answers were missing (two per addon).
+no summary or tags, and `parse` logs how many answers were missing (two per addon, plus the fork and
+forum checks below where they apply).
 The step works on 50 addons at once, so up to 50 AI requests are in flight.
 
 For an addon whose description or README links other catalog addons, a third request asks which one
@@ -14,6 +15,15 @@ again of `ai.fork_verify_model` (`deepseek-v4-pro` by default), and the stronger
 final. Only a few hundred answers per snapshot name a parent, so this costs little. It is skipped when
 the addon is a GitHub fork that already decides the parent, because `parse` then ignores the AI
 answer. Set `fork_verify_model: false` to keep the first answer.
+
+An addon page links its Anki Forum topic in one of three ways: an `AnkiForumUrl` override, the
+Contact Author button, or a forum link in the description. The first two are the author's or our own
+choice. A description link is often just a reference, such as a bug report the addon fixes or another
+addon's thread. So for a topic that comes only from the description, one more request shows the AI the
+addon's title and description, the link texts, and the cached topic: its title, its creator, the first
+post and up to three posts that link the addon. It asks whether this is the addon's own topic, meaning
+the addon is announced or supported there. A `no` drops the topic, so the addon has no forum data. A
+`yes` exports `forum.topic_source` as `ai`. With no cached answer the topic stays, as `most_linked`.
 
 The cache key is a hash of the model and the whole prompt, system prompt included, so editing a
 prompt template or `ai.readme_max_chars` invalidates every entry. Summaries and tags use different

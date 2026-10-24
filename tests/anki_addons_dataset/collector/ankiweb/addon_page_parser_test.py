@@ -6,7 +6,7 @@ from anki_addons_dataset.collector.overrider.overrider import Overrider
 from anki_addons_dataset.common.data_types import AddonHeader, AddonInfo, AddonPage, GithubInfo, AddonId, GitHubLink, \
     URL, GitHubUser, GithubRepo, GithubUserName, GithubRepoName, AddonBranch, HtmlStr, AnkiForumInfo, AnkiVersion, \
     AnkiPointVersion, AnkiVersionKind, AddonRating, UpdateDate, AddonTitle, AddonDescription, \
-    PageLink, PageLinkSection, GithubRepoSource, AddonReview, ReviewVote
+    PageLink, PageLinkSection, GithubRepoSource, AddonReview, ReviewVote, AnkiForumTopicSource
 
 
 def test_parse_addon_page(overrider: Overrider):
@@ -108,7 +108,8 @@ def test_parse_addon_page(overrider: Overrider):
             topic_slug=None,
             topic_id=None,
             last_posted_at=None,
-            posts_count=None
+            posts_count=None,
+            topic_source=AnkiForumTopicSource.MOST_LINKED
         )
     )
 
@@ -273,6 +274,7 @@ def test_contact_author_forum_link_wins_over_description_vote(overrider: Overrid
     addon_info: AddonInfo = parser.parse_addon_page(__header(3), html)
     assert addon_info.forum.anki_forum_url == URL(
         "https://forums.ankiweb.net/t/review-heatmap-official-support-thread/928/1")
+    assert addon_info.forum.topic_source == AnkiForumTopicSource.CONTACT_AUTHOR
 
 
 def test_contact_author_github_link_wins_over_description_vote(overrider: Overrider):
@@ -317,6 +319,7 @@ def test_manual_override_beats_contact_author_forum_link(overrider: Overrider):
     addon_info: AddonInfo = parser.parse_addon_page(__header(111623432), html)
     assert addon_info.forum.anki_forum_url == URL(
         "https://forums.ankiweb.net/t/hypertts-spirtual-successor-to-awesometts/17143")
+    assert addon_info.forum.topic_source == AnkiForumTopicSource.OVERRIDE
 
 
 def test_ai_declaration_detected_without_github_repo(overrider: Overrider):
@@ -354,3 +357,4 @@ def test_no_contact_author_button_falls_back_to_description_vote(overrider: Over
         '</main></body></html>')
     addon_info: AddonInfo = parser.parse_addon_page(__header(5), html)
     assert addon_info.forum.anki_forum_url == URL("https://forums.ankiweb.net/t/the-only-thread/42")
+    assert addon_info.forum.topic_source == AnkiForumTopicSource.MOST_LINKED
