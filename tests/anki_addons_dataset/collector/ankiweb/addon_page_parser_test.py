@@ -6,7 +6,7 @@ from anki_addons_dataset.collector.overrider.overrider import Overrider
 from anki_addons_dataset.common.data_types import AddonHeader, AddonInfo, AddonPage, GithubInfo, AddonId, GitHubLink, \
     URL, GitHubUser, GithubRepo, GithubUserName, GithubRepoName, AddonBranch, HtmlStr, AnkiForumInfo, AnkiVersion, \
     AnkiPointVersion, AnkiVersionKind, AddonRating, UpdateDate, AddonTitle, AddonDescription, \
-    PageLink, PageLinkSection, GithubRepoSource
+    PageLink, PageLinkSection, GithubRepoSource, AddonReview, ReviewVote
 
 
 def test_parse_addon_page(overrider: Overrider):
@@ -33,6 +33,13 @@ def test_parse_addon_page(overrider: Overrider):
     assert 'src="/' not in addon_info.page.description_html
     assert addon_info.page.description_pre_wrap is False
     addon_info.page.description_html = None
+    assert len(addon_info.page.reviews) == 12
+    assert addon_info.page.reviews[0] == AddonReview(ReviewVote.LIKE, datetime.date(2025, 6, 6),
+                                                     'Thanks! Working on Anki 25.02 (linux-flatpak)', 'Thank you!')
+    assert addon_info.page.reviews[3] == AddonReview(ReviewVote.LIKE, datetime.date(2025, 4, 19), 'Cool!')
+    assert addon_info.page.reviews[11].text == 'Seems working well. \nThis is a really good idea, thanks!'
+    assert sum(1 for review in addon_info.page.reviews if review.author_reply is not None) == 5
+    addon_info.page.reviews = []
     github_user: GitHubUser = GitHubUser(GithubUserName("aleks-ya"))
     github_repo: GithubRepo = GithubRepo(GithubUserName("aleks-ya"), GithubRepoName("note-size-anki-addon"))
     description: PageLinkSection = PageLinkSection.DESCRIPTION
@@ -123,6 +130,24 @@ def test_parse_addon_page_without_description(overrider: Overrider):
     assert addon_info.page.description_html is None
     assert addon_info.page.description_pre_wrap is False
     assert addon_info.page.other_items_count == 0
+    assert addon_info.page.reviews == []
+
+
+def test_parse_addon_page_reviews(overrider: Overrider):
+    parser: AddonPageParser = AddonPageParser(overrider)
+    html: HtmlStr = HtmlStr(
+        '<html><body><main><h2>Reviews</h2>'
+        '<div class=""><img class="twox" alt="dislike"> on <span class="timestamp">2026-07-05</span></div>'
+        '<div class="mb-3"><div class="break-word pre-wrap">Passively produces errors</div></div>'
+        '<div class=""><img class="twox" alt="like"> on <span class="timestamp">2026-06-14</span></div>'
+        '<div class="mb-3"><div class="break-word pre-wrap"> </div>'
+        '<div class="card m-3"><div class="card-header">Comment from author</div>'
+        '<div class="card-body"><div class="break-word pre-wrap">Thanks!</div></div></div></div>'
+        '</main></body></html>')
+    addon_info: AddonInfo = parser.parse_addon_page(__header(3), html)
+    assert addon_info.page.reviews == [
+        AddonReview(ReviewVote.DISLIKE, datetime.date(2026, 7, 5), 'Passively produces errors'),
+        AddonReview(ReviewVote.LIKE, datetime.date(2026, 6, 14), '', 'Thanks!')]
 
 
 def test_parse_addon_page_other_items_count(overrider: Overrider):

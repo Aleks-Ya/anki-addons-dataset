@@ -9,7 +9,7 @@ import pytest
 from anki_addons_dataset.collector.ai.ai_cache_stats import AiCacheStats
 from anki_addons_dataset.collector.collector_facade import CollectorFacade
 from anki_addons_dataset.common.data_types import AddonInfos, ElementWaitTimeout, PageLoadTimeout, ReportDate, \
-    ScriptVersion, SnapshotDate
+    ScriptVersion, SnapshotDate, AddonReview, ReviewVote
 from anki_addons_dataset.common.json_helper import JsonHelper
 from anki_addons_dataset.common.working_dir import SnapshotDir, WorkingDir
 from anki_addons_dataset.config.app_config import AppConfig
@@ -59,6 +59,25 @@ def test_report_snapshots_exports_anki_versions(
         {"version": "25.09.2", "point_version": 250902}, {"version": "2.1.66", "point_version": 66}]
     assert (final_dir / "parquet" / "anki_versions.parquet").exists()
     assert (final_dir / "xlsx" / "anki_versions.xlsx").exists()
+
+
+def test_report_snapshots_exports_reviews_newest_first(
+        collector_facade: CollectorFacade, snapshot_dir: SnapshotDir, addon_infos: AddonInfos,
+        script_version: ScriptVersion, report_date: ReportDate):
+    addon_infos[0].page.reviews = [AddonReview(ReviewVote.LIKE, date(2025, 6, 6), "Works", "Thank you!"),
+                                   AddonReview(ReviewVote.DISLIKE, date(2026, 7, 5), "Produces errors")]
+    JsonHelper.write_addon_infos_dump(addon_infos, script_version, snapshot_dir.get_addon_infos_dump())
+
+    collector_facade.report_snapshots(None, report_date)
+
+    final_dir = snapshot_dir.get_final_dir()
+    addon_id: int = addon_infos[0].header.id
+    assert json.loads((final_dir / "json" / "reviews.json").read_text()) == [
+        {"addon_id": addon_id, "date": "2026-07-05", "vote": "dislike", "text": "Produces errors",
+         "author_reply": None},
+        {"addon_id": addon_id, "date": "2025-06-06", "vote": "like", "text": "Works", "author_reply": "Thank you!"}]
+    assert (final_dir / "parquet" / "reviews.parquet").exists()
+    assert not (final_dir / "xlsx" / "reviews.xlsx").exists()
 
 
 def test_report_snapshots_without_anki_tags_skips_anki_versions(

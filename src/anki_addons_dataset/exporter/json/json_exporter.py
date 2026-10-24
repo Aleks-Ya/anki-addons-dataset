@@ -9,7 +9,7 @@ from logging import Logger
 from jsonschema import validate
 
 from anki_addons_dataset.common.data_types import Aggregation, AddonInfos, DatasetSnapshotMetadata, RawMetadata, \
-    AiTagDefinition, AnkiRelease
+    AiTagDefinition, AnkiRelease, ReviewRow
 from anki_addons_dataset.exporter.exporter import Exporter
 from anki_addons_dataset.exporter.json_addon_info import JsonAddonInfo, Details
 
@@ -51,6 +51,13 @@ class JsonExporter(Exporter):
                              raw_metadata: RawMetadata) -> None:
         output_file: Path = self._final_dir / "anki_versions.json"
         json_str: str = json.dumps([dataclasses.asdict(anki_version) for anki_version in anki_versions], indent=2)
+        output_file.write_text(json_str)
+        log.info(f"Write JSON to file: {output_file}")
+
+    def export_reviews(self, reviews: list[ReviewRow], dataset_snapshot_metadata: DatasetSnapshotMetadata,
+                       raw_metadata: RawMetadata) -> None:
+        output_file: Path = self._final_dir / "reviews.json"
+        json_str: str = json.dumps([dataclasses.asdict(review) for review in reviews], indent=2, default=str)
         output_file.write_text(json_str)
         log.info(f"Write JSON to file: {output_file}")
 

@@ -15,6 +15,8 @@ configs:
     data_files: latest/parquet/tags.parquet
   - config_name: anki_versions
     data_files: latest/parquet/anki_versions.parquet
+  - config_name: reviews
+    data_files: latest/parquet/reviews.parquet
 ---
 
 ## Introduction
@@ -64,6 +66,12 @@ writes it (`25.09.2`, `2.1.66`), `point_version` is Anki's integer encoding of i
 `*_point_version` fields of the addons. Snapshots collected before the table was introduced have no
 `anki_versions` files.
 
+The `reviews` table (`latest/parquet/reviews.parquet`, also in JSON) holds the user reviews from the AnkiWeb
+addon pages, one row per review, sorted by `addon_id` and then newest first: `addon_id`, `date`, `vote`
+(`like` or `dislike`), `text` (empty for a review left without text) and `author_reply` (the addon author's
+comment, or `null`). AnkiWeb does not show who wrote a review, so the table has no reviewer column. The page-wide
+`likes`/`dislikes` counts of the main table can differ slightly from the votes of the listed reviews.
+
 Questions, feedback, bugs: [Support page at Anki Forum](https://forums.ankiweb.net/t/anki-addons-dataset-a-detailed-list-of-addons/63090)
 
 ---
@@ -82,12 +90,14 @@ Folder `latest` contains the most recent day from `history`.
 │   │   │   ├── aggregation.json
 │   │   │   ├── anki_versions.json
 │   │   │   ├── data.json
+│   │   │   ├── reviews.json
 │   │   │   ├── schema.json
 │   │   │   └── tags.json
 │   │   ├── parquet
 │   │   │   ├── aggregation.parquet
 │   │   │   ├── anki_versions.parquet
 │   │   │   ├── data.parquet
+│   │   │   ├── reviews.parquet
 │   │   │   └── tags.parquet
 │   │   ├── xlsx
 │   │   │   ├── aggregation.xlsx
@@ -102,12 +112,14 @@ Folder `latest` contains the most recent day from `history`.
 │   │   ├── aggregation.json
 │   │   ├── anki_versions.json
 │   │   ├── data.json
+│   │   ├── reviews.json
 │   │   ├── schema.json
 │   │   └── tags.json
 │   ├── parquet
 │   │   ├── aggregation.parquet
 │   │   ├── anki_versions.parquet
 │   │   ├── data.parquet
+│   │   ├── reviews.parquet
 │   │   └── tags.parquet
 │   ├── xlsx
 │   │   ├── aggregation.xlsx

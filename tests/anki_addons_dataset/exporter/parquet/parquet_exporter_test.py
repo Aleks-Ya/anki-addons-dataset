@@ -1,3 +1,4 @@
+from datetime import date
 from pathlib import Path
 
 import pandas
@@ -5,7 +6,7 @@ from pandas import DataFrame
 import pandas.testing as pdt
 
 from anki_addons_dataset.common.data_types import Aggregation, AddonInfos, DatasetSnapshotMetadata, RawMetadata, \
-    AiTagDefinition, AiTag, AiTagGroup, AnkiRelease, AnkiVersion, AnkiPointVersion
+    AiTagDefinition, AiTag, AiTagGroup, AnkiRelease, AnkiVersion, AnkiPointVersion, ReviewRow, ReviewVote, AddonId
 from anki_addons_dataset.common.working_dir import SnapshotDir
 from anki_addons_dataset.exporter.parquet.parquet_exporter import ParquetExporter
 
@@ -151,4 +152,33 @@ def test_export_anki_versions_empty(snapshot_dir: SnapshotDir, dataset_snapshot_
     act_df: DataFrame = pandas.read_parquet(final_dir / "parquet" / "anki_versions.parquet")
     assert list(act_df.columns) == ['version', 'point_version']
     assert str(act_df['point_version'].dtype) == 'int64'
+    assert act_df.empty
+
+
+def test_export_reviews(snapshot_dir: SnapshotDir, dataset_snapshot_metadata: DatasetSnapshotMetadata,
+                        raw_metadata: RawMetadata):
+    reviews: list[ReviewRow] = [
+        ReviewRow(AddonId(1188705668), date(2026, 7, 5), ReviewVote.DISLIKE, "Produces errors", None),
+        ReviewRow(AddonId(1188705668), date(2025, 6, 6), ReviewVote.LIKE, "Works\nfine", "Thank you!")]
+    final_dir: Path = snapshot_dir.get_final_dir()
+    exporter: ParquetExporter = ParquetExporter(final_dir)
+    exporter.export_reviews(reviews, dataset_snapshot_metadata, raw_metadata)
+
+    act_df: DataFrame = pandas.read_parquet(final_dir / "parquet" / "reviews.parquet")
+    exp_df: DataFrame = DataFrame([
+        {'addon_id': 1188705668, 'date': date(2026, 7, 5), 'vote': 'dislike', 'text': 'Produces errors',
+         'author_reply': None},
+        {'addon_id': 1188705668, 'date': date(2025, 6, 6), 'vote': 'like', 'text': 'Works\nfine',
+         'author_reply': 'Thank you!'}])
+    pdt.assert_frame_equal(act_df, exp_df)
+
+
+def test_export_reviews_empty(snapshot_dir: SnapshotDir, dataset_snapshot_metadata: DatasetSnapshotMetadata,
+                              raw_metadata: RawMetadata):
+    final_dir: Path = snapshot_dir.get_final_dir()
+    exporter: ParquetExporter = ParquetExporter(final_dir)
+    exporter.export_reviews([], dataset_snapshot_metadata, raw_metadata)
+
+    act_df: DataFrame = pandas.read_parquet(final_dir / "parquet" / "reviews.parquet")
+    assert list(act_df.columns) == ['addon_id', 'date', 'vote', 'text', 'author_reply']
     assert act_df.empty

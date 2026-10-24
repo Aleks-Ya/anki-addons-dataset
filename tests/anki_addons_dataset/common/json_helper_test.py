@@ -10,7 +10,7 @@ from anki_addons_dataset.common.data_types import AddonInfo, AddonInfos, AddonHe
     GithubInfo, GitHubLink, GitHubUser, GithubRepo, AddonId, AnkiVersion, HtmlStr, URL, \
     GithubUserName, GithubRepoName, LanguageName, LanguageCode, ScriptVersion, AddonRating, UpdateDate, AddonTitle, \
     AddonManifest, SpdxLicense, Topic, DependencyName, GithubReadme, AiTag, AnkiVersionKind, \
-    PageLink, PageLinkSection, ForkEvidence, ForkRelation
+    PageLink, PageLinkSection, ForkEvidence, ForkRelation, AddonReview, ReviewVote
 from anki_addons_dataset.common.json_helper import JsonHelper
 
 
@@ -393,3 +393,30 @@ def test_concurrent_reader_never_sees_a_partial_file(addon_infos: AddonInfos, sc
     writer.join()
 
     assert read_count > 0
+
+
+def test_addon_infos_dump_round_trip_preserves_reviews(addon_infos: AddonInfos, script_version: ScriptVersion,
+                                                       working_dir_path: Path):
+    reviews: list[AddonReview] = [AddonReview(ReviewVote.DISLIKE, date(2026, 7, 5), "Produces errors"),
+                                  AddonReview(ReviewVote.LIKE, date(2025, 6, 6), "Works\nfine", "Thank you!")]
+    addon_infos[0].page.reviews = reviews
+    dump_file: Path = working_dir_path / "addon-infos.json"
+
+    JsonHelper.write_addon_infos_dump(addon_infos, script_version, dump_file)
+    _, read_addon_infos = JsonHelper.read_addon_infos_dump(dump_file)
+
+    assert read_addon_infos[0].page.reviews == reviews
+
+
+def test_addon_infos_dump_without_reviews(addon_infos: AddonInfos, script_version: ScriptVersion,
+                                          working_dir_path: Path):
+    dump_file: Path = working_dir_path / "addon-infos.json"
+    JsonHelper.write_addon_infos_dump(addon_infos, script_version, dump_file)
+    envelope: dict = json.loads(dump_file.read_text())
+    for item in envelope["addon_infos"]:
+        del item["page"]["reviews"]
+    dump_file.write_text(json.dumps(envelope))
+
+    _, read_addon_infos = JsonHelper.read_addon_infos_dump(dump_file)
+
+    assert read_addon_infos[0].page.reviews == []

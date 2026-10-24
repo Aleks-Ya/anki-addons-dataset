@@ -6,7 +6,7 @@ from logging import Logger
 from pandas import DataFrame
 
 from anki_addons_dataset.common.data_types import Aggregation, AddonInfos, DatasetSnapshotMetadata, RawMetadata, \
-    AiTagDefinition, AnkiRelease
+    AiTagDefinition, AnkiRelease, ReviewRow
 from anki_addons_dataset.exporter.exporter import Exporter
 from anki_addons_dataset.exporter.json_addon_info import JsonAddonInfo, Details
 
@@ -42,5 +42,13 @@ class ParquetExporter(Exporter):
         output_file: Path = self._final_dir / "anki_versions.parquet"
         DataFrame([dataclasses.asdict(anki_version) for anki_version in anki_versions],
                   columns=["version", "point_version"]).astype({"version": str, "point_version": "int64"}) \
+            .to_parquet(output_file, compression="zstd")
+        log.info(f"Write Parquet to file: {output_file}")
+
+    def export_reviews(self, reviews: list[ReviewRow], dataset_snapshot_metadata: DatasetSnapshotMetadata,
+                       raw_metadata: RawMetadata) -> None:
+        output_file: Path = self._final_dir / "reviews.parquet"
+        DataFrame([dataclasses.asdict(review) for review in reviews],
+                  columns=["addon_id", "date", "vote", "text", "author_reply"]) \
             .to_parquet(output_file, compression="zstd")
         log.info(f"Write Parquet to file: {output_file}")

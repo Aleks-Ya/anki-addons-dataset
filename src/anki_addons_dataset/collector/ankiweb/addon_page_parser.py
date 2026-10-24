@@ -1,5 +1,6 @@
 import copy
 import re
+from datetime import date
 from itertools import groupby
 from typing import Optional
 from urllib.parse import urljoin
@@ -13,7 +14,7 @@ from anki_addons_dataset.collector.ankiweb.description_language_detector import 
 from anki_addons_dataset.collector.overrider.overrider import Overrider
 from anki_addons_dataset.common.data_types import AddonHeader, AddonInfo, AddonId, URL, GitHubLink, GithubRepo, \
     GithubInfo, AddonPage, AddonBranch, HtmlStr, AnkiForumInfo, AddonDescription, LanguageCode, PageLink, \
-    PageLinkSection, GithubRepoSource
+    PageLinkSection, GithubRepoSource, AddonReview, ReviewVote
 
 
 class AddonPageParser:
@@ -50,9 +51,10 @@ class AddonPageParser:
             description_tag, addon_header.addon_page_url)
         description_pre_wrap: bool = self.__extract_description_pre_wrap(description_tag)
         other_items_count: int = self.__extract_other_items_count(soup)
+        reviews: list[AddonReview] = self.__extract_reviews(soup)
         addon_page: AddonPage = AddonPage(
             html, likes, dislikes, addon_branches, links, description, ai_declaration_markers, description_language,
-            description_language_confidence, description_html, description_pre_wrap, other_items_count)
+            description_language_confidence, description_html, description_pre_wrap, other_items_count, reviews)
         anki_forum_info: AnkiForumInfo = AnkiForumInfo(anki_forum_url, None, None, None, None)
         addon_info: AddonInfo = AddonInfo(addon_header, addon_page, github_info, anki_forum_info)
         return addon_info
@@ -169,6 +171,25 @@ class AddonPageParser:
         if sibling is None:
             return 0
         return int(sibling.get_text())
+
+    @staticmethod
+    def __extract_reviews(soup: BeautifulSoup) -> list[AddonReview]:
+        reviews_heading: Optional[Tag] = soup.find('h2', string='Reviews')
+        if reviews_heading is None:
+            return []
+        reviews: list[AddonReview] = []
+        for vote_image in reviews_heading.find_all_next('img', alt=[vote.value for vote in ReviewVote]):
+            header: Tag = vote_image.parent
+            timestamp: Tag = header.find('span', class_='timestamp')
+            body: Optional[Tag] = header.find_next_sibling('div')
+            text_tag: Optional[Tag] = body.find('div', class_='break-word', recursive=False) if body else None
+            reply_tag: Optional[Tag] = body.find('div', class_='card-body') if body else None
+            reviews.append(AddonReview(
+                ReviewVote(vote_image['alt']),
+                date.fromisoformat(timestamp.get_text(strip=True)),
+                text_tag.get_text().strip() if text_tag else "",
+                reply_tag.get_text().strip() if reply_tag else None))
+        return reviews
 
     @staticmethod
     def __extract_description(description_tag: Optional[Tag]) -> AddonDescription:

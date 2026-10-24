@@ -39,7 +39,7 @@ from anki_addons_dataset.collector.overrider.overrider import Overrider
 from anki_addons_dataset.collector.raw_metadata_collector import RawMetadataCollector
 from anki_addons_dataset.collector.sample_collector import SampleCollector
 from anki_addons_dataset.common.data_types import Aggregation, AddonInfos, DatasetSnapshotMetadata, RawMetadata, \
-    AnkiRelease, SnapshotDate, ReportDate, ScriptVersion, PageLoadTimeout, ElementWaitTimeout
+    AnkiRelease, SnapshotDate, ReportDate, ScriptVersion, PageLoadTimeout, ElementWaitTimeout, ReviewRow
 from anki_addons_dataset.common.json_helper import JsonHelper
 from anki_addons_dataset.common.working_dir import SnapshotDir, WorkingDir
 from anki_addons_dataset.config.app_config import AppConfig
@@ -155,7 +155,7 @@ class CollectorFacade:
             log.warning(f"No Anki tags in {snapshot_dir.get_raw_dir()}, the anki_versions table is skipped. "
                         f"Run the 'download -d {snapshot_date}' operation to fetch them.")
         exporter_facade.export_all(addon_infos, aggregation, AiTagVocabulary.definitions(), anki_versions,
-                                   dataset_snapshot_metadata, raw_metadata)
+                                   self.__review_rows(addon_infos), dataset_snapshot_metadata, raw_metadata)
         log.info(f"===== Reported snapshot for {snapshot_date} =====\n")
 
     def __ai_provider(self, snapshot_dir: SnapshotDir, offline: bool, shared_index: Optional[AiCacheIndex] = None,
@@ -187,6 +187,13 @@ class CollectorFacade:
             ai_enricher.download_in_background(addon_info)
         ai_enricher.wait_download_finish()
         return ai_enricher.enrich(addon_infos)
+
+    @staticmethod
+    def __review_rows(addon_infos: AddonInfos) -> list[ReviewRow]:
+        rows: list[ReviewRow] = [
+            ReviewRow(addon_info.header.id, review.date, review.vote, review.text, review.author_reply)
+            for addon_info in addon_infos for review in addon_info.page.reviews]
+        return sorted(rows, key=lambda row: (row.addon_id, -row.date.toordinal()))
 
     @staticmethod
     def __script_version() -> ScriptVersion:

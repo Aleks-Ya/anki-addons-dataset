@@ -63,6 +63,11 @@ class ForkEvidence(StrEnum):
     OVERRIDE = "override"
 
 
+class ReviewVote(StrEnum):
+    LIKE = "like"
+    DISLIKE = "dislike"
+
+
 @dataclass
 class AddonHeader:
     id: AddonId
@@ -162,6 +167,14 @@ class PageLink:
     texts: list[str] = field(default_factory=list)
 
 
+@dataclass(frozen=True)
+class AddonReview:
+    vote: ReviewVote
+    date: date
+    text: str
+    author_reply: Optional[str] = None
+
+
 @dataclass
 class AddonPage:
     content: HtmlStr
@@ -176,6 +189,7 @@ class AddonPage:
     description_html: Optional[HtmlStr] = None
     description_pre_wrap: bool = False
     other_items_count: Optional[int] = None
+    reviews: list[AddonReview] = field(default_factory=list)
 
     @property
     def contact_author_url(self) -> Optional[URL]:
@@ -213,6 +227,15 @@ class AiTagDefinition:
 class AnkiRelease:
     version: AnkiVersion
     point_version: AnkiPointVersion
+
+
+@dataclass(frozen=True)
+class ReviewRow:
+    addon_id: AddonId
+    date: date
+    vote: ReviewVote
+    text: str
+    author_reply: Optional[str]
 
 
 @dataclass(frozen=True)

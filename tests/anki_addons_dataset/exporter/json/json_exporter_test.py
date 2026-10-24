@@ -1,4 +1,5 @@
 import json
+from datetime import date
 from dataclasses import replace
 from pathlib import Path
 from typing import Any, Optional
@@ -6,7 +7,7 @@ from typing import Any, Optional
 from anki_addons_dataset.common.data_types import Aggregation, AddonInfos, AddonInfo, AnkiForumInfo, PostsCount, \
     DatasetSnapshotMetadata, RawMetadata, AddonManifest, SpdxLicense, Topic, DependencyName, LanguageName, URL, GithubReadme, \
     AiTagDefinition, AiTag, AiTagGroup, PageLink, PageLinkSection, AnkiRelease, AnkiVersion, AnkiPointVersion, \
-    AddonId, ForkRelation, ForkEvidence
+    AddonId, ForkRelation, ForkEvidence, ReviewRow, ReviewVote
 from anki_addons_dataset.common.working_dir import SnapshotDir
 from anki_addons_dataset.exporter.json.json_exporter import JsonExporter
 
@@ -349,3 +350,19 @@ def test_export_anki_versions(json_exporter: JsonExporter, snapshot_dir: Snapsho
     act_json: list[dict[str, Any]] = json.loads(act_file.read_text())
     assert act_json == [{'version': '25.09.2', 'point_version': 250902},
                         {'version': '2.1.66', 'point_version': 66}]
+
+
+def test_export_reviews(json_exporter: JsonExporter, snapshot_dir: SnapshotDir,
+                        dataset_snapshot_metadata: DatasetSnapshotMetadata, raw_metadata: RawMetadata):
+    reviews: list[ReviewRow] = [
+        ReviewRow(AddonId(1188705668), date(2026, 7, 5), ReviewVote.DISLIKE, "Produces errors", None),
+        ReviewRow(AddonId(1188705668), date(2025, 6, 6), ReviewVote.LIKE, "Works\nfine", "Thank you!")]
+    json_exporter.export_reviews(reviews, dataset_snapshot_metadata, raw_metadata)
+
+    act_file: Path = snapshot_dir.get_final_dir() / "json" / "reviews.json"
+    act_json: list[dict[str, Any]] = json.loads(act_file.read_text())
+    assert act_json == [
+        {'addon_id': 1188705668, 'date': '2026-07-05', 'vote': 'dislike', 'text': 'Produces errors',
+         'author_reply': None},
+        {'addon_id': 1188705668, 'date': '2025-06-06', 'vote': 'like', 'text': 'Works\nfine',
+         'author_reply': 'Thank you!'}]

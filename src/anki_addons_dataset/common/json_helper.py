@@ -11,7 +11,7 @@ from anki_addons_dataset.common.data_types import AddonInfo, AddonInfos, AddonHe
     GithubUserName, GithubRepoName, LanguageName, LanguageCode, TopicSlug, TopicId, LastPostedAt, PostsCount, \
     ScriptVersion, AddonRating, UpdateDate, AddonTitle, AddonDescription, AddonManifest, SpdxLicense, Topic, \
     DependencyName, GithubReadme, AiInfo, AiSummary, AiModel, AiTag, AnkiPointVersion, AnkiVersionKind, \
-    PageLink, PageLinkSection, GithubRepoSource, AuthorInfo, ForkEvidence, ForkRelation
+    PageLink, PageLinkSection, GithubRepoSource, AuthorInfo, ForkEvidence, ForkRelation, AddonReview, ReviewVote
 
 
 class JsonHelper:
@@ -110,6 +110,7 @@ class JsonHelper:
             if data.get("description_html") is not None else None,
             description_pre_wrap=bool(data.get("description_pre_wrap", False)),
             other_items_count=data.get("other_items_count"),
+            reviews=[JsonHelper.__addon_review_from_dict(review) for review in data.get("reviews", [])],
         )
 
     @staticmethod
@@ -119,6 +120,15 @@ class JsonHelper:
             section=PageLinkSection(data["section"]),
             count=data["count"],
             texts=list(data["texts"]),
+        )
+
+    @staticmethod
+    def __addon_review_from_dict(data: dict[str, Any]) -> AddonReview:
+        return AddonReview(
+            vote=ReviewVote(data["vote"]),
+            date=date.fromisoformat(data["date"]),
+            text=data["text"],
+            author_reply=data["author_reply"],
         )
 
     @staticmethod
