@@ -1,6 +1,6 @@
 ---
 name: push
-description: Push the main branch and see it through green — verify a clean tree, install deps and run pytest locally, push, wait for the GitHub Actions "Unit-tests" workflow and fix any failures, then review SonarCloud issues on the new code and fix them. Use when the user says "push", "/push", or asks to push and make sure CI/Sonar are clean.
+description: Push the main branch and see it through green — verify a clean tree, upgrade deps (committing uv.lock without asking) and run pytest locally, push, wait for the GitHub Actions "Unit-tests" workflow and fix any failures, then review SonarCloud issues on the new code and fix them. Use when the user says "push", "/push", or asks to push and make sure CI/Sonar are clean.
 allowed-tools: Bash(./uv_update.sh *) Bash(uv *) Bash(gh run *) Bash(git *) Bash(curl *)
 disable-model-invocation: true
 ---
@@ -26,17 +26,33 @@ git rev-parse --abbrev-ref HEAD
 
 If not on `main`, stop and ask the user before pushing.
 
-## 2. Install/refresh dependencies and run tests locally
+## 2. Upgrade dependencies and run tests locally
 
-Before pushing, sync the environment and run the test suite so failures are caught locally rather than in CI.
+Every push upgrades the Python dependencies. Do this without asking the user for confirmation. Then sync the
+environment and run the test suite, so that failures are caught locally rather than in CI.
 
 ```bash
 ./uv_update.sh   # uv lock --upgrade && uv sync
 uv run pytest
 ```
 
-- `./uv_update.sh` upgrades every dependency to its latest allowed version, refreshes `uv.lock`, and syncs `.venv` with the project (editable) plus its `dev` dependency group, so `pytest` and the rest of the toolchain are present and up to date. If it changes `uv.lock`, that change must be committed (CI runs `uv sync --locked` and fails on a stale lock).
-- If `uv run pytest` **fails**, **stop.** Do not push. Fix the failing tests in the working tree first (and, per step 1, don't commit on the user's behalf unless they ask). Re-run `pytest` until green, then continue.
+- `./uv_update.sh` does three things:
+  - upgrades every dependency to its latest allowed version and refreshes `uv.lock`
+  - syncs `.venv` with the project (editable) plus its `dev` dependency group, so `pytest` and the rest of the
+    toolchain are present and up to date
+- If `uv run pytest` **fails**, **stop.** Do not push. Fix the failing tests in the working tree first (and, per
+  step 1, don't commit the fixes on the user's behalf unless they ask). Re-run `pytest` until green, then continue.
+- If the tests pass and `uv.lock` changed, commit the change yourself without asking. Commit only `uv.lock`, with
+  the message `Upgrade dependencies`:
+
+  ```bash
+  git add uv.lock
+  git commit -m "Upgrade dependencies"
+  ```
+
+  Step 1's ban on committing for the user does not cover this commit. Pushing a lock file that is out of step with
+  `pyproject.toml` breaks CI, because CI runs `uv sync --locked`. If `uv.lock` is unchanged, there is nothing to
+  commit.
 
 ## 3. Push the main branch
 
