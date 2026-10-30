@@ -57,9 +57,11 @@ def test_locate_retries_transient_failures():
 def test_locate_gives_up_after_all_attempts():
     session: MagicMock = MagicMock(spec=Session)
     session.get.side_effect = RequestsConnectionError("reset")
+    client: PackageClient = __client(session)
+    point_version: AnkiPointVersion = AnkiPointVersion(1)
 
     with pytest.raises(RequestsConnectionError):
-        __client(session).locate(__ADDON_ID, AnkiPointVersion(1))
+        client.locate(__ADDON_ID, point_version)
 
     assert session.get.call_count == 4
 
@@ -67,9 +69,11 @@ def test_locate_gives_up_after_all_attempts():
 def test_locate_does_not_retry_a_client_error():
     session: MagicMock = MagicMock(spec=Session)
     session.get.return_value = __response(400)
+    client: PackageClient = __client(session)
+    point_version: AnkiPointVersion = AnkiPointVersion(-1)
 
     with pytest.raises(PackageError):
-        __client(session).locate(__ADDON_ID, AnkiPointVersion(-1))
+        client.locate(__ADDON_ID, point_version)
 
     session.get.assert_called_once()
 
@@ -77,9 +81,11 @@ def test_locate_does_not_retry_a_client_error():
 def test_locate_requires_a_redirect():
     session: MagicMock = MagicMock(spec=Session)
     session.get.return_value = __response(200)
+    client: PackageClient = __client(session)
+    point_version: AnkiPointVersion = AnkiPointVersion(1)
 
     with pytest.raises(PackageError):
-        __client(session).locate(__ADDON_ID, AnkiPointVersion(1))
+        client.locate(__ADDON_ID, point_version)
 
 
 def test_download_streams_body_to_file(tmp_path: Path):

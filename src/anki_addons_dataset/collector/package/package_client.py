@@ -5,7 +5,7 @@ from datetime import date, datetime, timezone
 from logging import Logger
 from pathlib import Path
 from threading import local
-from typing import Callable, Optional, TypeVar
+from typing import Callable, Optional
 from urllib.parse import parse_qs, urlsplit
 
 from requests import RequestException, Response, Session
@@ -13,8 +13,6 @@ from requests import RequestException, Response, Session
 from anki_addons_dataset.common.data_types import AddonId, AnkiPointVersion
 
 log: Logger = logging.getLogger(__name__)
-
-T = TypeVar("T")
 
 
 class PackageError(Exception):
@@ -68,7 +66,7 @@ class PackageClient:
                     file.write(chunk)
         return True
 
-    def __with_retries(self, action: Callable[[], T]) -> T:
+    def __with_retries[T](self, action: Callable[[], T]) -> T:
         for attempt in range(1, self.__attempts):
             try:
                 return action()
