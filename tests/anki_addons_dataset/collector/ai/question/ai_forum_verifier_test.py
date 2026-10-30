@@ -92,3 +92,28 @@ def test_verify_without_link_texts():
     AiForumVerifier(ai_provider).verify(addon_info, URL("https://forums.ankiweb.net/t/unlinked/7"), __topic())
     assert ai_provider.prompt is not None
     assert "<forum_link_texts>None.</forum_link_texts>" in ai_provider.prompt
+
+
+def test_verify_title_match_yes():
+    provider: RecordingAiProvider = RecordingAiProvider(AiResponseText("yes"))
+    assert AiForumVerifier(provider).verify_title_match(__addon_info(), __topic()) == AiForumAnswer(True)
+    assert "<forum_link_texts>None.</forum_link_texts>" in provider.prompt
+
+
+def test_verify_title_match_no():
+    provider: RecordingAiProvider = RecordingAiProvider(AiResponseText("No."))
+    assert AiForumVerifier(provider).verify_title_match(__addon_info(), __topic()) == AiForumAnswer(False)
+
+
+def test_verify_title_match_missing_answer():
+    provider: RecordingAiProvider = RecordingAiProvider(None)
+    assert AiForumVerifier(provider).verify_title_match(__addon_info(), __topic()) is None
+
+
+def test_verify_title_match_has_its_own_instructions():
+    title_provider: RecordingAiProvider = RecordingAiProvider(AiResponseText("yes"))
+    link_provider: RecordingAiProvider = RecordingAiProvider(AiResponseText("yes"))
+    AiForumVerifier(title_provider).verify_title_match(__addon_info(), __topic())
+    AiForumVerifier(link_provider).verify(__addon_info(), forum_url, __topic())
+    assert "does not link this topic" in title_provider.instructions
+    assert title_provider.instructions != link_provider.instructions

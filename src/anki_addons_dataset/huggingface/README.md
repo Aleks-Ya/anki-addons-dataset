@@ -164,6 +164,7 @@ raw-metadata.json
     last-commit.json
     tree.json
 2-github/ankitects/anki/tags.json
+3-forum/category/11.json
 3-forum/topic/{topic_id}.json
 4-ai/ai-cache.jsonl
 ```

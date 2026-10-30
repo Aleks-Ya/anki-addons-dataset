@@ -62,6 +62,7 @@ class AnkiForumTopicSource(StrEnum):
     CONTACT_AUTHOR = "contact_author"
     AI = "ai"
     MOST_LINKED = "most_linked"
+    TITLE_MATCH = "title_match"
 
 
 class ForkEvidence(StrEnum):
@@ -256,6 +257,14 @@ class AnkiForumTopicContent:
     created_by: Optional[str]
     posts_count: int
     posts: list[AnkiForumPost]
+
+
+@dataclass(frozen=True)
+class AnkiForumCategoryTopic:
+    id: TopicId
+    slug: TopicSlug
+    title: str
+    posts_count: PostsCount
 
 
 @dataclass

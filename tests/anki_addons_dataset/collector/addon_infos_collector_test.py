@@ -19,10 +19,13 @@ def __collector(headers: list[AddonHeader], addon_info: AddonInfo,
     github_enricher.enrich.side_effect = lambda addon_infos: addon_infos
     anki_forum_enricher: Mock = Mock()
     anki_forum_enricher.enrich.side_effect = lambda addon_infos: addon_infos
+    anki_forum_topic_discoverer: Mock = Mock()
+    anki_forum_topic_discoverer.discover.side_effect = lambda addon_infos: addon_infos
     author_resolver: Mock = Mock(spec=AuthorResolver)
     author_resolver.resolve.side_effect = lambda addon_infos, author_items: addon_infos
     collector: AddonInfosCollector = AddonInfosCollector(
-        ankiweb_service, github_enricher, anki_forum_enricher, author_resolver, max_addons)
+        ankiweb_service, github_enricher, anki_forum_enricher, anki_forum_topic_discoverer, author_resolver,
+        max_addons)
     return collector, ankiweb_service, github_enricher, anki_forum_enricher
 
 

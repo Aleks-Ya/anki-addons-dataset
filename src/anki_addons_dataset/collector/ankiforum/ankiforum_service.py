@@ -9,19 +9,21 @@ from bs4 import BeautifulSoup
 from pydiscourse import DiscourseClient
 
 from anki_addons_dataset.common.data_types import TopicId, TopicSlug, LastPostedAt, PostsCount, AnkiForumPost, \
-    AnkiForumTopicContent, URL
+    AnkiForumTopicContent, URL, AnkiForumCategoryTopic
 from anki_addons_dataset.common.working_dir import SnapshotDir
 
 log: Logger = logging.getLogger(__name__)
 
 
 class AnkiForumService:
+    __add_ons_category_id: int = 11
 
     def __init__(self, discourse_client: DiscourseClient, snapshot_dir: SnapshotDir, offline: bool):
         self.__discourse_client: DiscourseClient = discourse_client
         raw_dir: Path = snapshot_dir.get_raw_dir() / "3-forum"
         self.__topic = raw_dir / "topic"
         self.__topic.mkdir(parents=True, exist_ok=True)
+        self.__category_file: Path = raw_dir / "category" / f"{self.__add_ons_category_id}.json"
         self.__offline: bool = offline
 
     def get_last_posted_at(self, topic_slug: Optional[TopicSlug], topic_id: Optional[TopicId]) -> Optional[
@@ -50,6 +52,30 @@ class AnkiForumService:
         posts: list[AnkiForumPost] = [self.__post(post) for post in topic_dict.get('post_stream', {}).get('posts', [])]
         return AnkiForumTopicContent(topic_dict['title'], created_by, int(topic_dict.get('posts_count', len(posts))),
                                      posts)
+
+    def get_category_topics(self) -> list[AnkiForumCategoryTopic]:
+        if not self.__category_file.exists():
+            if self.__offline:
+                log.debug(f"Offline mode is enabled. Skip crawling forum category: {self.__category_file}")
+                return []
+            topics: list[dict] = self.__crawl_category()
+            self.__category_file.parent.mkdir(parents=True, exist_ok=True)
+            self.__category_file.write_text(json.dumps(topics, indent=2))
+        return [AnkiForumCategoryTopic(TopicId(topic['id']), TopicSlug(topic['slug']), topic['title'],
+                                       PostsCount(topic['posts_count']))
+                for topic in json.loads(self.__category_file.read_text())]
+
+    def __crawl_category(self) -> list[dict]:
+        topics: dict[int, dict] = {}
+        page: int = 0
+        while True:
+            topic_list: dict = self.__discourse_client.category_topics(self.__add_ons_category_id, page=page)[
+                'topic_list']
+            topics.update({topic['id']: topic for topic in topic_list['topics']})
+            log.info(f"Crawled forum category page {page}: {len(topics)} topics")
+            if not topic_list['topics'] or 'more_topics_url' not in topic_list:
+                return list(topics.values())
+            page += 1
 
     @staticmethod
     def __post(post: dict) -> AnkiForumPost:

@@ -134,6 +134,8 @@ package "anki_addons_dataset" {
       class AnkiForumEnricher
       class AnkiForumService
       class AnkiForumTopic
+      class AnkiForumTitleMatcher
+      class AnkiForumTopicDiscoverer
     }
 
     package "github" {
@@ -296,6 +298,7 @@ AnkiVersionCodec --> AnkiVersionKind
 AddonInfosCollector --> AnkiWebService
 AddonInfosCollector --> GithubEnricher
 AddonInfosCollector --> AnkiForumEnricher
+AddonInfosCollector --> AnkiForumTopicDiscoverer
 AddonInfosCollector --> AuthorResolver
 AnkiWebService --> AddonsPageDownloader
 AnkiWebService --> AddonPageDownloader
@@ -334,6 +337,10 @@ GithubRepoSelector --> AiRepoSelector
 AnkiForumEnricher --> AnkiForumService
 AnkiForumEnricher --> AnkiForumTopic
 AnkiForumEnricher --> AiForumVerifier
+AnkiForumTopicDiscoverer --> AnkiForumService
+AnkiForumTopicDiscoverer --> AnkiForumTitleMatcher
+AnkiForumTopicDiscoverer --> AnkiForumTopic
+AnkiForumTopicDiscoverer --> AiForumVerifier
 AnkiForumService --> AnkiForumTopicContent
 GithubService --> GithubRestClient
 GithubService --> RepoHandler

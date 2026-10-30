@@ -3,6 +3,7 @@ from logging import Logger
 from typing import Optional
 
 from anki_addons_dataset.collector.ankiforum.ankiforum_enricher import AnkiForumEnricher
+from anki_addons_dataset.collector.ankiforum.ankiforum_topic_discoverer import AnkiForumTopicDiscoverer
 from anki_addons_dataset.collector.ankiweb.ankiweb_service import AnkiWebService
 from anki_addons_dataset.collector.author_resolver import AuthorResolver
 from anki_addons_dataset.collector.github.github_enricher import GithubEnricher
@@ -13,12 +14,13 @@ log: Logger = logging.getLogger(__name__)
 
 class AddonInfosCollector:
     def __init__(self, ankiweb_service: AnkiWebService, github_enricher: GithubEnricher,
-                 anki_forum_enricher: AnkiForumEnricher, author_resolver: AuthorResolver,
-                 max_addons: Optional[int] = None):
+                 anki_forum_enricher: AnkiForumEnricher, anki_forum_topic_discoverer: AnkiForumTopicDiscoverer,
+                 author_resolver: AuthorResolver, max_addons: Optional[int] = None):
         self.__ankiweb_service: AnkiWebService = ankiweb_service
         self.__author_resolver: AuthorResolver = author_resolver
         self.__github_enricher: GithubEnricher = github_enricher
         self.__anki_forum_enricher: AnkiForumEnricher = anki_forum_enricher
+        self.__anki_forum_topic_discoverer: AnkiForumTopicDiscoverer = anki_forum_topic_discoverer
         self.__max_addons: Optional[int] = max_addons
 
     def collect_addons(self) -> AddonInfos:
@@ -38,7 +40,9 @@ class AddonInfosCollector:
         github_enriched_addon_infos: AddonInfos = self.__github_enricher.enrich(addons_infos)
         anki_forum_enriched_addon_infos: AddonInfos = self.__anki_forum_enricher.enrich(github_enriched_addon_infos)
         log.info("All addons are enriched")
-        return self.__author_resolver.resolve(anki_forum_enriched_addon_infos, author_items)
+        discovered_addon_infos: AddonInfos = self.__anki_forum_topic_discoverer.discover(
+            anki_forum_enriched_addon_infos)
+        return self.__author_resolver.resolve(discovered_addon_infos, author_items)
 
     def __get_addon_infos(self, addon_headers: list[AddonHeader]) -> AddonInfos:
         addon_infos: list[AddonInfo] = []

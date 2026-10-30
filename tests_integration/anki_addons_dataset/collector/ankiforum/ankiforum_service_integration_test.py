@@ -6,7 +6,7 @@ from pydiscourse import DiscourseClient
 from pydiscourse.exceptions import DiscourseClientError
 
 from anki_addons_dataset.collector.ankiforum.ankiforum_service import AnkiForumService
-from anki_addons_dataset.common.data_types import LastPostedAt, PostsCount, TopicId, TopicSlug
+from anki_addons_dataset.common.data_types import AnkiForumCategoryTopic, LastPostedAt, PostsCount, TopicId, TopicSlug
 from anki_addons_dataset.common.working_dir import SnapshotDir
 
 
@@ -36,3 +36,11 @@ def test_missing_topic(anki_forum_service: AnkiForumService, snapshot_dir: Snaps
     with pytest.raises(DiscourseClientError):
         anki_forum_service.get_posts_count(missing_topic_slug, missing_topic_id)
     assert not (snapshot_dir.get_raw_dir() / "3-forum" / "topic" / f"{missing_topic_id}.json").exists()
+
+
+def test_category_topics(anki_forum_service: AnkiForumService, snapshot_dir: SnapshotDir) -> None:
+    topics: list[AnkiForumCategoryTopic] = anki_forum_service.get_category_topics()
+    assert len(topics) > 1000
+    assert len({topic.id for topic in topics}) == len(topics)
+    assert all(topic.title and topic.slug for topic in topics)
+    assert (snapshot_dir.get_raw_dir() / "3-forum" / "category" / "11.json").exists()

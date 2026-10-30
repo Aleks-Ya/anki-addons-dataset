@@ -25,6 +25,13 @@ post and up to three posts that link the addon. It asks whether this is the addo
 the addon is announced or supported there. A `no` drops the topic, so the addon has no forum data. A
 `yes` exports `forum.topic_source` as `ai`. With no cached answer the topic stays, as `most_linked`.
 
+An addon that still has no topic may have one its page does not link. `download` saves the titles of
+the forum's Add-ons category, and `AnkiForumTitleMatcher` matches them to addon titles, dropping question-like
+titles unless they carry a support marker such as `[Official thread]`. A marked topic with no close match gets a
+shortlist of the 3 closest addons. Each candidate costs one more request with its own instructions, which ask
+whether the topic is the addon's own despite the missing link, trying marked topics first and stopping at the
+first `yes`. A `yes` exports `forum.topic_source` as `title_match`. A `no` or no cached answer attaches nothing.
+
 The cache key is a hash of the model and the whole prompt, system prompt included, so editing a
 prompt template or `ai.readme_max_chars` invalidates every entry. Summaries and tags use different
 prompts, so editing the tag vocabulary re-buys only the tag answers. That is why the step stands on its own — refilling

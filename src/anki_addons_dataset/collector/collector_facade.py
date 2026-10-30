@@ -22,6 +22,7 @@ from anki_addons_dataset.collector.ai.cache.cached_ai_provider import CachedAiPr
 from anki_addons_dataset.collector.anki_versions_collector import AnkiVersionsCollector
 from anki_addons_dataset.collector.ankiforum.ankiforum_enricher import AnkiForumEnricher
 from anki_addons_dataset.collector.ankiforum.ankiforum_service import AnkiForumService
+from anki_addons_dataset.collector.ankiforum.ankiforum_topic_discoverer import AnkiForumTopicDiscoverer
 from anki_addons_dataset.collector.ankiweb.addon_page_downloader import AddonPageDownloader
 from anki_addons_dataset.collector.ankiweb.addon_page_parser import AddonPageParser
 from anki_addons_dataset.collector.ankiweb.addons_page_downloader import AddonsPageDownloader
@@ -223,8 +224,11 @@ class CollectorFacade:
         ai_forum_verifier: Optional[AiForumVerifier] = AiForumVerifier(ai_provider) if ai_provider else None
         anki_forum_enricher: AnkiForumEnricher = AnkiForumEnricher(
             snapshot_dir, anki_forum_service, ai_forum_verifier, offline)
+        anki_forum_topic_discoverer: AnkiForumTopicDiscoverer = AnkiForumTopicDiscoverer(
+            anki_forum_service, ai_forum_verifier)
         max_addons: Optional[int] = SampleCollector(snapshot_dir).effective_addons(
             self.__config.sample.addons) if offline else self.__config.sample.addons
         addon_infos_collector: AddonInfosCollector = AddonInfosCollector(
-            ankiweb_service, github_enricher, anki_forum_enricher, AuthorResolver(overrider), max_addons)
+            ankiweb_service, github_enricher, anki_forum_enricher, anki_forum_topic_discoverer,
+            AuthorResolver(overrider), max_addons)
         return addon_infos_collector.collect_addons()

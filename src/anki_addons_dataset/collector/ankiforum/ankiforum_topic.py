@@ -9,6 +9,10 @@ class AnkiForumTopic:
     __url_pattern: re.Pattern = re.compile(r'^https://forums\.ankiweb\.net/t/([^/]+)/(\d+)')
 
     @staticmethod
+    def build_topic_url(topic_slug: TopicSlug, topic_id: TopicId) -> URL:
+        return URL(f"https://forums.ankiweb.net/t/{topic_slug}/{topic_id}")
+
+    @staticmethod
     def extract_topic_slug(topic_url: Optional[URL]) -> Optional[TopicSlug]:
         if topic_url is None:
             return None
