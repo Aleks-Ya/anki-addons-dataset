@@ -24,7 +24,7 @@ class AnkiForumTitleMatcher:
     __filler: re.Pattern[str] = re.compile(
         r"\b(add[\s-]?ons?|plugins?|threads?|support|official|anki|2\.1|the|new|page|topic)\b",
         re.IGNORECASE)
-    __punctuation: re.Pattern[str] = re.compile(r"[^\w\s]|_")
+    __punctuation: re.Pattern[str] = re.compile(r"[\W_]")
     __close_cutoff: float = 0.85
     __shortlist_cutoff: float = 0.5
     __shortlist_size: int = 3

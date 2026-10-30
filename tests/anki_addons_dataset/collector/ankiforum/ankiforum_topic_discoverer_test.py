@@ -95,8 +95,10 @@ def test_snapshot_without_category_is_unchanged(anki_forum_service: Mock, addon_
 def test_verifier_failure_names_the_addon(anki_forum_service: Mock, addon_info: AddonInfo):
     verifier: Mock = Mock(spec=AiForumVerifier)
     verifier.verify_title_match.side_effect = ValueError("boom")
+    discoverer: AnkiForumTopicDiscoverer = AnkiForumTopicDiscoverer(anki_forum_service, verifier)
+    addon_infos: AddonInfos = __addon_infos(addon_info)
     with pytest.raises(RuntimeError, match="Cannot verify forum topic 1 of addon: 10"):
-        AnkiForumTopicDiscoverer(anki_forum_service, verifier).discover(__addon_infos(addon_info))
+        discoverer.discover(addon_infos)
 
 
 def test_download_fetches_candidates_and_attaches_nothing(anki_forum_service: Mock, addon_info: AddonInfo):
