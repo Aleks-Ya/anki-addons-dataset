@@ -21,8 +21,22 @@ __SUMMARIZE_SNAPSHOT: str = \
     "anki_addons_dataset.collector.collector_facade.CollectorFacade._CollectorFacade__summarize_snapshot"
 __PARSE_SNAPSHOT: str = \
     "anki_addons_dataset.collector.collector_facade.CollectorFacade._CollectorFacade__parse_snapshot"
+__COLLECT: str = \
+    "anki_addons_dataset.collector.collector_facade.CollectorFacade._CollectorFacade__collect"
 __REPORT_SNAPSHOT: str = \
     "anki_addons_dataset.collector.collector_facade.CollectorFacade._CollectorFacade__report_snapshot"
+
+
+def test_download_snapshot_collects_packages_of_scraped_addons(
+        collector_facade: CollectorFacade, snapshot_dir: SnapshotDir, snapshot_date: SnapshotDate,
+        addon_infos: AddonInfos):
+    with patch(__COLLECT, return_value=addon_infos), \
+            patch("anki_addons_dataset.collector.collector_facade.AnkiVersionsCollector"), \
+            patch("anki_addons_dataset.collector.collector_facade.PackageCollector") as package_collector:
+        collector_facade.download_snapshot(snapshot_date)
+
+    package_collector.return_value.collect.assert_called_once_with(addon_infos)
+    assert package_collector.call_args.args[0] == snapshot_dir
 
 
 def test_report_snapshots_generates_final_from_dump_without_raw(

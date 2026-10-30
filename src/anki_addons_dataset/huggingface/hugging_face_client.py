@@ -73,6 +73,10 @@ class HuggingFaceClient:
     def download_file(self, file_path: str) -> Path:
         return Path(self.__api.hf_hub_download(repo_id=self.__repo_id, filename=file_path, repo_type="dataset"))
 
+    def download_packages(self) -> Path:
+        return Path(self.__api.snapshot_download(repo_id=self.__repo_id, repo_type="dataset",
+                                                 allow_patterns="packages/*"))
+
     def verify_write_access(self) -> None:
         """Fail fast if the configured credentials cannot write to the dataset.
 

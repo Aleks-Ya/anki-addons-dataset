@@ -5,6 +5,7 @@
 - [Configuration](doc/configuration.md) — config file, GitHub token, logging, browser timeouts
 - [AI summaries and tags](doc/ai.md) — the `ai` step, its cache and costs
 - [Anki versions](doc/anki-versions.md) — how addon version ranges are parsed
+- [Addon packages](doc/addon-packages.md) — downloading `.ankiaddon` files, their cache and publishing
 - [Integration tests](doc/testing.md) — live tests and their requirements
 - [HuggingFace](doc/huggingface.md) — CLI login, the visualization Space
 - [Publish to PyPI](doc/pypi.md) — automated and manual publishing

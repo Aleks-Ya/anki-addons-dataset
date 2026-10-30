@@ -37,6 +37,9 @@ from anki_addons_dataset.collector.github.github_repo_selector import GithubRepo
 from anki_addons_dataset.collector.github.github_rest_client import GithubRestClient
 from anki_addons_dataset.collector.github.github_service import GithubService
 from anki_addons_dataset.collector.overrider.overrider import Overrider
+from anki_addons_dataset.collector.package.package_cache_index import PackageCacheIndex
+from anki_addons_dataset.collector.package.package_client import PackageClient
+from anki_addons_dataset.collector.package.package_collector import PackageCollector
 from anki_addons_dataset.collector.raw_metadata_collector import RawMetadataCollector
 from anki_addons_dataset.collector.sample_collector import SampleCollector
 from anki_addons_dataset.common.data_types import AddonInfos, DatasetSnapshotMetadata, RawMetadata, \
@@ -70,7 +73,9 @@ class CollectorFacade:
             raw_metadata_collector.set_start_datetime(datetime.now().replace(microsecond=0))
         github_rest_client: GithubRestClient = GithubRestClient(False, self.__config.github.token_file)
         AnkiVersionsCollector(GithubService(snapshot_dir, github_rest_client, prev_snapshot_dir)).download()
-        self.__collect(snapshot_dir, False, prev_snapshot_dir)
+        addon_infos: AddonInfos = self.__collect(snapshot_dir, False, prev_snapshot_dir)
+        cache_index: PackageCacheIndex = PackageCacheIndex.load(self.__working_dir.list_snapshot_dirs())
+        PackageCollector(snapshot_dir, PackageClient(), cache_index).collect(addon_infos)
         SampleCollector(snapshot_dir).set_addons(self.__config.sample.addons)
         if not raw_metadata_collector.read_metadata().finish_timestamp:
             raw_metadata_collector.set_finish_datetime(datetime.now().replace(microsecond=0))

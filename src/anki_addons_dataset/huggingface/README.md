@@ -129,6 +129,9 @@ Folder `latest` contains the most recent day from `history`.
 │   │   ├── data.xlsx
 │   │   └── tags.xlsx
 │   └── metadata.json
+├── packages
+│   └── {addon-id}
+│       └── {min-point-version}-{branch-updated}-{hash}.ankiaddon
 └── README.md
 ```
 
@@ -167,7 +170,11 @@ raw-metadata.json
 3-forum/category/11.json
 3-forum/topic/{topic_id}.json
 4-ai/ai-cache.jsonl
+package-list.json
 ```
+
+Addon packages are published outside `raw.zip`, because they are already zips and most stay unchanged between
+snapshots: folder `packages` holds each version once. `package-list.json` in `raw.zip` lists the files of that snapshot.
 
 Stage data (intermediate data generated during the dataset construction) are available in `history/YYYY-MM-DD/stage.zip`.  
 File `4-overrider/overrides.yaml` contains manually curated data which override automatically parsed values.  
@@ -185,6 +192,12 @@ Structure of the stage data:
     github/{addon-id}.json
 4-overrider/overrides.yaml
 ```
+
+---
+
+## Addon package licensing
+The `cc0-1.0` license of this dataset does not cover the addon packages. Files under `packages` are the work of
+the addon authors and stay under their own licenses.
 
 ---
 

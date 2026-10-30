@@ -3,8 +3,10 @@ import shutil
 from logging import Logger
 from pathlib import Path
 from typing import Optional
+from zipfile import ZIP_DEFLATED, ZipFile
 
 from anki_addons_dataset.common.data_types import SnapshotDate
+from anki_addons_dataset.common.file_links import FileLinks
 from anki_addons_dataset.common.working_dir import WorkingDir, SnapshotDir
 from anki_addons_dataset.huggingface.hugging_face import HuggingFace
 
@@ -20,6 +22,7 @@ class DatasetBundle:
         log.info(f"Creating bundle in {bundle_dir}")
         shutil.rmtree(bundle_dir, ignore_errors=True)
         self.__copy_snapshots(bundle_dir)
+        self.__link_packages(bundle_dir)
         self.__copy_latest_snapshot(bundle_dir)
         HuggingFace.create_dataset_card(bundle_dir)
 
@@ -30,7 +33,7 @@ class DatasetBundle:
             snapshot_date: SnapshotDate = snapshot_dir.snapshot_dir_to_snapshot_date()
             base_name: str = f"{snapshot_date}"
             output_dir: Path = bundle_history_dir / base_name
-            self.__create_zip(snapshot_dir.get_raw_dir(), output_dir, "raw")
+            self.__create_zip(snapshot_dir.get_raw_dir(), output_dir, "raw", snapshot_dir.get_package_dir())
             self.__create_zip(snapshot_dir.get_stage_dir(), output_dir, "stage")
             log.info(f"Copying {snapshot_dir.get_final_dir()} to {output_dir}")
             shutil.copytree(snapshot_dir.get_final_dir(), output_dir, dirs_exist_ok=True)
@@ -38,6 +41,13 @@ class DatasetBundle:
             dest_metadata_file: Path = output_dir / src_metadata_file.name
             log.info(f"Copying {src_metadata_file} to {dest_metadata_file}")
             shutil.copyfile(src_metadata_file, dest_metadata_file)
+
+    def __link_packages(self, bundle_dir: Path) -> None:
+        bundle_packages_dir: Path = bundle_dir / "packages"
+        for snapshot_dir in self.__working_dir.list_sampled_snapshot_dirs():
+            package_dir: Path = snapshot_dir.get_package_dir()
+            for file in package_dir.glob("*/*.ankiaddon"):
+                FileLinks.link_or_copy(file, bundle_packages_dir / file.relative_to(package_dir))
 
     def __copy_latest_snapshot(self, bundle_dir: Path):
         latest_dir: Path = bundle_dir / "latest"
@@ -53,8 +63,12 @@ class DatasetBundle:
         shutil.copyfile(src_metadata_file, dest_metadata_file)
 
     @staticmethod
-    def __create_zip(source_dir: Path, output_dir: Path, output_base_name: str) -> None:
-        zip_base_name: str = str(output_dir / f"{output_base_name}")
-        archive_format: str = "zip"
-        log.info(f"Creating zip: {zip_base_name}.{archive_format}")
-        shutil.make_archive(zip_base_name, archive_format, source_dir)
+    def __create_zip(source_dir: Path, output_dir: Path, output_base_name: str,
+                     excluded_dir: Optional[Path] = None) -> None:
+        zip_file: Path = output_dir / f"{output_base_name}.zip"
+        log.info(f"Creating zip: {zip_file}")
+        output_dir.mkdir(parents=True, exist_ok=True)
+        with ZipFile(zip_file, "w", ZIP_DEFLATED) as archive:
+            for path in sorted(source_dir.rglob("*")):
+                if excluded_dir is None or not path.is_relative_to(excluded_dir):
+                    archive.write(path, path.relative_to(source_dir))

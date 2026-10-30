@@ -46,6 +46,12 @@ class SnapshotDir:
     def get_sample_file(self) -> Path:
         return self.get_raw_dir() / "sample.json"
 
+    def get_package_dir(self) -> Path:
+        return self.get_raw_dir() / "5-package"
+
+    def get_package_list_file(self) -> Path:
+        return self.get_raw_dir() / "package-list.json"
+
     def get_addon_infos_dump(self) -> Path:
         return self.__snapshot_dir / "addon-infos.json"
 

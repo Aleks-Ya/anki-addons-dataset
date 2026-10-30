@@ -3,7 +3,9 @@ import shutil
 from logging import Logger
 from pathlib import Path
 
+from anki_addons_dataset.collector.package.package_list import PackageList
 from anki_addons_dataset.common.data_types import HuggingFaceFolder
+from anki_addons_dataset.common.file_links import FileLinks
 from anki_addons_dataset.common.working_dir import WorkingDir, SnapshotDir
 from anki_addons_dataset.huggingface.hugging_face_client import HuggingFaceClient
 from anki_addons_dataset.initializer.working_dir_backup import WorkingDirBackup
@@ -24,6 +26,23 @@ class WorkingDirInitializer:
         self.__create_empty_working_dir()
         snapshots: dict[SnapshotDir, HuggingFaceFolder] = self.__find_snapshots_in_hf()
         self.__download_raw_zip_files(snapshots)
+        self.__restore_packages(list(snapshots))
+
+    def __restore_packages(self, snapshot_dirs: list[SnapshotDir]) -> None:
+        package_lists: dict[SnapshotDir, list[str]] = {snapshot_dir: PackageList.read(snapshot_dir)
+                                                       for snapshot_dir in snapshot_dirs}
+        if not any(package_lists.values()):
+            log.info("No packages to restore")
+            return
+        hf_packages_dir: Path = self.__hugging_face_client.download_packages() / "packages"
+        for snapshot_dir, entries in package_lists.items():
+            for entry in entries:
+                hf_package: Path = hf_packages_dir / entry
+                if hf_package.exists():
+                    FileLinks.link_or_copy(hf_package, snapshot_dir.get_package_dir() / entry)
+                else:
+                    log.warning(f"Package of {snapshot_dir} is missing from HF: {entry}")
+        log.info("Restored packages")
 
     def __create_empty_working_dir(self):
         self.__working_dir.get_path().mkdir(parents=True, exist_ok=True)

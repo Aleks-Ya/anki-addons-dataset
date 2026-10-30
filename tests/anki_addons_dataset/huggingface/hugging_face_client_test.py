@@ -55,6 +55,29 @@ def test_upload_dataset_raises_permission_error_when_unauthorized(tmp_path: Path
     api.upload_folder.assert_not_called()
 
 
+def test_download_packages_fetches_only_the_packages_folder(tmp_path: Path):
+    api: HfApi = Mock(spec=HfApi)
+    api.snapshot_download.return_value = str(tmp_path)
+    client: HuggingFaceClient = HuggingFaceClient(api, __config())
+
+    assert client.download_packages() == tmp_path
+
+    api.snapshot_download.assert_called_once_with(repo_id=__config().repo_id, repo_type="dataset",
+                                                  allow_patterns="packages/*")
+
+
+def test_prune_orphans_never_touches_packages(tmp_path: Path):
+    __build_bundle(tmp_path)
+    api: HfApi = Mock(spec=HfApi)
+    api.list_repo_tree.return_value = []
+    client: HuggingFaceClient = HuggingFaceClient(api, __config())
+
+    client.prune_orphans(tmp_path)
+
+    assert [call.kwargs["path_in_repo"] for call in api.list_repo_tree.call_args_list] == ["history", "latest"]
+    api.delete_files.assert_not_called()
+
+
 def test_tag_backup_tags_remote_head_as_dataset():
     api: HfApi = Mock(spec=HfApi)
     client: HuggingFaceClient = HuggingFaceClient(api, __config())
