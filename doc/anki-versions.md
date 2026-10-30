@@ -53,26 +53,40 @@ still loads, with the parsed values empty and `unknown`; re-run `parse` to fill 
 ## The `anki_versions` table
 Every snapshot publishes the stable Anki releases as `anki_versions.{parquet,xlsx}` in `3-final/`
 (published as the `anki_versions` HF config), for consumers that need the list of Anki versions without
-reading addon data, such as the MCP server. Columns: `version` (the tag name, e.g. `25.09.2`, `2.1.66`) and
-`point_version` (`AnkiVersionCodec.to_point`). Rows are newest first.
+reading addon data, such as the MCP server. Columns: `version` (the tag name, e.g. `25.09.2`, `2.1.66`),
+`point_version` (`AnkiVersionCodec.to_point`) and `release_date` (the UTC date of the GitHub release's
+`published_at`, or null). Rows are newest first.
 
-- **DOWNLOAD** fetches every tag of `ankitects/anki` with one request
-  (`/repos/ankitects/anki/git/matching-refs/tags`, unpaginated) into
-  `1-raw/2-github/ankitects/anki/tags.json` (`TagNamesRepoHandler`, so the ETag reuse of the previous
-  snapshot applies).
-- **REPORT** reads that raw file (`AnkiVersionsCollector.read`) and keeps the stable releases from 2.1.0 on:
-  a tag must be `X.Y` or `X.Y.Z` (betas and release candidates are dropped), and a `2.x` tag must be `2.1.z`
-  (2.0 and older are dropped). REPORT needs no GitHub token, and changing the filter needs only REPORT.
-- A snapshot without the raw file (downloaded before the table existed) gets no `anki_versions` files;
-  REPORT logs a warning. The history is not backfilled: the tag list carries no dates, so today's list
-  would show releases that did not exist yet when an old snapshot was collected.
+- **DOWNLOAD** makes two requests, each with the ETag reuse of the previous snapshot. It fetches every tag of
+  `ankitects/anki` (`/repos/ankitects/anki/git/matching-refs/tags`, unpaginated) into
+  `1-raw/2-github/ankitects/anki/tags.json` (`TagNamesRepoHandler`), and the first page of its releases
+  (`/repos/ankitects/anki/releases?per_page=100`) into `releases.json` next to it (`ReleasesRepoHandler`).
+- **REPORT** reads those raw files (`AnkiVersionsCollector.read`). The tags decide the rows: it keeps the stable
+  releases from 2.1.0 on, so a tag must be `X.Y` or `X.Y.Z` (betas and release candidates are dropped), and a
+  `2.x` tag must be `2.1.z` (2.0 and older are dropped). The releases only supply the dates, and their
+  `prerelease` flag is ignored because it is unreliable (`26.09.1` is a stable version flagged as a prerelease).
+  REPORT needs no GitHub token, and changing the filter needs only REPORT.
+- A snapshot without `tags.json` (downloaded before the table existed) gets no `anki_versions` files;
+  REPORT logs a warning. The rows of the history are not backfilled: the tag list carries no dates, so today's
+  list would show releases that did not exist yet when an old snapshot was collected.
+- A snapshot with `tags.json` but no `releases.json` gets the table with every `release_date` null; REPORT logs
+  a warning.
 
-**Adding the table to an existing snapshot.** DOWNLOAD skips every raw file that already exists, so re-running
-it on the snapshot's date fetches only the missing tag list:
+**Limits of `release_date`:**
+- Null for a stable tag with no GitHub release: 2.1.0-2.1.14, 2.1.16-2.1.19, 2.1.21 and 25.02.1-25.02.3.
+- The releases of 2.1.15 and 2.1.20 were published late, both on 2020-03-07, while their tags are from
+  2019-09-20 and 2020-02-13.
+- Only the first page is fetched. Anki had 88 releases in October 2026, about 14 more a year, so past 100 the
+  oldest releases fall off the page and their dates become null.
+
+**Adding the table or the dates to an existing snapshot.** DOWNLOAD skips every raw file that already exists, so
+re-running it on the snapshot's date fetches only what is missing:
 ```bash
-uv run anki-addons-dataset download -d 2026-10-01   # only fetches 1-raw/2-github/ankitects/anki/tags.json
+uv run anki-addons-dataset download -d 2026-10-01   # only fetches the missing tags.json and releases.json
 uv run anki-addons-dataset report -d 2026-10-01     # no parse needed
 uv run anki-addons-dataset bundle upload
 ```
 Use the same `--sample-addons` as the original download (none for a published snapshot): DOWNLOAD rewrites
-`1-raw/sample.json`. Do this for the latest snapshot only, for the reason above.
+`1-raw/sample.json`. Add a missing `tags.json` to the latest snapshot only, for the reason above. A missing
+`releases.json` can be added to any snapshot that has `tags.json`: the rows still come from that snapshot's own
+tags, so newer releases add no rows.

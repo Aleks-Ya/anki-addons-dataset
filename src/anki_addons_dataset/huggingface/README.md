@@ -80,8 +80,11 @@ Anki releases from 2.1.0 on, newest first, taken from the tags of the [Anki repo
 when the snapshot was collected (betas and release candidates are left out). `version` is the version as Anki
 writes it (`25.09.2`, `2.1.66`), `point_version` is Anki's integer encoding of it, which sorts correctly
 (`2.1.x` → `x`, `YY.MM.PP` → `YYMMPP`, so `2.1.66` → `66` and `25.09.2` → `250902`), the same encoding as the
-`*_point_version` fields of the addons. Snapshots collected before the table was introduced have no
-`anki_versions` files.
+`*_point_version` fields of the addons. `release_date` is the date (UTC) the version was published as a GitHub
+release, or `null` for a version without one, which covers most versions before 2.1.22. The releases of 2.1.15
+and 2.1.20 were published late, so their dates are later than the actual releases. Snapshots collected before
+the table was introduced have no `anki_versions` files, and snapshots collected before `release_date` was
+introduced have it `null`.
 
 The `reviews` table (`latest/parquet/reviews.parquet`) holds the user reviews from the AnkiWeb
 addon pages, one row per review, sorted by `addon_id` and then newest first: `addon_id`, `date`, `vote`

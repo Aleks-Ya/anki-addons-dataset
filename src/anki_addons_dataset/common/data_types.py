@@ -277,6 +277,7 @@ class AiTagDefinition:
 class AnkiRelease:
     version: AnkiVersion
     point_version: AnkiPointVersion
+    release_date: Optional[date] = None
 
 
 @dataclass(frozen=True)

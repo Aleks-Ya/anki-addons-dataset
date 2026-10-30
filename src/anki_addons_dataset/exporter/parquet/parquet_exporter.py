@@ -3,6 +3,7 @@ from pathlib import Path
 import logging
 from logging import Logger
 
+import pyarrow
 from pandas import DataFrame
 
 from anki_addons_dataset.common.data_types import AddonInfos, DatasetSnapshotMetadata, RawMetadata, \
@@ -33,9 +34,10 @@ class ParquetExporter(Exporter):
     def export_anki_versions(self, anki_versions: list[AnkiRelease], dataset_snapshot_metadata: DatasetSnapshotMetadata,
                              raw_metadata: RawMetadata) -> None:
         output_file: Path = self._final_dir / "anki_versions.parquet"
-        DataFrame([dataclasses.asdict(anki_version) for anki_version in anki_versions],
-                  columns=["version", "point_version"]).astype({"version": str, "point_version": "int64"}) \
-            .to_parquet(output_file, compression="zstd")
+        schema: pyarrow.Schema = pyarrow.schema([("version", pyarrow.string()), ("point_version", pyarrow.int64()),
+                                                 ("release_date", pyarrow.date32())])
+        DataFrame([dataclasses.asdict(anki_version) for anki_version in anki_versions], columns=schema.names) \
+            .to_parquet(output_file, compression="zstd", schema=schema)
         log.info(f"Write Parquet to file: {output_file}")
 
     def export_reviews(self, reviews: list[ReviewRow]) -> None:

@@ -5,6 +5,8 @@ import numpy
 import pandas
 from pandas import DataFrame
 import pandas.testing as pdt
+import pyarrow
+import pyarrow.parquet
 
 from anki_addons_dataset.common.data_types import AddonInfos, DatasetSnapshotMetadata, RawMetadata, \
     AiTagDefinition, AiTag, AiTagGroup, AnkiRelease, AnkiVersion, AnkiPointVersion, ReviewRow, ReviewVote, AddonId
@@ -127,7 +129,7 @@ def test_export_tags(snapshot_dir: SnapshotDir, dataset_snapshot_metadata: Datas
 
 def test_export_anki_versions(snapshot_dir: SnapshotDir, dataset_snapshot_metadata: DatasetSnapshotMetadata,
                               raw_metadata: RawMetadata):
-    anki_versions: list[AnkiRelease] = [AnkiRelease(AnkiVersion("25.09.2"), AnkiPointVersion(250902)),
+    anki_versions: list[AnkiRelease] = [AnkiRelease(AnkiVersion("25.09.2"), AnkiPointVersion(250902), date(2025, 10, 1)),
                                         AnkiRelease(AnkiVersion("2.1.66"), AnkiPointVersion(66))]
     final_dir: Path = snapshot_dir.get_final_dir()
     exporter: ParquetExporter = ParquetExporter(final_dir)
@@ -135,9 +137,20 @@ def test_export_anki_versions(snapshot_dir: SnapshotDir, dataset_snapshot_metada
 
     act_file: Path = final_dir / "parquet" / "anki_versions.parquet"
     act_df: DataFrame = pandas.read_parquet(act_file)
-    exp_df: DataFrame = DataFrame([{'version': '25.09.2', 'point_version': 250902},
-                                   {'version': '2.1.66', 'point_version': 66}])
+    exp_df: DataFrame = DataFrame([{'version': '25.09.2', 'point_version': 250902, 'release_date': date(2025, 10, 1)},
+                                   {'version': '2.1.66', 'point_version': 66, 'release_date': None}])
     pdt.assert_frame_equal(act_df, exp_df)
+
+
+def test_export_anki_versions_without_dates_keeps_date_type(
+        snapshot_dir: SnapshotDir, dataset_snapshot_metadata: DatasetSnapshotMetadata, raw_metadata: RawMetadata):
+    final_dir: Path = snapshot_dir.get_final_dir()
+    exporter: ParquetExporter = ParquetExporter(final_dir)
+    exporter.export_anki_versions([AnkiRelease(AnkiVersion("2.1.66"), AnkiPointVersion(66))],
+                                  dataset_snapshot_metadata, raw_metadata)
+
+    schema: pyarrow.Schema = pyarrow.parquet.read_schema(final_dir / "parquet" / "anki_versions.parquet")
+    assert schema.field("release_date").type == pyarrow.date32()
 
 
 def test_export_anki_versions_empty(snapshot_dir: SnapshotDir, dataset_snapshot_metadata: DatasetSnapshotMetadata,
@@ -147,9 +160,11 @@ def test_export_anki_versions_empty(snapshot_dir: SnapshotDir, dataset_snapshot_
     exporter.export_anki_versions([], dataset_snapshot_metadata, raw_metadata)
 
     act_df: DataFrame = pandas.read_parquet(final_dir / "parquet" / "anki_versions.parquet")
-    assert list(act_df.columns) == ['version', 'point_version']
+    assert list(act_df.columns) == ['version', 'point_version', 'release_date']
     assert str(act_df['point_version'].dtype) == 'int64'
     assert act_df.empty
+    schema: pyarrow.Schema = pyarrow.parquet.read_schema(final_dir / "parquet" / "anki_versions.parquet")
+    assert schema.field("release_date").type == pyarrow.date32()
 
 
 def test_export_reviews(snapshot_dir: SnapshotDir):

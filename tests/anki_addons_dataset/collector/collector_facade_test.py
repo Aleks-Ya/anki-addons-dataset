@@ -52,12 +52,14 @@ def test_report_snapshots_exports_anki_versions(
     tags_file: Path = snapshot_dir.get_raw_dir() / "2-github" / "ankitects" / "anki" / "tags.json"
     tags_file.parent.mkdir(parents=True)
     tags_file.write_text('[{"ref": "refs/tags/2.1.66"}, {"ref": "refs/tags/25.09.2"}]')
+    tags_file.with_name("releases.json").write_text('[{"tag_name": "25.09.2", "published_at": "2025-10-01T12:30:00Z"}]')
 
     collector_facade.report_snapshots(None, report_date)
 
     final_dir = snapshot_dir.get_final_dir()
     pdt.assert_frame_equal(pandas.read_parquet(final_dir / "parquet" / "anki_versions.parquet"), DataFrame([
-        {"version": "25.09.2", "point_version": 250902}, {"version": "2.1.66", "point_version": 66}]))
+        {"version": "25.09.2", "point_version": 250902, "release_date": date(2025, 10, 1)},
+        {"version": "2.1.66", "point_version": 66, "release_date": None}]))
     assert (final_dir / "xlsx" / "anki_versions.xlsx").exists()
 
 
