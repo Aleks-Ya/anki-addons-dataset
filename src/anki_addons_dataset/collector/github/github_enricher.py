@@ -10,7 +10,7 @@ from anki_addons_dataset.collector.enricher import Enricher
 from anki_addons_dataset.collector.github.handler.repo_info_repo_handler import GithubRepoMeta
 from anki_addons_dataset.common.data_types import AddonInfo, LanguageName, GithubInfo, AddonId, \
     AddonInfos, GithubRepo, GitHubLink, AddonManifest, DependencyName, GithubReadme, GithubRelease, \
-    GithubContributor
+    GithubContributor, GithubIssueHistory
 from anki_addons_dataset.collector.github.github_repo_selector import GithubRepoSelector
 from anki_addons_dataset.collector.github.github_service import GithubService
 from anki_addons_dataset.common.json_helper import JsonHelper
@@ -76,7 +76,7 @@ class GithubEnricher(Enricher):
         releases: Optional[list[GithubRelease]] = self.__github_service.get_releases(github_repo)
         contributors: Optional[list[GithubContributor]] = self.__github_service.get_contributors(github_repo)
         weekly_commits: Optional[list[int]] = self.__github_service.get_weekly_commits(github_repo)
-        self.__github_service.download_issue_history(github_repo)
+        issue_history: Optional[GithubIssueHistory] = self.__github_service.get_issue_history(github_repo)
         return GithubInfo(
             github_links, github_repo, list(language_bytes.keys()), stars, last_commit, action_count, tests_count,
             license=repo_meta.license, forks=repo_meta.forks, open_issues=repo_meta.open_issues,
@@ -85,7 +85,7 @@ class GithubEnricher(Enricher):
             created_at=repo_meta.created_at, primary_language=self.__primary_language(language_bytes),
             language_bytes=language_bytes, manifest=manifest, dependencies=dependencies, readme=readme,
             ai_tooling_markers=ai_tooling_markers, fork_source=repo_meta.fork_source, releases=releases,
-            contributors=contributors, weekly_commits=weekly_commits)
+            contributors=contributors, weekly_commits=weekly_commits, issue_history=issue_history)
 
     def _done(self) -> int:
         with self.__lock:

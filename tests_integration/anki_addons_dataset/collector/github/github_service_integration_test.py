@@ -1,14 +1,13 @@
-import json
 from datetime import datetime
 from pathlib import Path
-from typing import Any
 
 import pytest
 
 from anki_addons_dataset.collector.github.github_rest_client import GithubRestClient
 from anki_addons_dataset.collector.github.github_service import GithubService
 from anki_addons_dataset.collector.github.handler.repo_info_repo_handler import GithubRepoMeta
-from anki_addons_dataset.common.data_types import AddonManifest, DependencyName, GithubRepo, LanguageName
+from anki_addons_dataset.common.data_types import AddonManifest, DependencyName, GithubIssueHistory, GithubRepo, \
+    LanguageName
 from anki_addons_dataset.common.working_dir import SnapshotDir
 
 
@@ -83,24 +82,22 @@ def test_missing_repo(github_service: GithubService, snapshot_dir: SnapshotDir,
     assert not_found_marker.exists()
 
 
-def test_download_issue_history(github_service: GithubService, snapshot_dir: SnapshotDir,
-                                known_github_repo: GithubRepo) -> None:
-    github_service.download_issue_history(known_github_repo)
-    raw_file: Path = (snapshot_dir.get_raw_dir() / "2-github" / known_github_repo.user
-                      / known_github_repo.repo_name / "issue-history.json")
-    repository: dict[str, Any] = json.loads(raw_file.read_text())["data"]["repository"]
-    assert repository["hasIssuesEnabled"] is True
-    assert repository["closedIssues"]["totalCount"] >= 0
-    assert repository["mergedPullRequests"]["totalCount"] >= 0
-    assert isinstance(repository["recentIssues"]["nodes"], list)
-    assert isinstance(repository["recentPullRequests"]["nodes"], list)
-    assert isinstance(repository["recentlyClosedIssues"]["nodes"], list)
+def test_get_issue_history(github_service: GithubService, snapshot_dir: SnapshotDir,
+                           known_github_repo: GithubRepo) -> None:
+    history: GithubIssueHistory = github_service.get_issue_history(known_github_repo)
+    assert history.has_issues_enabled is True
+    assert history.open_issue_count >= 0
+    assert history.closed_issue_count >= 0
+    assert history.merged_pr_count >= 0
+    assert history.outside_prs_merged <= history.outside_prs_decided
+    assert (snapshot_dir.get_raw_dir() / "2-github" / known_github_repo.user
+            / known_github_repo.repo_name / "issue-history.json").exists()
 
 
-def test_download_issue_history_of_missing_repo(github_service: GithubService, snapshot_dir: SnapshotDir,
-                                                missing_github_repo: GithubRepo) -> None:
+def test_get_issue_history_of_missing_repo(github_service: GithubService, snapshot_dir: SnapshotDir,
+                                           missing_github_repo: GithubRepo) -> None:
     github_service.get_languages(missing_github_repo)
-    github_service.download_issue_history(missing_github_repo)
+    assert github_service.get_issue_history(missing_github_repo) is None
     repo_raw_dir: Path = (snapshot_dir.get_raw_dir() / "2-github" / missing_github_repo.user
                           / missing_github_repo.repo_name)
     assert (repo_raw_dir / "NOT_FOUND_404").exists()

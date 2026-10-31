@@ -12,7 +12,7 @@ from anki_addons_dataset.common.data_types import AddonInfo, AddonInfos, AddonHe
     ScriptVersion, AddonRating, UpdateDate, AddonTitle, AddonDescription, AddonManifest, SpdxLicense, Topic, \
     DependencyName, GithubReadme, AiInfo, AiSummary, AiModel, AiTag, AnkiPointVersion, AnkiVersionKind, \
     PageLink, PageLinkSection, GithubRepoSource, AnkiForumTopicSource, AuthorInfo, ForkEvidence, ForkRelation, \
-    AddonReview, ReviewVote, GithubRelease, GithubReleaseAsset, GithubContributor
+    AddonReview, ReviewVote, GithubRelease, GithubReleaseAsset, GithubContributor, GithubIssueHistory
 
 
 class JsonHelper:
@@ -191,7 +191,15 @@ class JsonHelper:
                           for contributor in data["contributors"]]
             if data.get("contributors") is not None else None,
             weekly_commits=list(data["weekly_commits"]) if data.get("weekly_commits") is not None else None,
+            issue_history=JsonHelper.__issue_history_from_dict(data.get("issue_history")),
         )
+
+    @staticmethod
+    def __issue_history_from_dict(data: Optional[dict[str, Any]]) -> Optional[GithubIssueHistory]:
+        if data is None:
+            return None
+        return GithubIssueHistory(**{**data, "last_issue_closed_at": JsonHelper.__parse_datetime(
+            data["last_issue_closed_at"])})
 
     @staticmethod
     def __github_release_from_dict(data: dict[str, Any]) -> GithubRelease:

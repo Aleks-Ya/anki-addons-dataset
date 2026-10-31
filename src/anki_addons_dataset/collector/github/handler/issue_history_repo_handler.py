@@ -1,9 +1,12 @@
-from typing import Any
+import dataclasses
+from typing import Any, Optional
 
 from requests import Response
 
 from anki_addons_dataset.collector.github.github_rest_client import GithubRestClient
+from anki_addons_dataset.collector.github.handler.issue_history_parser import IssueHistoryParser
 from anki_addons_dataset.collector.github.handler.repo_handler import RepoHandler
+from anki_addons_dataset.common.data_types import GithubIssueHistory
 
 
 class IssueHistoryRepoHandler(RepoHandler):
@@ -60,8 +63,8 @@ query($owner: String!, $name: String!) {
     def _get_stage_filename(self) -> str:
         return "issue-history"
 
-    def _extract_return_value_from_dict(self, content_obj: Any) -> Any:
-        return content_obj
+    def _extract_return_value_from_dict(self, content_obj: dict[str, Any]) -> Optional[GithubIssueHistory]:
+        return IssueHistoryParser.parse(content_obj)
 
-    def _prepare_stage_dict(self, return_value: Any) -> dict[str, Any]:
-        return return_value
+    def _prepare_stage_dict(self, return_value: Optional[GithubIssueHistory]) -> dict[str, Any]:
+        return dataclasses.asdict(return_value) if return_value else {}

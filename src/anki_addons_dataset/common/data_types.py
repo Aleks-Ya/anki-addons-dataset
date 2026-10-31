@@ -149,6 +149,21 @@ class GithubContributor:
     contributions: int
 
 
+@dataclass(frozen=True)
+class GithubIssueHistory:
+    has_issues_enabled: bool
+    open_issue_count: int
+    closed_issue_count: int
+    open_pr_count: int
+    closed_pr_count: int
+    merged_pr_count: int
+    last_issue_closed_at: Optional[datetime]
+    median_first_response_hours: Optional[float]
+    first_response_sample: int
+    outside_prs_merged: int
+    outside_prs_decided: int
+
+
 @dataclass
 class GithubInfo:
     github_links: list[GitHubLink]
@@ -180,6 +195,7 @@ class GithubInfo:
     releases: Optional[list[GithubRelease]] = None
     contributors: Optional[list[GithubContributor]] = None
     weekly_commits: Optional[list[int]] = None
+    issue_history: Optional[GithubIssueHistory] = None
 
 
 @dataclass

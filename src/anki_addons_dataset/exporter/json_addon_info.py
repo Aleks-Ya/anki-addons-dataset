@@ -4,7 +4,7 @@ from typing import Any, Optional
 
 from anki_addons_dataset.common.anki_version import AnkiVersionCodec
 from anki_addons_dataset.common.data_types import AddonInfos, AddonInfo, AddonDescription, GithubInfo, AddonManifest, \
-    AnkiPointVersion, HtmlStr, AddonId, GithubRelease, GithubContributor
+    AnkiPointVersion, HtmlStr, AddonId, GithubRelease, GithubContributor, GithubIssueHistory
 
 
 @dataclass
@@ -101,6 +101,18 @@ class GitHub:
     contributors: Optional[list[Contributor]]
     commits_last_year: Optional[int]
     weekly_commits: Optional[list[int]]
+    has_issues_enabled: Optional[bool]
+    open_issue_count: Optional[int]
+    closed_issue_count: Optional[int]
+    open_pr_count: Optional[int]
+    closed_pr_count: Optional[int]
+    merged_pr_count: Optional[int]
+    last_issue_closed_at: Optional[str]
+    median_first_response_hours: Optional[float]
+    first_response_sample: Optional[int]
+    outside_pr_merge_share: Optional[float]
+    outside_prs_merged: Optional[int]
+    outside_prs_decided: Optional[int]
 
 
 @dataclass
@@ -248,7 +260,21 @@ class JsonAddonInfo:
                       JsonAddonInfo.__optional_len(github.contributors),
                       JsonAddonInfo.__contributors(github.contributors),
                       sum(github.weekly_commits) if github.weekly_commits is not None else None,
-                      github.weekly_commits)
+                      github.weekly_commits,
+                      *JsonAddonInfo.__issue_history_fields(github.issue_history))
+
+    @staticmethod
+    def __issue_history_fields(history: Optional[GithubIssueHistory]) -> tuple[Any, ...]:
+        if history is None:
+            return (None,) * 12
+        closed_at: Optional[datetime] = history.last_issue_closed_at
+        merge_share: Optional[float] = history.outside_prs_merged / history.outside_prs_decided \
+            if history.outside_prs_decided else None
+        return (history.has_issues_enabled, history.open_issue_count, history.closed_issue_count,
+                history.open_pr_count, history.closed_pr_count, history.merged_pr_count,
+                closed_at.isoformat() if closed_at else None, history.median_first_response_hours,
+                history.first_response_sample, merge_share, history.outside_prs_merged,
+                history.outside_prs_decided)
 
     @staticmethod
     def __optional_len(items: Optional[list[Any]]) -> Optional[int]:

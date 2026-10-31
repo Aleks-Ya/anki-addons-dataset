@@ -2,7 +2,7 @@ import dataclasses
 from dataclasses import replace
 from typing import Any, Optional
 
-from anki_addons_dataset.common.data_types import AddonInfos, AddonInfo, AnkiForumInfo, PostsCount, AddonManifest, \
+from anki_addons_dataset.common.data_types import GithubIssueHistory, AddonInfos, AddonInfo, AnkiForumInfo, PostsCount, AddonManifest, \
     SpdxLicense, Topic, DependencyName, LanguageName, URL, GithubReadme, PageLink, PageLinkSection, AddonId, \
     ForkRelation, ForkEvidence
 from anki_addons_dataset.exporter.json_addon_info import JsonAddonInfo
@@ -83,7 +83,19 @@ def test_addon_infos_to_json(addon_infos: AddonInfos):
                                     'contributors': [{'login': 'John', 'contributions': 40},
                                                      {'login': 'Jane', 'contributions': 2}],
                                     'commits_last_year': 4,
-                                    'weekly_commits': [0] * 50 + [3, 1]},
+                                    'weekly_commits': [0] * 50 + [3, 1],
+                                    'has_issues_enabled': True,
+                                    'open_issue_count': 2,
+                                    'closed_issue_count': 5,
+                                    'open_pr_count': 1,
+                                    'closed_pr_count': 1,
+                                    'merged_pr_count': 3,
+                                    'last_issue_closed_at': '2023-03-14T10:00:00',
+                                    'median_first_response_hours': 6.5,
+                                    'first_response_sample': 4,
+                                    'outside_pr_merge_share': 0.5,
+                                    'outside_prs_merged': 1,
+                                    'outside_prs_decided': 2},
                          'forum': {'anki_forum_url': 'https://forums.ankiweb.net/t/note-size-addon-support/46001',
                                    'topic_slug': 'note-size-addon-support',
                                    'topic_id': 46001,
@@ -173,7 +185,19 @@ def test_addon_infos_to_json_empty_forum(addon_info: AddonInfo):
                                     'contributors': [{'login': 'John', 'contributions': 40},
                                                      {'login': 'Jane', 'contributions': 2}],
                                     'commits_last_year': 4,
-                                    'weekly_commits': [0] * 50 + [3, 1]},
+                                    'weekly_commits': [0] * 50 + [3, 1],
+                                    'has_issues_enabled': True,
+                                    'open_issue_count': 2,
+                                    'closed_issue_count': 5,
+                                    'open_pr_count': 1,
+                                    'closed_pr_count': 1,
+                                    'merged_pr_count': 3,
+                                    'last_issue_closed_at': '2023-03-14T10:00:00',
+                                    'median_first_response_hours': 6.5,
+                                    'first_response_sample': 4,
+                                    'outside_pr_merge_share': 0.5,
+                                    'outside_prs_merged': 1,
+                                    'outside_prs_decided': 2},
                          'forum': None,
                          'ai': {'summary': 'Shows the size of the collection and of individual notes.',
                                 'model': 'test-model',
@@ -258,7 +282,19 @@ def test_addon_infos_to_json_empty_posts_count(addon_info: AddonInfo):
                                     'contributors': [{'login': 'John', 'contributions': 40},
                                                      {'login': 'Jane', 'contributions': 2}],
                                     'commits_last_year': 4,
-                                    'weekly_commits': [0] * 50 + [3, 1]},
+                                    'weekly_commits': [0] * 50 + [3, 1],
+                                    'has_issues_enabled': True,
+                                    'open_issue_count': 2,
+                                    'closed_issue_count': 5,
+                                    'open_pr_count': 1,
+                                    'closed_pr_count': 1,
+                                    'merged_pr_count': 3,
+                                    'last_issue_closed_at': '2023-03-14T10:00:00',
+                                    'median_first_response_hours': 6.5,
+                                    'first_response_sample': 4,
+                                    'outside_pr_merge_share': 0.5,
+                                    'outside_prs_merged': 1,
+                                    'outside_prs_decided': 2},
                          'forum': {'anki_forum_url': 'https://forums.ankiweb.net/t/note-size-addon-support/46001',
                                    'topic_slug': 'note-size-addon-support',
                                    'topic_id': 46001,
@@ -337,6 +373,25 @@ def test_addon_infos_to_json_activity_not_collected(addon_info: AddonInfo):
     github: dict[str, Any] = to_dicts(AddonInfos([addon_info]))[0]["github"]
     assert [github[key] for key in ("contributor_count", "contributors", "commits_last_year",
                                     "weekly_commits")] == [None] * 4
+
+
+def test_addon_infos_to_json_issue_history_not_collected(addon_info: AddonInfo):
+    assert addon_info.github is not None
+    addon_info.github.issue_history = None
+    github: dict[str, Any] = to_dicts(AddonInfos([addon_info]))[0]["github"]
+    assert [github[key] for key in ("has_issues_enabled", "open_issue_count", "closed_issue_count", "open_pr_count",
+                                    "closed_pr_count", "merged_pr_count", "last_issue_closed_at",
+                                    "median_first_response_hours", "first_response_sample",
+                                    "outside_pr_merge_share", "outside_prs_merged",
+                                    "outside_prs_decided")] == [None] * 12
+
+
+def test_addon_infos_to_json_no_decided_outside_prs(addon_info: AddonInfo):
+    assert addon_info.github is not None
+    addon_info.github.issue_history = GithubIssueHistory(True, 0, 0, 0, 0, 0, None, None, 0, 0, 0)
+    github: dict[str, Any] = to_dicts(AddonInfos([addon_info]))[0]["github"]
+    assert github["outside_pr_merge_share"] is None
+    assert github["last_issue_closed_at"] is None
 
 
 def test_addon_infos_to_json_only_prereleases(addon_info: AddonInfo):

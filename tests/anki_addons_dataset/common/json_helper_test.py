@@ -384,6 +384,33 @@ def test_addon_infos_dump_reads_legacy_dump_without_contributors_and_weekly_comm
     assert read_addon_infos[0].github.weekly_commits is None
 
 
+def test_addon_infos_dump_round_trip_preserves_the_issue_history(
+        addon_infos: AddonInfos, script_version: ScriptVersion, working_dir_path: Path):
+    dump_file: Path = working_dir_path / "addon-infos.json"
+
+    JsonHelper.write_addon_infos_dump(addon_infos, script_version, dump_file)
+    _, read_addon_infos = JsonHelper.read_addon_infos_dump(dump_file)
+
+    assert read_addon_infos[0].github is not None
+    assert addon_infos[0].github is not None
+    assert addon_infos[0].github.issue_history is not None
+    assert read_addon_infos[0].github.issue_history == addon_infos[0].github.issue_history
+
+
+def test_addon_infos_dump_reads_legacy_dump_without_the_issue_history(
+        addon_infos: AddonInfos, script_version: ScriptVersion, working_dir_path: Path):
+    dump_file: Path = working_dir_path / "addon-infos.json"
+    JsonHelper.write_addon_infos_dump(addon_infos, script_version, dump_file)
+    envelope: dict = json.loads(dump_file.read_text())
+    envelope["addon_infos"][0]["github"].pop("issue_history")
+    dump_file.write_text(json.dumps(envelope))
+
+    _, read_addon_infos = JsonHelper.read_addon_infos_dump(dump_file)
+
+    assert read_addon_infos[0].github is not None
+    assert read_addon_infos[0].github.issue_history is None
+
+
 def test_addon_infos_dump_round_trip_preserves_the_ai_tags(addon_infos: AddonInfos, script_version: ScriptVersion,
                                                            working_dir_path: Path):
     assert addon_infos[0].ai is not None

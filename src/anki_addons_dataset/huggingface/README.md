@@ -66,6 +66,21 @@ the default branch in each of the last 52 weeks, oldest week first, and `github.
 These fields are `null` in snapshots collected before they were tracked, and `github.weekly_commits` is also `null`
 when GitHub was still computing the statistics at collection time.
 
+The issue and pull request fields show how a repo is maintained, which `github.last_commit` cannot: a stable addon can
+go long without a commit and still answer its users. `github.open_issue_count`, `github.closed_issue_count`,
+`github.open_pr_count`, `github.closed_pr_count` (closed without merging) and `github.merged_pr_count` are the totals
+that GitHub reports, unlike `github.open_issues`, which mixes open issues with open pull requests.
+`github.has_issues_enabled` tells a repo with no issues from a repo with issues turned off. The other fields are
+calculated by this dataset. `github.last_issue_closed_at` is the latest close among the 20 most recently updated closed
+issues. `github.median_first_response_hours` is the median wait for a first response over the newest 100 issues and the
+newest 100 pull requests. A response is a comment or review by anyone other than the item's author or a bot, and only
+the first 10 comments and 10 reviews of an item are read. Items opened by bots and items nobody has answered are left
+out, so a low median can hide many ignored issues, and `github.first_response_sample` says how many items it rests on.
+`github.outside_pr_merge_share` is `github.outside_prs_merged` divided by `github.outside_prs_decided`: among the newest
+100 pull requests, those merged or closed, opened by neither a bot nor an owner, organization member or collaborator.
+It is `null` when there are none, and a private organization member can look like an outside author. All these fields
+are `null` in snapshots collected before they were tracked, and when the query failed at collection time.
+
 Abandoned addons are often forked and republished under a new name. `forked_from` is the addon an addon was
 forked from, or `null`, with its `evidence`: `github_fork` when the addon's GitHub repo is a GitHub fork of
 another addon's repo (`github.fork_source` holds the root repo), `ai` when a large language model read the

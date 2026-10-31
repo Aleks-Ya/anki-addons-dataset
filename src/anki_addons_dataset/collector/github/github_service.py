@@ -28,7 +28,7 @@ from anki_addons_dataset.collector.github.handler.tag_names_repo_handler import 
 from anki_addons_dataset.collector.github.handler.tests_repo_handler import TestsRepoHandler
 from anki_addons_dataset.collector.github.handler.tree_entries_repo_handler import TreeEntriesRepoHandler
 from anki_addons_dataset.common.data_types import AddonManifest, DependencyName, GithubReadme, GithubRepo, \
-    GithubRepoId, LanguageName, GithubRelease, GithubContributor
+    GithubRepoId, LanguageName, GithubRelease, GithubContributor, GithubIssueHistory
 from anki_addons_dataset.common.working_dir import SnapshotDir
 
 log: Logger = logging.getLogger(__name__)
@@ -104,18 +104,16 @@ class GithubService:
         handler: RepoHandler = TagNamesRepoHandler(repo, self.__raw_dir, self.__stage_dir, self.__prev_raw_dir)
         return self.__get_value(handler) or []
 
-    def download_issue_history(self, repo: GithubRepo) -> None:
+    def get_issue_history(self, repo: GithubRepo) -> Optional[GithubIssueHistory]:
         handler: IssueHistoryRepoHandler = IssueHistoryRepoHandler(
             repo, self.__raw_dir, self.__stage_dir, self.__prev_raw_dir)
         with self.__repo_lock(handler.get_repo_id()):
-            if handler.is_downloaded() or handler.is_repo_marked_as_not_found() or self.__offline:
-                return
-            response: Response = self.__post_issue_history(handler)
-            if handler.is_complete(response):
-                handler.status_200(response)
-            else:
-                log.warning(f"No issue history for {repo.get_id()}: "
-                            f"status {response.status_code}: {response.text}")
+            self.__download_issue_history(handler)
+            if not handler.is_downloaded():
+                return None
+            issue_history: Optional[GithubIssueHistory] = handler.extract_return_value()
+            handler.write_stage(issue_history)
+            return issue_history
 
     def get_manifest(self, repo: GithubRepo) -> Optional[AddonManifest]:
         path: Optional[str] = self.__find_file(repo, "manifest.json")
@@ -203,6 +201,16 @@ class GithubService:
             time.sleep(delay)
             response = self.__github_rest_client.get_from_url(url, etag)
         return response
+
+    def __download_issue_history(self, handler: IssueHistoryRepoHandler) -> None:
+        if handler.is_downloaded() or handler.is_repo_marked_as_not_found() or self.__offline:
+            return
+        response: Response = self.__post_issue_history(handler)
+        if handler.is_complete(response):
+            handler.status_200(response)
+        else:
+            log.warning(f"No issue history for {handler.get_repo_id()}: "
+                        f"status {response.status_code}: {response.text}")
 
     def __post_issue_history(self, handler: IssueHistoryRepoHandler) -> Response:
         response: Response = self.__github_rest_client.post_graphql(handler.query, handler.get_variables())
