@@ -94,3 +94,36 @@ def test_verify_token_raises_on_server_error(tmp_path: Path):
                return_value=__response(500)):
         with pytest.raises(HTTPError):
             client.verify_token()
+
+
+def test_post_graphql_sends_query_and_variables(tmp_path: Path):
+    client: GithubRestClient = __make_client(tmp_path)
+    with patch("anki_addons_dataset.collector.github.github_rest_client.requests.request",
+               return_value=__response(200)) as mock_request:
+        client.post_graphql("query", {"owner": "a", "name": "b"})
+    assert mock_request.call_args.args == ("POST", "https://api.github.com/graphql")
+    assert mock_request.call_args.kwargs["json"] == {"query": "query", "variables": {"owner": "a", "name": "b"}}
+    assert mock_request.call_args.kwargs["headers"]["Authorization"] == "Bearer secret-token"
+
+
+def test_post_graphql_keeps_its_rate_limit_apart_from_rest(tmp_path: Path):
+    client: GithubRestClient = __make_client(tmp_path)
+    with patch("anki_addons_dataset.collector.github.github_rest_client.requests.request") as mock_request:
+        mock_request.return_value = __response(200, "4999")
+        client.get_from_url("https://api.github.com/repos/a/b")
+        mock_request.return_value = __response(200, "0")
+        client.post_graphql("query", {})
+        with patch("anki_addons_dataset.collector.github.github_rate_limit.time.sleep") as sleep:
+            mock_request.return_value = __response(200, "4998")
+            client.get_from_url("https://api.github.com/repos/a/b")
+    sleep.assert_not_called()
+
+
+def test_post_graphql_raises_when_offline(tmp_path: Path):
+    token_file: Path = __token_file(tmp_path)
+    token_file.write_text("secret-token\n")
+    client: GithubRestClient = GithubRestClient(offline=True, token_file=token_file)
+    with patch("anki_addons_dataset.collector.github.github_rest_client.requests.request") as mock_request:
+        with pytest.raises(RuntimeError, match="Offline mode is enabled"):
+            client.post_graphql("query", {})
+    mock_request.assert_not_called()

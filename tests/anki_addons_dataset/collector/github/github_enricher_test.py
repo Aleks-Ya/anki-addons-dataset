@@ -82,6 +82,7 @@ def test_enrich(github_enricher: GithubEnricher, github_service: GithubService, 
     contributors: list[GithubContributor] = [GithubContributor("John", 12)]
     github_service.get_contributors = Mock(return_value=contributors)
     github_service.get_weekly_commits = Mock(return_value=[1] * 52)
+    github_service.download_issue_history = Mock()
 
     github_enricher.start()
     github_enricher.download_in_background(addon_info)
@@ -168,6 +169,7 @@ def test_enrich_fetches_every_candidate_and_keeps_the_selected(snapshot_dir: Sna
     github_service.get_releases = Mock(return_value=[])
     github_service.get_contributors = Mock(return_value=[])
     github_service.get_weekly_commits = Mock(return_value=None)
+    github_service.download_issue_history = Mock()
     github_service.has_repo_data = Mock(return_value=True)
     ai_repo_selector: Mock = Mock(spec=AiRepoSelector)
     ai_repo_selector.select.return_value = AiRepoAnswer(own_repo)
@@ -180,6 +182,7 @@ def test_enrich_fetches_every_candidate_and_keeps_the_selected(snapshot_dir: Sna
     act_github: GithubInfo = github_enricher.enrich(AddonInfos([addon_info]))[0].github
 
     assert [call.args[0] for call in github_service.get_readme.call_args_list] == [library_repo, own_repo]
+    assert [call.args[0] for call in github_service.download_issue_history.call_args_list] == [library_repo, own_repo]
     assert [candidate.github_repo for candidate in ai_repo_selector.select.call_args.args[1]] == [library_repo,
                                                                                                   own_repo]
     assert act_github.github_repo == own_repo
@@ -212,6 +215,7 @@ def test_enrich_drops_candidates_without_data(snapshot_dir: SnapshotDir, github_
     github_service.get_releases = Mock(return_value=[])
     github_service.get_contributors = Mock(return_value=[])
     github_service.get_weekly_commits = Mock(return_value=None)
+    github_service.download_issue_history = Mock()
     github_service.has_repo_data = Mock(side_effect=lambda repo: repo != gone_repo)
     github_enricher: GithubEnricher = GithubEnricher(
         snapshot_dir, github_service, GithubRepoSelector(Overrider(snapshot_dir), None), offline=True)

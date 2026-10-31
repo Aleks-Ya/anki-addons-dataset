@@ -12,6 +12,7 @@ log: Logger = logging.getLogger(__name__)
 
 
 class GithubRestClient:
+    graphql_url: str = "https://api.github.com/graphql"
 
     def __init__(self, offline: bool, token_file: Path):
         self.__token_file: Path = token_file
@@ -21,6 +22,7 @@ class GithubRestClient:
         }
         self.__offline: bool = offline
         self.__rate_limit: GithubRateLimit = GithubRateLimit()
+        self.__graphql_rate_limit: GithubRateLimit = GithubRateLimit()
 
     def get_token_file(self) -> Path:
         return self.__token_file
@@ -58,4 +60,14 @@ class GithubRestClient:
             headers["If-None-Match"] = etag
         response: Response = requests.request("GET", url, headers=headers)
         self.__rate_limit.update_rate_limit(response)
+        return response
+
+    def post_graphql(self, query: str, variables: dict[str, str]) -> Response:
+        log.debug(f"Querying GraphQL {variables} (limit {self.__graphql_rate_limit.get_limit_remaining()})")
+        if self.__offline:
+            raise RuntimeError("Offline mode is enabled")
+        self.__graphql_rate_limit.wait_for_reset()
+        response: Response = requests.request("POST", self.graphql_url, headers=self.__headers,
+                                              json={"query": query, "variables": variables})
+        self.__graphql_rate_limit.update_rate_limit(response)
         return response

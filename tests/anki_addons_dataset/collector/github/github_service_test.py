@@ -1,7 +1,9 @@
 import base64
+import json
 import time
 from concurrent.futures import Future, ThreadPoolExecutor
 from datetime import date, datetime
+from pathlib import Path
 from typing import Optional
 from unittest.mock import Mock, patch
 
@@ -59,6 +61,73 @@ def test_get_tag_names_404(github_service: GithubService, github_rest_client: Gi
                            github_repo: GithubRepo):
     github_rest_client.get_from_url = __mock_content("", status_code=404)
     assert github_service.get_tag_names(github_repo) == []
+
+
+def test_download_issue_history_200(github_service: GithubService, github_rest_client: GithubRestClient,
+                                    snapshot_dir: SnapshotDir, github_repo: GithubRepo):
+    content: str = """{"data":{"repository":{"openIssues":{"totalCount":2}}}}"""
+    github_rest_client.post_graphql = __mock_content(content)
+    github_service.download_issue_history(github_repo)
+    github_service.download_issue_history(github_repo)  # cached
+    github_rest_client.post_graphql.assert_called_once()
+    assert github_rest_client.post_graphql.call_args.args[1] == {"owner": "John", "name": "app"}
+    assert json.loads(__issue_history_file(snapshot_dir).read_text()) == json.loads(content)
+    assert not list((snapshot_dir.get_stage_dir() / "2-github").rglob("issue-history*"))
+
+
+def test_download_issue_history_not_found_is_stored_without_marker(github_service: GithubService,
+                                                                   github_rest_client: GithubRestClient,
+                                                                   snapshot_dir: SnapshotDir,
+                                                                   github_repo: GithubRepo):
+    content: str = """{"data":{"repository":null},"errors":[{"type":"NOT_FOUND"}]}"""
+    github_rest_client.post_graphql = __mock_content(content)
+    github_service.download_issue_history(github_repo)
+    assert json.loads(__issue_history_file(snapshot_dir).read_text()) == json.loads(content)
+    assert not (__issue_history_file(snapshot_dir).parent / "NOT_FOUND_404").exists()
+
+
+def test_download_issue_history_retries_incomplete_answers(github_service: GithubService,
+                                                           github_rest_client: GithubRestClient,
+                                                           snapshot_dir: SnapshotDir, github_repo: GithubRepo):
+    content: str = """{"data":{"repository":{}}}"""
+    github_rest_client.post_graphql = Mock(side_effect=[
+        __response("""{"data":{"repository":{}},"errors":[{"type":"FORBIDDEN"}]}""", 200),
+        __response("<html>Bad Gateway</html>", 502),
+        __response("not json", 200),
+        __response(content, 200)])
+    with patch("anki_addons_dataset.collector.github.github_service.time.sleep") as sleep:
+        github_service.download_issue_history(github_repo)
+    assert [call.args[0] for call in sleep.call_args_list] == [2, 5, 10]
+    assert json.loads(__issue_history_file(snapshot_dir).read_text()) == json.loads(content)
+
+
+def test_download_issue_history_gives_up_without_file(github_service: GithubService,
+                                                      github_rest_client: GithubRestClient,
+                                                      snapshot_dir: SnapshotDir, github_repo: GithubRepo):
+    github_rest_client.post_graphql = Mock(side_effect=lambda _query, _variables: __response("", 502))
+    with patch("anki_addons_dataset.collector.github.github_service.time.sleep"):
+        github_service.download_issue_history(github_repo)
+    assert github_rest_client.post_graphql.call_count == 4
+    assert not __issue_history_file(snapshot_dir).exists()
+
+
+def test_download_issue_history_skips_repo_marked_as_not_found(github_service: GithubService,
+                                                               github_rest_client: GithubRestClient,
+                                                               snapshot_dir: SnapshotDir, github_repo: GithubRepo):
+    github_rest_client.get_from_url = __mock_content("", status_code=404)
+    github_rest_client.post_graphql = Mock()
+    github_service.get_languages(github_repo)
+    github_service.download_issue_history(github_repo)
+    github_rest_client.post_graphql.assert_not_called()
+    assert not __issue_history_file(snapshot_dir).exists()
+
+
+def test_download_issue_history_skips_offline(snapshot_dir: SnapshotDir, github_rest_client: GithubRestClient,
+                                              github_repo: GithubRepo):
+    github_rest_client.post_graphql = Mock()
+    GithubService(snapshot_dir, github_rest_client, offline=True).download_issue_history(github_repo)
+    github_rest_client.post_graphql.assert_not_called()
+    assert not __issue_history_file(snapshot_dir).exists()
 
 
 def test_stars_count_200(github_service: GithubService, github_rest_client: GithubRestClient, github_repo: GithubRepo):
@@ -372,6 +441,10 @@ def __mock_slow_content(content: str) -> Mock:
         return response
 
     return Mock(side_effect=side_effect)
+
+
+def __issue_history_file(snapshot_dir: SnapshotDir) -> Path:
+    return snapshot_dir.get_raw_dir() / "2-github" / "John" / "app" / "issue-history.json"
 
 
 def __response(content: str, status_code: int) -> Response:

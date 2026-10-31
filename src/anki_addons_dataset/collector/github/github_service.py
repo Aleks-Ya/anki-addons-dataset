@@ -14,6 +14,7 @@ from anki_addons_dataset.collector.github.handler.ai_tooling_detector import AiT
 from anki_addons_dataset.collector.github.handler.contents_repo_handler import ContentsRepoHandler
 from anki_addons_dataset.collector.github.handler.contributors_repo_handler import ContributorsRepoHandler
 from anki_addons_dataset.collector.github.handler.dependencies_parser import DependenciesParser
+from anki_addons_dataset.collector.github.handler.issue_history_repo_handler import IssueHistoryRepoHandler
 from anki_addons_dataset.collector.github.handler.languages_repo_handler import LanguagesRepoHandler
 from anki_addons_dataset.collector.github.handler.last_commit_repo_handler import LastCommitRepoHandler
 from anki_addons_dataset.collector.github.handler.manifest_parser import ManifestParser
@@ -103,6 +104,19 @@ class GithubService:
         handler: RepoHandler = TagNamesRepoHandler(repo, self.__raw_dir, self.__stage_dir, self.__prev_raw_dir)
         return self.__get_value(handler) or []
 
+    def download_issue_history(self, repo: GithubRepo) -> None:
+        handler: IssueHistoryRepoHandler = IssueHistoryRepoHandler(
+            repo, self.__raw_dir, self.__stage_dir, self.__prev_raw_dir)
+        with self.__repo_lock(handler.get_repo_id()):
+            if handler.is_downloaded() or handler.is_repo_marked_as_not_found() or self.__offline:
+                return
+            response: Response = self.__post_issue_history(handler)
+            if handler.is_complete(response):
+                handler.status_200(response)
+            else:
+                log.warning(f"No issue history for {repo.get_id()}: "
+                            f"status {response.status_code}: {response.text}")
+
     def get_manifest(self, repo: GithubRepo) -> Optional[AddonManifest]:
         path: Optional[str] = self.__find_file(repo, "manifest.json")
         if path is None:
@@ -188,4 +202,14 @@ class GithubService:
             log.info(f"GitHub is computing {url}, retrying in {delay}s")
             time.sleep(delay)
             response = self.__github_rest_client.get_from_url(url, etag)
+        return response
+
+    def __post_issue_history(self, handler: IssueHistoryRepoHandler) -> Response:
+        response: Response = self.__github_rest_client.post_graphql(handler.query, handler.get_variables())
+        for delay in self.__computing_retry_delays:
+            if handler.is_complete(response):
+                break
+            log.info(f"Incomplete issue history for {handler.get_repo_id()}, retrying in {delay}s")
+            time.sleep(delay)
+            response = self.__github_rest_client.post_graphql(handler.query, handler.get_variables())
         return response

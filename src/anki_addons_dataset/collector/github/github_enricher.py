@@ -76,6 +76,7 @@ class GithubEnricher(Enricher):
         releases: Optional[list[GithubRelease]] = self.__github_service.get_releases(github_repo)
         contributors: Optional[list[GithubContributor]] = self.__github_service.get_contributors(github_repo)
         weekly_commits: Optional[list[int]] = self.__github_service.get_weekly_commits(github_repo)
+        self.__github_service.download_issue_history(github_repo)
         return GithubInfo(
             github_links, github_repo, list(language_bytes.keys()), stars, last_commit, action_count, tests_count,
             license=repo_meta.license, forks=repo_meta.forks, open_issues=repo_meta.open_issues,

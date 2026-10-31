@@ -1,5 +1,7 @@
+import json
 from datetime import datetime
 from pathlib import Path
+from typing import Any
 
 import pytest
 
@@ -79,3 +81,27 @@ def test_missing_repo(github_service: GithubService, snapshot_dir: SnapshotDir,
     not_found_marker: Path = (snapshot_dir.get_raw_dir() / "2-github" / missing_github_repo.user
                               / missing_github_repo.repo_name / "NOT_FOUND_404")
     assert not_found_marker.exists()
+
+
+def test_download_issue_history(github_service: GithubService, snapshot_dir: SnapshotDir,
+                                known_github_repo: GithubRepo) -> None:
+    github_service.download_issue_history(known_github_repo)
+    raw_file: Path = (snapshot_dir.get_raw_dir() / "2-github" / known_github_repo.user
+                      / known_github_repo.repo_name / "issue-history.json")
+    repository: dict[str, Any] = json.loads(raw_file.read_text())["data"]["repository"]
+    assert repository["hasIssuesEnabled"] is True
+    assert repository["closedIssues"]["totalCount"] >= 0
+    assert repository["mergedPullRequests"]["totalCount"] >= 0
+    assert isinstance(repository["recentIssues"]["nodes"], list)
+    assert isinstance(repository["recentPullRequests"]["nodes"], list)
+    assert isinstance(repository["recentlyClosedIssues"]["nodes"], list)
+
+
+def test_download_issue_history_of_missing_repo(github_service: GithubService, snapshot_dir: SnapshotDir,
+                                                missing_github_repo: GithubRepo) -> None:
+    github_service.get_languages(missing_github_repo)
+    github_service.download_issue_history(missing_github_repo)
+    repo_raw_dir: Path = (snapshot_dir.get_raw_dir() / "2-github" / missing_github_repo.user
+                          / missing_github_repo.repo_name)
+    assert (repo_raw_dir / "NOT_FOUND_404").exists()
+    assert not (repo_raw_dir / "issue-history.json").exists()

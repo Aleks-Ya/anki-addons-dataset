@@ -163,6 +163,7 @@ raw-metadata.json
 2-github/{user}/{repo}/
     actions.json
     info.json
+    issue-history.json
     languages.json
     last-commit.json
     tree.json
