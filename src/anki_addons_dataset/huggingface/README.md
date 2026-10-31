@@ -17,6 +17,8 @@ configs:
     data_files: latest/parquet/anki_versions.parquet
   - config_name: reviews
     data_files: latest/parquet/reviews.parquet
+  - config_name: packages
+    data_files: latest/parquet/packages.parquet
 ---
 
 ## Introduction
@@ -107,6 +109,16 @@ addon pages, one row per review, sorted by `addon_id` and then newest first: `ad
 comment, or `null`). AnkiWeb does not show who wrote a review, so the table has no reviewer column. The page-wide
 `likes`/`dislikes` counts of the main table can differ slightly from the votes of the listed reviews.
 
+The `packages` table (`latest/parquet/packages.parquet`) describes the `.ankiaddon` packages served by AnkiWeb, one row
+per addon branch, sorted by `addon_id` and `min_point_version`: `file_name` (the file under `packages/{addon_id}/`),
+`min_point_version`, `updated` (the branch's date on the addon page), `size_bytes`, `manifest_json` and `config_json`
+(the raw text of those files at the package root, `null` when absent or over 64 kB), `file_count`,
+`uncompressed_bytes`, `python_file_count`, `python_lines` (lines of `.py` files up to 5 MB, comments and blank lines
+included) and `files` (the paths). macOS metadata (`__MACOSX/`, `._*`) is left out of all of them. The counts cover
+everything in the package, including bundled libraries. The `package` field of the main table repeats the sizes
+for the branch with the highest `min_point_version`, or is `null` when the snapshot holds no package of the addon.
+Snapshots collected before packages were downloaded have an empty table.
+
 Questions, feedback, bugs: [Support page at Anki Forum](https://forums.ankiweb.net/t/anki-addons-dataset-a-detailed-list-of-addons/63090)
 
 ---
@@ -124,6 +136,7 @@ Folder `latest` contains the most recent day from `history`.
 │   │   ├── parquet
 │   │   │   ├── anki_versions.parquet
 │   │   │   ├── data.parquet
+│   │   │   ├── packages.parquet
 │   │   │   ├── reviews.parquet
 │   │   │   └── tags.parquet
 │   │   ├── xlsx
@@ -137,6 +150,7 @@ Folder `latest` contains the most recent day from `history`.
 │   ├── parquet
 │   │   ├── anki_versions.parquet
 │   │   ├── data.parquet
+│   │   ├── packages.parquet
 │   │   ├── reviews.parquet
 │   │   └── tags.parquet
 │   ├── xlsx

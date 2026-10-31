@@ -2,7 +2,7 @@ from pathlib import Path
 from typing import Optional
 
 from anki_addons_dataset.common.data_types import AddonInfos, DatasetSnapshotMetadata, RawMetadata, \
-    AiTagDefinition, AnkiRelease, ReviewRow
+    AiTagDefinition, AnkiRelease, PackageRow, ReviewRow
 from anki_addons_dataset.common.working_dir import SnapshotDir
 from anki_addons_dataset.exporter.exporter import Exporter
 from anki_addons_dataset.exporter.parquet.parquet_exporter import ParquetExporter
@@ -19,7 +19,7 @@ class ExporterFacade:
         ]
 
     def export_all(self, addon_infos: AddonInfos, tags: list[AiTagDefinition],
-                   anki_versions: Optional[list[AnkiRelease]], reviews: list[ReviewRow],
+                   anki_versions: Optional[list[AnkiRelease]], reviews: list[ReviewRow], packages: list[PackageRow],
                    dataset_snapshot_metadata: DatasetSnapshotMetadata, raw_metadata: RawMetadata) -> None:
         for exporter in self.exporters:
             exporter.export_addon_infos(addon_infos, dataset_snapshot_metadata, raw_metadata)
@@ -27,3 +27,4 @@ class ExporterFacade:
             if anki_versions is not None:
                 exporter.export_anki_versions(anki_versions, dataset_snapshot_metadata, raw_metadata)
         self.parquet_exporter.export_reviews(reviews)
+        self.parquet_exporter.export_packages(packages)

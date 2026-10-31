@@ -11,7 +11,7 @@ from pandas import DataFrame
 from anki_addons_dataset.collector.ai.cache.ai_cache_stats import AiCacheStats
 from anki_addons_dataset.collector.collector_facade import CollectorFacade
 from anki_addons_dataset.common.data_types import AddonInfos, ElementWaitTimeout, PageLoadTimeout, ReportDate, \
-    ScriptVersion, SnapshotDate, AddonReview, ReviewVote
+    ScriptVersion, SnapshotDate, AddonPackage, AddonPackages, AddonReview, AnkiPointVersion, ReviewVote
 from anki_addons_dataset.common.json_helper import JsonHelper
 from anki_addons_dataset.common.working_dir import SnapshotDir, WorkingDir
 from anki_addons_dataset.config.app_config import AppConfig
@@ -37,6 +37,23 @@ def test_download_snapshot_collects_packages_of_scraped_addons(
 
     package_collector.return_value.collect.assert_called_once_with(addon_infos)
     assert package_collector.call_args.args[0] == snapshot_dir
+
+
+def test_report_snapshots_exports_packages(
+        collector_facade: CollectorFacade, snapshot_dir: SnapshotDir, addon_infos: AddonInfos,
+        script_version: ScriptVersion, report_date: ReportDate):
+    addon_infos[0].package = AddonPackages([AddonPackage(
+        "45-2026-01-15-0123456789ab.ankiaddon", AnkiPointVersion(45), date(2026, 1, 15), 10, None, None,
+        1, 6, 1, 1, ["__init__.py"])])
+    JsonHelper.write_addon_infos_dump(addon_infos, script_version, snapshot_dir.get_addon_infos_dump())
+
+    collector_facade.report_snapshots(None, report_date)
+
+    packages_df: DataFrame = pandas.read_parquet(snapshot_dir.get_final_dir() / "parquet" / "packages.parquet")
+    assert list(packages_df["addon_id"]) == [addon_infos[0].header.id]
+    assert list(packages_df["file_name"]) == ["45-2026-01-15-0123456789ab.ankiaddon"]
+    data_df: DataFrame = pandas.read_parquet(snapshot_dir.get_final_dir() / "parquet" / "data.parquet")
+    assert data_df.iloc[0]["package"]["file_name"] == "45-2026-01-15-0123456789ab.ankiaddon"
 
 
 def test_report_snapshots_generates_final_from_dump_without_raw(

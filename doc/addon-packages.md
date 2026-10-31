@@ -1,6 +1,20 @@
 # Addon packages
-DOWNLOAD saves the `.ankiaddon` package of every addon branch. Nothing reads the packages yet: they are
-collected and published for later use.
+DOWNLOAD saves the `.ankiaddon` package of every addon branch. PARSE derives metadata and code size from them
+(`AddonInfo.package`), and REPORT exports these as the `packages` table and the `package` field of the main table.
+
+## What PARSE derives
+`PackageEnricher` runs after `ForkResolver` and reads only `1-raw/5-package/`, so a changed `PackageAnalyzer` takes
+effect by re-running PARSE. It keeps the newest `updated` per minimum point version, and a package that cannot be read
+gets a warning and no row. The AI step does not call it. An addon or snapshot without packages gets `package=None`.
+
+`PackageAnalyzer` reads the zip in memory, never extracts it and never executes anything:
+
+- `__MACOSX/` and `._*` entries are skipped everywhere. They can end in `.py` but are not Python, and at least 10 of
+  189 sampled packages contain them.
+- `manifest.json` and `config.json` come only from the zip root, as raw text. `manifest.json` is absent from about
+  half of the packages, and it often has fields `ManifestParser` drops (`version`, `author`).
+- A manifest or config over 64 kB gives `null`. A `.py` file over 5 MB counts as a file with no lines. Both limits use
+  the size declared in the zip.
 
 ## How AnkiWeb serves a package
 This is the request Anki itself makes:

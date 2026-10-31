@@ -315,6 +315,42 @@ class ReviewRow:
 
 
 @dataclass(frozen=True)
+class AddonPackage:
+    file_name: str
+    min_point_version: AnkiPointVersion
+    updated: date
+    size_bytes: int
+    manifest_json: Optional[str]
+    config_json: Optional[str]
+    file_count: int
+    uncompressed_bytes: int
+    python_file_count: int
+    python_lines: int
+    files: list[str]
+
+
+@dataclass(frozen=True)
+class AddonPackages:
+    branches: list[AddonPackage]
+
+
+@dataclass(frozen=True)
+class PackageRow:
+    addon_id: AddonId
+    file_name: str
+    min_point_version: AnkiPointVersion
+    updated: date
+    size_bytes: int
+    manifest_json: Optional[str]
+    config_json: Optional[str]
+    file_count: int
+    uncompressed_bytes: int
+    python_file_count: int
+    python_lines: int
+    files: list[str]
+
+
+@dataclass(frozen=True)
 class AuthorInfo:
     author_id: AddonId
     addon_ids: list[AddonId]
@@ -335,6 +371,7 @@ class AddonInfo:
     ai: Optional[AiInfo] = None
     author: Optional[AuthorInfo] = None
     forked_from: Optional[ForkRelation] = None
+    package: Optional[AddonPackages] = None
 
 
 AddonInfos = NewType("AddonInfos", list[AddonInfo])

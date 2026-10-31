@@ -4,7 +4,7 @@ from typing import Any, Optional
 
 from anki_addons_dataset.common.anki_version import AnkiVersionCodec
 from anki_addons_dataset.common.data_types import AddonInfos, AddonInfo, AddonDescription, GithubInfo, AddonManifest, \
-    AnkiPointVersion, HtmlStr, AddonId, GithubRelease, GithubContributor, GithubIssueHistory
+    AnkiPointVersion, HtmlStr, AddonId, AddonPackage, GithubRelease, GithubContributor, GithubIssueHistory
 
 
 @dataclass
@@ -180,6 +180,17 @@ class AnkiWeb:
 
 
 @dataclass
+class Package:
+    file_name: str
+    updated: str
+    size_bytes: int
+    file_count: int
+    uncompressed_bytes: int
+    python_file_count: int
+    python_lines: int
+
+
+@dataclass
 class Details:
     id: int
     anki_web: AnkiWeb
@@ -189,6 +200,7 @@ class Details:
     author: Optional[Author]
     forked_from: Optional[ForkedFrom]
     forks: list[int]
+    package: Optional[Package]
 
 
 class JsonAddonInfo:
@@ -212,7 +224,8 @@ class JsonAddonInfo:
             forked_from: Optional[ForkedFrom] = ForkedFrom(addon.forked_from.addon_id, str(addon.forked_from.evidence)) \
                 if addon.forked_from is not None else None
             json_obj: Details = Details(addon.header.id, anki_web, github, forum, JsonAddonInfo.__ai(addon),
-                                        JsonAddonInfo.__author(addon), forked_from, forks.get(addon.header.id, []))
+                                        JsonAddonInfo.__author(addon), forked_from, forks.get(addon.header.id, []),
+                                        JsonAddonInfo.__package(addon))
             json_list.append(json_obj)
         return json_list
 
@@ -223,6 +236,14 @@ class JsonAddonInfo:
             if addon.forked_from is not None:
                 forks.setdefault(addon.forked_from.addon_id, []).append(addon.header.id)
         return forks
+
+    @staticmethod
+    def __package(addon: AddonInfo) -> Optional[Package]:
+        if addon.package is None:
+            return None
+        newest: AddonPackage = max(addon.package.branches, key=lambda branch: branch.min_point_version)
+        return Package(newest.file_name, newest.updated.isoformat(), newest.size_bytes, newest.file_count,
+                       newest.uncompressed_bytes, newest.python_file_count, newest.python_lines)
 
     @staticmethod
     def __anki_web_links(addon: AddonInfo) -> list[AnkiWebLink]:

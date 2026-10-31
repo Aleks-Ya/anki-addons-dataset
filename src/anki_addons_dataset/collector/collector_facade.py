@@ -1,3 +1,4 @@
+import dataclasses
 import logging
 from datetime import datetime
 from logging import Logger
@@ -37,13 +38,15 @@ from anki_addons_dataset.collector.github.github_repo_selector import GithubRepo
 from anki_addons_dataset.collector.github.github_rest_client import GithubRestClient
 from anki_addons_dataset.collector.github.github_service import GithubService
 from anki_addons_dataset.collector.overrider.overrider import Overrider
+from anki_addons_dataset.collector.package.package_analyzer import PackageAnalyzer
 from anki_addons_dataset.collector.package.package_cache_index import PackageCacheIndex
 from anki_addons_dataset.collector.package.package_client import PackageClient
 from anki_addons_dataset.collector.package.package_collector import PackageCollector
+from anki_addons_dataset.collector.package.package_enricher import PackageEnricher
 from anki_addons_dataset.collector.raw_metadata_collector import RawMetadataCollector
 from anki_addons_dataset.collector.sample_collector import SampleCollector
 from anki_addons_dataset.common.data_types import AddonInfos, DatasetSnapshotMetadata, RawMetadata, \
-    AnkiRelease, SnapshotDate, ReportDate, ScriptVersion, PageLoadTimeout, ElementWaitTimeout, ReviewRow
+    AnkiRelease, SnapshotDate, ReportDate, ScriptVersion, PageLoadTimeout, ElementWaitTimeout, PackageRow, ReviewRow
 from anki_addons_dataset.common.json_helper import JsonHelper
 from anki_addons_dataset.common.working_dir import SnapshotDir, WorkingDir
 from anki_addons_dataset.config.app_config import AppConfig
@@ -126,6 +129,7 @@ class CollectorFacade:
         addon_infos: AddonInfos = self.__collect(snapshot_dir, True, ai_provider=ai_provider)
         addon_infos = self.__ai_enrich(addon_infos, ai_provider, fork_verifier)
         addon_infos = ForkResolver(Overrider(snapshot_dir)).resolve(addon_infos)
+        addon_infos = PackageEnricher(snapshot_dir, PackageAnalyzer()).enrich(addon_infos)
         cache_miss_count: int = self.__cache_stats(ai_provider, fork_verifier).miss_count
         if cache_miss_count:
             log.warning(f"{cache_miss_count} AI answers (repo choices, forum topic checks, summaries, tags or "
@@ -160,7 +164,8 @@ class CollectorFacade:
             log.warning(f"No Anki tags in {snapshot_dir.get_raw_dir()}, the anki_versions table is skipped. "
                         f"Run the 'download -d {snapshot_date}' operation to fetch them.")
         exporter_facade.export_all(addon_infos, AiTagVocabulary.definitions(), anki_versions,
-                                   self.__review_rows(addon_infos), dataset_snapshot_metadata, raw_metadata)
+                                   self.__review_rows(addon_infos), self.__package_rows(addon_infos),
+                                   dataset_snapshot_metadata, raw_metadata)
         log.info(f"===== Reported snapshot for {snapshot_date} =====\n")
 
     def __ai_provider(self, snapshot_dir: SnapshotDir, offline: bool, shared_index: Optional[AiCacheIndex] = None,
@@ -199,6 +204,12 @@ class CollectorFacade:
             ReviewRow(addon_info.header.id, review.date, review.vote, review.text, review.author_reply)
             for addon_info in addon_infos for review in addon_info.page.reviews]
         return sorted(rows, key=lambda row: (row.addon_id, -row.date.toordinal()))
+
+    @staticmethod
+    def __package_rows(addon_infos: AddonInfos) -> list[PackageRow]:
+        return [PackageRow(addon_id=addon_info.header.id, **dataclasses.asdict(branch))
+                for addon_info in sorted(addon_infos, key=lambda addon_info: addon_info.header.id)
+                if addon_info.package is not None for branch in addon_info.package.branches]
 
     @staticmethod
     def __script_version() -> ScriptVersion:

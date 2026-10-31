@@ -12,7 +12,7 @@ from anki_addons_dataset.common.data_types import AddonInfo, AddonInfos, AddonHe
     ScriptVersion, AddonRating, UpdateDate, AddonTitle, AddonDescription, AddonManifest, SpdxLicense, Topic, \
     DependencyName, GithubReadme, AiInfo, AiSummary, AiModel, AiTag, AnkiPointVersion, AnkiVersionKind, \
     PageLink, PageLinkSection, GithubRepoSource, AnkiForumTopicSource, AuthorInfo, ForkEvidence, ForkRelation, \
-    AddonReview, ReviewVote, GithubRelease, GithubReleaseAsset, GithubContributor, GithubIssueHistory
+    AddonPackage, AddonPackages, AddonReview, ReviewVote, GithubRelease, GithubReleaseAsset, GithubContributor, GithubIssueHistory
 
 
 class JsonHelper:
@@ -51,6 +51,29 @@ class JsonHelper:
             ai=JsonHelper.__ai_info_from_dict(data.get("ai")),  # get(): dumps written before the 'ai' step have none
             author=JsonHelper.__author_info_from_dict(data.get("author")),
             forked_from=JsonHelper.__fork_relation_from_dict(data["forked_from"]) if data.get("forked_from") else None,
+            package=JsonHelper.__packages_from_dict(data.get("package")),
+        )
+
+    @staticmethod
+    def __packages_from_dict(data: Optional[dict[str, Any]]) -> Optional[AddonPackages]:
+        if data is None:
+            return None
+        return AddonPackages([JsonHelper.__package_from_dict(branch) for branch in data["branches"]])
+
+    @staticmethod
+    def __package_from_dict(data: dict[str, Any]) -> AddonPackage:
+        return AddonPackage(
+            file_name=data["file_name"],
+            min_point_version=AnkiPointVersion(data["min_point_version"]),
+            updated=date.fromisoformat(data["updated"]),
+            size_bytes=data["size_bytes"],
+            manifest_json=data["manifest_json"],
+            config_json=data["config_json"],
+            file_count=data["file_count"],
+            uncompressed_bytes=data["uncompressed_bytes"],
+            python_file_count=data["python_file_count"],
+            python_lines=data["python_lines"],
+            files=data["files"],
         )
 
     @staticmethod

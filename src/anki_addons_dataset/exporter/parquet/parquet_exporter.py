@@ -7,7 +7,7 @@ import pyarrow
 from pandas import DataFrame
 
 from anki_addons_dataset.common.data_types import AddonInfos, DatasetSnapshotMetadata, RawMetadata, \
-    AiTagDefinition, AnkiRelease, ReviewRow
+    AiTagDefinition, AnkiRelease, PackageRow, ReviewRow
 from anki_addons_dataset.exporter.exporter import Exporter
 from anki_addons_dataset.exporter.json_addon_info import JsonAddonInfo, Details
 
@@ -45,4 +45,16 @@ class ParquetExporter(Exporter):
         DataFrame([dataclasses.asdict(review) for review in reviews],
                   columns=["addon_id", "date", "vote", "text", "author_reply"]) \
             .to_parquet(output_file, compression="zstd")
+        log.info(f"Write Parquet to file: {output_file}")
+
+    def export_packages(self, packages: list[PackageRow]) -> None:
+        output_file: Path = self._final_dir / "packages.parquet"
+        schema: pyarrow.Schema = pyarrow.schema([
+            ("addon_id", pyarrow.int64()), ("file_name", pyarrow.string()), ("min_point_version", pyarrow.int64()),
+            ("updated", pyarrow.date32()), ("size_bytes", pyarrow.int64()), ("manifest_json", pyarrow.string()),
+            ("config_json", pyarrow.string()), ("file_count", pyarrow.int64()),
+            ("uncompressed_bytes", pyarrow.int64()), ("python_file_count", pyarrow.int64()),
+            ("python_lines", pyarrow.int64()), ("files", pyarrow.list_(pyarrow.string()))])
+        DataFrame([dataclasses.asdict(package) for package in packages], columns=schema.names) \
+            .to_parquet(output_file, compression="zstd", schema=schema)
         log.info(f"Write Parquet to file: {output_file}")
