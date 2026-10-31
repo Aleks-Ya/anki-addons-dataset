@@ -86,6 +86,7 @@ def test_analyze_counts_a_python_file_over_the_limit_without_reading_it(tmp_path
 def test_analyze_raises_on_a_corrupt_package(tmp_path: Path):
     package_file: Path = tmp_path / "package.ankiaddon"
     package_file.write_bytes(b"not a zip")
+    analyzer: PackageAnalyzer = PackageAnalyzer()
 
     with pytest.raises(BadZipFile):
-        PackageAnalyzer().analyze(package_file)
+        analyzer.analyze(package_file)
