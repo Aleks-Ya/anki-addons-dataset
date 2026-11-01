@@ -1,4 +1,5 @@
-from typing import Optional
+from itertools import chain, repeat
+from typing import Iterator, Optional
 from unittest.mock import Mock, patch
 
 from requests import Response
@@ -119,6 +120,26 @@ def test_limited_wait_without_remaining_ignores_reset():
     __wait_after_limited(response).assert_called_once_with(60)
 
 
+def test_limited_wait_subtracts_lock_wait_from_retry_after():
+    response: Response = __limited(403, {"retry-after": "30"})
+    __wait_after_lock_wait(response, 20).assert_called_once_with(10)
+
+
+def test_limited_wait_subtracts_lock_wait_from_default():
+    response: Response = __limited(403, {}, b'{"message": "You have exceeded a secondary rate limit"}')
+    __wait_after_lock_wait(response, 20).assert_called_once_with(40)
+
+
+def test_limited_wait_longer_lock_wait_still_sleeps():
+    response: Response = __limited(403, {"retry-after": "30"})
+    __wait_after_lock_wait(response, 40).assert_called_once_with(1)
+
+
+def test_limited_wait_until_reset_is_measured_after_lock_wait():
+    response: Response = __limited(403, {"x-ratelimit-remaining": "0", "x-ratelimit-reset": str(RESET_TIMESTAMP)})
+    __wait_after_lock_wait(response, 20).assert_called_once_with(20 * 60 - 20)
+
+
 def test_rest_ok_response_mentioning_rate_limit_is_not_limited():
     assert not GithubRateLimit().is_limited(__limited(200, {}, b'{"errors": [{"type": "RATE_LIMITED"}]}'))
 
@@ -164,6 +185,14 @@ def test_graphql_server_error_is_not_limited():
 def __wait_after_limited(response: Response) -> Mock:
     sleep: Mock = Mock()
     with patch("time.time", Mock(return_value=float(NOW))), patch("time.sleep", sleep):
+        GithubRateLimit().wait_after_limited(response)
+    return sleep
+
+
+def __wait_after_lock_wait(response: Response, lock_wait_seconds: int) -> Mock:
+    sleep: Mock = Mock()
+    times: Iterator[float] = chain([float(NOW)], repeat(float(NOW + lock_wait_seconds)))
+    with patch("time.time", Mock(side_effect=times)), patch("time.sleep", sleep):
         GithubRateLimit().wait_after_limited(response)
     return sleep
 

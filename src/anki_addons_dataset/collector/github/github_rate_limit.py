@@ -44,23 +44,25 @@ class GithubRateLimit:
                 or "rate limit" in response.text.lower())
 
     def wait_after_limited(self, response: Response) -> None:
+        received_at: float = time.time()
         with self.__lock:
-            sleep_time: int = max(1, self.__limited_wait_seconds(response))
+            lock_wait_seconds: int = int(time.time() - received_at)
+            sleep_time: int = max(1, self.__limited_wait_seconds(response, lock_wait_seconds))
             log.info(f"Rate limited (status {response.status_code}) at {response.url}. "
                      f"Waiting for {sleep_time} seconds")
             time.sleep(sleep_time)
             log.info("Done waiting after rate limit")
 
-    def __limited_wait_seconds(self, response: Response) -> int:
+    def __limited_wait_seconds(self, response: Response, lock_wait_seconds: int) -> int:
         retry_after: Optional[str] = response.headers.get("retry-after")
         if retry_after:
-            return int(retry_after)
+            return int(retry_after) - lock_wait_seconds
         retry_limit_reset: Optional[str] = response.headers.get("x-ratelimit-reset")
         if retry_limit_reset and response.headers.get("x-ratelimit-remaining") == "0":
             seconds_until_reset: int = int(retry_limit_reset) - int(round(time.time()))
             if seconds_until_reset > 0:
                 return seconds_until_reset
-        return self.__default_limited_wait_seconds
+        return self.__default_limited_wait_seconds - lock_wait_seconds
 
     def __update_rate_limit(self, response: Response) -> None:
         self.__status_code = response.status_code
