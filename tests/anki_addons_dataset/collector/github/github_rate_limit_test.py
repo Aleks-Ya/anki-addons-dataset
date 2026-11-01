@@ -86,9 +86,14 @@ def test_limited_wait_until_reset():
     __wait_after_limited(response).assert_called_once_with(20 * 60)
 
 
-def test_limited_wait_with_stale_reset_still_sleeps():
+def test_limited_wait_with_past_reset_sleeps_a_minute():
     response: Response = __limited(403, {"x-ratelimit-remaining": "0", "x-ratelimit-reset": str(NOW - 1)})
-    __wait_after_limited(response).assert_called_once_with(1)
+    __wait_after_limited(response).assert_called_once_with(60)
+
+
+def test_limited_wait_with_reset_now_sleeps_a_minute():
+    response: Response = __limited(403, {"x-ratelimit-remaining": "0", "x-ratelimit-reset": str(NOW)})
+    __wait_after_limited(response).assert_called_once_with(60)
 
 
 def test_limited_wait_without_headers_sleeps_a_minute():
