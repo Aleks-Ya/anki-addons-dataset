@@ -1,6 +1,6 @@
 ---
 name: push
-description: Push the main branch and see it through green — verify a clean tree, upgrade deps (committing uv.lock without asking) and run pytest locally, push, wait for the GitHub Actions "Unit-tests" workflow and fix any failures, then review SonarCloud issues on the new code and fix them. Use when the user says "push", "/push", or asks to push and make sure CI/Sonar are clean.
+description: Push the main branch and see it through green — verify a clean tree, upgrade deps (committing uv.lock without asking) and run the unit and integration tests locally, push, wait for the GitHub Actions "Unit-tests" workflow and fix any failures, then review SonarCloud issues on the new code and fix them. Use when the user says "push", "/push", or asks to push and make sure CI/Sonar are clean.
 allowed-tools: Bash(./uv_update.sh *) Bash(uv *) Bash(gh run *) Bash(git *) Bash(curl *)
 disable-model-invocation: true
 ---
@@ -29,11 +29,13 @@ If not on `main`, stop and ask the user before pushing.
 ## 2. Upgrade dependencies and run tests locally
 
 Every push upgrades the Python dependencies. Do this without asking the user for confirmation. Then sync the
-environment and run the test suite, so that failures are caught locally rather than in CI.
+environment and run the unit tests, then the integration tests. CI runs only the unit tests, so the integration
+tests are checked here or not at all. Don't ask before running them, even though the AI tests bill a few cents.
 
 ```bash
 ./uv_update.sh   # uv lock --upgrade && uv sync
 uv run pytest
+uv run pytest tests_integration
 ```
 
 - `./uv_update.sh` does three things:
@@ -42,7 +44,12 @@ uv run pytest
     toolchain are present and up to date
 - If `uv run pytest` **fails**, **stop.** Do not push. Fix the failing tests in the working tree first (and, per
   step 1, don't commit the fixes on the user's behalf unless they ask). Re-run `pytest` until green, then continue.
-- If the tests pass and `uv.lock` changed, commit the change yourself without asking. Commit only `uv.lock`, with
+  Don't start the integration tests until the unit tests pass.
+- If `uv run pytest tests_integration` **fails**, **stop.** Do not push. These tests hit live services (see
+  doc/testing.md), so a failure can come from an upstream change, an outage or a missing credential rather than the
+  code. Report the failing tests and the likely cause, and fix them only if the code is at fault. Push only once
+  they pass, or if the user explicitly says to push anyway.
+- If both test runs pass and `uv.lock` changed, commit the change yourself without asking. Commit only `uv.lock`, with
   the message `Upgrade dependencies`:
 
   ```bash
@@ -108,7 +115,7 @@ Focus on issues touching the code just pushed (recent `creationDate`, or files i
 
 - Read the `rule`, `message`, `component` (file), and `line`.
 - Fix the underlying code — don't just silence it. Only suppress (e.g. `# NOSONAR`) when the rule is a genuine false positive, and say so.
-- Re-run tests locally (`uv run pytest`) before pushing the fix.
+- Re-run the unit and integration tests locally (`uv run pytest`, then `uv run pytest tests_integration`) before pushing the fix.
 
 Commit and push the fixes, then loop back through steps 4–5 (CI runs again, Sonar re-analyzes) until CI is green and there are no new/open Sonar issues on the changed code.
 
