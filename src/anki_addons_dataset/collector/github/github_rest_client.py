@@ -83,6 +83,7 @@ class GithubRestClient:
             if not rate_limit.is_limited(response):
                 break
             rate_limit.wait_after_limited(response)
+            rate_limit.wait_for_reset()
             response = requests.request(method, url, **kwargs)
             rate_limit.update_rate_limit(response)
         return response

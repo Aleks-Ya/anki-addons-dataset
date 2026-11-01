@@ -1,6 +1,6 @@
 from pathlib import Path
 from typing import Optional
-from unittest.mock import patch
+from unittest.mock import call, patch
 
 import pytest
 from requests import Response
@@ -173,6 +173,21 @@ def test_retries_after_rate_limited_response(tmp_path: Path):
     sleep.assert_called_once_with(30)
 
 
+def test_resend_waits_for_reset_of_exhausted_quota(tmp_path: Path):
+    client: GithubRestClient = __make_client(tmp_path)
+    limited: Response = __response(403, "0")
+    limited.headers["retry-after"] = "30"
+    limited.headers["x-ratelimit-reset"] = "4102444800"
+    with patch("anki_addons_dataset.collector.github.github_rest_client.requests.request",
+               side_effect=[limited, __response(200, "4999")]) as mock_request, \
+            patch("anki_addons_dataset.collector.github.github_rate_limit.time.time", return_value=4102444700.0), \
+            patch("anki_addons_dataset.collector.github.github_rate_limit.time.sleep") as sleep:
+        response: Response = client.get_from_url("https://api.github.com/repos/a/b")
+    assert response.status_code == 200
+    assert mock_request.call_count == 2
+    assert sleep.call_args_list == [call(30), call(100)]
+
+
 def test_returns_rate_limited_response_when_retries_run_out(tmp_path: Path):
     client: GithubRestClient = __make_client(tmp_path)
     limited: Response = __response(403)
@@ -231,7 +246,7 @@ def test_post_graphql_retries_after_limited_ok_response(tmp_path: Path):
         response: Response = client.post_graphql("query", {})
     assert response is success
     assert mock_request.call_count == 2
-    sleep.assert_called_once_with(100)
+    assert sleep.call_args_list == [call(100), call(100)]
 
 
 def test_post_graphql_waits_a_minute_after_secondary_limit_without_headers(tmp_path: Path):
