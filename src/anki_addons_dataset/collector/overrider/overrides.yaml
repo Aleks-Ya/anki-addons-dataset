@@ -9,22 +9,80 @@ addons:
     GitHubUrl: https://github.com/shigeyukey/Anki_Leaderboard
 
 excluded_github_repos:
+  # Anki itself
   - https://github.com/ankitects/anki
-  - https://github.com/ankidroid/anki-android
-  - https://github.com/tesseract-ocr/tesseract
-  - https://github.com/mpv-player/mpv
   - https://github.com/dae/anki
-  - https://github.com/rhasspy/piper
-  - https://github.com/btbn/ffmpeg-builds
-  - https://github.com/beautify-web/js-beautify
-  - https://github.com/tesseract-ocr/tessdata
+  - https://github.com/ankidroid/anki-android
+  # Not real repos
   - https://github.com/user-attachments/assets
   - https://github.com/sponsors/
   - https://github.com/yourusername/hinabi-aniki
   - https://github.com/yourusername/hanziviet-addon
   - https://github.com/yourusername/word_ai_validator
+  # Fonts and icons
+  - https://github.com/be5invis/Iosevka
+  - https://github.com/microsoft/cascadia-code
+  - https://github.com/papirusdevelopmentteam/papirus-icon-theme
+  - https://github.com/hatscripts/circle-flags
+  # Developer tools
+  - https://github.com/astral-sh/ruff
+  - https://github.com/burntsushi/ripgrep
+  - https://github.com/casey/just
+  - https://github.com/psf/black
+  - https://github.com/python/mypy
+  - https://github.com/beautify-web/js-beautify
+  # Apps, engines and binaries
+  - https://github.com/tesseract-ocr/tesseract
+  - https://github.com/tesseract-ocr/tessdata
+  - https://github.com/ub-mannheim/tesseract
+  - https://github.com/mpv-player/mpv
+  - https://github.com/rhasspy/piper
+  - https://github.com/btbn/ffmpeg-builds
+  - https://github.com/yt-dlp/yt-dlp
+  - https://github.com/methodofaction/method-draw
+  - https://github.com/oschwartz10612/poppler-windows
+  - https://github.com/voicevox/voicevox_nemo_engine
+  - https://github.com/remsky/kokoro-fastapi
+  - https://github.com/resemble-ai/chatterbox
+  - https://github.com/llm-red-team/qwen-free-api
+  - https://github.com/mathdroid/covid-19-api
+  # JavaScript libraries
+  - https://github.com/d3/d3
+  - https://github.com/katex/katex
+  - https://github.com/pixijs/pixijs
+  - https://github.com/videojs/video.js
+  - https://github.com/codemirror/commands
+  - https://github.com/codemirror/search
+  - https://github.com/gera2ld/markmap
+  - https://github.com/syntax-tree/mdast-util-to-markdown
+  - https://github.com/vasturiano/force-graph
+  - https://github.com/vinta/pangu.js
+  - https://github.com/mdbassit/coloris
+  - https://github.com/loktar00/jquery-snowfall
+  # Python libraries
+  - https://github.com/dateutil/dateutil
+  - https://github.com/googleapis/google-api-python-client
+  - https://github.com/deeplcom/deepl-python
+  - https://github.com/fxsjy/jieba
+  - https://github.com/byvoid/opencc
+  - https://github.com/yichen0831/opencc-python
+  - https://github.com/rspeer/wordfreq
+  - https://github.com/sloria/textblob
+  - https://github.com/tkarabela/pysubs2
+  - https://github.com/albertosottile/darkdetect
+  - https://github.com/tsroten/zhon
+  - https://github.com/lig/pystardict
+  - https://github.com/imageio/imageio-ffmpeg
   - https://github.com/pygments/pygments
   - https://github.com/jaseg/python-mpv
   - https://github.com/iwalton3/python-mpv-jsonipc
+  # Language-learning projects and data
+  - https://github.com/yomidevs/yomitan
+  - https://github.com/yomidevs/yomitan-api
+  - https://github.com/killergerbah/asbplayer
+  - https://github.com/lrorpilla/jidoujisho
+  - https://github.com/bpwhelan/gamesentenceminer
+  - https://github.com/kanjivg/kanjivg
+  - https://github.com/mifunetoshiro/kanjium
+  - https://github.com/hermitdave/frequencywords
   - https://github.com/cvsuser-chromium/third_party_hunspell_dictionaries
-  - https://github.com/yt-dlp/yt-dlp
