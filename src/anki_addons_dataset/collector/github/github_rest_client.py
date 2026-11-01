@@ -1,5 +1,6 @@
+import re
 from pathlib import Path
-from typing import Optional
+from typing import Any, Optional
 import logging
 from logging import Logger
 
@@ -13,6 +14,8 @@ log: Logger = logging.getLogger(__name__)
 
 class GithubRestClient:
     graphql_url: str = "https://api.github.com/graphql"
+    __actions_url: re.Pattern[str] = re.compile(r"/repos/[^/]+/[^/]+/actions/")
+    __limited_retries: int = 3
 
     def __init__(self, offline: bool, token_file: Path):
         self.__token_file: Path = token_file
@@ -23,6 +26,7 @@ class GithubRestClient:
         self.__offline: bool = offline
         self.__rate_limit: GithubRateLimit = GithubRateLimit()
         self.__graphql_rate_limit: GithubRateLimit = GithubRateLimit()
+        self.__actions_rate_limit: GithubRateLimit = GithubRateLimit()
 
     def get_token_file(self) -> Path:
         return self.__token_file
@@ -51,23 +55,31 @@ class GithubRestClient:
         return self.__rate_limit.get_limit_remaining()
 
     def get_from_url(self, url: str, etag: Optional[str] = None) -> Response:
-        log.debug(f"Downloading {url} (limit {self.__rate_limit.get_limit_remaining()})")
+        rate_limit: GithubRateLimit = self.__actions_rate_limit if self.__actions_url.search(url) \
+            else self.__rate_limit
+        log.debug(f"Downloading {url} (limit {rate_limit.get_limit_remaining()})")
         if self.__offline:
             raise RuntimeError("Offline mode is enabled")
-        self.__rate_limit.wait_for_reset()
         headers: dict[str, str] = dict(self.__headers)
         if etag:
             headers["If-None-Match"] = etag
-        response: Response = requests.request("GET", url, headers=headers)
-        self.__rate_limit.update_rate_limit(response)
-        return response
+        return self.__send(rate_limit, "GET", url, headers=headers)
 
     def post_graphql(self, query: str, variables: dict[str, str]) -> Response:
         log.debug(f"Querying GraphQL {variables} (limit {self.__graphql_rate_limit.get_limit_remaining()})")
         if self.__offline:
             raise RuntimeError("Offline mode is enabled")
-        self.__graphql_rate_limit.wait_for_reset()
-        response: Response = requests.request("POST", self.graphql_url, headers=self.__headers,
-                                              json={"query": query, "variables": variables})
-        self.__graphql_rate_limit.update_rate_limit(response)
+        return self.__send(self.__graphql_rate_limit, "POST", self.graphql_url, headers=self.__headers,
+                           json={"query": query, "variables": variables})
+
+    def __send(self, rate_limit: GithubRateLimit, method: str, url: str, **kwargs: Any) -> Response:
+        rate_limit.wait_for_reset()
+        response: Response = requests.request(method, url, **kwargs)
+        rate_limit.update_rate_limit(response)
+        for _ in range(self.__limited_retries):
+            if not rate_limit.is_limited(response):
+                break
+            rate_limit.wait_after_limited(response)
+            response = requests.request(method, url, **kwargs)
+            rate_limit.update_rate_limit(response)
         return response

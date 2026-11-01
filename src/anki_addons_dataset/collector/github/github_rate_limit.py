@@ -13,6 +13,8 @@ log: Logger = logging.getLogger(__name__)
 
 
 class GithubRateLimit:
+    __limited_status_codes: tuple[int, ...] = (403, 429)
+    __default_limited_wait_seconds: int = 60
 
     def __init__(self):
         self.__lock: Lock = Lock()
@@ -32,6 +34,31 @@ class GithubRateLimit:
     def get_limit_remaining(self) -> Optional[int]:
         with self.__lock:
             return self.__retry_limit_remaining
+
+    def is_limited(self, response: Response) -> bool:
+        if response.status_code not in self.__limited_status_codes:
+            return False
+        headers: CaseInsensitiveDict[str] = response.headers
+        return (headers.get("x-ratelimit-remaining") == "0"
+                or "retry-after" in headers
+                or "rate limit" in response.text.lower())
+
+    def wait_after_limited(self, response: Response) -> None:
+        with self.__lock:
+            sleep_time: int = max(1, self.__limited_wait_seconds(response))
+            log.info(f"Rate limited (status {response.status_code}) at {response.url}. "
+                     f"Waiting for {sleep_time} seconds")
+            time.sleep(sleep_time)
+            log.info("Done waiting after rate limit")
+
+    def __limited_wait_seconds(self, response: Response) -> int:
+        retry_after: Optional[str] = response.headers.get("retry-after")
+        if retry_after:
+            return int(retry_after)
+        retry_limit_reset: Optional[str] = response.headers.get("x-ratelimit-reset")
+        if retry_limit_reset:
+            return int(retry_limit_reset) - int(round(time.time()))
+        return self.__default_limited_wait_seconds
 
     def __update_rate_limit(self, response: Response) -> None:
         self.__status_code = response.status_code

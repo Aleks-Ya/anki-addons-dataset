@@ -119,6 +119,97 @@ def test_post_graphql_keeps_its_rate_limit_apart_from_rest(tmp_path: Path):
     sleep.assert_not_called()
 
 
+def __exhausted_response() -> Response:
+    response: Response = __response(200, "0")
+    response.headers["x-ratelimit-reset"] = "4102444800"
+    return response
+
+
+def test_actions_response_does_not_hide_exhausted_rest_limit(tmp_path: Path):
+    client: GithubRestClient = __make_client(tmp_path)
+    with patch("anki_addons_dataset.collector.github.github_rest_client.requests.request") as mock_request, \
+            patch("anki_addons_dataset.collector.github.github_rate_limit.time.sleep") as sleep:
+        mock_request.return_value = __exhausted_response()
+        client.get_from_url("https://api.github.com/repos/a/b/languages")
+        mock_request.return_value = __response(200, "4609")
+        client.get_from_url("https://api.github.com/repos/a/b/actions/workflows")
+        sleep.assert_not_called()
+        client.get_from_url("https://api.github.com/repos/a/b/readme")
+    sleep.assert_called_once()
+
+
+def test_exhausted_actions_limit_does_not_block_rest(tmp_path: Path):
+    client: GithubRestClient = __make_client(tmp_path)
+    with patch("anki_addons_dataset.collector.github.github_rest_client.requests.request") as mock_request, \
+            patch("anki_addons_dataset.collector.github.github_rate_limit.time.sleep") as sleep:
+        mock_request.return_value = __exhausted_response()
+        client.get_from_url("https://api.github.com/repos/a/b/actions/workflows")
+        mock_request.return_value = __response(200, "4999")
+        client.get_from_url("https://api.github.com/repos/a/b/readme")
+    sleep.assert_not_called()
+
+
+def test_repo_named_actions_uses_rest_rate_limit(tmp_path: Path):
+    client: GithubRestClient = __make_client(tmp_path)
+    with patch("anki_addons_dataset.collector.github.github_rest_client.requests.request") as mock_request, \
+            patch("anki_addons_dataset.collector.github.github_rate_limit.time.sleep") as sleep:
+        mock_request.return_value = __exhausted_response()
+        client.get_from_url("https://api.github.com/repos/a/actions/languages")
+        mock_request.return_value = __response(200, "4999")
+        client.get_from_url("https://api.github.com/repos/a/b/readme")
+    sleep.assert_called_once()
+
+
+def test_retries_after_rate_limited_response(tmp_path: Path):
+    client: GithubRestClient = __make_client(tmp_path)
+    limited: Response = __response(403, "0")
+    limited.headers["retry-after"] = "30"
+    with patch("anki_addons_dataset.collector.github.github_rest_client.requests.request",
+               side_effect=[limited, __response(200, "4999")]) as mock_request, \
+            patch("anki_addons_dataset.collector.github.github_rate_limit.time.sleep") as sleep:
+        response: Response = client.get_from_url("https://api.github.com/repos/a/b")
+    assert response.status_code == 200
+    assert mock_request.call_count == 2
+    sleep.assert_called_once_with(30)
+
+
+def test_returns_rate_limited_response_when_retries_run_out(tmp_path: Path):
+    client: GithubRestClient = __make_client(tmp_path)
+    limited: Response = __response(403)
+    limited.headers["retry-after"] = "30"
+    with patch("anki_addons_dataset.collector.github.github_rest_client.requests.request",
+               return_value=limited) as mock_request, \
+            patch("anki_addons_dataset.collector.github.github_rate_limit.time.sleep") as sleep:
+        response: Response = client.get_from_url("https://api.github.com/repos/a/b")
+    assert response.status_code == 403
+    assert mock_request.call_count == 4
+    assert sleep.call_count == 3
+
+
+def test_does_not_retry_forbidden_response(tmp_path: Path):
+    client: GithubRestClient = __make_client(tmp_path)
+    with patch("anki_addons_dataset.collector.github.github_rest_client.requests.request",
+               return_value=__response(403, "4999")) as mock_request, \
+            patch("anki_addons_dataset.collector.github.github_rate_limit.time.sleep") as sleep:
+        response: Response = client.get_from_url("https://api.github.com/repos/a/b")
+    assert response.status_code == 403
+    assert mock_request.call_count == 1
+    sleep.assert_not_called()
+
+
+def test_post_graphql_retries_after_rate_limited_response(tmp_path: Path):
+    client: GithubRestClient = __make_client(tmp_path)
+    limited: Response = __response(429)
+    limited.headers["retry-after"] = "5"
+    with patch("anki_addons_dataset.collector.github.github_rest_client.requests.request",
+               side_effect=[limited, __response(200)]) as mock_request, \
+            patch("anki_addons_dataset.collector.github.github_rate_limit.time.sleep") as sleep:
+        response: Response = client.post_graphql("query", {})
+    assert response.status_code == 200
+    assert mock_request.call_args.kwargs["json"] == {"query": "query", "variables": {}}
+    sleep.assert_called_once_with(5)
+
+
 def test_post_graphql_raises_when_offline(tmp_path: Path):
     token_file: Path = __token_file(tmp_path)
     token_file.write_text("secret-token\n")
