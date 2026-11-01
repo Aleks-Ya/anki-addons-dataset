@@ -2,6 +2,7 @@ import dataclasses
 import hashlib
 import io
 import json
+import logging
 from datetime import date
 from pathlib import Path
 from typing import Optional
@@ -78,6 +79,15 @@ def test_downloads_missing_package(working_dir: WorkingDir, addon_info: AddonInf
 
     client.locate.assert_called_once_with(__ADDON_ID, 45)
     assert [file.name for file in __files(snapshot_dir)] == [__exp_name(__zip_bytes())]
+
+
+def test_logs_downloaded_package(working_dir: WorkingDir, addon_info: AddonInfo, caplog: pytest.LogCaptureFixture):
+    snapshot_dir: SnapshotDir = __snapshot(working_dir, "2026-02-01")
+
+    with caplog.at_level(logging.INFO):
+        __collect(working_dir, snapshot_dir, __client(), __addon_infos(addon_info, [__branch()]))
+
+    assert f"Downloaded package of addon {__ADDON_ID}: {__exp_name(__zip_bytes())}" in caplog.messages
 
 
 def test_writes_package_list(working_dir: WorkingDir, addon_info: AddonInfo):
@@ -208,15 +218,17 @@ def test_location_404_does_not_stop_the_run(working_dir: WorkingDir, addon_info:
     assert json.loads(snapshot_dir.get_package_list_file().read_text()) == []
 
 
-def test_body_404_leaves_no_file(working_dir: WorkingDir, addon_info: AddonInfo):
+def test_body_404_leaves_no_file(working_dir: WorkingDir, addon_info: AddonInfo, caplog: pytest.LogCaptureFixture):
     snapshot_dir: SnapshotDir = __snapshot(working_dir, "2026-02-01")
     client: Mock = __client()
     client.download.side_effect = None
     client.download.return_value = False
 
-    __collect(working_dir, snapshot_dir, client, __addon_infos(addon_info, [__branch()]))
+    with caplog.at_level(logging.INFO):
+        __collect(working_dir, snapshot_dir, client, __addon_infos(addon_info, [__branch()]))
 
     assert __files(snapshot_dir) == []
+    assert not any(message.startswith("Downloaded package") for message in caplog.messages)
 
 
 def test_invalid_zip_is_removed(working_dir: WorkingDir, addon_info: AddonInfo):

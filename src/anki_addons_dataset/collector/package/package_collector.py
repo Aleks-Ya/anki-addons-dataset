@@ -120,6 +120,7 @@ class PackageCollector:
             part_file.unlink(missing_ok=True)
         with self.__counts_lock:
             self.__downloaded_count += 1
+        log.info(f"Downloaded package of addon {key.addon_id}: {file_name}")
 
     @staticmethod
     def __content_hash(file: Path) -> str:
