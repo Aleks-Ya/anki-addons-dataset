@@ -158,7 +158,7 @@ def collector_facade(working_dir: WorkingDir, app_config: AppConfig, page_load_t
 
 @pytest.fixture
 def github_rest_client() -> GithubRestClient:
-    return Mock()
+    return Mock(**{"is_graphql_limited.return_value": False})
 
 
 @pytest.fixture

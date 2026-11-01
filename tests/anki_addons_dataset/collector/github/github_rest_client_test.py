@@ -278,6 +278,16 @@ def test_get_from_url_does_not_retry_ok_response_mentioning_rate_limit(tmp_path:
     sleep.assert_not_called()
 
 
+def test_is_graphql_limited_on_limited_ok_response(tmp_path: Path):
+    client: GithubRestClient = __make_client(tmp_path)
+    assert client.is_graphql_limited(__graphql_response(__graphql_limited_content))
+
+
+def test_is_graphql_limited_on_not_found_error(tmp_path: Path):
+    client: GithubRestClient = __make_client(tmp_path)
+    assert not client.is_graphql_limited(__graphql_response(b'{"errors": [{"type": "NOT_FOUND"}]}'))
+
+
 def test_post_graphql_raises_when_offline(tmp_path: Path):
     token_file: Path = __token_file(tmp_path)
     token_file.write_text("secret-token\n")

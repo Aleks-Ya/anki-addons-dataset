@@ -119,6 +119,18 @@ def test_get_issue_history_gives_up_without_file(github_service: GithubService,
     assert not __issue_history_file(snapshot_dir).exists()
 
 
+def test_get_issue_history_stops_on_rate_limited_answer(github_service: GithubService,
+                                                        github_rest_client: GithubRestClient,
+                                                        snapshot_dir: SnapshotDir, github_repo: GithubRepo):
+    github_rest_client.post_graphql = __mock_content("""{"errors":[{"type":"RATE_LIMITED"}]}""")
+    github_rest_client.is_graphql_limited = Mock(return_value=True)
+    with patch("anki_addons_dataset.collector.github.github_service.time.sleep") as sleep:
+        assert github_service.get_issue_history(github_repo) is None
+    github_rest_client.post_graphql.assert_called_once()
+    sleep.assert_not_called()
+    assert not __issue_history_file(snapshot_dir).exists()
+
+
 def test_get_issue_history_skips_repo_marked_as_not_found(github_service: GithubService,
                                                           github_rest_client: GithubRestClient,
                                                           snapshot_dir: SnapshotDir, github_repo: GithubRepo):

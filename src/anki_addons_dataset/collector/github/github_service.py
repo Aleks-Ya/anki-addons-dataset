@@ -215,7 +215,7 @@ class GithubService:
     def __post_issue_history(self, handler: IssueHistoryRepoHandler) -> Response:
         response: Response = self.__github_rest_client.post_graphql(handler.query, handler.get_variables())
         for delay in self.__computing_retry_delays:
-            if handler.is_complete(response):
+            if handler.is_complete(response) or self.__github_rest_client.is_graphql_limited(response):
                 break
             log.info(f"Incomplete issue history for {handler.get_repo_id()}, retrying in {delay}s")
             time.sleep(delay)

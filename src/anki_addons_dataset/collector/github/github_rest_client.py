@@ -72,6 +72,9 @@ class GithubRestClient:
         return self.__send(self.__graphql_rate_limit, "POST", self.graphql_url, headers=self.__headers,
                            json={"query": query, "variables": variables})
 
+    def is_graphql_limited(self, response: Response) -> bool:
+        return self.__graphql_rate_limit.is_limited(response)
+
     def __send(self, rate_limit: GithubRateLimit, method: str, url: str, **kwargs: Any) -> Response:
         rate_limit.wait_for_reset()
         response: Response = requests.request(method, url, **kwargs)
