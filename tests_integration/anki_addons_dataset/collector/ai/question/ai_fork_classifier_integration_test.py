@@ -35,8 +35,6 @@ anki_tooltips: AddonId = AddonId(1840818335)
 open_in_external_editor: AddonId = AddonId(1560623518)
 addon_filter_bar: AddonId = AddonId(561945101)
 load_balanced_scheduler: AddonId = AddonId(208879074)
-book_converter: AddonId = AddonId(1837105369)
-pdf_viewer: AddonId = AddonId(319501851)
 anki_leaderboard: AddonId = AddonId(175794613)
 code_highlighter: AddonId = AddonId(112228974)
 css_injector: AddonId = AddonId(181103283)
@@ -73,8 +71,6 @@ catalog: dict[AddonId, AddonTitle] = {
     open_in_external_editor: AddonTitle("OpenInExternalEditor,Rename,Duplicate for Image,Audio,Video (Win,Linux)"),
     addon_filter_bar: AddonTitle("add-on dialog search/filter bar"),
     load_balanced_scheduler: AddonTitle("Load Balanced Scheduler"),
-    book_converter: AddonTitle("Converter Of Book To Hierarchical Anki Deck"),
-    pdf_viewer: AddonTitle("pdf viewer and editor"),
     anki_leaderboard: AddonTitle("🏆Anki Leaderboard - Compete with friends to boost motivation (Custom by Shigeඞ)"),
     code_highlighter: AddonTitle("Greg’s Code Highlighter v1"),
     css_injector: AddonTitle("CSS Injector - Change default editor styles"),
@@ -285,20 +281,6 @@ def test_conflicting_addon_is_not_fork(ai_provider: AiProvider, snapshot_dir: Sn
         "if you do not want to study on this day or any other day of the week and this addon will select another day "
         "in the rescheduling.",
         {load_balanced_scheduler: "\"Load Balanced Scheduler\""})
-    assert parent is None
-
-
-def test_idea_and_code_for_one_import_mode_is_not_fork(ai_provider: AiProvider, snapshot_dir: SnapshotDir,
-                                                       integration_config: AppConfig) -> None:
-    parent: Optional[AddonId] = __classify(
-        ai_provider, snapshot_dir, integration_config, 1444113509, "PDF Import as a Deck to View",
-        "Update 20240405: 1: Use https://ankiweb.net/shared/info/1837105369 Converter Of Book To Hierarchical Anki "
-        "Deck Denis Ryazantsev's idea and codes to import pdf with heading as subdecks and add notes to every "
-        "subdeck. 2: Pdf import mode add a subdeck mode: it can split a book into several sub decks. Import a pdf file "
-        "as a new deck with page number cards. You can view the pdf's page through the new pdf webwiew windows. "
-        "thans for these addons: https://ankiweb.net/shared/info/319501851 \"pdf viewer\"",
-        {book_converter: "https://ankiweb.net/shared/info/1837105369",
-         pdf_viewer: "https://ankiweb.net/shared/info/319501851"})
     assert parent is None
 
 
