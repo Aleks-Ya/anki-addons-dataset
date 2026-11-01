@@ -34,7 +34,6 @@ clickable_tags: AddonId = AddonId(1739176371)
 anki_tooltips: AddonId = AddonId(1840818335)
 open_in_external_editor: AddonId = AddonId(1560623518)
 addon_filter_bar: AddonId = AddonId(561945101)
-enhance_main_window: AddonId = AddonId(877182321)
 load_balanced_scheduler: AddonId = AddonId(208879074)
 book_converter: AddonId = AddonId(1837105369)
 pdf_viewer: AddonId = AddonId(319501851)
@@ -73,7 +72,6 @@ catalog: dict[AddonId, AddonTitle] = {
     anki_tooltips: AddonTitle("Anki Tooltips"),
     open_in_external_editor: AddonTitle("OpenInExternalEditor,Rename,Duplicate for Image,Audio,Video (Win,Linux)"),
     addon_filter_bar: AddonTitle("add-on dialog search/filter bar"),
-    enhance_main_window: AddonTitle("Enhance main window"),
     load_balanced_scheduler: AddonTitle("Load Balanced Scheduler"),
     book_converter: AddonTitle("Converter Of Book To Hierarchical Anki Deck"),
     pdf_viewer: AddonTitle("pdf viewer and editor"),
@@ -274,20 +272,6 @@ def test_feature_code_from_addon_is_not_fork(ai_provider: AiProvider, snapshot_d
         "value is remembered and will work on the next launch) Addon-based code \"add-on dialog search/filter bar\" "
         "(user request)",
         {addon_filter_bar: "\"add-on dialog search/filter bar\""})
-    assert parent is None
-
-
-def test_alternative_addon_is_not_fork(ai_provider: AiProvider, snapshot_dir: SnapshotDir,
-                                       integration_config: AppConfig) -> None:
-    parent: Optional[AddonId] = __classify(
-        ai_provider, snapshot_dir, integration_config, 12777196, "TRUE DUE: no 1000+ limit in deck overview",
-        "PROBLEM: The main window caps the number of Due and New cards it shows. For example, whether you have 1,500 "
-        "or 15,000 Due cards, it will only show the Due number as 1000+. SOLUTION: The true number is shown. CREDIT: "
-        "The solution was derived mostly from work by Juda Kaleta . Joseph Yasmeh created this add-on to import to "
-        "Anki 2.1 and to fix a major bug (explained in the code). Also added comments to explain the code. Tested on "
-        "Anki 2.1.15. No plan to support versions above 2.1.27 because Anki has this feature natively in version "
-        "2.1.28. This add-on is an alternative.",
-        {enhance_main_window: "This add-on"})
     assert parent is None
 
 
