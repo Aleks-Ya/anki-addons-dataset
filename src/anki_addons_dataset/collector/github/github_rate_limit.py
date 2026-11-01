@@ -2,7 +2,7 @@ import datetime
 import time
 from datetime import datetime
 from threading import Lock
-from typing import Optional
+from typing import Any, Optional
 import logging
 from logging import Logger
 
@@ -88,3 +88,24 @@ class GithubRateLimit:
         log.info(f"Waiting for reset: {sleep_time} seconds")
         time.sleep(sleep_time)
         log.info("Done waiting for reset")
+
+
+class GithubGraphqlRateLimit(GithubRateLimit):
+
+    def is_limited(self, response: Response) -> bool:
+        return super().is_limited(response) or (response.status_code == 200 and self.__has_limit_error(response))
+
+    def __has_limit_error(self, response: Response) -> bool:
+        try:
+            body: Any = response.json()
+        except ValueError:
+            return False
+        if not isinstance(body, dict):
+            return False
+        return any(self.__is_limit_error(error) for error in body.get("errors") or [])
+
+    @staticmethod
+    def __is_limit_error(error: Any) -> bool:
+        if not isinstance(error, dict):
+            return False
+        return error.get("type") == "RATE_LIMITED" or "rate limit" in str(error.get("message", "")).lower()

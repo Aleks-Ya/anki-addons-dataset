@@ -7,7 +7,7 @@ from logging import Logger
 from requests import Response
 import requests
 
-from anki_addons_dataset.collector.github.github_rate_limit import GithubRateLimit
+from anki_addons_dataset.collector.github.github_rate_limit import GithubGraphqlRateLimit, GithubRateLimit
 
 log: Logger = logging.getLogger(__name__)
 
@@ -25,7 +25,7 @@ class GithubRestClient:
         }
         self.__offline: bool = offline
         self.__rate_limit: GithubRateLimit = GithubRateLimit()
-        self.__graphql_rate_limit: GithubRateLimit = GithubRateLimit()
+        self.__graphql_rate_limit: GithubRateLimit = GithubGraphqlRateLimit()
         self.__actions_rate_limit: GithubRateLimit = GithubRateLimit()
 
     def get_token_file(self) -> Path:
