@@ -96,6 +96,24 @@ def test_limited_wait_without_headers_sleeps_a_minute():
     __wait_after_limited(response).assert_called_once_with(60)
 
 
+def test_limited_wait_with_quota_left_ignores_far_reset():
+    response: Response = __limited(403, {"x-ratelimit-remaining": "4000", "x-ratelimit-reset": str(RESET_TIMESTAMP)},
+                                   b'{"message": "You have exceeded a secondary rate limit"}')
+    __wait_after_limited(response).assert_called_once_with(60)
+
+
+def test_limited_wait_with_quota_left_ignores_near_reset():
+    response: Response = __limited(403, {"x-ratelimit-remaining": "4000", "x-ratelimit-reset": str(NOW + 2)},
+                                   b'{"message": "You have exceeded a secondary rate limit"}')
+    __wait_after_limited(response).assert_called_once_with(60)
+
+
+def test_limited_wait_without_remaining_ignores_reset():
+    response: Response = __limited(403, {"x-ratelimit-reset": str(RESET_TIMESTAMP)},
+                                   b'{"message": "You have exceeded a secondary rate limit"}')
+    __wait_after_limited(response).assert_called_once_with(60)
+
+
 def test_rest_ok_response_mentioning_rate_limit_is_not_limited():
     assert not GithubRateLimit().is_limited(__limited(200, {}, b'{"errors": [{"type": "RATE_LIMITED"}]}'))
 

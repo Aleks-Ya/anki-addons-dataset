@@ -56,7 +56,7 @@ class GithubRateLimit:
         if retry_after:
             return int(retry_after)
         retry_limit_reset: Optional[str] = response.headers.get("x-ratelimit-reset")
-        if retry_limit_reset:
+        if retry_limit_reset and response.headers.get("x-ratelimit-remaining") == "0":
             return int(retry_limit_reset) - int(round(time.time()))
         return self.__default_limited_wait_seconds
 
