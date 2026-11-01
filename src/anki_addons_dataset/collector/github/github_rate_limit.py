@@ -13,7 +13,6 @@ log: Logger = logging.getLogger(__name__)
 
 
 class GithubRateLimit:
-    __limited_status_codes: tuple[int, ...] = (403, 429)
     __default_limited_wait_seconds: int = 60
 
     def __init__(self):
@@ -36,7 +35,9 @@ class GithubRateLimit:
             return self.__retry_limit_remaining
 
     def is_limited(self, response: Response) -> bool:
-        if response.status_code not in self.__limited_status_codes:
+        if response.status_code == 429:
+            return True
+        if response.status_code != 403:
             return False
         headers: CaseInsensitiveDict[str] = response.headers
         return (headers.get("x-ratelimit-remaining") == "0"

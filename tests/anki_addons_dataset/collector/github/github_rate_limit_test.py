@@ -63,6 +63,15 @@ def test_too_many_requests_is_limited():
     assert GithubRateLimit().is_limited(__limited(429, {"retry-after": "60"}))
 
 
+def test_too_many_requests_without_markers_is_limited():
+    assert GithubRateLimit().is_limited(__limited(429, {"x-ratelimit-remaining": "4000"}, b'{"message": "Too many"}'))
+
+
+def test_too_many_requests_without_markers_waits_a_minute():
+    response: Response = __limited(429, {"x-ratelimit-remaining": "4000"}, b'{"message": "Too many"}')
+    __wait_after_limited(response).assert_called_once_with(60)
+
+
 def test_rate_limit_message_is_limited():
     assert GithubRateLimit().is_limited(
         __limited(403, {"x-ratelimit-remaining": "99"}, b'{"message": "You have exceeded a secondary rate limit"}'))
