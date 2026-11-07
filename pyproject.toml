@@ -22,7 +22,7 @@ classifiers = [
 ]
 dependencies = [
     "requests",
-    "bs4",
+    "beautifulsoup4",
     "mdutils",
     "pyyaml",
     "XlsxWriter",
