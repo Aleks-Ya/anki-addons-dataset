@@ -74,6 +74,7 @@ class JsonHelper:
             python_file_count=data["python_file_count"],
             python_lines=data["python_lines"],
             files=data["files"],
+            language_bytes=data.get("language_bytes", {}),
         )
 
     @staticmethod

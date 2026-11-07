@@ -116,11 +116,12 @@ class CollectorFacade:
         return stats
 
     def parse_snapshots(self, snapshot_date: Optional[SnapshotDate]) -> None:
+        package_analyzer: PackageAnalyzer = PackageAnalyzer()
         for snapshot_dir in self.__selected_snapshot_dirs(snapshot_date):
             snapshot_date: SnapshotDate = snapshot_dir.snapshot_dir_to_snapshot_date()
-            self.__parse_snapshot(snapshot_date)
+            self.__parse_snapshot(snapshot_date, package_analyzer)
 
-    def __parse_snapshot(self, snapshot_date: SnapshotDate) -> None:
+    def __parse_snapshot(self, snapshot_date: SnapshotDate, package_analyzer: PackageAnalyzer) -> None:
         log.info(f"===== Parse snapshot for {snapshot_date} =====")
         snapshot_dir: SnapshotDir = self.__working_dir.get_snapshot_dir(snapshot_date).create()
         script_version: ScriptVersion = self.__script_version()
@@ -129,7 +130,7 @@ class CollectorFacade:
         addon_infos: AddonInfos = self.__collect(snapshot_dir, True, ai_provider=ai_provider)
         addon_infos = self.__ai_enrich(addon_infos, ai_provider, fork_verifier)
         addon_infos = ForkResolver(Overrider(snapshot_dir)).resolve(addon_infos)
-        addon_infos = PackageEnricher(snapshot_dir, PackageAnalyzer()).enrich(addon_infos)
+        addon_infos = PackageEnricher(snapshot_dir, package_analyzer).enrich(addon_infos)
         cache_miss_count: int = self.__cache_stats(ai_provider, fork_verifier).miss_count
         if cache_miss_count:
             log.warning(f"{cache_miss_count} AI answers (repo choices, forum topic checks, summaries, tags or "

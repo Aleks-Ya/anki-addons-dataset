@@ -310,7 +310,7 @@ def test_addon_infos_dump_round_trip_with_package(addon_info: AddonInfo, script_
                                                   working_dir_path: Path):
     addon_info.package = AddonPackages([AddonPackage(
         "45-2026-01-15-0123456789ab.ankiaddon", AnkiPointVersion(45), date(2026, 1, 15), 100, '{"name": "A"}', None,
-        2, 300, 1, 10, ["__init__.py", "manifest.json"])])
+        2, 300, 1, 10, ["__init__.py", "manifest.json"], {LanguageName("python"): 280, LanguageName("json"): 20})])
     addon_infos: AddonInfos = AddonInfos([addon_info])
     dump_file: Path = working_dir_path / "addon-infos.json"
 

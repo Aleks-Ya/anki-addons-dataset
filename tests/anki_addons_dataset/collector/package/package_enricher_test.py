@@ -9,7 +9,7 @@ import pytest
 from anki_addons_dataset.collector.package.package_analyzer import PackageAnalyzer
 from anki_addons_dataset.collector.package.package_enricher import PackageEnricher
 from anki_addons_dataset.common.data_types import AddonId, AddonInfo, AddonInfos, AddonPackage, AddonPackages, \
-    AnkiPointVersion
+    AnkiPointVersion, LanguageName
 from anki_addons_dataset.common.working_dir import SnapshotDir
 
 __ADDON_ID: AddonId = AddonId(100)
@@ -37,7 +37,15 @@ def test_enrich_builds_a_package_from_the_file(snapshot_dir: SnapshotDir, addon_
 
     assert packages == AddonPackages([AddonPackage(
         "45-2026-01-15-0123456789ab.ankiaddon", AnkiPointVersion(45), date(2026, 1, 15), package_file.stat().st_size,
-        None, None, 1, 6, 1, 1, ["__init__.py"])])
+        None, None, 1, 6, 1, 1, ["__init__.py"], {})])
+
+
+def test_enrich_passes_the_detected_languages(snapshot_dir: SnapshotDir, addon_info: AddonInfo):
+    __add_package(snapshot_dir, "45-2026-01-15-0123456789ab.ankiaddon", b"import aqt\nprint(1)")
+
+    packages: Optional[AddonPackages] = __enrich(snapshot_dir, addon_info)
+
+    assert packages.branches[0].language_bytes == {LanguageName("python"): 19}
 
 
 def test_enrich_sorts_branches_by_point_version(snapshot_dir: SnapshotDir, addon_info: AddonInfo):

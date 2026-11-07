@@ -327,6 +327,7 @@ class AddonPackage:
     python_file_count: int
     python_lines: int
     files: list[str]
+    language_bytes: dict[LanguageName, int]
 
 
 @dataclass(frozen=True)
@@ -348,6 +349,7 @@ class PackageRow:
     python_file_count: int
     python_lines: int
     files: list[str]
+    language_bytes: dict[LanguageName, int]
 
 
 @dataclass(frozen=True)

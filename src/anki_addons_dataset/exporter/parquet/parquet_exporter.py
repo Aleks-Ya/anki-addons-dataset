@@ -1,5 +1,6 @@
 import dataclasses
 from pathlib import Path
+from typing import Any
 import logging
 from logging import Logger
 
@@ -54,7 +55,15 @@ class ParquetExporter(Exporter):
             ("updated", pyarrow.date32()), ("size_bytes", pyarrow.int64()), ("manifest_json", pyarrow.string()),
             ("config_json", pyarrow.string()), ("file_count", pyarrow.int64()),
             ("uncompressed_bytes", pyarrow.int64()), ("python_file_count", pyarrow.int64()),
-            ("python_lines", pyarrow.int64()), ("files", pyarrow.list_(pyarrow.string()))])
-        DataFrame([dataclasses.asdict(package) for package in packages], columns=schema.names) \
+            ("python_lines", pyarrow.int64()), ("files", pyarrow.list_(pyarrow.string())),
+            ("language_bytes",
+             pyarrow.list_(pyarrow.struct([("name", pyarrow.string()), ("bytes", pyarrow.int64())])))])
+        DataFrame([self.__package_record(package) for package in packages], columns=schema.names) \
             .to_parquet(output_file, compression="zstd", schema=schema)
         log.info(f"Write Parquet to file: {output_file}")
+
+    @staticmethod
+    def __package_record(package: PackageRow) -> dict[str, Any]:
+        record: dict[str, Any] = dataclasses.asdict(package)
+        record["language_bytes"] = [{"name": name, "bytes": count} for name, count in package.language_bytes.items()]
+        return record

@@ -13,8 +13,16 @@ gets a warning and no row. The AI step does not call it. An addon or snapshot wi
   189 sampled packages contain them.
 - `manifest.json` and `config.json` come only from the zip root, as raw text. `manifest.json` is absent from about
   half of the packages, and it often has fields `ManifestParser` drops (`version`, `author`).
-- A manifest or config over 64 kB gives `null`. A `.py` file over 5 MB counts as a file with no lines. Both limits use
-  the size declared in the zip.
+- A manifest or config over 64 kB gives `null`. A file over 5 MB is not read: a `.py` file counts as a file with no
+  lines, and no file gets a language. Both limits use the size declared in the zip.
+- `language_bytes` sums the uncompressed size of the files of each language. The language is the label
+  [Magika](https://github.com/google/magika) gives the file content, ignoring the extension, counted only when its
+  group is `code` (so `json`, `html` and `css` count, `markdown`, `txt` and images do not). Magika needs at least 8
+  bytes; shorter files get `txt`, so they are not counted.
+
+Magika takes a few milliseconds per file, and a snapshot holds about 500k files, so `PackageEnricher` analyzes
+packages on one thread per CPU. One `PackageAnalyzer` serves the whole PARSE run and remembers each package by file
+name (which holds its hash), so a package hardlinked into several snapshots is analyzed once.
 
 ## How AnkiWeb serves a package
 This is the request Anki itself makes:

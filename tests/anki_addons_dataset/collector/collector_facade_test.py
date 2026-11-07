@@ -1,7 +1,7 @@
 import logging
 from datetime import date
 from pathlib import Path
-from unittest.mock import patch
+from unittest.mock import ANY, patch
 
 import pandas
 import pandas.testing as pdt
@@ -11,7 +11,7 @@ from pandas import DataFrame
 from anki_addons_dataset.collector.ai.cache.ai_cache_stats import AiCacheStats
 from anki_addons_dataset.collector.collector_facade import CollectorFacade
 from anki_addons_dataset.common.data_types import AddonInfos, ElementWaitTimeout, PageLoadTimeout, ReportDate, \
-    ScriptVersion, SnapshotDate, AddonPackage, AddonPackages, AddonReview, AnkiPointVersion, ReviewVote
+    ScriptVersion, SnapshotDate, AddonPackage, AddonPackages, AddonReview, AnkiPointVersion, LanguageName, ReviewVote
 from anki_addons_dataset.common.json_helper import JsonHelper
 from anki_addons_dataset.common.working_dir import SnapshotDir, WorkingDir
 from anki_addons_dataset.config.app_config import AppConfig
@@ -44,7 +44,7 @@ def test_report_snapshots_exports_packages(
         script_version: ScriptVersion, report_date: ReportDate):
     addon_infos[0].package = AddonPackages([AddonPackage(
         "45-2026-01-15-0123456789ab.ankiaddon", AnkiPointVersion(45), date(2026, 1, 15), 10, None, None,
-        1, 6, 1, 1, ["__init__.py"])])
+        1, 6, 1, 1, ["__init__.py"], {LanguageName("python"): 6})])
     JsonHelper.write_addon_infos_dump(addon_infos, script_version, snapshot_dir.get_addon_infos_dump())
 
     collector_facade.report_snapshots(None, report_date)
@@ -52,8 +52,10 @@ def test_report_snapshots_exports_packages(
     packages_df: DataFrame = pandas.read_parquet(snapshot_dir.get_final_dir() / "parquet" / "packages.parquet")
     assert list(packages_df["addon_id"]) == [addon_infos[0].header.id]
     assert list(packages_df["file_name"]) == ["45-2026-01-15-0123456789ab.ankiaddon"]
+    assert list(packages_df["language_bytes"][0]) == [{"name": "python", "bytes": 6}]
     data_df: DataFrame = pandas.read_parquet(snapshot_dir.get_final_dir() / "parquet" / "data.parquet")
     assert data_df.iloc[0]["package"]["file_name"] == "45-2026-01-15-0123456789ab.ankiaddon"
+    assert data_df.iloc[0]["package"]["primary_language"] == "python"
 
 
 def test_report_snapshots_generates_final_from_dump_without_raw(
@@ -204,7 +206,7 @@ def test_parse_snapshots_with_a_date_parses_only_that_snapshot(
     with patch(__PARSE_SNAPSHOT) as parse_snapshot:
         collector_facade.parse_snapshots(SnapshotDate(date.fromisoformat("2025-01-01")))
 
-    parse_snapshot.assert_called_once_with(SnapshotDate(date.fromisoformat("2025-01-01")))
+    parse_snapshot.assert_called_once_with(SnapshotDate(date.fromisoformat("2025-01-01")), ANY)
 
 
 def test_parse_snapshots_with_a_date_wins_over_the_snapshot_sample(
@@ -219,7 +221,7 @@ def test_parse_snapshots_with_a_date_wins_over_the_snapshot_sample(
     with patch(__PARSE_SNAPSHOT) as parse_snapshot:
         collector_facade.parse_snapshots(SnapshotDate(date.fromisoformat("2025-01-01")))
 
-    parse_snapshot.assert_called_once_with(SnapshotDate(date.fromisoformat("2025-01-01")))
+    parse_snapshot.assert_called_once_with(SnapshotDate(date.fromisoformat("2025-01-01")), ANY)
 
 
 def test_parse_snapshots_with_an_unknown_date_raises(collector_facade: CollectorFacade):

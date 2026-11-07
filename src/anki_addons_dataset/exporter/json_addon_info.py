@@ -188,6 +188,8 @@ class Package:
     uncompressed_bytes: int
     python_file_count: int
     python_lines: int
+    primary_language: Optional[str]
+    language_bytes: list[LanguageBytes]
 
 
 @dataclass
@@ -242,8 +244,11 @@ class JsonAddonInfo:
         if addon.package is None:
             return None
         newest: AddonPackage = max(addon.package.branches, key=lambda branch: branch.min_point_version)
+        language_bytes: list[LanguageBytes] = [LanguageBytes(name, count)
+                                               for name, count in newest.language_bytes.items()]
         return Package(newest.file_name, newest.updated.isoformat(), newest.size_bytes, newest.file_count,
-                       newest.uncompressed_bytes, newest.python_file_count, newest.python_lines)
+                       newest.uncompressed_bytes, newest.python_file_count, newest.python_lines,
+                       language_bytes[0].name if language_bytes else None, language_bytes)
 
     @staticmethod
     def __anki_web_links(addon: AddonInfo) -> list[AnkiWebLink]:

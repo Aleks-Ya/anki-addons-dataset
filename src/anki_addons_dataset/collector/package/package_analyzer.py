@@ -3,6 +3,11 @@ from pathlib import Path
 from typing import Optional
 from zipfile import ZipFile, ZipInfo
 
+from magika import Magika
+from magika.types import MagikaResult
+
+from anki_addons_dataset.common.data_types import LanguageName
+
 
 @dataclass(frozen=True)
 class PackageAnalysis:
@@ -13,25 +18,55 @@ class PackageAnalysis:
     python_file_count: int
     python_lines: int
     files: list[str]
+    language_bytes: dict[LanguageName, int]
 
 
 class PackageAnalyzer:
-    __max_python_bytes: int = 5_000_000
+    __max_read_bytes: int = 5_000_000
     __max_metadata_bytes: int = 64_000
 
+    def __init__(self) -> None:
+        self.__magika: Magika = Magika()
+        self.__analyses: dict[str, PackageAnalysis] = {}
+
     def analyze(self, package_file: Path) -> PackageAnalysis:
+        analysis: Optional[PackageAnalysis] = self.__analyses.get(package_file.name)
+        if analysis is None:
+            analysis = self.__analyze(package_file)
+            self.__analyses[package_file.name] = analysis
+        return analysis
+
+    def __analyze(self, package_file: Path) -> PackageAnalysis:
         with ZipFile(package_file) as archive:
             entries: dict[str, ZipInfo] = {entry.filename: entry for entry in archive.infolist()
                                            if not entry.is_dir() and not self.__is_macos_junk(entry.filename)}
-            python_entries: list[ZipInfo] = [entry for name, entry in entries.items() if name.endswith(".py")]
+            python_file_count: int = 0
+            python_lines: int = 0
+            language_bytes: dict[LanguageName, int] = {}
+            for name, entry in entries.items():
+                content: Optional[bytes] = archive.read(entry) \
+                    if 0 < entry.file_size <= PackageAnalyzer.__max_read_bytes else None
+                if name.endswith(".py"):
+                    python_file_count += 1
+                    python_lines += len(content.splitlines()) if content is not None else 0
+                language: Optional[LanguageName] = self.__detect_language(content) if content is not None else None
+                if language is not None:
+                    language_bytes[language] = language_bytes.get(language, 0) + entry.file_size
             return PackageAnalysis(
                 self.__read_metadata(archive, entries.get("manifest.json")),
                 self.__read_metadata(archive, entries.get("config.json")),
                 len(entries),
                 sum(entry.file_size for entry in entries.values()),
-                len(python_entries),
-                sum(self.__count_lines(archive, entry) for entry in python_entries),
-                sorted(entries))
+                python_file_count,
+                python_lines,
+                sorted(entries),
+                dict(sorted(language_bytes.items(), key=lambda item: (-item[1], item[0]))))
+
+    def __detect_language(self, content: bytes) -> Optional[LanguageName]:
+        result: MagikaResult = self.__magika.identify_bytes(content)
+        if not result.ok or result.output.group != "code":
+            return None
+        return LanguageName(str(result.output.label))
 
     @staticmethod
     def __is_macos_junk(name: str) -> bool:
@@ -42,9 +77,3 @@ class PackageAnalyzer:
         if entry is None or entry.file_size > PackageAnalyzer.__max_metadata_bytes:
             return None
         return archive.read(entry).decode("utf-8-sig", errors="replace")
-
-    @staticmethod
-    def __count_lines(archive: ZipFile, entry: ZipInfo) -> int:
-        if entry.file_size > PackageAnalyzer.__max_python_bytes:
-            return 0
-        return len(archive.read(entry).splitlines())

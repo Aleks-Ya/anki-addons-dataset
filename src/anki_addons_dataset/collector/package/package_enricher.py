@@ -1,5 +1,7 @@
 import copy
 import logging
+import os
+from concurrent.futures import ThreadPoolExecutor
 from logging import Logger
 from pathlib import Path
 from typing import Optional
@@ -14,26 +16,27 @@ log: Logger = logging.getLogger(__name__)
 
 
 class PackageEnricher:
+    __pool_size: int = os.cpu_count() or 1
+
     def __init__(self, snapshot_dir: SnapshotDir, package_analyzer: PackageAnalyzer) -> None:
         self.__package_dir: Path = snapshot_dir.get_package_dir()
         self.__package_analyzer: PackageAnalyzer = package_analyzer
 
     def enrich(self, addon_infos: AddonInfos) -> AddonInfos:
-        failed_count: int = 0
+        with ThreadPoolExecutor(max_workers=self.__pool_size, thread_name_prefix="package") as executor:
+            analyzed: list[list[Optional[AddonPackage]]] = list(executor.map(self.__analyze_addon, addon_infos))
+        failed_count: int = sum(1 for packages in analyzed for package in packages if package is None)
         enriched: list[AddonInfo] = []
-        for addon_info in addon_infos:
-            branches: list[AddonPackage] = []
-            for key, file in self.__newest_files(addon_info.header.id):
-                package: Optional[AddonPackage] = self.__analyze(key, file)
-                if package is None:
-                    failed_count += 1
-                else:
-                    branches.append(package)
+        for addon_info, packages in zip(addon_infos, analyzed):
+            branches: list[AddonPackage] = [package for package in packages if package is not None]
             enriched.append(copy.replace(addon_info, package=AddonPackages(branches) if branches else None))
         log.info(f"Addons with a package: {sum(1 for addon_info in enriched if addon_info.package is not None)}")
         if failed_count:
             log.warning(f"{failed_count} packages cannot be read")
         return AddonInfos(enriched)
+
+    def __analyze_addon(self, addon_info: AddonInfo) -> list[Optional[AddonPackage]]:
+        return [self.__analyze(key, file) for key, file in self.__newest_files(addon_info.header.id)]
 
     def __newest_files(self, addon_id: AddonId) -> list[tuple[PackageKey, Path]]:
         newest: dict[AnkiPointVersion, tuple[PackageKey, Path]] = {}
@@ -54,4 +57,5 @@ class PackageEnricher:
             return None
         return AddonPackage(file.name, key.min_point_version, key.updated, file.stat().st_size, analysis.manifest_json,
                             analysis.config_json, analysis.file_count, analysis.uncompressed_bytes,
-                            analysis.python_file_count, analysis.python_lines, analysis.files)
+                            analysis.python_file_count, analysis.python_lines, analysis.files,
+                            analysis.language_bytes)

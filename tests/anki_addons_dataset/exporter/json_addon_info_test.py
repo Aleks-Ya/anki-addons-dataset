@@ -426,12 +426,26 @@ def test_addon_infos_to_json_one_parent_with_several_forks(addon_info: AddonInfo
 def test_addon_infos_to_json_package_summarizes_the_newest_branch(addon_info: AddonInfo):
     addon_info.package = AddonPackages([
         AddonPackage("45-2024-01-15-aaaaaaaaaaaa.ankiaddon", AnkiPointVersion(45), date(2024, 1, 15), 10,
-                     None, None, 1, 20, 1, 3, ["__init__.py"]),
+                     None, None, 1, 20, 1, 3, ["__init__.py"], {LanguageName("python"): 20}),
         AddonPackage("231000-2023-05-15-bbbbbbbbbbbb.ankiaddon", AnkiPointVersion(231000), date(2023, 5, 15), 100,
-                     '{"name": "A"}', "{}", 3, 200, 2, 30, ["__init__.py", "config.json", "manifest.json"])])
+                     '{"name": "A"}', "{}", 3, 200, 2, 30, ["__init__.py", "config.json", "manifest.json"],
+                     {LanguageName("python"): 180, LanguageName("json"): 20})])
 
     act_json: list[dict[str, Any]] = to_dicts(AddonInfos([addon_info]))
 
     assert act_json[0]["package"] == {"file_name": "231000-2023-05-15-bbbbbbbbbbbb.ankiaddon", "updated": "2023-05-15",
                                       "size_bytes": 100, "file_count": 3, "uncompressed_bytes": 200,
-                                      "python_file_count": 2, "python_lines": 30}
+                                      "python_file_count": 2, "python_lines": 30, "primary_language": "python",
+                                      "language_bytes": [{"name": "python", "bytes": 180},
+                                                         {"name": "json", "bytes": 20}]}
+
+
+def test_addon_infos_to_json_package_without_languages(addon_info: AddonInfo):
+    addon_info.package = AddonPackages([
+        AddonPackage("45-2024-01-15-aaaaaaaaaaaa.ankiaddon", AnkiPointVersion(45), date(2024, 1, 15), 10,
+                     None, None, 1, 20, 0, 0, ["image.png"], {})])
+
+    act_json: list[dict[str, Any]] = to_dicts(AddonInfos([addon_info]))
+
+    assert act_json[0]["package"]["primary_language"] is None
+    assert act_json[0]["package"]["language_bytes"] == []

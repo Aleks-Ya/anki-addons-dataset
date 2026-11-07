@@ -114,9 +114,13 @@ per addon branch, sorted by `addon_id` and `min_point_version`: `file_name` (the
 `min_point_version`, `updated` (the branch's date on the addon page), `size_bytes`, `manifest_json` and `config_json`
 (the raw text of those files at the package root, `null` when absent or over 64 kB), `file_count`,
 `uncompressed_bytes`, `python_file_count`, `python_lines` (lines of `.py` files up to 5 MB, comments and blank lines
-included) and `files` (the paths). macOS metadata (`__MACOSX/`, `._*`) is left out of all of them. The counts cover
-everything in the package, including bundled libraries. The `package` field of the main table repeats the sizes
-for the branch with the highest `min_point_version`, or is `null` when the snapshot holds no package of the addon.
+included), `files` (the paths) and `language_bytes` (a list of `name`/`bytes` pairs, the uncompressed size of the
+files of each language, largest first). The languages are detected from file content, not extensions, by
+[Magika](https://github.com/google/magika): its labels in the `code` group (e.g. `python`, `javascript`, `html`, `css`,
+`json`), files up to 5 MB. macOS metadata (`__MACOSX/`, `._*`) is left out of all of them. The counts cover
+everything in the package, including bundled libraries. The `package` field of the main table repeats the sizes and
+languages for the branch with the highest `min_point_version`, adds its `primary_language` (the language with the most
+bytes, `null` when none is detected), or is `null` when the snapshot holds no package of the addon.
 Snapshots collected before packages were downloaded have an empty table.
 
 Questions, feedback, bugs: [Support page at Anki Forum](https://forums.ankiweb.net/t/anki-addons-dataset-a-detailed-list-of-addons/63090)
