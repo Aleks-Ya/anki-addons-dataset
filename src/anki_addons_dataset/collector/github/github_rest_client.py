@@ -1,10 +1,12 @@
 import re
+import time
 from pathlib import Path
 from typing import Any, Optional
 import logging
 from logging import Logger
 
 from requests import Response
+from requests.exceptions import ConnectionError as RequestsConnectionError, Timeout
 import requests
 
 from anki_addons_dataset.collector.github.github_rate_limit import GithubGraphqlRateLimit, GithubRateLimit
@@ -16,6 +18,9 @@ class GithubRestClient:
     graphql_url: str = "https://api.github.com/graphql"
     __actions_url: re.Pattern[str] = re.compile(r"/repos/[^/]+/[^/]+/actions/")
     __limited_retries: int = 3
+    __timeout_seconds: int = 60
+    __attempts: int = 4
+    __retry_delay_seconds: int = 5
 
     def __init__(self, offline: bool, token_file: Path):
         self.__token_file: Path = token_file
@@ -77,13 +82,22 @@ class GithubRestClient:
 
     def __send(self, rate_limit: GithubRateLimit, method: str, url: str, **kwargs: Any) -> Response:
         rate_limit.wait_for_reset()
-        response: Response = requests.request(method, url, **kwargs)
+        response: Response = self.__request(method, url, **kwargs)
         rate_limit.update_rate_limit(response)
         for _ in range(self.__limited_retries):
             if not rate_limit.is_limited(response):
                 break
             rate_limit.wait_after_limited(response)
             rate_limit.wait_for_reset()
-            response = requests.request(method, url, **kwargs)
+            response = self.__request(method, url, **kwargs)
             rate_limit.update_rate_limit(response)
         return response
+
+    def __request(self, method: str, url: str, **kwargs: Any) -> Response:
+        for attempt in range(1, self.__attempts):
+            try:
+                return requests.request(method, url, timeout=self.__timeout_seconds, **kwargs)
+            except (Timeout, RequestsConnectionError) as e:
+                log.info(f"GitHub request failed (attempt {attempt}): {e}")
+                time.sleep(attempt * self.__retry_delay_seconds)
+        return requests.request(method, url, timeout=self.__timeout_seconds, **kwargs)

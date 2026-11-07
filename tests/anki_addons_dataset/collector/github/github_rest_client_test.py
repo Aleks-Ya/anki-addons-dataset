@@ -4,7 +4,7 @@ from unittest.mock import call, patch
 
 import pytest
 from requests import Response
-from requests.exceptions import HTTPError
+from requests.exceptions import ConnectionError as RequestsConnectionError, HTTPError, InvalidURL, Timeout
 
 from anki_addons_dataset.collector.github.github_rest_client import GithubRestClient
 
@@ -311,3 +311,53 @@ def test_post_graphql_raises_when_offline(tmp_path: Path):
         with pytest.raises(RuntimeError, match="Offline mode is enabled"):
             client.post_graphql("query", {})
     mock_request.assert_not_called()
+
+
+def test_get_from_url_sends_timeout(tmp_path: Path):
+    client: GithubRestClient = __make_client(tmp_path)
+    with patch("anki_addons_dataset.collector.github.github_rest_client.requests.request",
+               return_value=__response(200)) as mock_request:
+        client.get_from_url("https://api.github.com/repos/a/b")
+    assert mock_request.call_args.kwargs["timeout"] == 60
+
+
+def test_post_graphql_sends_timeout(tmp_path: Path):
+    client: GithubRestClient = __make_client(tmp_path)
+    with patch("anki_addons_dataset.collector.github.github_rest_client.requests.request",
+               return_value=__response(200)) as mock_request:
+        client.post_graphql("query", {})
+    assert mock_request.call_args.kwargs["timeout"] == 60
+
+
+@pytest.mark.parametrize("error", [Timeout("timed out"), RequestsConnectionError("connection reset")])
+def test_retries_after_timeout_or_connection_error(tmp_path: Path, error: Exception):
+    client: GithubRestClient = __make_client(tmp_path)
+    with patch("anki_addons_dataset.collector.github.github_rest_client.requests.request",
+               side_effect=[error, __response(200)]) as mock_request, \
+            patch("anki_addons_dataset.collector.github.github_rest_client.time.sleep") as sleep:
+        response: Response = client.get_from_url("https://api.github.com/repos/a/b")
+    assert response.status_code == 200
+    assert mock_request.call_count == 2
+    sleep.assert_called_once_with(5)
+
+
+def test_raises_when_timeout_retries_run_out(tmp_path: Path):
+    client: GithubRestClient = __make_client(tmp_path)
+    with patch("anki_addons_dataset.collector.github.github_rest_client.requests.request",
+               side_effect=Timeout("timed out")) as mock_request, \
+            patch("anki_addons_dataset.collector.github.github_rest_client.time.sleep") as sleep:
+        with pytest.raises(Timeout):
+            client.post_graphql("query", {})
+    assert mock_request.call_count == 4
+    assert sleep.call_args_list == [call(5), call(10), call(15)]
+
+
+def test_does_not_retry_other_request_errors(tmp_path: Path):
+    client: GithubRestClient = __make_client(tmp_path)
+    with patch("anki_addons_dataset.collector.github.github_rest_client.requests.request",
+               side_effect=InvalidURL("bad url")) as mock_request, \
+            patch("anki_addons_dataset.collector.github.github_rest_client.time.sleep") as sleep:
+        with pytest.raises(InvalidURL):
+            client.get_from_url("https://api.github.com/repos/a/b")
+    assert mock_request.call_count == 1
+    sleep.assert_not_called()
