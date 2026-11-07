@@ -103,7 +103,6 @@ def test_enrich(github_enricher: GithubEnricher, github_service: GithubService, 
         ),
         github=GithubInfo(
             github_repo=decided_repo,
-            languages=[LanguageName("Python"), LanguageName("Rust")],
             stars=3,
             last_commit=last_commit,
             action_count=5,

@@ -168,7 +168,6 @@ class GithubIssueHistory:
 @dataclass(frozen=True)
 class GithubInfo:
     github_repo: GithubRepo
-    languages: list[LanguageName]
     stars: int
     last_commit: Optional[datetime]
     action_count: Optional[int]

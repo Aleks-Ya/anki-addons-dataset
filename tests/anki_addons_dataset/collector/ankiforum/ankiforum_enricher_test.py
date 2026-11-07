@@ -66,7 +66,7 @@ def test_enrich(anki_forum_enricher: AnkiForumEnricher, anki_forum_service: Anki
         ),
         github=GithubInfo(
             github_repo=GithubRepo(GithubUserName("John"), GithubRepoName("app")),
-            languages=[LanguageName("Python"), LanguageName("Rust")],
+            language_bytes={LanguageName("Python"): 5, LanguageName("Rust"): 2},
             stars=3,
             last_commit=datetime(2023, 3, 15, 12, 0),
             action_count=5,

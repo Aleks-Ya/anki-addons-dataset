@@ -35,7 +35,7 @@ def __parsed_repo(url: str) -> GithubRepo:
 
 def __candidate(repo: GithubRepo, readme: Optional[str] = None,
                 manifest: Optional[AddonManifest] = None) -> GithubInfo:
-    return GithubInfo(repo, [], 0, None, None, None, readme=GithubReadme(readme) if readme else None,
+    return GithubInfo(repo, 0, None, None, None, readme=GithubReadme(readme) if readme else None,
                       manifest=manifest)
 
 

@@ -42,8 +42,8 @@ def __addon_info() -> AddonInfo:
 
 
 def __candidates() -> list[GithubInfo]:
-    return [GithubInfo(own_repo, [], 3, None, None, None, readme=GithubReadme("Own README")),
-            GithubInfo(library_repo, [], 2000, None, None, None, repo_description="Python library")]
+    return [GithubInfo(own_repo, 3, None, None, None, readme=GithubReadme("Own README")),
+            GithubInfo(library_repo, 2000, None, None, None, repo_description="Python library")]
 
 
 def __select(response: Optional[str]) -> Optional[AiRepoAnswer]:
@@ -84,7 +84,7 @@ def test_unknown_answer_is_dropped(response: str) -> None:
 def test_answer_matches_a_mixed_case_candidate() -> None:
     mixed_case_repo: GithubRepo = GithubRepo(GithubUserName("Author"), GithubRepoName("My-Addon"))
     provider: RecordingAiProvider = RecordingAiProvider(AiResponseText("Author/My-Addon"))
-    candidates: list[GithubInfo] = [GithubInfo(mixed_case_repo, [], 3, None, None, None)]
+    candidates: list[GithubInfo] = [GithubInfo(mixed_case_repo, 3, None, None, None)]
     assert AiRepoSelector(provider).select(__addon_info(), candidates) == AiRepoAnswer(mixed_case_repo)
 
 

@@ -73,7 +73,6 @@ class AddonBranch <<frozen dataclass>> {
 
 class GithubInfo <<frozen dataclass>> {
   github_repo : GithubRepo
-  languages : list[LanguageName]
   stars : int
   last_commit : Optional[datetime]
   action_count : Optional[int]

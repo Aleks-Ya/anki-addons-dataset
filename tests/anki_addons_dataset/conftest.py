@@ -226,7 +226,7 @@ def addon_info(addon_header: AddonHeader, github_repo: GithubRepo, topic_slug: T
         ),
         github=GithubInfo(
             github_repo=github_repo,
-            languages=[LanguageName("Python"), LanguageName("Rust")],
+            language_bytes={LanguageName("Python"): 5, LanguageName("Rust"): 2},
             stars=3,
             last_commit=datetime(2023, 3, 15, 12, 0, 0, 0),
             action_count=5,

@@ -280,7 +280,7 @@ class JsonAddonInfo:
                                                for name, count in github.language_bytes.items()]
         releases: Optional[list[GithubRelease]] = github.releases
         latest_release: Optional[GithubRelease] = JsonAddonInfo.__latest_release(releases)
-        return GitHub(user, repo_str, github.languages, github.stars, last_commit_str, links, github.action_count,
+        return GitHub(user, repo_str, list(github.language_bytes), github.stars, last_commit_str, links, github.action_count,
                       github.tests_count, github.license, github.fork_count, github.open_issues, github.size_kb,
                       list(github.topics), github.repo_description, github.homepage, github.archived, pushed_at_str,
                       created_at_str, github.primary_language, language_bytes, manifest,

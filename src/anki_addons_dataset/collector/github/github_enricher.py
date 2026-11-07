@@ -75,7 +75,7 @@ class GithubEnricher(Enricher):
         weekly_commits: Optional[list[int]] = self.__github_service.get_weekly_commits(github_repo)
         issue_history: Optional[GithubIssueHistory] = self.__github_service.get_issue_history(github_repo)
         return GithubInfo(
-            github_repo, list(language_bytes.keys()), stars, last_commit, action_count, tests_count,
+            github_repo, stars, last_commit, action_count, tests_count,
             license=repo_meta.license, fork_count=repo_meta.fork_count, open_issues=repo_meta.open_issues,
             size_kb=repo_meta.size_kb, topics=repo_meta.topics, repo_description=repo_meta.repo_description,
             homepage=repo_meta.homepage, archived=repo_meta.archived, pushed_at=repo_meta.pushed_at,

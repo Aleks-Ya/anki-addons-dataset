@@ -6,7 +6,7 @@ from lingua import LanguageDetector, LanguageDetectorBuilder
 from anki_addons_dataset.common.data_types import LanguageCode
 
 # Detect the natural (human) language of the AnkiWeb addon-page description -- e.g. English, Spanish.
-# Distinct from GithubInfo.languages, which are *programming* languages.
+# Distinct from GithubInfo.language_bytes, which are *programming* languages.
 
 # The lingua detector loads per-language models and is expensive to build, so it is created once and
 # shared across all addons. lingua lazy-loads each language model on first use (memory stays bounded).

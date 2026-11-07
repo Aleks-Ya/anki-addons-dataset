@@ -187,7 +187,6 @@ class JsonHelper:
         repo_source: Optional[str] = data.get("repo_source")
         return GithubInfo(
             github_repo=JsonHelper.__github_repo_from_dict(data["github_repo"]),
-            languages=[LanguageName(language) for language in data["languages"]],
             stars=data["stars"],
             last_commit=datetime.fromisoformat(last_commit) if last_commit is not None else None,
             action_count=data["action_count"],

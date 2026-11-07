@@ -224,7 +224,7 @@ class AddonInfoSheet:
                 worksheet.write_number(row, self.__stars_col, addon.github.stars)
             commit_str: str = addon.github.last_commit.strftime("%Y-%m-%d") if addon.github.last_commit else ""
             worksheet.write_string(row, self.__last_commit_col, commit_str)
-            languages_str: str = ", ".join(addon.github.languages)
+            languages_str: str = ", ".join(addon.github.language_bytes)
             worksheet.write_string(row, self.__languages_col, languages_str)
             if addon.github.action_count:
                 worksheet.write_number(row, self.__actions_count_col, addon.github.action_count)
