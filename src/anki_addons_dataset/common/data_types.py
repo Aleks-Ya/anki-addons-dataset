@@ -309,10 +309,7 @@ class AnkiRelease:
 @dataclass(frozen=True)
 class ReviewRow:
     addon_id: AddonId
-    date: date
-    vote: ReviewVote
-    text: str
-    author_reply: Optional[str]
+    review: AddonReview
 
 
 @dataclass(frozen=True)
@@ -339,18 +336,7 @@ class AddonPackages:
 @dataclass(frozen=True)
 class PackageRow:
     addon_id: AddonId
-    file_name: str
-    min_point_version: AnkiPointVersion
-    updated: date
-    size_bytes: int
-    manifest_json: Optional[str]
-    config_json: Optional[str]
-    file_count: int
-    uncompressed_bytes: int
-    python_file_count: int
-    python_lines: int
-    files: list[str]
-    language_bytes: dict[LanguageName, int]
+    package: AddonPackage
 
 
 @dataclass(frozen=True)

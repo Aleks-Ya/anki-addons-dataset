@@ -43,7 +43,7 @@ class ParquetExporter(Exporter):
 
     def export_reviews(self, reviews: list[ReviewRow]) -> None:
         output_file: Path = self._final_dir / "reviews.parquet"
-        DataFrame([dataclasses.asdict(review) for review in reviews],
+        DataFrame([{"addon_id": review.addon_id, **dataclasses.asdict(review.review)} for review in reviews],
                   columns=["addon_id", "date", "vote", "text", "author_reply"]) \
             .to_parquet(output_file, compression="zstd")
         log.info(f"Write Parquet to file: {output_file}")
@@ -64,6 +64,7 @@ class ParquetExporter(Exporter):
 
     @staticmethod
     def __package_record(package: PackageRow) -> dict[str, Any]:
-        record: dict[str, Any] = dataclasses.asdict(package)
-        record["language_bytes"] = [{"name": name, "bytes": count} for name, count in package.language_bytes.items()]
+        record: dict[str, Any] = {"addon_id": package.addon_id, **dataclasses.asdict(package.package)}
+        record["language_bytes"] = [{"name": name, "bytes": count}
+                                    for name, count in package.package.language_bytes.items()]
         return record

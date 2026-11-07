@@ -284,7 +284,7 @@ AddonPage "1" o-- "*" PageLink
 AddonPage "1" o-- "*" AddonReview
 AnkiForumInfo --> AnkiForumTopicSource
 AnkiForumTopicContent "1" o-- "*" AnkiForumPost
-ReviewRow --> ReviewVote
+ReviewRow --> AddonReview
 ForkRelation --> ForkEvidence
 AddonInfo *-- AddonHeader
 AddonInfo *-- AddonPage

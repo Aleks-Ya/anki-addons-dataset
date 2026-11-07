@@ -1,4 +1,3 @@
-import dataclasses
 import logging
 from datetime import datetime
 from logging import Logger
@@ -203,13 +202,13 @@ class CollectorFacade:
     @staticmethod
     def __review_rows(addon_infos: AddonInfos) -> list[ReviewRow]:
         rows: list[ReviewRow] = [
-            ReviewRow(addon_info.header.id, review.date, review.vote, review.text, review.author_reply)
+            ReviewRow(addon_info.header.id, review)
             for addon_info in addon_infos for review in addon_info.page.reviews]
-        return sorted(rows, key=lambda row: (row.addon_id, -row.date.toordinal()))
+        return sorted(rows, key=lambda row: (row.addon_id, -row.review.date.toordinal()))
 
     @staticmethod
     def __package_rows(addon_infos: AddonInfos) -> list[PackageRow]:
-        return [PackageRow(addon_id=addon_info.header.id, **dataclasses.asdict(branch))
+        return [PackageRow(addon_info.header.id, branch)
                 for addon_info in sorted(addon_infos, key=lambda addon_info: addon_info.header.id)
                 if addon_info.package is not None for branch in addon_info.package.branches]
 

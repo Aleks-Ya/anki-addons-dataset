@@ -10,7 +10,7 @@ import pyarrow.parquet
 
 from anki_addons_dataset.common.data_types import AddonInfos, DatasetSnapshotMetadata, RawMetadata, \
     AiTagDefinition, AiTag, AiTagGroup, AnkiRelease, AnkiVersion, AnkiPointVersion, ReviewRow, ReviewVote, AddonId, \
-    LanguageName, PackageRow
+    LanguageName, PackageRow, AddonReview, AddonPackage
 from anki_addons_dataset.common.working_dir import SnapshotDir
 from anki_addons_dataset.exporter.parquet.parquet_exporter import ParquetExporter
 
@@ -183,8 +183,8 @@ def test_export_anki_versions_empty(snapshot_dir: SnapshotDir, dataset_snapshot_
 
 def test_export_reviews(snapshot_dir: SnapshotDir):
     reviews: list[ReviewRow] = [
-        ReviewRow(AddonId(1188705668), date(2026, 7, 5), ReviewVote.DISLIKE, "Produces errors", None),
-        ReviewRow(AddonId(1188705668), date(2025, 6, 6), ReviewVote.LIKE, "Works\nfine", "Thank you!")]
+        ReviewRow(AddonId(1188705668), AddonReview(ReviewVote.DISLIKE, date(2026, 7, 5), "Produces errors", None)),
+        ReviewRow(AddonId(1188705668), AddonReview(ReviewVote.LIKE, date(2025, 6, 6), "Works\nfine", "Thank you!"))]
     final_dir: Path = snapshot_dir.get_final_dir()
     exporter: ParquetExporter = ParquetExporter(final_dir)
     exporter.export_reviews(reviews)
@@ -210,9 +210,9 @@ def test_export_reviews_empty(snapshot_dir: SnapshotDir):
 
 def test_export_packages(snapshot_dir: SnapshotDir):
     packages: list[PackageRow] = [
-        PackageRow(AddonId(100), "45-2026-01-15-0123456789ab.ankiaddon", AnkiPointVersion(45), date(2026, 1, 15), 10,
-                   '{"name": "A"}', None, 2, 30, 1, 4, ["__init__.py", "manifest.json"],
-                   {LanguageName("python"): 25, LanguageName("json"): 5})]
+        PackageRow(AddonId(100), AddonPackage(
+            "45-2026-01-15-0123456789ab.ankiaddon", AnkiPointVersion(45), date(2026, 1, 15), 10, '{"name": "A"}', None,
+            2, 30, 1, 4, ["__init__.py", "manifest.json"], {LanguageName("python"): 25, LanguageName("json"): 5}))]
     final_dir: Path = snapshot_dir.get_final_dir()
     ParquetExporter(final_dir).export_packages(packages)
 
