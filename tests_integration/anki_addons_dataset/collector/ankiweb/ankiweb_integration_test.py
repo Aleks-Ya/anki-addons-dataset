@@ -1,13 +1,17 @@
 from pathlib import Path
+from typing import Optional
 
 import pytest
 
+from anki_addons_dataset.collector.ankiforum.ankiforum_topic_selector import AnkiForumTopicSelector
 from anki_addons_dataset.collector.ankiweb.addon_page_downloader import AddonPageDownloader
 from anki_addons_dataset.collector.ankiweb.addon_page_parser import AddonPageParser
 from anki_addons_dataset.collector.ankiweb.addons_page_downloader import AddonsPageDownloader
 from anki_addons_dataset.collector.ankiweb.page_downloader import PageDownloader
-from anki_addons_dataset.common.data_types import AddonHeader, AddonId, AddonInfo, GithubRepo, SnapshotDate, TopicId, \
-    TopicSlug
+from anki_addons_dataset.collector.github.github_repo_selector import GithubRepoSelector
+from anki_addons_dataset.collector.overrider.overrider import Overrider
+from anki_addons_dataset.common.data_types import AddonHeader, AddonId, AddonInfo, AnkiForumTopicSource, GithubRepo, \
+    GithubRepoSource, SnapshotDate, TopicId, TopicSlug, URL
 from anki_addons_dataset.common.working_dir import SnapshotDir
 
 MIN_EXPECTED_ADDONS: int = 500
@@ -52,11 +56,15 @@ def test_download_known_addon_page(page_downloader: PageDownloader, snapshot_dir
     assert addon_info.page.content
     assert addon_info.page.description
     assert addon_info.page.branches
-    assert addon_info.github is not None
-    assert addon_info.github.github_repo is not None
-    assert addon_info.github.github_repo.get_id().lower() == known_github_repo.get_id().lower()
-    assert addon_info.forum is not None
-    assert addon_info.forum.anki_forum_url == f"https://forums.ankiweb.net/t/{known_topic_slug}/{known_topic_id}"
+    overrider: Overrider = Overrider(snapshot_dir)
+    decided_repo: Optional[tuple[GithubRepo, GithubRepoSource]] = GithubRepoSelector(overrider, None).decided_repo(
+        addon_info)
+    assert decided_repo is not None
+    assert decided_repo[0].get_id().lower() == known_github_repo.get_id().lower()
+    decided_topic: Optional[tuple[URL, AnkiForumTopicSource]] = AnkiForumTopicSelector(overrider).decided_topic(
+        addon_info)
+    assert decided_topic is not None
+    assert decided_topic[0] == f"https://forums.ankiweb.net/t/{known_topic_slug}/{known_topic_id}"
     assert (snapshot_dir.get_raw_dir() / "1-anki-web" / "addon" / f"{known_addon_id}.html").exists()
     assert (snapshot_dir.get_stage_dir() / "1-anki-web" / "addon" / f"{known_addon_id}.json").exists()
 
