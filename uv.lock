@@ -44,7 +44,7 @@ requires-dist = [
     { name = "huggingface-hub" },
     { name = "humanize" },
     { name = "lingua-language-detector" },
-    { name = "magika", specifier = ">=1.0.3" },
+    { name = "magika" },
     { name = "mdutils" },
     { name = "openai" },
     { name = "openpyxl" },

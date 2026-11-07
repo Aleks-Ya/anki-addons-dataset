@@ -36,7 +36,7 @@ dependencies = [
     "humanize",
     "lingua-language-detector",
     "openai",
-    "magika>=1.0.3",
+    "magika",
 ]
 
 [project.urls]
