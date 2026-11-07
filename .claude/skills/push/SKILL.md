@@ -1,6 +1,6 @@
 ---
 name: push
-description: Push the main branch and see it through green — verify a clean tree, upgrade deps (committing uv.lock without asking) and run the unit and integration tests locally, push, wait for the GitHub Actions "Unit-tests" workflow and fix any failures, then review SonarCloud issues on the new code and fix them. Use when the user says "push", "/push", or asks to push and make sure CI/Sonar are clean.
+description: Push the main branch and see it through green — verify a clean tree, upgrade deps (committing uv.lock without asking), run the lint and type checks and the unit and integration tests locally, push, wait for the GitHub Actions "Unit-tests" workflow and fix any failures, then review SonarCloud issues on the new code and fix them. Use when the user says "push", "/push", or asks to push and make sure CI/Sonar are clean.
 allowed-tools: Bash(./uv_update.sh *) Bash(uv *) Bash(gh run *) Bash(git *) Bash(curl *)
 disable-model-invocation: true
 ---
@@ -53,7 +53,8 @@ uv run pytest tests_integration
   docs/testing.md), so a failure can come from an upstream change, an outage or a missing credential rather than the
   code. Report the failing tests and the likely cause, and fix them only if the code is at fault. Push only once
   they pass, or if the user explicitly says to push anyway.
-- If both test runs pass and `uv.lock` changed, commit the change yourself without asking. Commit only `uv.lock`, with
+- If ruff, mypy and both test runs pass and `uv.lock` changed, commit the change yourself without asking. The upgrade
+  also covers ruff, mypy and the type stubs, so new lint or type errors can appear here even when no code changed. Commit only `uv.lock`, with
   the message `Upgrade dependencies`:
 
   ```bash
@@ -103,7 +104,7 @@ gh run watch --exit-status
 gh run view --log-failed
 ```
 
-Diagnose the failure (failing test, TruffleHog secret finding, dependency issue, etc.), fix it in the working tree, commit, and push again. Then repeat step 4 until the workflow is green. Report clearly what failed and what you changed.
+Diagnose the failure (lint or type error, failing test, TruffleHog secret finding, dependency issue, etc.), fix it in the working tree, commit, and push again. Then repeat step 4 until the workflow is green. Report clearly what failed and what you changed.
 
 ## 5. Review SonarCloud issues and fix
 
@@ -119,7 +120,7 @@ Focus on issues touching the code just pushed (recent `creationDate`, or files i
 
 - Read the `rule`, `message`, `component` (file), and `line`.
 - Fix the underlying code — don't just silence it. Only suppress (e.g. `# NOSONAR`) when the rule is a genuine false positive, and say so.
-- Re-run the unit and integration tests locally (`uv run pytest`, then `uv run pytest tests_integration`) before pushing the fix.
+- Re-run the checks locally (`uv run ruff check`, `uv run mypy`, `uv run pytest`, then `uv run pytest tests_integration`) before pushing the fix.
 
 Commit and push the fixes, then loop back through steps 4–5 (CI runs again, Sonar re-analyzes) until CI is green and there are no new/open Sonar issues on the changed code.
 
