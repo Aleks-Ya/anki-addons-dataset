@@ -10,7 +10,7 @@ AddonId = NewType("AddonId", int)
 AddonTitle = NewType("AddonTitle", str)
 AddonRating = NewType("AddonRating", int)
 AddonDescription = NewType("AddonDescription", str)
-UpdateDate = NewType("UpdateDate", str)
+UpdateDate = NewType("UpdateDate", date)
 URL = NewType("URL", str)
 GithubRepoName = NewType("GithubRepoName", str)
 GithubUserName = NewType("GithubUserName", str)
@@ -35,6 +35,7 @@ AiSummary = NewType("AiSummary", str)
 AiTag = NewType("AiTag", str)
 AiTagGroup = NewType("AiTagGroup", str)
 AiModel = NewType("AiModel", str)
+AuthorId = NewType("AuthorId", int)
 
 
 class AnkiVersionKind(StrEnum):
@@ -89,7 +90,7 @@ class AddonHeader:
 
 
 @dataclass(frozen=True)
-class GitHubUser:
+class GithubUser:
     user_name: GithubUserName
 
     def get_url(self) -> URL:
@@ -109,9 +110,9 @@ class GithubRepo:
 
 
 @dataclass(frozen=True)
-class GitHubLink:
+class GithubLink:
     url: URL
-    user: GitHubUser
+    user: GithubUser
     repo: Optional[GithubRepo]
 
 
@@ -121,9 +122,9 @@ class AddonManifest:
     package: Optional[str] = None
     name: Optional[str] = None
     conflicts: list[str] = field(default_factory=list)
-    min_point_version: Optional[int] = None
-    max_point_version: Optional[int] = None
-    homepage: Optional[str] = None
+    min_point_version: Optional[AnkiPointVersion] = None
+    max_point_version: Optional[AnkiPointVersion] = None
+    homepage: Optional[URL] = None
     mod: Optional[int] = None
 
 
@@ -145,7 +146,7 @@ class GithubRelease:
 
 @dataclass(frozen=True)
 class GithubContributor:
-    login: str
+    login: GithubUserName
     contributions: int
 
 
@@ -166,7 +167,7 @@ class GithubIssueHistory:
 
 @dataclass(frozen=True)
 class GithubInfo:
-    github_links: list[GitHubLink]
+    github_links: list[GithubLink]
     github_repo: Optional[GithubRepo]
     languages: list[LanguageName]
     stars: int
@@ -354,7 +355,7 @@ class PackageRow:
 
 @dataclass(frozen=True)
 class AuthorInfo:
-    author_id: AddonId
+    author_id: AuthorId
     addon_ids: list[AddonId]
 
 

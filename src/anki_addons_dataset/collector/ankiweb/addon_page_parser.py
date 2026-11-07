@@ -12,7 +12,7 @@ from anki_addons_dataset.collector.ankiweb.addon_branch_parser import AddonBranc
 from anki_addons_dataset.collector.ankiweb.ai_declaration_detector import AiDeclarationDetector
 from anki_addons_dataset.collector.ankiweb.description_language_detector import DescriptionLanguageDetector
 from anki_addons_dataset.collector.overrider.overrider import Overrider
-from anki_addons_dataset.common.data_types import AddonHeader, AddonInfo, AddonId, URL, GitHubLink, GithubRepo, \
+from anki_addons_dataset.common.data_types import AddonHeader, AddonInfo, AddonId, URL, GithubLink, GithubRepo, \
     GithubInfo, AddonPage, AddonBranch, HtmlStr, AnkiForumInfo, AddonDescription, LanguageCode, PageLink, \
     PageLinkSection, GithubRepoSource, AddonReview, ReviewVote, AnkiForumTopicSource
 
@@ -28,7 +28,7 @@ class AddonPageParser:
             soup, description_tag, addon_header.addon_page_url)
         links: list[PageLink] = self.__fold_anchors(anchors)
         description_links: list[URL] = [url for url, section, _ in anchors if section == PageLinkSection.DESCRIPTION]
-        github_links: list[GitHubLink] = UrlParser.find_github_links(description_links)
+        github_links: list[GithubLink] = UrlParser.find_github_links(description_links)
         contact_author_url: Optional[URL] = next(
             (link.url for link in links if link.section == PageLinkSection.CONTACT_AUTHOR), None)
         github_repo: Optional[GithubRepo]
@@ -66,7 +66,7 @@ class AddonPageParser:
 
     def __decided_github_repo(self, addon_id: AddonId, contact_author_url: Optional[URL]
                               ) -> tuple[Optional[GithubRepo], Optional[GithubRepoSource]]:
-        override_link: Optional[GitHubLink] = self.overrider.override_github_link(addon_id)
+        override_link: Optional[GithubLink] = self.overrider.override_github_link(addon_id)
         if override_link:
             return override_link.repo, GithubRepoSource.OVERRIDE
         contact_repo: Optional[GithubRepo] = self.__contact_author_github_repo(contact_author_url)
@@ -96,14 +96,14 @@ class AddonPageParser:
     def __contact_author_github_repo(self, contact_author_url: Optional[URL]) -> Optional[GithubRepo]:
         if contact_author_url is None:
             return None
-        contact_links: list[GitHubLink] = UrlParser.find_github_links([contact_author_url])
-        allowed_links: list[GitHubLink] = self.__exclude_links(contact_links)
+        contact_links: list[GithubLink] = UrlParser.find_github_links([contact_author_url])
+        allowed_links: list[GithubLink] = self.__exclude_links(contact_links)
         for link in allowed_links:
             if link.repo is not None:
                 return link.repo
         return None
 
-    def __exclude_links(self, links: list[GitHubLink]) -> list[GitHubLink]:
+    def __exclude_links(self, links: list[GithubLink]) -> list[GithubLink]:
         return [link for link in links if not self.overrider.is_excluded_github_repo(link.url)]
 
     @staticmethod

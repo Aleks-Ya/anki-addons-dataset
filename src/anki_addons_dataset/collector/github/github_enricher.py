@@ -9,7 +9,7 @@ from logging import Logger
 from anki_addons_dataset.collector.enricher import Enricher
 from anki_addons_dataset.collector.github.handler.repo_info_repo_handler import GithubRepoMeta
 from anki_addons_dataset.common.data_types import AddonInfo, LanguageName, GithubInfo, AddonId, \
-    AddonInfos, GithubRepo, GitHubLink, AddonManifest, DependencyName, GithubReadme, GithubRelease, \
+    AddonInfos, GithubRepo, GithubLink, AddonManifest, DependencyName, GithubReadme, GithubRelease, \
     GithubContributor, GithubIssueHistory
 from anki_addons_dataset.collector.github.github_repo_selector import GithubRepoSelector
 from anki_addons_dataset.collector.github.github_service import GithubService
@@ -47,7 +47,7 @@ class GithubEnricher(Enricher):
     def __select(self, addon_info: AddonInfo) -> Optional[GithubInfo]:
         if not addon_info.github:
             return None
-        github_links: list[GitHubLink] = addon_info.github.github_links
+        github_links: list[GithubLink] = addon_info.github.github_links
         if addon_info.github.github_repo:
             decided: GithubInfo = self.__fetch(github_links, addon_info.github.github_repo)
             return copy.replace(decided, repo_source=addon_info.github.repo_source)
@@ -59,7 +59,7 @@ class GithubEnricher(Enricher):
                                         if self.__github_service.has_repo_data(candidate.github_repo)]
         return self.__github_repo_selector.select(addon_info, candidates)
 
-    def __fetch(self, github_links: list[GitHubLink], github_repo: GithubRepo) -> GithubInfo:
+    def __fetch(self, github_links: list[GithubLink], github_repo: GithubRepo) -> GithubInfo:
         # get_stars_count runs before get_repo_info (both share info.json), and get_tests_count runs
         # before get_manifest/get_dependencies (both read the repo tree), so each is fetched once.
         language_bytes: dict[LanguageName, int] = self.__github_service.get_languages(github_repo)

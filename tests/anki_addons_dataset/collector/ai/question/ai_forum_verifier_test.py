@@ -1,3 +1,4 @@
+from datetime import date
 from typing import Optional
 
 import pytest
@@ -31,7 +32,7 @@ forum_url: URL = URL("https://forums.ankiweb.net/t/anki-crashes-because-of-mpv/3
 def __addon_info() -> AddonInfo:
     return AddonInfo(
         AddonHeader(AddonId(123456789), AddonTitle("Video Fix"), URL("https://ankiweb.net/shared/info/123456789"),
-                    AddonRating(0), UpdateDate("2026-01-01"), AnkiVersion("25.09")),
+                    AddonRating(0), UpdateDate(date(2026, 1, 1)), AnkiVersion("25.09")),
         AddonPage(HtmlStr(""), 0, 0, [], [
             PageLink(URL("https://forums.ankiweb.net/t/anki-crashes-because-of-mpv/3359/5"),
                      PageLinkSection.DESCRIPTION, 1, ["this issue"]),

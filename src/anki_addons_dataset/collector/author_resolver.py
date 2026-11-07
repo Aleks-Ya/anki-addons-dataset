@@ -4,7 +4,7 @@ from logging import Logger
 from typing import Optional
 
 from anki_addons_dataset.collector.overrider.overrider import Overrider
-from anki_addons_dataset.common.data_types import AddonId, AddonInfo, AddonInfos, AuthorInfo
+from anki_addons_dataset.common.data_types import AddonId, AddonInfo, AddonInfos, AuthorInfo, AuthorId
 
 log: Logger = logging.getLogger(__name__)
 
@@ -39,7 +39,7 @@ class AuthorResolver:
             addon_id: AddonId = addon_info.header.id
             group: list[AddonId] = groups[AuthorResolver.__find(parents, addon_id)]
             if addon_id in covered or not addon_info.page.other_items_count:
-                author: Optional[AuthorInfo] = AuthorInfo(group[0], list(group))
+                author: Optional[AuthorInfo] = AuthorInfo(AuthorId(group[0]), list(group))
             else:
                 author = None
                 unresolved_count += 1

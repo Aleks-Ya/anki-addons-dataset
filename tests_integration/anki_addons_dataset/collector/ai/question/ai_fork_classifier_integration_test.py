@@ -1,4 +1,5 @@
 import logging
+from datetime import date
 from logging import Logger
 from typing import Optional
 
@@ -90,7 +91,7 @@ def __classify(ai_provider: AiProvider, snapshot_dir: SnapshotDir, integration_c
                title: str, description: str, links: dict[AddonId, str]) -> Optional[AddonId]:
     addon_info: AddonInfo = AddonInfo(
         AddonHeader(AddonId(addon_id), AddonTitle(title), URL(f"https://ankiweb.net/shared/info/{addon_id}"),
-                    AddonRating(0), UpdateDate("2026-01-01"), AnkiVersion("25.09")),
+                    AddonRating(0), UpdateDate(date(2026, 1, 1)), AnkiVersion("25.09")),
         AddonPage(HtmlStr(""), 0, 0, [], [
             PageLink(URL(f"https://ankiweb.net/shared/info/{linked_id}"), PageLinkSection.DESCRIPTION, 1, [text])
             for linked_id, text in links.items()], AddonDescription(description)),

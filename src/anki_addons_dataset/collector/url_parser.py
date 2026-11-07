@@ -2,15 +2,15 @@ import re
 from re import Match
 from typing import Optional
 
-from anki_addons_dataset.common.data_types import URL, GitHubLink, GithubRepo, GithubRepoName, GithubUserName, \
-    GitHubUser
+from anki_addons_dataset.common.data_types import URL, GithubLink, GithubRepo, GithubRepoName, GithubUserName, \
+    GithubUser
 
 
 class UrlParser:
 
     @staticmethod
-    def find_github_links(links: list[URL]) -> list[GitHubLink]:
-        parsed_links: list[Optional[GitHubLink]] = [UrlParser.parse_github_url(URL(link)) for link in links]
+    def find_github_links(links: list[URL]) -> list[GithubLink]:
+        parsed_links: list[Optional[GithubLink]] = [UrlParser.parse_github_url(URL(link)) for link in links]
         return [link for link in parsed_links if link is not None]
 
     @staticmethod
@@ -19,21 +19,21 @@ class UrlParser:
         return [link for link in parsed_links if link is not None]
 
     @staticmethod
-    def parse_github_url(url: URL) -> Optional[GitHubLink]:
+    def parse_github_url(url: URL) -> Optional[GithubLink]:
         repo_pattern: str = r'https://github\.com[:/](?P<user>[^/]+)/(?P<repo>[^/?#)(]+)'
         repo_match: Optional[Match[str]] = re.search(repo_pattern, url)
         if repo_match:
             user_name: GithubUserName = GithubUserName(repo_match.group('user').lower())
-            user: GitHubUser = GitHubUser(user_name)
+            user: GithubUser = GithubUser(user_name)
             repo_name: GithubRepoName = GithubRepoName(repo_match.group('repo').lower())
             repo: GithubRepo = GithubRepo(user_name, repo_name)
-            return GitHubLink(url, user, repo)
+            return GithubLink(url, user, repo)
         user_pattern: str = r'https://github\.com[:/](?P<user>[^/]+)'
         user_match: Optional[Match[str]] = re.search(user_pattern, url)
         if user_match:
             user_name: GithubUserName = GithubUserName(user_match.group('user'))
-            user: GitHubUser = GitHubUser(user_name)
-            return GitHubLink(url, user, None)
+            user: GithubUser = GithubUser(user_name)
+            return GithubLink(url, user, None)
         return None
 
     @staticmethod

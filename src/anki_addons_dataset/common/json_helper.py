@@ -7,11 +7,11 @@ from pathlib import Path
 from typing import Any, Optional
 
 from anki_addons_dataset.common.data_types import AddonInfo, AddonInfos, AddonHeader, AddonPage, AddonBranch, \
-    GithubInfo, GitHubLink, GitHubUser, GithubRepo, AnkiForumInfo, AddonId, AnkiVersion, HtmlStr, URL, \
+    GithubInfo, GithubLink, GithubUser, GithubRepo, AnkiForumInfo, AddonId, AnkiVersion, HtmlStr, URL, \
     GithubUserName, GithubRepoName, LanguageName, LanguageCode, TopicSlug, TopicId, LastPostedAt, PostsCount, \
     ScriptVersion, AddonRating, UpdateDate, AddonTitle, AddonDescription, AddonManifest, SpdxLicense, Topic, \
     DependencyName, GithubReadme, AiInfo, AiSummary, AiModel, AiTag, AnkiPointVersion, AnkiVersionKind, \
-    PageLink, PageLinkSection, GithubRepoSource, AnkiForumTopicSource, AuthorInfo, ForkEvidence, ForkRelation, \
+    PageLink, PageLinkSection, GithubRepoSource, AnkiForumTopicSource, AuthorInfo, AuthorId, ForkEvidence, ForkRelation, \
     AddonPackage, AddonPackages, AddonReview, ReviewVote, GithubRelease, GithubReleaseAsset, GithubContributor, GithubIssueHistory
 
 
@@ -101,7 +101,7 @@ class JsonHelper:
         if data is None:
             return None
         return AuthorInfo(
-            author_id=AddonId(data["author_id"]),
+            author_id=AuthorId(data["author_id"]),
             addon_ids=[AddonId(addon_id) for addon_id in data["addon_ids"]],
         )
 
@@ -112,7 +112,7 @@ class JsonHelper:
             title=AddonTitle(data["title"]),
             addon_page_url=URL(data["addon_page_url"]),
             rating=AddonRating(data["rating"]),
-            update_date=UpdateDate(data["update_date"]),
+            update_date=UpdateDate(date.fromisoformat(data["update_date"])),
             anki_version=AnkiVersion(data["anki_version"]),
             anki_point_version=JsonHelper.__point_version(data.get("anki_point_version")),
             anki_version_kind=AnkiVersionKind(data.get("anki_version_kind", AnkiVersionKind.UNKNOWN)),
@@ -211,7 +211,7 @@ class JsonHelper:
             fork_source=JsonHelper.__github_repo_from_dict(data.get("fork_source")),
             releases=[JsonHelper.__github_release_from_dict(release) for release in data["releases"]]
             if data.get("releases") is not None else None,
-            contributors=[GithubContributor(contributor["login"], contributor["contributions"])
+            contributors=[GithubContributor(GithubUserName(contributor["login"]), contributor["contributions"])
                           for contributor in data["contributors"]]
             if data.get("contributors") is not None else None,
             weekly_commits=list(data["weekly_commits"]) if data.get("weekly_commits") is not None else None,
@@ -244,9 +244,9 @@ class JsonHelper:
             package=data.get("package"),
             name=data.get("name"),
             conflicts=list(data.get("conflicts", [])),
-            min_point_version=data.get("min_point_version"),
-            max_point_version=data.get("max_point_version"),
-            homepage=data.get("homepage"),
+            min_point_version=JsonHelper.__point_version(data.get("min_point_version")),
+            max_point_version=JsonHelper.__point_version(data.get("max_point_version")),
+            homepage=URL(data["homepage"]) if data.get("homepage") is not None else None,
             mod=data.get("mod"),
         )
 
@@ -255,10 +255,10 @@ class JsonHelper:
         return datetime.fromisoformat(value) if value is not None else None
 
     @staticmethod
-    def __github_link_from_dict(data: dict[str, Any]) -> GitHubLink:
-        return GitHubLink(
+    def __github_link_from_dict(data: dict[str, Any]) -> GithubLink:
+        return GithubLink(
             url=URL(data["url"]),
-            user=GitHubUser(user_name=GithubUserName(data["user"]["user_name"])),
+            user=GithubUser(user_name=GithubUserName(data["user"]["user_name"])),
             repo=JsonHelper.__github_repo_from_dict(data["repo"]),
         )
 

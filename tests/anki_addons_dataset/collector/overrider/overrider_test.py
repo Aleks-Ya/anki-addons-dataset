@@ -1,17 +1,17 @@
 from typing import Optional
 
 from anki_addons_dataset.collector.overrider.overrider import Overrider, ForkOverride
-from anki_addons_dataset.common.data_types import URL, GitHubLink, AddonId, GitHubUser, GithubUserName, GithubRepo, \
+from anki_addons_dataset.common.data_types import URL, GithubLink, AddonId, GithubUser, GithubUserName, GithubRepo, \
     GithubRepoName
 from anki_addons_dataset.common.working_dir import SnapshotDir
 
 
 def test_override_github_link(overrider: Overrider, note_size_addon_id: AddonId):
     assert overrider.override_github_link(note_size_addon_id) is None
-    override_link: Optional[GitHubLink] = overrider.override_github_link(AddonId(1984823157))
+    override_link: Optional[GithubLink] = overrider.override_github_link(AddonId(1984823157))
     github_user_name: GithubUserName = GithubUserName("r-appleton")
-    assert override_link == GitHubLink(URL("https://github.com/r-appleton/addons"),
-                                       GitHubUser(github_user_name),
+    assert override_link == GithubLink(URL("https://github.com/r-appleton/addons"),
+                                       GithubUser(github_user_name),
                                        GithubRepo(github_user_name, GithubRepoName("addons")))
 
 

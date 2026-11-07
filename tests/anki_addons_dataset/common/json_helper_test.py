@@ -8,7 +8,7 @@ from unittest.mock import Mock, patch
 import pytest
 
 from anki_addons_dataset.common.data_types import AddonInfo, AddonInfos, AddonHeader, AddonPage, AddonBranch, \
-    GithubInfo, GitHubLink, GitHubUser, GithubRepo, AddonId, AnkiVersion, HtmlStr, URL, \
+    GithubInfo, GithubLink, GithubUser, GithubRepo, AddonId, AnkiVersion, HtmlStr, URL, \
     GithubUserName, GithubRepoName, LanguageName, LanguageCode, ScriptVersion, AddonRating, UpdateDate, AddonTitle, \
     AddonManifest, SpdxLicense, Topic, DependencyName, GithubReadme, AiTag, AnkiVersionKind, \
     PageLink, PageLinkSection, ForkEvidence, ForkRelation, AddonReview, ReviewVote, AddonPackage, AddonPackages, \
@@ -49,7 +49,7 @@ def test_addon_infos_dump_without_anki_point_versions(addon_infos: AddonInfos, s
 def test_addon_infos_dump_round_trip_with_none_fields(script_version: ScriptVersion, working_dir_path: Path):
     addon_info: AddonInfo = AddonInfo(
         header=AddonHeader(id=AddonId(1), title=AddonTitle("No GitHub"), addon_page_url=URL("https://ankiweb.net/shared/info/1"),
-                           rating=AddonRating(0), update_date=UpdateDate("2024-01-01"), anki_version=AnkiVersion("24.04.1")),
+                           rating=AddonRating(0), update_date=UpdateDate(date(2024, 1, 1)), anki_version=AnkiVersion("24.04.1")),
         page=AddonPage(
             content=HtmlStr("<html></html>"), like_number=0, dislike_number=0,
             branches=[AddonBranch(min_anki_version=AnkiVersion("24.04.1"), max_anki_version=None,
@@ -58,8 +58,8 @@ def test_addon_infos_dump_round_trip_with_none_fields(script_version: ScriptVers
                    PageLink(URL("https://example.com/contact"), PageLinkSection.CONTACT_AUTHOR, 1,
                             ["Contact Author"])]),
         github=GithubInfo(
-            github_links=[GitHubLink(url=URL("https://github.com/u/r"),
-                                     user=GitHubUser(user_name=GithubUserName("u")),
+            github_links=[GithubLink(url=URL("https://github.com/u/r"),
+                                     user=GithubUser(user_name=GithubUserName("u")),
                                      repo=GithubRepo(GithubUserName("u"), GithubRepoName("r")))],
             github_repo=None, languages=[LanguageName("Python")], stars=0,
             last_commit=None, action_count=None, tests_count=None),

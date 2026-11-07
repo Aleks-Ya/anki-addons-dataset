@@ -16,7 +16,7 @@ package anki_addons_dataset {
         class SnapshotDir
         class AddonInfos
         class AddonHeader
-        class GitHubUser
+        class GithubUser
         class GithubRepo
         class GithubInfo
         class AddonBranch

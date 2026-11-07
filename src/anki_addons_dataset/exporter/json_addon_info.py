@@ -220,7 +220,7 @@ class JsonAddonInfo:
             branches: list[Branch] = JsonAddonInfo.__branches(addon)
             anki_web: AnkiWeb = AnkiWeb(addon.header.title, addon.header.addon_page_url, addon.page.content,
                                         addon.page.contact_author_url, addon.page.description, addon.header.rating,
-                                        addon.header.update_date, addon.header.anki_version,
+                                        addon.header.update_date.isoformat(), addon.header.anki_version,
                                         addon.header.anki_point_version, str(addon.header.anki_version_kind), branches,
                                         JsonAddonInfo.__anki_web_links(addon), addon.page.like_number, addon.page.dislike_number,
                                         list(addon.page.ai_declaration_markers), addon.page.description_language,
@@ -351,7 +351,7 @@ class JsonAddonInfo:
     def __manifest(manifest: Optional[AddonManifest]) -> Optional[Manifest]:
         if manifest is None:
             return None
-        min_version: Optional[str] = AnkiVersionCodec.to_str(AnkiPointVersion(manifest.min_point_version)) \
+        min_version: Optional[str] = AnkiVersionCodec.to_str(manifest.min_point_version) \
             if manifest.min_point_version is not None and manifest.min_point_version > 0 else None
         max_point_version, max_version_kind = AnkiVersionCodec.from_manifest_max(manifest.max_point_version)
         max_version: Optional[str] = AnkiVersionCodec.to_str(max_point_version) if max_point_version else None

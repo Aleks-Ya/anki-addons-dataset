@@ -36,7 +36,7 @@ def test_enrich(anki_forum_enricher: AnkiForumEnricher, anki_forum_service: Anki
             title=AddonTitle("NoteSize"),
             addon_page_url=URL("https://ankiweb.net/shared/info/1188705668"),
             rating=AddonRating(4),
-            update_date=UpdateDate("2023-03-15"),
+            update_date=UpdateDate(date(2023, 3, 15)),
             anki_version=AnkiVersion("25.09.2~"),
             anki_point_version=AnkiPointVersion(250902),
             anki_version_kind=AnkiVersionKind.TESTED

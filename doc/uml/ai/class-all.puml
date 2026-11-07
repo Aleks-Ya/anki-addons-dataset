@@ -32,9 +32,9 @@ package "anki_addons_dataset" {
     enum ReviewVote
 
     class AddonHeader <<dataclass>>
-    class GitHubUser <<dataclass>>
+    class GithubUser <<dataclass>>
     class GithubRepo <<dataclass>>
-    class GitHubLink <<dataclass>>
+    class GithubLink <<dataclass>>
     class AddonManifest <<dataclass>>
     class GithubInfo <<dataclass>>
     class AddonBranch <<dataclass>>
@@ -269,9 +269,9 @@ WorkingDirInitializer --> WorkingDirBackup
 
 ' Data model composition
 AddonHeader --> AnkiVersionKind
-GitHubLink --> GitHubUser
-GitHubLink --> GithubRepo
-GithubInfo "1" o-- "*" GitHubLink
+GithubLink --> GithubUser
+GithubLink --> GithubRepo
+GithubInfo "1" o-- "*" GithubLink
 GithubInfo --> GithubRepo
 GithubInfo --> AddonManifest
 GithubInfo --> GithubRepoSource

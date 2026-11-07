@@ -1,4 +1,5 @@
 import logging
+from datetime import date
 from logging import Logger
 from typing import Optional
 
@@ -18,7 +19,7 @@ library_repo: GithubRepo = GithubRepo(GithubUserName("kerrickstaley"), GithubRep
 def __addon_info(addon_id: AddonId, own_repo: GithubRepo) -> AddonInfo:
     return AddonInfo(
         AddonHeader(addon_id, AddonTitle("Note Size"), URL(f"https://ankiweb.net/shared/info/{addon_id}"),
-                    AddonRating(0), UpdateDate("2026-01-01"), AnkiVersion("25.09")),
+                    AddonRating(0), UpdateDate(date(2026, 1, 1)), AnkiVersion("25.09")),
         AddonPage(HtmlStr(""), 0, 0, [], [
             PageLink(URL(f"https://github.com/{own_repo.get_id()}"), PageLinkSection.DESCRIPTION, 1, ["Source code"]),
             PageLink(URL(f"https://github.com/{library_repo.get_id()}"), PageLinkSection.DESCRIPTION, 1,

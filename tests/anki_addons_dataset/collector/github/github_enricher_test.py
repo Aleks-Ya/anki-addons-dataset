@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import date, datetime
 import logging
 from logging import Logger
 from unittest.mock import Mock
@@ -13,7 +13,7 @@ from anki_addons_dataset.collector.url_parser import UrlParser
 from anki_addons_dataset.common.data_types import AddonInfo, AddonHeader, AddonId, AddonPage, GithubRepo, \
     LanguageName, GithubInfo, AddonInfos, AnkiForumInfo, TopicSlug, TopicId, LastPostedAt, PostsCount, AnkiVersion, \
     HtmlStr, URL, AddonRating, UpdateDate, AddonTitle, AddonManifest, SpdxLicense, Topic, DependencyName, \
-    GithubReadme, GithubUserName, GithubRepoName, GitHubLink, GithubRepoSource, GithubRelease, GithubReleaseAsset, \
+    GithubReadme, GithubUserName, GithubRepoName, GithubLink, GithubRepoSource, GithubRelease, GithubReleaseAsset, \
     GithubContributor, GithubIssueHistory
 from anki_addons_dataset.common.working_dir import SnapshotDir
 
@@ -29,7 +29,7 @@ def test_enrich(github_enricher: GithubEnricher, github_service: GithubService, 
             title=AddonTitle("NoteSize"),
             addon_page_url=URL("https://ankiweb.net/shared/info/1188705668"),
             rating=AddonRating(4),
-            update_date=UpdateDate("2023-03-15"),
+            update_date=UpdateDate(date(2023, 3, 15)),
             anki_version=AnkiVersion("1.0.0")
         ),
         page=AddonPage(
@@ -96,7 +96,7 @@ def test_enrich(github_enricher: GithubEnricher, github_service: GithubService, 
             title=AddonTitle("NoteSize"),
             addon_page_url=URL("https://ankiweb.net/shared/info/1188705668"),
             rating=AddonRating(4),
-            update_date=UpdateDate("2023-03-15"),
+            update_date=UpdateDate(date(2023, 3, 15)),
             anki_version=AnkiVersion("1.0.0")
         ),
         page=AddonPage(
@@ -151,11 +151,11 @@ def test_enrich_fetches_every_candidate_and_keeps_the_selected(snapshot_dir: Sna
                                                                github_service: GithubService):
     own_repo: GithubRepo = GithubRepo(GithubUserName("author"), GithubRepoName("my-addon"))
     library_repo: GithubRepo = GithubRepo(GithubUserName("kerrickstaley"), GithubRepoName("genanki"))
-    github_links: list[GitHubLink] = UrlParser.find_github_links(
+    github_links: list[GithubLink] = UrlParser.find_github_links(
         [URL("https://github.com/kerrickstaley/genanki"), URL("https://github.com/author/my-addon")])
     addon_info: AddonInfo = AddonInfo(
         AddonHeader(AddonId(1), AddonTitle("My Addon"), URL("https://ankiweb.net/shared/info/1"), AddonRating(0),
-                    UpdateDate("2026-01-01"), AnkiVersion("25.09")),
+                    UpdateDate(date(2026, 1, 1)), AnkiVersion("25.09")),
         AddonPage(HtmlStr(""), 0, 0, [], []),
         GithubInfo(github_links, None, [], 0, None, None, None), None)
     github_service.get_languages = Mock(return_value={})
@@ -196,12 +196,12 @@ def test_enrich_fetches_every_candidate_and_keeps_the_selected(snapshot_dir: Sna
 def test_enrich_drops_candidates_without_data(snapshot_dir: SnapshotDir, github_service: GithubService):
     own_repo: GithubRepo = GithubRepo(GithubUserName("author"), GithubRepoName("my-addon"))
     gone_repo: GithubRepo = GithubRepo(GithubUserName("gone"), GithubRepoName("deleted"))
-    github_links: list[GitHubLink] = UrlParser.find_github_links(
+    github_links: list[GithubLink] = UrlParser.find_github_links(
         [URL("https://github.com/gone/deleted"), URL("https://github.com/gone/deleted/issues"),
          URL("https://github.com/author/my-addon")])
     addon_info: AddonInfo = AddonInfo(
         AddonHeader(AddonId(1), AddonTitle("My Addon"), URL("https://ankiweb.net/shared/info/1"), AddonRating(0),
-                    UpdateDate("2026-01-01"), AnkiVersion("25.09")),
+                    UpdateDate(date(2026, 1, 1)), AnkiVersion("25.09")),
         AddonPage(HtmlStr(""), 0, 0, [], []),
         GithubInfo(github_links, None, [], 0, None, None, None), None)
     github_service.get_languages = Mock(return_value={})

@@ -4,7 +4,7 @@ from typing import Any, Optional
 from requests import Response
 
 from anki_addons_dataset.collector.github.handler.repo_handler import RepoHandler
-from anki_addons_dataset.common.data_types import GithubContributor
+from anki_addons_dataset.common.data_types import GithubContributor, GithubUserName
 from anki_addons_dataset.common.json_helper import JsonHelper
 
 
@@ -26,7 +26,7 @@ class ContributorsRepoHandler(RepoHandler):
     def _extract_return_value_from_dict(self, content_obj: Any) -> Optional[list[GithubContributor]]:
         if not isinstance(content_obj, list):
             return None
-        return [GithubContributor(contributor["login"], contributor.get("contributions", 0))
+        return [GithubContributor(GithubUserName(contributor["login"]), contributor.get("contributions", 0))
                 for contributor in content_obj if contributor.get("login")]
 
     def _prepare_stage_dict(self, return_value: Optional[list[GithubContributor]]) -> dict[str, Any]:

@@ -1,3 +1,4 @@
+from datetime import date
 from typing import Optional
 from unittest.mock import Mock
 
@@ -7,21 +8,21 @@ from anki_addons_dataset.collector.overrider.overrider import Overrider
 from anki_addons_dataset.collector.url_parser import UrlParser
 from anki_addons_dataset.common.data_types import AddonInfo, AddonHeader, AddonId, AddonTitle, URL, AddonRating, \
     UpdateDate, AnkiVersion, AddonPage, HtmlStr, GithubInfo, GithubRepo, GithubUserName, GithubRepoName, \
-    GithubReadme, GithubRepoSource, GitHubLink, AddonManifest
+    GithubReadme, GithubRepoSource, GithubLink, AddonManifest
 
 addon_id: AddonId = AddonId(123456789)
 own_repo: GithubRepo = GithubRepo(GithubUserName("author"), GithubRepoName("my-addon"))
 library_repo: GithubRepo = GithubRepo(GithubUserName("kerrickstaley"), GithubRepoName("genanki"))
 
 
-def __links(*urls: str) -> list[GitHubLink]:
+def __links(*urls: str) -> list[GithubLink]:
     return UrlParser.find_github_links([URL(url) for url in urls])
 
 
-def __addon_info(github_links: list[GitHubLink]) -> AddonInfo:
+def __addon_info(github_links: list[GithubLink]) -> AddonInfo:
     return AddonInfo(
         AddonHeader(addon_id, AddonTitle("My Addon"), URL(f"https://ankiweb.net/shared/info/{addon_id}"),
-                    AddonRating(0), UpdateDate("2026-01-01"), AnkiVersion("25.09")),
+                    AddonRating(0), UpdateDate(date(2026, 1, 1)), AnkiVersion("25.09")),
         AddonPage(HtmlStr(""), 0, 0, [], []),
         GithubInfo(github_links, None, [], 0, None, None, None), None)
 
@@ -38,14 +39,14 @@ def __ai(answer: Optional[AiRepoAnswer]) -> Mock:
     return ai_repo_selector
 
 
-library_links: list[GitHubLink] = __links("https://github.com/kerrickstaley/genanki",
+library_links: list[GithubLink] = __links("https://github.com/kerrickstaley/genanki",
                                           "https://github.com/kerrickstaley/genanki/issues",
                                           "https://github.com/author/my-addon")
 
 
 def test_candidate_repos_are_distinct_and_skip_user_links(overrider: Overrider) -> None:
     selector: GithubRepoSelector = GithubRepoSelector(overrider, None)
-    links: list[GitHubLink] = __links("https://github.com/author/my-addon/issues", "https://github.com/author",
+    links: list[GithubLink] = __links("https://github.com/author/my-addon/issues", "https://github.com/author",
                                       "https://github.com/author/my-addon", "https://github.com/kerrickstaley/genanki")
     assert selector.candidate_repos(links) == [own_repo, library_repo]
 

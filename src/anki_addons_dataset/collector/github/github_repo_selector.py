@@ -7,7 +7,7 @@ from typing import Optional
 from anki_addons_dataset.collector.ai.question.ai_repo_selector import AiRepoSelector, AiRepoAnswer
 from anki_addons_dataset.collector.overrider.overrider import Overrider
 from anki_addons_dataset.common.data_types import AddonInfo, AddonId, GithubInfo, GithubRepo, GithubRepoSource, \
-    GitHubLink
+    GithubLink
 
 log: Logger = logging.getLogger(__name__)
 
@@ -18,8 +18,8 @@ class GithubRepoSelector:
         self.__overrider: Overrider = overrider
         self.__ai_repo_selector: Optional[AiRepoSelector] = ai_repo_selector
 
-    def candidate_repos(self, github_links: list[GitHubLink]) -> list[GithubRepo]:
-        allowed_links: list[GitHubLink] = [link for link in github_links if link.repo is not None
+    def candidate_repos(self, github_links: list[GithubLink]) -> list[GithubRepo]:
+        allowed_links: list[GithubLink] = [link for link in github_links if link.repo is not None
                                            and not self.__overrider.is_excluded_github_repo(link.url)]
         return list(dict.fromkeys(link.repo for link in allowed_links))
 

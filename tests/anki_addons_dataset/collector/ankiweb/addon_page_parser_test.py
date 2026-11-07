@@ -4,8 +4,8 @@ from pathlib import Path
 
 from anki_addons_dataset.collector.ankiweb.addon_page_parser import AddonPageParser
 from anki_addons_dataset.collector.overrider.overrider import Overrider
-from anki_addons_dataset.common.data_types import AddonHeader, AddonInfo, AddonPage, GithubInfo, AddonId, GitHubLink, \
-    URL, GitHubUser, GithubRepo, GithubUserName, GithubRepoName, AddonBranch, HtmlStr, AnkiForumInfo, AnkiVersion, \
+from anki_addons_dataset.common.data_types import AddonHeader, AddonInfo, AddonPage, GithubInfo, AddonId, GithubLink, \
+    URL, GithubUser, GithubRepo, GithubUserName, GithubRepoName, AddonBranch, HtmlStr, AnkiForumInfo, AnkiVersion, \
     AnkiPointVersion, AnkiVersionKind, AddonRating, UpdateDate, AddonTitle, AddonDescription, \
     PageLink, PageLinkSection, GithubRepoSource, AddonReview, ReviewVote, AnkiForumTopicSource
 
@@ -19,7 +19,7 @@ def test_parse_addon_page(overrider: Overrider):
         title=AddonTitle("Note Size - sort notes by size and see collection size"),
         addon_page_url=URL("https://ankiweb.net/shared/info/1188705668"),
         rating=AddonRating(12),
-        update_date=UpdateDate("2025-04-19"),
+        update_date=UpdateDate(datetime.date(2025, 4, 19)),
         anki_version=AnkiVersion("25.09.2~"))
     addon_info: AddonInfo = parser.parse_addon_page(addon_header, addon_html)
     assert addon_info.page.description_language == "en"
@@ -41,7 +41,7 @@ def test_parse_addon_page(overrider: Overrider):
     assert addon_info.page.reviews[11].text == 'Seems working well. \nThis is a really good idea, thanks!'
     assert sum(1 for review in addon_info.page.reviews if review.author_reply is not None) == 5
     addon_info = replace(addon_info, page=replace(addon_info.page, reviews=[]))
-    github_user: GitHubUser = GitHubUser(GithubUserName("aleks-ya"))
+    github_user: GithubUser = GithubUser(GithubUserName("aleks-ya"))
     github_repo: GithubRepo = GithubRepo(GithubUserName("aleks-ya"), GithubRepoName("note-size-anki-addon"))
     description: PageLinkSection = PageLinkSection.DESCRIPTION
     assert addon_info == AddonInfo(
@@ -86,14 +86,14 @@ def test_parse_addon_page(overrider: Overrider):
         ),
         GithubInfo(
             github_links=[
-                GitHubLink(URL('https://github.com/Aleks-Ya/note-size-anki-addon/issues'), github_user, github_repo),
-                GitHubLink(URL('https://github.com/Aleks-Ya/note-size-anki-addon/blob/main/docs/user-manual.md'),
+                GithubLink(URL('https://github.com/Aleks-Ya/note-size-anki-addon/issues'), github_user, github_repo),
+                GithubLink(URL('https://github.com/Aleks-Ya/note-size-anki-addon/blob/main/docs/user-manual.md'),
                            github_user, github_repo),
-                GitHubLink(URL('https://github.com/Aleks-Ya/note-size-anki-addon'), github_user, github_repo),
-                GitHubLink(URL('https://github.com/Aleks-Ya/note-size-anki-addon/issues'), github_user, github_repo),
-                GitHubLink(URL('https://github.com/Aleks-Ya/note-size-anki-addon/blob/main/CHANGELOG.md'), github_user,
+                GithubLink(URL('https://github.com/Aleks-Ya/note-size-anki-addon'), github_user, github_repo),
+                GithubLink(URL('https://github.com/Aleks-Ya/note-size-anki-addon/issues'), github_user, github_repo),
+                GithubLink(URL('https://github.com/Aleks-Ya/note-size-anki-addon/blob/main/CHANGELOG.md'), github_user,
                            github_repo),
-                GitHubLink(
+                GithubLink(
                     URL('https://github.com/Aleks-Ya/note-size-anki-addon/actions/workflows/unit-tests-linux.yml'),
                     github_user, github_repo)
             ],
@@ -123,7 +123,7 @@ def test_parse_addon_page_without_description(overrider: Overrider):
         title=AddonTitle("No description addon"),
         addon_page_url=URL("https://ankiweb.net/shared/info/1"),
         rating=AddonRating(0),
-        update_date=UpdateDate("2025-04-19"),
+        update_date=UpdateDate(datetime.date(2025, 4, 19)),
         anki_version=AnkiVersion("25.09.2~"))
     html: HtmlStr = HtmlStr("<html><body><main><h1>No description</h1></main></body></html>")
     addon_info: AddonInfo = parser.parse_addon_page(addon_header, html)
@@ -250,7 +250,7 @@ def test_comment_github_url_does_not_override_description_repo(overrider: Overri
         title=AddonTitle("Comment pollution addon"),
         addon_page_url=URL("https://ankiweb.net/shared/info/2"),
         rating=AddonRating(0),
-        update_date=UpdateDate("2025-04-19"),
+        update_date=UpdateDate(datetime.date(2025, 4, 19)),
         anki_version=AnkiVersion("25.09.2~"))
     html: HtmlStr = HtmlStr(
         '<html><body><main>'
@@ -275,7 +275,7 @@ def __header(addon_id: int) -> AddonHeader:
         title=AddonTitle("Some addon"),
         addon_page_url=URL(f"https://ankiweb.net/shared/info/{addon_id}"),
         rating=AddonRating(0),
-        update_date=UpdateDate("2025-04-19"),
+        update_date=UpdateDate(datetime.date(2025, 4, 19)),
         anki_version=AnkiVersion("25.09.2~"))
 
 

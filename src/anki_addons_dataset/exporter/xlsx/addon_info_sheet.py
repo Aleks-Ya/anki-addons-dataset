@@ -189,7 +189,7 @@ class AddonInfoSheet:
         row: int = i + self.__header_row_bottom + 1
         worksheet.write_number(row, self.__id_col, addon.header.id)
         worksheet.write_string(row, self.__name_col, addon.header.title)
-        worksheet.write_string(row, self.__updated_col, addon.header.update_date)
+        worksheet.write_string(row, self.__updated_col, addon.header.update_date.isoformat())
         worksheet.write_string(row, self.__versions_col, addon.header.anki_version)
         worksheet.write_number(row, self.__branches_number_col, len(addon.page.branches))
         worksheet.write_number(row, self.__rating_col, addon.header.rating)

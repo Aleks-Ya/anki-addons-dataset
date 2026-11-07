@@ -1,5 +1,5 @@
 from anki_addons_dataset.collector.url_parser import UrlParser
-from anki_addons_dataset.common.data_types import URL, GitHubLink, GithubRepo, GitHubUser, GithubUserName, \
+from anki_addons_dataset.common.data_types import URL, GithubLink, GithubRepo, GithubUser, GithubUserName, \
     GithubRepoName
 
 
@@ -12,22 +12,22 @@ def test_find_github_links():
         URL("https://github.com/kanjieater/anki-plugin-heisigs-rtk#readme"),
         URL("https://github.com/Arthur-Milchior/note-organizer)*")
     ]
-    github_links: list[GitHubLink] = UrlParser.find_github_links(links)
+    github_links: list[GithubLink] = UrlParser.find_github_links(links)
     assert github_links == [
-        GitHubLink(URL("https://github.com/Aleks-Ya/note-size-anki-addon/issues"),
-                   GitHubUser(GithubUserName("aleks-ya")),
+        GithubLink(URL("https://github.com/Aleks-Ya/note-size-anki-addon/issues"),
+                   GithubUser(GithubUserName("aleks-ya")),
                    GithubRepo(GithubUserName("aleks-ya"), GithubRepoName("note-size-anki-addon"))),
-        GitHubLink(URL("https://github.com/shigeyukey/AnkiRestart"),
-                   GitHubUser(GithubUserName("shigeyukey")),
+        GithubLink(URL("https://github.com/shigeyukey/AnkiRestart"),
+                   GithubUser(GithubUserName("shigeyukey")),
                    GithubRepo(GithubUserName("shigeyukey"), GithubRepoName("ankirestart"))),
-        GitHubLink(URL("https://github.com/Arthur-Milchior/anki-copy-note?tab=readme-ov-file#copy-notes"),
-                   GitHubUser(GithubUserName("arthur-milchior")),
+        GithubLink(URL("https://github.com/Arthur-Milchior/anki-copy-note?tab=readme-ov-file#copy-notes"),
+                   GithubUser(GithubUserName("arthur-milchior")),
                    GithubRepo(GithubUserName("arthur-milchior"), GithubRepoName("anki-copy-note"))),
-        GitHubLink(URL("https://github.com/kanjieater/anki-plugin-heisigs-rtk#readme"),
-                   GitHubUser(GithubUserName("kanjieater")),
+        GithubLink(URL("https://github.com/kanjieater/anki-plugin-heisigs-rtk#readme"),
+                   GithubUser(GithubUserName("kanjieater")),
                    GithubRepo(GithubUserName("kanjieater"), GithubRepoName("anki-plugin-heisigs-rtk"))),
-        GitHubLink(URL("https://github.com/Arthur-Milchior/note-organizer)*"),
-                   GitHubUser(GithubUserName("arthur-milchior")),
+        GithubLink(URL("https://github.com/Arthur-Milchior/note-organizer)*"),
+                   GithubUser(GithubUserName("arthur-milchior")),
                    GithubRepo(GithubUserName("arthur-milchior"), GithubRepoName("note-organizer")))
     ]
 

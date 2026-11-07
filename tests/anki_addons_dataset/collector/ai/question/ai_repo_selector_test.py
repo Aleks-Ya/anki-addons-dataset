@@ -1,3 +1,4 @@
+from datetime import date
 from typing import Optional
 
 import pytest
@@ -32,7 +33,7 @@ library_repo: GithubRepo = GithubRepo(GithubUserName("kerrickstaley"), GithubRep
 def __addon_info() -> AddonInfo:
     return AddonInfo(
         AddonHeader(AddonId(123456789), AddonTitle("My Addon"), URL("https://ankiweb.net/shared/info/123456789"),
-                    AddonRating(0), UpdateDate("2026-01-01"), AnkiVersion("25.09")),
+                    AddonRating(0), UpdateDate(date(2026, 1, 1)), AnkiVersion("25.09")),
         AddonPage(HtmlStr(""), 0, 0, [], [
             PageLink(URL("https://github.com/Author/my-addon/issues"), PageLinkSection.DESCRIPTION, 1, ["Bug tracker"]),
             PageLink(URL("https://github.com/kerrickstaley/genanki"), PageLinkSection.DESCRIPTION, 1, ["based on"]),

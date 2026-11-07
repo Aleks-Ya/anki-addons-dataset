@@ -3,7 +3,7 @@ from typing import Any, Optional
 import logging
 from logging import Logger
 
-from anki_addons_dataset.common.data_types import AddonManifest
+from anki_addons_dataset.common.data_types import AddonManifest, AnkiPointVersion, URL
 
 log: Logger = logging.getLogger(__name__)
 
@@ -39,15 +39,19 @@ class ManifestParser:
             package=package,
             name=name,
             conflicts=[str(conflict) for conflict in conflicts] if isinstance(conflicts, list) else [],
-            min_point_version=ManifestParser.__as_int(data.get("min_point_version")),
-            max_point_version=ManifestParser.__as_int(data.get("max_point_version")),
-            homepage=homepage,
+            min_point_version=ManifestParser.__as_point_version(data.get("min_point_version")),
+            max_point_version=ManifestParser.__as_point_version(data.get("max_point_version")),
+            homepage=URL(homepage) if homepage is not None else None,
             mod=ManifestParser.__as_int(data.get("mod")),
         )
 
     @staticmethod
     def __as_int(value: Any) -> Optional[int]:
         return value if isinstance(value, int) else None
+
+    @staticmethod
+    def __as_point_version(value: Any) -> Optional[AnkiPointVersion]:
+        return AnkiPointVersion(value) if isinstance(value, int) else None
 
     @staticmethod
     def __str_or_absent(value: Any) -> bool:

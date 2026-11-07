@@ -8,7 +8,7 @@ class AddonInfos <<NewType>> {
   list[AddonInfo]
 }
 
-class AddonInfo <<dataclass>> {
+class AddonInfo <<frozen dataclass>> {
   header : AddonHeader
   page : AddonPage
   github : Optional[GithubInfo]
@@ -18,7 +18,7 @@ class AddonInfo <<dataclass>> {
   forked_from : Optional[ForkRelation]
 }
 
-class AddonHeader <<dataclass>> {
+class AddonHeader <<frozen dataclass>> {
   id : AddonId
   title : AddonTitle
   addon_page_url : URL
@@ -29,7 +29,7 @@ class AddonHeader <<dataclass>> {
   anki_version_kind : AnkiVersionKind
 }
 
-class AddonPage <<dataclass>> {
+class AddonPage <<frozen dataclass>> {
   content : HtmlStr
   like_number : int
   dislike_number : int
@@ -47,7 +47,7 @@ class AddonPage <<dataclass>> {
   contact_author_url : Optional[URL]
 }
 
-class PageLink <<dataclass>> {
+class PageLink <<frozen dataclass>> {
   url : URL
   section : PageLinkSection
   count : int
@@ -61,7 +61,7 @@ class AddonReview <<frozen dataclass>> {
   author_reply : Optional[str]
 }
 
-class AddonBranch <<dataclass>> {
+class AddonBranch <<frozen dataclass>> {
   min_anki_version : AnkiVersion
   max_anki_version : Optional[AnkiVersion]
   updated : date
@@ -70,8 +70,8 @@ class AddonBranch <<dataclass>> {
   max_version_kind : AnkiVersionKind
 }
 
-class GithubInfo <<dataclass>> {
-  github_links : list[GitHubLink]
+class GithubInfo <<frozen dataclass>> {
+  github_links : list[GithubLink]
   github_repo : Optional[GithubRepo]
   languages : list[LanguageName]
   stars : int
@@ -98,23 +98,23 @@ class GithubInfo <<dataclass>> {
   fork_source : Optional[GithubRepo]
 }
 
-class AddonManifest <<dataclass>> {
+class AddonManifest <<frozen dataclass>> {
   package : Optional[str]
   name : Optional[str]
   conflicts : list[str]
-  min_point_version : Optional[int]
-  max_point_version : Optional[int]
-  homepage : Optional[str]
+  min_point_version : Optional[AnkiPointVersion]
+  max_point_version : Optional[AnkiPointVersion]
+  homepage : Optional[URL]
   mod : Optional[int]
 }
 
-class GitHubLink <<dataclass>> {
+class GithubLink <<frozen dataclass>> {
   url : URL
-  user : GitHubUser
+  user : GithubUser
   repo : Optional[GithubRepo]
 }
 
-class GitHubUser <<dataclass>> {
+class GithubUser <<frozen dataclass>> {
   user_name : GithubUserName
   --
   get_url() : URL
@@ -128,7 +128,7 @@ class GithubRepo <<frozen dataclass>> {
   get_url() : URL
 }
 
-class AnkiForumInfo <<dataclass>> {
+class AnkiForumInfo <<frozen dataclass>> {
   anki_forum_url : Optional[URL]
   topic_slug : Optional[TopicSlug]
   topic_id : Optional[TopicId]
@@ -137,7 +137,7 @@ class AnkiForumInfo <<dataclass>> {
   topic_source : Optional[AnkiForumTopicSource]
 }
 
-class AiInfo <<dataclass>> {
+class AiInfo <<frozen dataclass>> {
   summary : Optional[AiSummary]
   model : Optional[AiModel]
   tags : Optional[list[AiTag]]
@@ -145,7 +145,7 @@ class AiInfo <<dataclass>> {
 }
 
 class AuthorInfo <<frozen dataclass>> {
-  author_id : AddonId
+  author_id : AuthorId
   addon_ids : list[AddonId]
 }
 
@@ -168,11 +168,11 @@ AddonPage "1" o-- "*" AddonBranch
 AddonPage "1" o-- "*" PageLink
 AddonPage "1" o-- "*" AddonReview
 
-GithubInfo "1" o-- "*" GitHubLink
+GithubInfo "1" o-- "*" GithubLink
 GithubInfo o-- "0..1" GithubRepo
 GithubInfo o-- "0..1" AddonManifest
 
-GitHubLink *-- "1" GitHubUser
-GitHubLink o-- "0..1" GithubRepo
+GithubLink *-- "1" GithubUser
+GithubLink o-- "0..1" GithubRepo
 
 @enduml

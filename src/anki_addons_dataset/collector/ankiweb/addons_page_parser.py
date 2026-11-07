@@ -1,3 +1,4 @@
+from datetime import date
 from typing import Optional
 
 from bs4 import ResultSet, Tag, BeautifulSoup
@@ -27,7 +28,7 @@ class AddonsPageParser:
             addon_page: URL = URL(f"""https://ankiweb.net{cells[0].find("a")["href"]}""")
             addon_id: AddonId = AddonId(int(addon_page.split("/")[-1]))
             rating: AddonRating = AddonRating(int(cells[1].text))
-            update_date: UpdateDate = UpdateDate(cells[2].text)
+            update_date: UpdateDate = UpdateDate(date.fromisoformat(cells[2].text))
             branches: AnkiVersion = AnkiVersion(cells[3].text)
             anki_point_version, anki_version_kind = AnkiVersionCodec.parse_header(branches)
             addon_header: AddonHeader = AddonHeader(addon_id, addon_name, addon_page, rating, update_date, branches,

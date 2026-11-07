@@ -7,7 +7,7 @@ from typing import Optional
 from anki_addons_dataset.collector.ai.question.ai_addon_material import AiAddonMaterial
 from anki_addons_dataset.collector.ai.provider.ai_provider import AiProvider, AiPrompt, AiResponseText, AiInstructions
 from anki_addons_dataset.collector.url_parser import UrlParser
-from anki_addons_dataset.common.data_types import AddonInfo, GithubInfo, GithubRepo, GitHubLink, URL
+from anki_addons_dataset.common.data_types import AddonInfo, GithubInfo, GithubRepo, GithubLink, URL
 
 log: Logger = logging.getLogger(__name__)
 
@@ -98,14 +98,14 @@ class AiRepoSelector:
 
     @staticmethod
     def __links_repo(url: str, repo: GithubRepo) -> bool:
-        github_link: Optional[GitHubLink] = UrlParser.parse_github_url(URL(url))
+        github_link: Optional[GithubLink] = UrlParser.parse_github_url(URL(url))
         return github_link is not None and github_link.repo == repo
 
     def __parse_answer(self, ai_response: AiResponseText, candidates: list[GithubInfo]) -> Optional[AiRepoAnswer]:
         answer: str = AiAddonMaterial.normalize_answer(ai_response).removeprefix("https://github.com/")
         if answer == self.__none_answer:
             return AiRepoAnswer(None)
-        github_link: Optional[GitHubLink] = UrlParser.parse_github_url(URL(f"https://github.com/{answer}"))
+        github_link: Optional[GithubLink] = UrlParser.parse_github_url(URL(f"https://github.com/{answer}"))
         answered_repo: Optional[GithubRepo] = github_link.repo if github_link is not None else None
         for candidate in candidates:
             if answered_repo is not None and candidate.github_repo.get_id().lower() == answered_repo.get_id():
