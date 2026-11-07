@@ -7,7 +7,7 @@ from datetime import date
 from pathlib import Path
 from typing import Optional
 from unittest.mock import Mock
-from zipfile import ZipFile
+from zipfile import ZipFile, ZipInfo
 
 import pytest
 from requests import ConnectionError as RequestsConnectionError
@@ -26,7 +26,7 @@ __UPDATED: date = date(2026, 1, 15)
 def __zip_bytes(content: str = "code") -> bytes:
     buffer: io.BytesIO = io.BytesIO()
     with ZipFile(buffer, "w") as archive:
-        archive.writestr("__init__.py", content)
+        archive.writestr(ZipInfo("__init__.py", date_time=(2026, 1, 15, 0, 0, 0)), content)
     return buffer.getvalue()
 
 
