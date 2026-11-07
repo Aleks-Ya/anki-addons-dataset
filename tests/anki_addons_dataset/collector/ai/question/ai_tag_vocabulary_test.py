@@ -31,5 +31,7 @@ def test_definition_carries_the_description() -> None:
 
 @pytest.mark.parametrize("tags", [AiTagVocabulary.function_tags, AiTagVocabulary.status_tags])
 def test_vocabulary_is_read_only(tags: Mapping[AiTag, str]) -> None:
+    new_tag: AiTag = AiTag("new-tag")
+
     with pytest.raises(TypeError):
-        operator.setitem(tags, AiTag("new-tag"), "A tag added at runtime")
+        operator.setitem(tags, new_tag, "A tag added at runtime")

@@ -147,8 +147,10 @@ def test_parse_addon_page_review_without_timestamp_raises():
         '<html><body><main><h2>Reviews</h2>'
         '<div class=""><img class="twox" alt="like"> on 2026-06-14</div>'
         '</main></body></html>')
+    addon_header: AddonHeader = __header(3)
+
     with pytest.raises(ValueError, match="No timestamp in review"):
-        parser.parse_addon_page(__header(3), html)
+        parser.parse_addon_page(addon_header, html)
 
 
 def test_parse_addon_page_other_items_count():

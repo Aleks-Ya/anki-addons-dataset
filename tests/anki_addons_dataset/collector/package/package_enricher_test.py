@@ -110,6 +110,7 @@ def test_enrich_does_not_hide_a_programming_error(snapshot_dir: SnapshotDir, add
     package_analyzer.analyze.side_effect = TypeError("bug")
     addon_infos: AddonInfos = AddonInfos([dataclasses.replace(
         addon_info, header=dataclasses.replace(addon_info.header, id=__ADDON_ID))])
+    package_enricher: PackageEnricher = PackageEnricher(snapshot_dir, package_analyzer)
 
     with pytest.raises(TypeError, match="bug"):
-        PackageEnricher(snapshot_dir, package_analyzer).enrich(addon_infos)
+        package_enricher.enrich(addon_infos)

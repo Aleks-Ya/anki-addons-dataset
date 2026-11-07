@@ -274,6 +274,7 @@ def test_a_programming_error_is_not_counted_as_a_failed_package(working_dir: Wor
     snapshot_dir: SnapshotDir = __snapshot(working_dir, "2026-02-01")
     client: Mock = __client()
     client.locate.side_effect = TypeError("bug")
+    addon_infos: AddonInfos = __addon_infos(addon_info, [__branch()])
 
     with pytest.raises(TypeError, match="bug"):
-        __collect(working_dir, snapshot_dir, client, __addon_infos(addon_info, [__branch()]))
+        __collect(working_dir, snapshot_dir, client, addon_infos)

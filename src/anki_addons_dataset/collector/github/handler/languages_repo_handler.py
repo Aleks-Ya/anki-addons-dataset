@@ -19,4 +19,4 @@ class LanguagesRepoHandler(RepoHandler):
         return {LanguageName(k): v for k, v in content_obj.items()}
 
     def _prepare_stage_dict(self, return_value: dict[LanguageName, int]) -> dict[str, Any]:
-        return {language: size for language, size in return_value.items()}
+        return dict(return_value.items())
