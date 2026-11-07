@@ -120,7 +120,8 @@ files of each language, largest first). The languages are detected from file con
 `json`), files up to 5 MB. macOS metadata (`__MACOSX/`, `._*`) is left out of all of them. The counts cover
 everything in the package, including bundled libraries. The `package` field of the main table repeats the sizes and
 languages for the branch with the highest `min_point_version`, adds its `primary_language` (the language with the most
-bytes, `null` when none is detected), or is `null` when the snapshot holds no package of the addon.
+bytes, leaving out data and config formats such as `json`, `jsonl`, `csv`, `tsv`, `xml` and `yaml`, `null` when no
+other language is detected), or is `null` when the snapshot holds no package of the addon.
 Snapshots collected before packages were downloaded have an empty table.
 
 Questions, feedback, bugs: [Support page at Anki Forum](https://forums.ankiweb.net/t/anki-addons-dataset-a-detailed-list-of-addons/63090)

@@ -449,3 +449,25 @@ def test_addon_infos_to_json_package_without_languages(addon_info: AddonInfo):
 
     assert act_json[0]["package"]["primary_language"] is None
     assert act_json[0]["package"]["language_bytes"] == []
+
+
+def test_addon_infos_to_json_package_primary_language_skips_data_formats(addon_info: AddonInfo):
+    addon_info.package = AddonPackages([
+        AddonPackage("45-2024-01-15-aaaaaaaaaaaa.ankiaddon", AnkiPointVersion(45), date(2024, 1, 15), 10,
+                     None, None, 4, 1000, 1, 3, ["__init__.py", "data.json", "words.csv", "web.js"],
+                     {LanguageName("json"): 500, LanguageName("csv"): 300, LanguageName("javascript"): 150,
+                      LanguageName("python"): 50})])
+
+    act_json: list[dict[str, Any]] = to_dicts(AddonInfos([addon_info]))
+
+    assert act_json[0]["package"]["primary_language"] == "javascript"
+
+
+def test_addon_infos_to_json_package_with_only_data_formats_has_no_primary_language(addon_info: AddonInfo):
+    addon_info.package = AddonPackages([
+        AddonPackage("45-2024-01-15-aaaaaaaaaaaa.ankiaddon", AnkiPointVersion(45), date(2024, 1, 15), 10,
+                     None, None, 1, 500, 0, 0, ["data.json"], {LanguageName("json"): 500})])
+
+    act_json: list[dict[str, Any]] = to_dicts(AddonInfos([addon_info]))
+
+    assert act_json[0]["package"]["primary_language"] is None

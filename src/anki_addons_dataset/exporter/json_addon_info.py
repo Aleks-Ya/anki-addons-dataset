@@ -206,6 +206,10 @@ class Details:
 
 
 class JsonAddonInfo:
+    __data_languages: frozenset[str] = frozenset({
+        "csproj", "csv", "gitattributes", "gitmodules", "htaccess", "ignorefile", "json", "jsonl", "mht", "textproto",
+        "tsv", "vcxproj", "xml", "yaml"})
+
     @staticmethod
     def addon_infos_to_json(addon_infos: AddonInfos) -> list[Details]:
         json_list: list[Details] = []
@@ -248,7 +252,12 @@ class JsonAddonInfo:
                                                for name, count in newest.language_bytes.items()]
         return Package(newest.file_name, newest.updated.isoformat(), newest.size_bytes, newest.file_count,
                        newest.uncompressed_bytes, newest.python_file_count, newest.python_lines,
-                       language_bytes[0].name if language_bytes else None, language_bytes)
+                       JsonAddonInfo.__primary_language(language_bytes), language_bytes)
+
+    @staticmethod
+    def __primary_language(language_bytes: list[LanguageBytes]) -> Optional[str]:
+        return next((language.name for language in language_bytes
+                     if language.name not in JsonAddonInfo.__data_languages), None)
 
     @staticmethod
     def __anki_web_links(addon: AddonInfo) -> list[AnkiWebLink]:

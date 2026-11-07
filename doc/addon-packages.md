@@ -19,6 +19,9 @@ gets a warning and no row. The AI step does not call it. An addon or snapshot wi
   [Magika](https://github.com/google/magika) gives the file content, ignoring the extension, counted only when its
   group is `code` (so `json`, `html` and `css` count, `markdown`, `txt` and images do not). Magika needs at least 8
   bytes; shorter files get `txt`, so they are not counted.
+- REPORT's `primary_language` is the first entry of `language_bytes` that is not a data or config format
+  (`JsonAddonInfo.__data_languages`: `json`, `jsonl`, `csv`, `tsv`, `xml`, `yaml`, `ignorefile`, ...). Bundled word
+  lists and dictionaries often outweigh the code, so without this `json` or `csv` would win for about 130 addons.
 
 Magika takes a few milliseconds per file, and a snapshot holds about 500k files, so `PackageEnricher` analyzes
 packages on one thread per CPU. One `PackageAnalyzer` serves the whole PARSE run and remembers each package by file
