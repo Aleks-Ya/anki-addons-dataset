@@ -6,7 +6,6 @@ from anki_addons_dataset.collector.ankiweb.addon_page_downloader import AddonPag
 from anki_addons_dataset.collector.ankiweb.addon_page_parser import AddonPageParser
 from anki_addons_dataset.collector.ankiweb.addons_page_downloader import AddonsPageDownloader
 from anki_addons_dataset.collector.ankiweb.page_downloader import PageDownloader
-from anki_addons_dataset.collector.overrider.overrider import Overrider
 from anki_addons_dataset.common.data_types import AddonHeader, AddonId, AddonInfo, GithubRepo, SnapshotDate, TopicId, \
     TopicSlug
 from anki_addons_dataset.common.working_dir import SnapshotDir
@@ -43,7 +42,7 @@ def test_download_known_addon_page(page_downloader: PageDownloader, snapshot_dir
                                    known_github_repo: GithubRepo, known_topic_slug: TopicSlug,
                                    known_topic_id: TopicId) -> None:
     header: AddonHeader = __find_header(addon_headers, known_addon_id)
-    addon_page_parser: AddonPageParser = AddonPageParser(Overrider(snapshot_dir))
+    addon_page_parser: AddonPageParser = AddonPageParser()
     downloader: AddonPageDownloader = AddonPageDownloader(
         page_downloader, snapshot_dir, addon_page_parser, offline=False)
 

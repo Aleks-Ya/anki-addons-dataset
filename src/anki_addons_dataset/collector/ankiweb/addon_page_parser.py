@@ -1,7 +1,6 @@
 import copy
 import re
 from datetime import date
-from itertools import groupby
 from typing import Optional
 from urllib.parse import urljoin
 
@@ -11,15 +10,12 @@ from anki_addons_dataset.collector.url_parser import UrlParser
 from anki_addons_dataset.collector.ankiweb.addon_branch_parser import AddonBranchParser
 from anki_addons_dataset.collector.ankiweb.ai_declaration_detector import AiDeclarationDetector
 from anki_addons_dataset.collector.ankiweb.description_language_detector import DescriptionLanguageDetector
-from anki_addons_dataset.collector.overrider.overrider import Overrider
-from anki_addons_dataset.common.data_types import AddonHeader, AddonInfo, AddonId, URL, GithubLink, \
-    AddonPage, AddonBranch, HtmlStr, AnkiForumInfo, AddonDescription, LanguageCode, PageLink, \
-    PageLinkSection, AddonReview, ReviewVote, AnkiForumTopicSource
+from anki_addons_dataset.common.data_types import AddonHeader, AddonInfo, URL, GithubLink, \
+    AddonPage, AddonBranch, HtmlStr, AddonDescription, LanguageCode, PageLink, \
+    PageLinkSection, AddonReview, ReviewVote
 
 
 class AddonPageParser:
-    def __init__(self, overrider: Overrider) -> None:
-        self.overrider: Overrider = overrider
 
     def parse_addon_page(self, addon_header: AddonHeader, html: HtmlStr) -> AddonInfo:
         soup: BeautifulSoup = BeautifulSoup(html, 'html.parser')
@@ -29,13 +25,6 @@ class AddonPageParser:
         links: list[PageLink] = self.__fold_anchors(anchors)
         description_links: list[URL] = [url for url, section, _ in anchors if section == PageLinkSection.DESCRIPTION]
         github_links: list[GithubLink] = UrlParser.find_github_links(description_links)
-        contact_author_url: Optional[URL] = next(
-            (link.url for link in links if link.section == PageLinkSection.CONTACT_AUTHOR), None)
-        anki_forum_links: list[URL] = UrlParser.find_anki_forum_links(description_links)
-        anki_forum_url: Optional[URL]
-        anki_forum_source: Optional[AnkiForumTopicSource]
-        anki_forum_url, anki_forum_source = self.__deduce_anki_forum_url(
-            addon_header.id, anki_forum_links, contact_author_url)
         likes: int = self.__extract_likes(soup)
         dislikes: int = self.__extract_dislikes(soup)
         addon_branches: list[AddonBranch] = self.__extract_addon_branches(soup)
@@ -54,29 +43,8 @@ class AddonPageParser:
             html, likes, dislikes, addon_branches, links, description, ai_declaration_markers, description_language,
             description_language_confidence, description_html, description_pre_wrap, other_items_count, reviews,
             package_size_kb=package_size_kb, github_links=github_links)
-        anki_forum_info: AnkiForumInfo = AnkiForumInfo(anki_forum_url, None, None, None, None,
-                                                       topic_source=anki_forum_source)
-        addon_info: AddonInfo = AddonInfo(addon_header, addon_page, None, anki_forum_info)
+        addon_info: AddonInfo = AddonInfo(addon_header, addon_page, None, None)
         return addon_info
-
-    def __deduce_anki_forum_url(self, addon_id: AddonId, anki_forum_urls: list[URL],
-                                contact_author_url: Optional[URL]
-                                ) -> tuple[Optional[URL], Optional[AnkiForumTopicSource]]:
-        override_url: Optional[URL] = self.overrider.override_anki_forum_url(addon_id)
-        if override_url:
-            return override_url, AnkiForumTopicSource.OVERRIDE
-        if contact_author_url is not None:
-            contact_forum_urls: list[URL] = UrlParser.find_anki_forum_links([contact_author_url])
-            if contact_forum_urls:
-                return contact_forum_urls[0], AnkiForumTopicSource.CONTACT_AUTHOR
-        urls_sorted: list[URL] = list(anki_forum_urls)
-        urls_sorted.sort()
-        grouped: groupby[URL, URL] = groupby(urls_sorted)
-        counts: dict[URL, int] = {k: len(list(v)) for k, v in grouped}
-        if len(counts) == 0:
-            return None, None
-        max_tuple: tuple[URL, int] = max(counts.items(), key=lambda item: item[1])
-        return max_tuple[0], AnkiForumTopicSource.MOST_LINKED
 
     @staticmethod
     def __extract_anchors(soup: BeautifulSoup, description_tag: Optional[Tag],

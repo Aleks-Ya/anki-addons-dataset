@@ -24,6 +24,7 @@ from anki_addons_dataset.collector.anki_versions_collector import AnkiVersionsCo
 from anki_addons_dataset.collector.ankiforum.ankiforum_enricher import AnkiForumEnricher
 from anki_addons_dataset.collector.ankiforum.ankiforum_service import AnkiForumService
 from anki_addons_dataset.collector.ankiforum.ankiforum_topic_discoverer import AnkiForumTopicDiscoverer
+from anki_addons_dataset.collector.ankiforum.ankiforum_topic_selector import AnkiForumTopicSelector
 from anki_addons_dataset.collector.ankiweb.addon_page_downloader import AddonPageDownloader
 from anki_addons_dataset.collector.ankiweb.addon_page_parser import AddonPageParser
 from anki_addons_dataset.collector.ankiweb.addons_page_downloader import AddonsPageDownloader
@@ -222,7 +223,7 @@ class CollectorFacade:
                   ai_provider: Optional[AiProvider] = None) -> AddonInfos:
         log.info(f"Offline: {offline}")
         overrider: Overrider = Overrider(snapshot_dir)
-        addon_page_parser: AddonPageParser = AddonPageParser(overrider)
+        addon_page_parser: AddonPageParser = AddonPageParser()
         page_downloader: PageDownloader = PageDownloader(self.__page_load_timeout, self.__element_wait_timeout)
         addons_page_downloader: AddonsPageDownloader = AddonsPageDownloader(page_downloader, snapshot_dir, offline)
         addon_page_downloader: AddonPageDownloader = AddonPageDownloader(
@@ -240,7 +241,7 @@ class CollectorFacade:
         github_enricher: GithubEnricher = GithubEnricher(snapshot_dir, github_service, github_repo_selector, offline)
         ai_forum_verifier: Optional[AiForumVerifier] = AiForumVerifier(ai_provider) if ai_provider else None
         anki_forum_enricher: AnkiForumEnricher = AnkiForumEnricher(
-            snapshot_dir, anki_forum_service, ai_forum_verifier, offline)
+            snapshot_dir, anki_forum_service, AnkiForumTopicSelector(overrider), ai_forum_verifier, offline)
         anki_forum_topic_discoverer: AnkiForumTopicDiscoverer = AnkiForumTopicDiscoverer(
             anki_forum_service, ai_forum_verifier)
         max_addons: Optional[int] = SampleCollector(snapshot_dir).effective_addons(

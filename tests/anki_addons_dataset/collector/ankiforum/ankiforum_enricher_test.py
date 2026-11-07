@@ -10,25 +10,30 @@ import pytest
 from anki_addons_dataset.collector.ai.question.ai_forum_verifier import AiForumVerifier, AiForumAnswer
 from anki_addons_dataset.collector.ankiforum.ankiforum_enricher import AnkiForumEnricher
 from anki_addons_dataset.collector.ankiforum.ankiforum_service import AnkiForumService
+from anki_addons_dataset.collector.ankiforum.ankiforum_topic_selector import AnkiForumTopicSelector
+from anki_addons_dataset.collector.overrider.overrider import Overrider
 from anki_addons_dataset.common.data_types import AddonInfo, AddonHeader, AddonId, AddonPage, GithubInfo, AddonInfos, \
     AnkiForumInfo, TopicSlug, TopicId, LastPostedAt, URL, PostsCount, LanguageName, GithubRepo, GithubUserName, \
     GithubRepoName, AnkiVersion, AddonBranch, HtmlStr, AddonRating, UpdateDate, AddonTitle, AddonDescription, \
     AiInfo, AiSummary, AiModel, AiTag, AnkiPointVersion, AnkiVersionKind, AuthorInfo, AuthorId, AnkiForumTopicSource, \
     AnkiForumTopicContent, AnkiForumPost, GithubRelease, GithubReleaseAsset, \
-    GithubContributor, GithubIssueHistory
+    GithubContributor, GithubIssueHistory, PageLink, PageLinkSection
 from anki_addons_dataset.common.working_dir import SnapshotDir
 
 log: Logger = logging.getLogger(__name__)
 
 
 def test_enrich(anki_forum_enricher: AnkiForumEnricher, anki_forum_service: AnkiForumService,
-                last_posted_at: LastPostedAt, posts_count: PostsCount, addon_info: AddonInfo, addon_infos: AddonInfos):
+                last_posted_at: LastPostedAt, posts_count: PostsCount, addon_info: AddonInfo):
+    topic_links: list[PageLink] = [PageLink(URL('https://forums.ankiweb.net/t/note-size-addon-support/46001'),
+                                            PageLinkSection.CONTACT_AUTHOR)]
+    addon_info = copy.replace(addon_info, page=copy.replace(addon_info.page, links=topic_links), forum=None)
     anki_forum_service.get_last_posted_at = Mock(return_value=last_posted_at)
     anki_forum_service.get_posts_count = Mock(return_value=posts_count)
     anki_forum_enricher.start()
     anki_forum_enricher.download_in_background(addon_info)
     anki_forum_enricher.wait_download_finish()
-    act_addon_infos: AddonInfos = anki_forum_enricher.enrich(addon_infos)
+    act_addon_infos: AddonInfos = anki_forum_enricher.enrich(AddonInfos([addon_info]))
 
     exp_addon_info: AddonInfo = AddonInfo(
         header=AddonHeader(
@@ -51,7 +56,7 @@ def test_enrich(anki_forum_enricher: AnkiForumEnricher, anki_forum_service: Anki
                                   min_point_version=AnkiPointVersion(240401),
                                   max_point_version=AnkiPointVersion(250902),
                                   max_version_kind=AnkiVersionKind.TESTED)],
-            links=[],
+            links=topic_links,
             description=AddonDescription("Sample addon description for full text search"),
             ai_declaration_markers=["chatgpt"],
             description_html=HtmlStr("<p>Sample addon <b>description</b> for full text search</p>"),
@@ -97,6 +102,9 @@ def test_enrich(anki_forum_enricher: AnkiForumEnricher, anki_forum_service: Anki
     assert act_addon_infos == [exp_addon_info]
 
 
+page_link_sections: dict[AnkiForumTopicSource, PageLinkSection] = {
+    AnkiForumTopicSource.MOST_LINKED: PageLinkSection.DESCRIPTION,
+    AnkiForumTopicSource.CONTACT_AUTHOR: PageLinkSection.CONTACT_AUTHOR}
 topic: AnkiForumTopicContent = AnkiForumTopicContent(
     "Note Size addon support", "author", 42, [AnkiForumPost(1, "author", "Support thread.", [])])
 
@@ -109,9 +117,15 @@ def __verified_forum(snapshot_dir: SnapshotDir, anki_forum_service: AnkiForumSer
     anki_forum_service.get_topic_content = Mock(return_value=topic_content)
     verifier: Mock = Mock(spec=AiForumVerifier)
     verifier.verify = Mock(return_value=answer)
-    enricher: AnkiForumEnricher = AnkiForumEnricher(snapshot_dir, anki_forum_service, verifier, offline=True)
-    linked_addon_info: AddonInfo = copy.replace(addon_info, forum=copy.replace(addon_info.forum,
-                                                                               topic_source=topic_source))
+    forum_url: URL = addon_info.forum.anki_forum_url
+    overrider: Mock = Mock(spec=Overrider)
+    is_override: bool = topic_source == AnkiForumTopicSource.OVERRIDE
+    overrider.override_anki_forum_url.return_value = forum_url if is_override else None
+    links: list[PageLink] = [PageLink(forum_url, page_link_sections[topic_source])] \
+        if topic_source in page_link_sections else []
+    enricher: AnkiForumEnricher = AnkiForumEnricher(snapshot_dir, anki_forum_service, AnkiForumTopicSelector(overrider),
+                                                    verifier, offline=True)
+    linked_addon_info: AddonInfo = copy.replace(addon_info, page=copy.replace(addon_info.page, links=links), forum=None)
     enricher.start()
     enricher.download_in_background(linked_addon_info)
     enricher.wait_download_finish()

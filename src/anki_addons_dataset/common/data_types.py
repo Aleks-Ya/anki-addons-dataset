@@ -252,12 +252,12 @@ class AddonPage:
 
 @dataclass(frozen=True)
 class AnkiForumInfo:
-    anki_forum_url: Optional[URL]
-    topic_slug: Optional[TopicSlug]
-    topic_id: Optional[TopicId]
+    anki_forum_url: URL
+    topic_slug: TopicSlug
+    topic_id: TopicId
     last_posted_at: Optional[LastPostedAt]
     posts_count: Optional[PostsCount]
-    topic_source: Optional[AnkiForumTopicSource] = None
+    topic_source: AnkiForumTopicSource
 
 
 @dataclass(frozen=True)

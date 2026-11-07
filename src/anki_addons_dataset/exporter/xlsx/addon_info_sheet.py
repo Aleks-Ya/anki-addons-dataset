@@ -210,8 +210,7 @@ class AddonInfoSheet:
 
     def __fill_anki_forum_row_columns(self, addon: AddonInfo, row: int, worksheet: Worksheet):
         if addon.forum:
-            if addon.forum.anki_forum_url:
-                worksheet.write_url(row, self.__anki_forum_url_col, addon.forum.anki_forum_url, string='link')
+            worksheet.write_url(row, self.__anki_forum_url_col, addon.forum.anki_forum_url, string='link')
             last_posted_at_str: str = addon.forum.last_posted_at.strftime("%Y-%m-%d") \
                 if addon.forum.last_posted_at else ""
             if addon.forum.posts_count:

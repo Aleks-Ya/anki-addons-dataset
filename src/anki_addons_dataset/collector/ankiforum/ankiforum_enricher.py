@@ -8,6 +8,7 @@ from logging import Logger
 from anki_addons_dataset.collector.ai.question.ai_forum_verifier import AiForumVerifier, AiForumAnswer
 from anki_addons_dataset.collector.ankiforum.ankiforum_service import AnkiForumService
 from anki_addons_dataset.collector.ankiforum.ankiforum_topic import AnkiForumTopic
+from anki_addons_dataset.collector.ankiforum.ankiforum_topic_selector import AnkiForumTopicSelector
 from anki_addons_dataset.collector.enricher import Enricher
 from anki_addons_dataset.common.data_types import AddonInfo, AddonId, \
     AnkiForumInfo, TopicSlug, TopicId, LastPostedAt, AddonInfos, PostsCount, URL, AnkiForumTopicSource, \
@@ -23,9 +24,11 @@ class AnkiForumEnricher(Enricher):
     __offline_pool_size: int = 50
 
     def __init__(self, snapshot_dir: SnapshotDir, anki_forum_service: AnkiForumService,
-                 ai_forum_verifier: Optional[AiForumVerifier] = None, offline: bool = False):
+                 topic_selector: AnkiForumTopicSelector, ai_forum_verifier: Optional[AiForumVerifier] = None,
+                 offline: bool = False):
         # Offline, the pool waits on AI topic checks rather than on the forum.
         super().__init__(name=self.__name, pool_size=self.__offline_pool_size if offline else 1)
+        self.__topic_selector: AnkiForumTopicSelector = topic_selector
         self.__ai_forum_verifier: Optional[AiForumVerifier] = ai_forum_verifier
         self.__lock: Lock = Lock()
         self.__stage_dir: Path = snapshot_dir.get_stage_dir() / "3-enricher" / "forum"
@@ -42,12 +45,12 @@ class AnkiForumEnricher(Enricher):
             self.__anki_forum_infos[addon_info.header.id] = anki_forum
 
     def __fetch(self, addon_info: AddonInfo) -> Optional[AnkiForumInfo]:
-        anki_forum_url: Optional[URL] = addon_info.forum.anki_forum_url if addon_info.forum else None
-        if not anki_forum_url:
+        decided: Optional[tuple[URL, AnkiForumTopicSource]] = self.__topic_selector.decided_topic(addon_info)
+        if decided is None:
             return None
-        topic_slug: Optional[TopicSlug] = AnkiForumTopic.extract_topic_slug(anki_forum_url)
-        topic_id: Optional[TopicId] = AnkiForumTopic.extract_topic_id(anki_forum_url)
-        topic_source: Optional[AnkiForumTopicSource] = addon_info.forum.topic_source
+        anki_forum_url, topic_source = decided
+        topic_slug: TopicSlug = AnkiForumTopic.extract_topic_slug(anki_forum_url)
+        topic_id: TopicId = AnkiForumTopic.extract_topic_id(anki_forum_url)
         if topic_source == AnkiForumTopicSource.MOST_LINKED:
             answer: Optional[AiForumAnswer] = self.__verify(addon_info, anki_forum_url, topic_slug, topic_id)
             if answer is not None and not answer.own:
@@ -59,8 +62,8 @@ class AnkiForumEnricher(Enricher):
         posts_count: Optional[PostsCount] = self.__anki_forum_service.get_posts_count(topic_slug, topic_id)
         return AnkiForumInfo(anki_forum_url, topic_slug, topic_id, last_posted_at, posts_count, topic_source)
 
-    def __verify(self, addon_info: AddonInfo, anki_forum_url: URL, topic_slug: Optional[TopicSlug],
-                 topic_id: Optional[TopicId]) -> Optional[AiForumAnswer]:
+    def __verify(self, addon_info: AddonInfo, anki_forum_url: URL, topic_slug: TopicSlug,
+                 topic_id: TopicId) -> Optional[AiForumAnswer]:
         if self.__ai_forum_verifier is None:
             return None
         topic: Optional[AnkiForumTopicContent] = self.__anki_forum_service.get_topic_content(topic_slug, topic_id)

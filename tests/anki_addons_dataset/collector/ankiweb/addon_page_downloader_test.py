@@ -32,8 +32,8 @@ def test_download_empty_files(addon_page_downloader: AddonPageDownloader, page_d
         update_date=UpdateDate(date(2025, 4, 19)),
         anki_version=AnkiVersion("25.09.2~"))
     addon_info: AddonInfo = addon_page_downloader.get_addon_info(addon_header)
-    assert addon_info.forum
-    assert addon_info.forum.anki_forum_url == URL('https://forums.ankiweb.net/t/note-size-addon-support/46001')
+    page_urls: list[URL] = [link.url for link in addon_info.page.links]
+    assert URL('https://forums.ankiweb.net/t/note-size-addon-support/46001') in page_urls
 
 
 def test_throws_informative_exception(addon_page_downloader: AddonPageDownloader, page_downloader: PageDownloader,

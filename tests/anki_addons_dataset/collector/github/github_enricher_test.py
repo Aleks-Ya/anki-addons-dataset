@@ -14,7 +14,7 @@ from anki_addons_dataset.common.data_types import AddonInfo, AddonHeader, AddonI
     LanguageName, GithubInfo, AddonInfos, AnkiForumInfo, TopicSlug, TopicId, LastPostedAt, PostsCount, AnkiVersion, \
     HtmlStr, URL, AddonRating, UpdateDate, AddonTitle, AddonManifest, SpdxLicense, Topic, DependencyName, \
     GithubReadme, GithubUserName, GithubRepoName, GithubLink, GithubRepoSource, GithubRelease, GithubReleaseAsset, \
-    GithubContributor, GithubIssueHistory, PageLink, PageLinkSection
+    GithubContributor, GithubIssueHistory, PageLink, PageLinkSection, AnkiForumTopicSource
 from anki_addons_dataset.common.working_dir import SnapshotDir
 
 log: Logger = logging.getLogger(__name__)
@@ -43,11 +43,12 @@ def test_enrich(github_enricher: GithubEnricher, github_service: GithubService, 
         ),
         github=None,
         forum=AnkiForumInfo(
-            anki_forum_url=None,
+            anki_forum_url=URL("https://forums.ankiweb.net/t/note-size-addon-support/46001"),
             topic_slug=topic_slug,
             topic_id=topic_id,
             last_posted_at=last_posted_at,
-            posts_count=posts_count
+            posts_count=posts_count,
+            topic_source=AnkiForumTopicSource.CONTACT_AUTHOR
         )
     )
 
@@ -130,11 +131,12 @@ def test_enrich(github_enricher: GithubEnricher, github_service: GithubService, 
             repo_source=GithubRepoSource.CONTACT_AUTHOR
         ),
         forum=AnkiForumInfo(
-            anki_forum_url=None,
+            anki_forum_url=URL("https://forums.ankiweb.net/t/note-size-addon-support/46001"),
             topic_slug=topic_slug,
             topic_id=topic_id,
             last_posted_at=last_posted_at,
-            posts_count=posts_count
+            posts_count=posts_count,
+            topic_source=AnkiForumTopicSource.CONTACT_AUTHOR
         )
     )
 

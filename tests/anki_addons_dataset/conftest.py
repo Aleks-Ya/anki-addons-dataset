@@ -7,6 +7,7 @@ import pytest
 from pydiscourse import DiscourseClient
 
 from anki_addons_dataset.collector.ankiforum.ankiforum_enricher import AnkiForumEnricher
+from anki_addons_dataset.collector.ankiforum.ankiforum_topic_selector import AnkiForumTopicSelector
 from anki_addons_dataset.collector.ankiforum.ankiforum_service import TopicSlug, TopicId, AnkiForumService
 from anki_addons_dataset.collector.ankiweb.addon_page_downloader import AddonPageDownloader
 from anki_addons_dataset.collector.ankiweb.addon_page_parser import AddonPageParser
@@ -117,8 +118,8 @@ def page_downloader() -> PageDownloader:
 
 
 @pytest.fixture
-def addon_page_parser(overrider: Overrider) -> AddonPageParser:
-    return AddonPageParser(overrider)
+def addon_page_parser() -> AddonPageParser:
+    return AddonPageParser()
 
 
 @pytest.fixture
@@ -287,7 +288,7 @@ def github_enricher(snapshot_dir: SnapshotDir, github_service: GithubService) ->
 
 @pytest.fixture
 def anki_forum_enricher(snapshot_dir: SnapshotDir, anki_forum_service: AnkiForumService) -> AnkiForumEnricher:
-    return AnkiForumEnricher(snapshot_dir, anki_forum_service)
+    return AnkiForumEnricher(snapshot_dir, anki_forum_service, AnkiForumTopicSelector(Overrider(snapshot_dir)))
 
 
 @pytest.fixture

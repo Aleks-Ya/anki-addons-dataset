@@ -13,9 +13,7 @@ class AnkiForumTopic:
         return URL(f"https://forums.ankiweb.net/t/{topic_slug}/{topic_id}")
 
     @staticmethod
-    def extract_topic_slug(topic_url: Optional[URL]) -> Optional[TopicSlug]:
-        if topic_url is None:
-            return None
+    def extract_topic_slug(topic_url: URL) -> TopicSlug:
         match: Optional[Match[str]] = re.search(AnkiForumTopic.__url_pattern, topic_url)
         if match:
             topic_slug_str: str = match.group(1)
@@ -24,9 +22,7 @@ class AnkiForumTopic:
             raise ValueError(f"Cannot extract Topic Slug from Anki Forum Topic URL: '{topic_url}'")
 
     @staticmethod
-    def extract_topic_id(topic_url: Optional[URL]) -> Optional[TopicId]:
-        if topic_url is None:
-            return None
+    def extract_topic_id(topic_url: URL) -> TopicId:
         match: Optional[Match[str]] = re.search(AnkiForumTopic.__url_pattern, topic_url)
         if match:
             topic_id_str: str = match.group(2)

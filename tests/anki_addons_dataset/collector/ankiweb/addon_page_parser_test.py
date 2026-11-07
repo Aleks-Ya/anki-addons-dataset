@@ -3,17 +3,16 @@ from dataclasses import replace
 from pathlib import Path
 
 from anki_addons_dataset.collector.ankiweb.addon_page_parser import AddonPageParser
-from anki_addons_dataset.collector.overrider.overrider import Overrider
 from anki_addons_dataset.common.data_types import AddonHeader, AddonInfo, AddonPage, AddonId, GithubLink, \
-    URL, GithubUser, GithubRepo, GithubUserName, GithubRepoName, AddonBranch, HtmlStr, AnkiForumInfo, AnkiVersion, \
+    URL, GithubUser, GithubRepo, GithubUserName, GithubRepoName, AddonBranch, HtmlStr, AnkiVersion, \
     AnkiPointVersion, AnkiVersionKind, AddonRating, UpdateDate, AddonTitle, AddonDescription, \
-    PageLink, PageLinkSection, AddonReview, ReviewVote, AnkiForumTopicSource
+    PageLink, PageLinkSection, AddonReview, ReviewVote
 
 
-def test_parse_addon_page(overrider: Overrider):
+def test_parse_addon_page():
     addon_html_file: Path = Path(__file__).parent / "1188705668.html"
     addon_html: HtmlStr = HtmlStr(addon_html_file.read_text())
-    parser: AddonPageParser = AddonPageParser(overrider)
+    parser: AddonPageParser = AddonPageParser()
     addon_header: AddonHeader = AddonHeader(
         id=AddonId(1188705668),
         title=AddonTitle("Note Size - sort notes by size and see collection size"),
@@ -97,19 +96,12 @@ def test_parse_addon_page(overrider: Overrider):
             ]
         ),
         None,
-        forum=AnkiForumInfo(
-            anki_forum_url=URL("https://forums.ankiweb.net/t/note-size-addon-support/46001"),
-            topic_slug=None,
-            topic_id=None,
-            last_posted_at=None,
-            posts_count=None,
-            topic_source=AnkiForumTopicSource.MOST_LINKED
-        )
+        None
     )
 
 
-def test_parse_addon_page_without_description(overrider: Overrider):
-    parser: AddonPageParser = AddonPageParser(overrider)
+def test_parse_addon_page_without_description():
+    parser: AddonPageParser = AddonPageParser()
     addon_header: AddonHeader = AddonHeader(
         id=AddonId(1),
         title=AddonTitle("No description addon"),
@@ -129,8 +121,8 @@ def test_parse_addon_page_without_description(overrider: Overrider):
     assert addon_info.page.package_size_kb is None
 
 
-def test_parse_addon_page_reviews(overrider: Overrider):
-    parser: AddonPageParser = AddonPageParser(overrider)
+def test_parse_addon_page_reviews():
+    parser: AddonPageParser = AddonPageParser()
     html: HtmlStr = HtmlStr(
         '<html><body><main><h2>Reviews</h2>'
         '<div class=""><img class="twox" alt="dislike"> on <span class="timestamp">2026-07-05</span></div>'
@@ -146,8 +138,8 @@ def test_parse_addon_page_reviews(overrider: Overrider):
         AddonReview(ReviewVote.LIKE, datetime.date(2026, 6, 14), '', 'Thanks!')]
 
 
-def test_parse_addon_page_other_items_count(overrider: Overrider):
-    parser: AddonPageParser = AddonPageParser(overrider)
+def test_parse_addon_page_other_items_count():
+    parser: AddonPageParser = AddonPageParser()
     html: HtmlStr = HtmlStr(
         '<html><body><main>'
         '<div><small>The author has shared <a href="/shared/by-author/12">17 other item(s)</a>.</small></div>'
@@ -156,8 +148,8 @@ def test_parse_addon_page_other_items_count(overrider: Overrider):
     assert addon_info.page.other_items_count == 17
 
 
-def test_parse_addon_page_package_size_in_megabytes(overrider: Overrider):
-    parser: AddonPageParser = AddonPageParser(overrider)
+def test_parse_addon_page_package_size_in_megabytes():
+    parser: AddonPageParser = AddonPageParser()
     html: HtmlStr = HtmlStr(
         '<html><body><main><h1>Addon</h1><div class="mb-3"><small>1.03MB. Updated 2026-08-07.</small></div>'
         '</main></body></html>')
@@ -165,8 +157,8 @@ def test_parse_addon_page_package_size_in_megabytes(overrider: Overrider):
     assert addon_info.page.package_size_kb == 1030
 
 
-def test_parse_addon_page_package_size_under_ten_kilobytes(overrider: Overrider):
-    parser: AddonPageParser = AddonPageParser(overrider)
+def test_parse_addon_page_package_size_under_ten_kilobytes():
+    parser: AddonPageParser = AddonPageParser()
     html: HtmlStr = HtmlStr(
         '<html><body><main><h1>Addon</h1><div class="mb-3"><small>&lt;10kB. Updated 2026-08-07.</small></div>'
         '</main></body></html>')
@@ -174,16 +166,16 @@ def test_parse_addon_page_package_size_under_ten_kilobytes(overrider: Overrider)
     assert addon_info.page.package_size_kb == 0
 
 
-def test_parse_addon_page_with_empty_description(overrider: Overrider):
-    parser: AddonPageParser = AddonPageParser(overrider)
+def test_parse_addon_page_with_empty_description():
+    parser: AddonPageParser = AddonPageParser()
     html: HtmlStr = HtmlStr('<html><body><main><div class="shared-item-description"> \n </div></main></body></html>')
     addon_info: AddonInfo = parser.parse_addon_page(__header(9), html)
     assert addon_info.page.description_html is None
     assert addon_info.page.description_pre_wrap is False
 
 
-def test_parse_addon_page_description_html(overrider: Overrider):
-    parser: AddonPageParser = AddonPageParser(overrider)
+def test_parse_addon_page_description_html():
+    parser: AddonPageParser = AddonPageParser()
     html: HtmlStr = HtmlStr(
         '<html><body><main>'
         '<div class="shared-item-description break-word">'
@@ -209,8 +201,8 @@ def test_parse_addon_page_description_html(overrider: Overrider):
     assert addon_info.page.description == "Features See GitHub and other addon . Usage Mail"
 
 
-def test_parse_addon_page_description_pre_wrap(overrider: Overrider):
-    parser: AddonPageParser = AddonPageParser(overrider)
+def test_parse_addon_page_description_pre_wrap():
+    parser: AddonPageParser = AddonPageParser()
     html: HtmlStr = HtmlStr(
         '<html><body><main>'
         '<div class="shared-item-description break-word pre-wrap">Line one\nLine two</div>'
@@ -220,9 +212,9 @@ def test_parse_addon_page_description_pre_wrap(overrider: Overrider):
     assert addon_info.page.description_html == "Line one\nLine two"
 
 
-def test_parse_addon_page_detects_non_english_description(overrider: Overrider):
+def test_parse_addon_page_detects_non_english_description():
     """The Spanish description is tagged with the ISO-639-1 code 'es' and a confidence value."""
-    parser: AddonPageParser = AddonPageParser(overrider)
+    parser: AddonPageParser = AddonPageParser()
     html: HtmlStr = HtmlStr(
         '<html><body><main>'
         '<div class="shared-item-description">'
@@ -234,9 +226,9 @@ def test_parse_addon_page_detects_non_english_description(overrider: Overrider):
     assert addon_info.page.description_language_confidence is not None
 
 
-def test_comment_github_url_does_not_override_description_repo(overrider: Overrider):
+def test_comment_github_url_does_not_override_description_repo():
     """A repo linked (repeatedly) in a user comment must not become a candidate repo."""
-    parser: AddonPageParser = AddonPageParser(overrider)
+    parser: AddonPageParser = AddonPageParser()
     addon_header: AddonHeader = AddonHeader(
         id=AddonId(2),
         title=AddonTitle("Comment pollution addon"),
@@ -271,27 +263,8 @@ def __header(addon_id: int) -> AddonHeader:
         anki_version=AnkiVersion("25.09.2~"))
 
 
-def test_contact_author_forum_link_wins_over_description_vote(overrider: Overrider):
-    """The Contact Author button's forum URL beats a differently-voted forum URL in the description."""
-    parser: AddonPageParser = AddonPageParser(overrider)
-    html: HtmlStr = HtmlStr(
-        '<html><body><main>'
-        '<a class="btn btn-outline-primary" '
-        'href="https://forums.ankiweb.net/t/review-heatmap-official-support-thread/928/1">Contact Author</a>'
-        '<div class="shared-item-description">'
-        '<a href="https://forums.ankiweb.net/t/some-other-thread/1">A</a>'
-        '<a href="https://forums.ankiweb.net/t/some-other-thread/1">B</a>'
-        '<a href="https://forums.ankiweb.net/t/some-other-thread/1">C</a>'
-        '</div>'
-        '</main></body></html>')
-    addon_info: AddonInfo = parser.parse_addon_page(__header(3), html)
-    assert addon_info.forum.anki_forum_url == URL(
-        "https://forums.ankiweb.net/t/review-heatmap-official-support-thread/928/1")
-    assert addon_info.forum.topic_source == AnkiForumTopicSource.CONTACT_AUTHOR
-
-
-def test_contact_author_github_link_is_kept_apart_from_the_description_links(overrider: Overrider):
-    parser: AddonPageParser = AddonPageParser(overrider)
+def test_contact_author_github_link_is_kept_apart_from_the_description_links():
+    parser: AddonPageParser = AddonPageParser()
     html: HtmlStr = HtmlStr(
         '<html><body><main>'
         '<a class="btn btn-outline-primary" '
@@ -308,23 +281,9 @@ def test_contact_author_github_link_is_kept_apart_from_the_description_links(ove
         URL("https://github.com/other/other-repo"), URL("https://github.com/other/other-repo")]
 
 
-def test_manual_override_beats_contact_author_forum_link(overrider: Overrider):
-    """An overrides.yaml forum URL (addon 111623432) still wins over the Contact Author button."""
-    parser: AddonPageParser = AddonPageParser(overrider)
-    html: HtmlStr = HtmlStr(
-        '<html><body><main>'
-        '<a class="btn btn-outline-primary" '
-        'href="https://forums.ankiweb.net/t/wrong-thread/999">Contact Author</a>'
-        '</main></body></html>')
-    addon_info: AddonInfo = parser.parse_addon_page(__header(111623432), html)
-    assert addon_info.forum.anki_forum_url == URL(
-        "https://forums.ankiweb.net/t/hypertts-spirtual-successor-to-awesometts/17143")
-    assert addon_info.forum.topic_source == AnkiForumTopicSource.OVERRIDE
-
-
-def test_ai_declaration_detected_without_github_repo(overrider: Overrider):
+def test_ai_declaration_detected_without_github_repo():
     """A repo-less addon that declares AI in its description still gets ai_declaration_markers."""
-    parser: AddonPageParser = AddonPageParser(overrider)
+    parser: AddonPageParser = AddonPageParser()
     html: HtmlStr = HtmlStr(
         '<html><body><main>'
         '<div class="shared-item-description">'
@@ -336,25 +295,11 @@ def test_ai_declaration_detected_without_github_repo(overrider: Overrider):
     assert addon_info.page.ai_declaration_markers == ["chatgpt"]
 
 
-def test_plain_description_has_no_ai_declaration_markers(overrider: Overrider):
-    parser: AddonPageParser = AddonPageParser(overrider)
+def test_plain_description_has_no_ai_declaration_markers():
+    parser: AddonPageParser = AddonPageParser()
     html: HtmlStr = HtmlStr(
         '<html><body><main>'
         '<div class="shared-item-description">A handy addon for reviewing cards.</div>'
         '</main></body></html>')
     addon_info: AddonInfo = parser.parse_addon_page(__header(7), html)
     assert addon_info.page.ai_declaration_markers == []
-
-
-def test_no_contact_author_button_falls_back_to_description_vote(overrider: Overrider):
-    """Without a Contact Author button the forum URL still comes from the description majority vote."""
-    parser: AddonPageParser = AddonPageParser(overrider)
-    html: HtmlStr = HtmlStr(
-        '<html><body><main>'
-        '<div class="shared-item-description">'
-        '<a href="https://forums.ankiweb.net/t/the-only-thread/42">Support</a>'
-        '</div>'
-        '</main></body></html>')
-    addon_info: AddonInfo = parser.parse_addon_page(__header(5), html)
-    assert addon_info.forum.anki_forum_url == URL("https://forums.ankiweb.net/t/the-only-thread/42")
-    assert addon_info.forum.topic_source == AnkiForumTopicSource.MOST_LINKED

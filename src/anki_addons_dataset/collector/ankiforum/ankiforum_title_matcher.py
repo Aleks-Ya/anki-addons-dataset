@@ -39,7 +39,7 @@ class AnkiForumTitleMatcher:
                 addons_by_title.setdefault(title, []).append(addon_info.header.id)
         titles: list[str] = list(addons_by_title)
         claimed: set[TopicId] = {addon_info.forum.topic_id for addon_info in addon_infos
-                                 if addon_info.forum and addon_info.forum.topic_id}
+                                 if addon_info.forum}
         candidates: dict[AddonId, list[AnkiForumTitleCandidate]] = {}
         for topic in topics:
             marked: bool = bool(cls.__marker.search(topic.title))

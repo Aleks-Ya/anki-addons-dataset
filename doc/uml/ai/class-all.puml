@@ -136,6 +136,7 @@ package "anki_addons_dataset" {
       class AnkiForumTopic
       class AnkiForumTitleMatcher
       class AnkiForumTopicDiscoverer
+      class AnkiForumTopicSelector
     }
 
     package "github" {
@@ -313,7 +314,6 @@ AddonPageParser --> AddonBranchParser
 AddonPageParser --> AiDeclarationDetector
 AddonPageParser --> DescriptionLanguageDetector
 AddonPageParser --> UrlParser
-AddonPageParser --> Overrider
 AddonsPageParser --> AddonHeader
 AddonsPageParser --> AnkiVersionCodec
 AddonBranchParser --> AnkiVersionCodec
@@ -334,9 +334,13 @@ GithubEnricher --> GithubService
 GithubEnricher --> GithubRepoSelector
 GithubRepoSelector --> Overrider
 GithubRepoSelector --> AiRepoSelector
+GithubRepoSelector --> UrlParser
 AnkiForumEnricher --> AnkiForumService
 AnkiForumEnricher --> AnkiForumTopic
 AnkiForumEnricher --> AiForumVerifier
+AnkiForumEnricher --> AnkiForumTopicSelector
+AnkiForumTopicSelector --> Overrider
+AnkiForumTopicSelector --> UrlParser
 AnkiForumTopicDiscoverer --> AnkiForumService
 AnkiForumTopicDiscoverer --> AnkiForumTitleMatcher
 AnkiForumTopicDiscoverer --> AnkiForumTopic

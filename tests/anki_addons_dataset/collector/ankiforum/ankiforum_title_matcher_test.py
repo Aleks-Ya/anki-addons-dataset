@@ -5,7 +5,7 @@ import pytest
 from anki_addons_dataset.collector.ankiforum.ankiforum_title_matcher import AnkiForumTitleMatcher, \
     AnkiForumTitleCandidate
 from anki_addons_dataset.common.data_types import AddonId, AddonInfo, AddonInfos, AddonTitle, AnkiForumCategoryTopic, \
-    AnkiForumInfo, PostsCount, TopicId, TopicSlug, URL
+    AnkiForumInfo, AnkiForumTopicSource, PostsCount, TopicId, TopicSlug, URL
 
 
 def __topic(topic_id: int, title: str, posts_count: int = 1) -> AnkiForumCategoryTopic:
@@ -75,7 +75,8 @@ def test_topic_matches_every_addon_with_the_same_title(make_addon_infos):
 def test_topic_of_another_addon_is_skipped(make_addon_infos):
     addon_infos: AddonInfos = make_addon_infos({10: "Image Search", 20: "Other"})
     linked: AddonInfo = replace(addon_infos[1], forum=AnkiForumInfo(
-        URL("https://forums.ankiweb.net/t/slug-1/1"), TopicSlug("slug-1"), TopicId(1), None, None))
+        URL("https://forums.ankiweb.net/t/slug-1/1"), TopicSlug("slug-1"), TopicId(1), None, None,
+        AnkiForumTopicSource.CONTACT_AUTHOR))
     candidates = AnkiForumTitleMatcher.find_candidates(AddonInfos([addon_infos[0], linked]),
                                                        [__topic(1, "Image Search")])
     assert candidates == {}
@@ -84,7 +85,8 @@ def test_topic_of_another_addon_is_skipped(make_addon_infos):
 def test_match_ignores_whether_the_addon_already_has_a_topic(make_addon_infos):
     addon_infos: AddonInfos = make_addon_infos({10: "Image Search"})
     linked: AddonInfo = replace(addon_infos[0], forum=AnkiForumInfo(
-        URL("https://forums.ankiweb.net/t/slug-9/9"), TopicSlug("slug-9"), TopicId(9), None, None))
+        URL("https://forums.ankiweb.net/t/slug-9/9"), TopicSlug("slug-9"), TopicId(9), None, None,
+        AnkiForumTopicSource.CONTACT_AUTHOR))
     assert list(AnkiForumTitleMatcher.find_candidates(AddonInfos([linked]), [__topic(1, "Image Search")])) == [10]
 
 
