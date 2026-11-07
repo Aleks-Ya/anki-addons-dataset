@@ -60,7 +60,7 @@ def __enrich(ai_provider: AiProvider, addon_infos: AddonInfos) -> AddonInfos:
 
 
 def test_summary_is_added(addon_info: AddonInfo) -> None:
-    addon_info.ai = None
+    addon_info = dataclasses.replace(addon_info, ai=None)
     enriched: AddonInfos = __enrich(StubAiProvider(), AddonInfos([addon_info]))
 
     assert enriched[0].ai is not None
@@ -69,14 +69,14 @@ def test_summary_is_added(addon_info: AddonInfo) -> None:
 
 
 def test_tags_are_added(addon_info: AddonInfo) -> None:
-    addon_info.ai = None
+    addon_info = dataclasses.replace(addon_info, ai=None)
     enriched: AddonInfos = __enrich(StubAiProvider(), AddonInfos([addon_info]))
 
     assert enriched[0].ai.tags == ["statistics", "paid"]
 
 
 def test_summary_is_kept_without_tags(addon_info: AddonInfo) -> None:
-    addon_info.ai = None
+    addon_info = dataclasses.replace(addon_info, ai=None)
     enriched: AddonInfos = __enrich(StubAiProvider(tags=None), AddonInfos([addon_info]))
 
     assert enriched[0].ai.summary == "A generated summary."
@@ -84,7 +84,7 @@ def test_summary_is_kept_without_tags(addon_info: AddonInfo) -> None:
 
 
 def test_tags_are_kept_without_summary(addon_info: AddonInfo) -> None:
-    addon_info.ai = None
+    addon_info = dataclasses.replace(addon_info, ai=None)
     enriched: AddonInfos = __enrich(StubAiProvider(summary=None), AddonInfos([addon_info]))
 
     assert enriched[0].ai.summary is None
@@ -93,7 +93,8 @@ def test_tags_are_kept_without_summary(addon_info: AddonInfo) -> None:
 
 
 def test_readme_is_taken_from_the_github_block(addon_info: AddonInfo) -> None:
-    addon_info.github.readme = GithubReadme("Readme of the addon repo.")
+    addon_info = dataclasses.replace(
+        addon_info, github=dataclasses.replace(addon_info.github, readme=GithubReadme("Readme of the addon repo.")))
     provider: StubAiProvider = StubAiProvider()
 
     __enrich(provider, AddonInfos([addon_info]))
@@ -103,14 +104,14 @@ def test_readme_is_taken_from_the_github_block(addon_info: AddonInfo) -> None:
 
 
 def test_addon_without_github_is_still_summarized(addon_info: AddonInfo) -> None:
-    addon_info.github = None
+    addon_info = dataclasses.replace(addon_info, github=None)
     enriched: AddonInfos = __enrich(StubAiProvider(), AddonInfos([addon_info]))
 
     assert enriched[0].ai.summary == "A generated summary."
 
 
 def test_unanswered_addon_keeps_no_summary(addon_info: AddonInfo) -> None:
-    addon_info.ai = None
+    addon_info = dataclasses.replace(addon_info, ai=None)
     enriched: AddonInfos = __enrich(StubAiProvider(summary=None, tags=None), AddonInfos([addon_info]))
 
     assert enriched[0].ai is None
@@ -144,8 +145,8 @@ def test_failed_tag_request_names_the_addon(addon_info: AddonInfo) -> None:
 
 
 def test_fork_parent_is_added(addon_info: AddonInfo) -> None:
-    addon_info.ai = None
-    addon_info.page.links = [PageLink(URL("https://ankiweb.net/shared/info/10"), PageLinkSection.DESCRIPTION)]
+    addon_info = dataclasses.replace(addon_info, ai=None, page=dataclasses.replace(addon_info.page, links=[
+        PageLink(URL("https://ankiweb.net/shared/info/10"), PageLinkSection.DESCRIPTION)]))
     provider: StubAiProvider = StubAiProvider(summary=None, tags=AiResponseText("10"))
     enricher: AiEnricher = AiEnricher(AiSummarizer(provider, readme_max_chars=8000),
                                       AiTagger(provider, readme_max_chars=8000),
@@ -162,7 +163,8 @@ def test_fork_parent_is_added(addon_info: AddonInfo) -> None:
 
 def test_failed_fork_request_names_the_addon(addon_info: AddonInfo) -> None:
     error: ValueError = ValueError("Content Exists Risk")
-    addon_info.page.links = [PageLink(URL("https://ankiweb.net/shared/info/10"), PageLinkSection.DESCRIPTION)]
+    addon_info = dataclasses.replace(addon_info, page=dataclasses.replace(addon_info.page, links=[
+        PageLink(URL("https://ankiweb.net/shared/info/10"), PageLinkSection.DESCRIPTION)]))
 
     class ForkFailingAiProvider(StubAiProvider):
         def response(self, prompt: AiPrompt, instructions: Optional[AiInstructions] = None) -> Optional[AiResponseText]:
@@ -191,7 +193,7 @@ def test_other_blocks_are_preserved(addon_info: AddonInfo) -> None:
 
 
 def test_offline_run_is_served_from_the_cache(addon_info: AddonInfo, tmp_path: Path) -> None:
-    addon_info.ai = None
+    addon_info = dataclasses.replace(addon_info, ai=None)
     cache_file: Path = tmp_path / "ai-cache.jsonl"
     online: CachedAiProvider = CachedAiProvider(StubAiProvider(), cache_file)
     __enrich(online, AddonInfos([addon_info]))
@@ -206,7 +208,7 @@ def test_offline_run_is_served_from_the_cache(addon_info: AddonInfo, tmp_path: P
 
 
 def test_offline_miss_leaves_no_summary(addon_info: AddonInfo, tmp_path: Path) -> None:
-    addon_info.ai = None
+    addon_info = dataclasses.replace(addon_info, ai=None)
     offline: CachedAiProvider = CachedAiProvider(NoAiProvider(MODEL), tmp_path / "ai-cache.jsonl", offline=True)
 
     enriched: AddonInfos = __enrich(offline, AddonInfos([addon_info]))
@@ -225,7 +227,7 @@ def test_pool_has_fifty_threads(caplog: pytest.LogCaptureFixture) -> None:
 
 
 def test_many_addons_are_all_enriched(addon_info: AddonInfo) -> None:
-    addon_info.ai = None
+    addon_info = dataclasses.replace(addon_info, ai=None)
     addon_infos: AddonInfos = AddonInfos(
         [dataclasses.replace(addon_info, header=dataclasses.replace(addon_info.header, id=AddonId(i)))
          for i in range(20)])

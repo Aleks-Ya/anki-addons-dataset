@@ -1,4 +1,5 @@
 import logging
+from dataclasses import replace
 from datetime import date
 from pathlib import Path
 from unittest.mock import ANY, patch
@@ -42,9 +43,9 @@ def test_download_snapshot_collects_packages_of_scraped_addons(
 def test_report_snapshots_exports_packages(
         collector_facade: CollectorFacade, snapshot_dir: SnapshotDir, addon_infos: AddonInfos,
         script_version: ScriptVersion, report_date: ReportDate):
-    addon_infos[0].package = AddonPackages([AddonPackage(
+    addon_infos = AddonInfos([replace(addon_infos[0], package=AddonPackages([AddonPackage(
         "45-2026-01-15-0123456789ab.ankiaddon", AnkiPointVersion(45), date(2026, 1, 15), 10, None, None,
-        1, 6, 1, 1, ["__init__.py"], {LanguageName("python"): 6})])
+        1, 6, 1, 1, ["__init__.py"], {LanguageName("python"): 6})]))])
     JsonHelper.write_addon_infos_dump(addon_infos, script_version, snapshot_dir.get_addon_infos_dump())
 
     collector_facade.report_snapshots(None, report_date)
@@ -99,8 +100,9 @@ def test_report_snapshots_exports_anki_versions(
 def test_report_snapshots_exports_reviews_newest_first(
         collector_facade: CollectorFacade, snapshot_dir: SnapshotDir, addon_infos: AddonInfos,
         script_version: ScriptVersion, report_date: ReportDate):
-    addon_infos[0].page.reviews = [AddonReview(ReviewVote.LIKE, date(2025, 6, 6), "Works", "Thank you!"),
-                                   AddonReview(ReviewVote.DISLIKE, date(2026, 7, 5), "Produces errors")]
+    addon_infos = AddonInfos([replace(addon_infos[0], page=replace(addon_infos[0].page, reviews=[
+        AddonReview(ReviewVote.LIKE, date(2025, 6, 6), "Works", "Thank you!"),
+        AddonReview(ReviewVote.DISLIKE, date(2026, 7, 5), "Produces errors")]))])
     JsonHelper.write_addon_infos_dump(addon_infos, script_version, snapshot_dir.get_addon_infos_dump())
 
     collector_facade.report_snapshots(None, report_date)

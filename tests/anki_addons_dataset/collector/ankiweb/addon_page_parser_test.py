@@ -1,4 +1,5 @@
 import datetime
+from dataclasses import replace
 from pathlib import Path
 
 from anki_addons_dataset.collector.ankiweb.addon_page_parser import AddonPageParser
@@ -25,21 +26,21 @@ def test_parse_addon_page(overrider: Overrider):
     assert addon_info.page.description_language_confidence is not None
     assert 0.0 < addon_info.page.description_language_confidence <= 1.0
     # Null the (deterministic but verbose) language fields so the structural comparison below stays focused.
-    addon_info.page.description_language = None
-    addon_info.page.description_language_confidence = None
+    addon_info = replace(addon_info, page=replace(addon_info.page, description_language=None,
+                                                  description_language_confidence=None))
     assert addon_info.page.description_html is not None
     assert addon_info.page.description_html.startswith('<p><strong>"Note Size" addon')
     assert 'href="/' not in addon_info.page.description_html
     assert 'src="/' not in addon_info.page.description_html
     assert addon_info.page.description_pre_wrap is False
-    addon_info.page.description_html = None
+    addon_info = replace(addon_info, page=replace(addon_info.page, description_html=None))
     assert len(addon_info.page.reviews) == 12
     assert addon_info.page.reviews[0] == AddonReview(ReviewVote.LIKE, datetime.date(2025, 6, 6),
                                                      'Thanks! Working on Anki 25.02 (linux-flatpak)', 'Thank you!')
     assert addon_info.page.reviews[3] == AddonReview(ReviewVote.LIKE, datetime.date(2025, 4, 19), 'Cool!')
     assert addon_info.page.reviews[11].text == 'Seems working well. \nThis is a really good idea, thanks!'
     assert sum(1 for review in addon_info.page.reviews if review.author_reply is not None) == 5
-    addon_info.page.reviews = []
+    addon_info = replace(addon_info, page=replace(addon_info.page, reviews=[]))
     github_user: GitHubUser = GitHubUser(GithubUserName("aleks-ya"))
     github_repo: GithubRepo = GithubRepo(GithubUserName("aleks-ya"), GithubRepoName("note-size-anki-addon"))
     description: PageLinkSection = PageLinkSection.DESCRIPTION

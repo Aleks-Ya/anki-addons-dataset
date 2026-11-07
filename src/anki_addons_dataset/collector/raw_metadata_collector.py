@@ -1,3 +1,4 @@
+import copy
 import json
 from dataclasses import asdict
 from datetime import datetime
@@ -16,19 +17,13 @@ class RawMetadataCollector:
         self.__metadata_file: Path = snapshot_dir.get_raw_dir() / "raw-metadata.json"
 
     def set_start_datetime(self, start_datetime: datetime) -> None:
-        raw_metadata: RawMetadata = self.read_metadata()
-        raw_metadata.start_timestamp = start_datetime
-        self.__write_metadata(raw_metadata)
+        self.__write_metadata(copy.replace(self.read_metadata(), start_timestamp=start_datetime))
 
     def set_finish_datetime(self, finish_datetime: datetime) -> None:
-        raw_metadata: RawMetadata = self.read_metadata()
-        raw_metadata.finish_timestamp = finish_datetime
-        self.__write_metadata(raw_metadata)
+        self.__write_metadata(copy.replace(self.read_metadata(), finish_timestamp=finish_datetime))
 
     def set_script_version(self, script_version: ScriptVersion) -> None:
-        raw_metadata: RawMetadata = self.read_metadata()
-        raw_metadata.script_version = script_version
-        self.__write_metadata(raw_metadata)
+        self.__write_metadata(copy.replace(self.read_metadata(), script_version=script_version))
 
     def read_metadata(self) -> RawMetadata:
         if self.__metadata_file.exists():

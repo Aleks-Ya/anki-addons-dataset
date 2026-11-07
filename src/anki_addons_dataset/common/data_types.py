@@ -76,7 +76,7 @@ class ReviewVote(StrEnum):
     DISLIKE = "dislike"
 
 
-@dataclass
+@dataclass(frozen=True)
 class AddonHeader:
     id: AddonId
     title: AddonTitle
@@ -88,7 +88,7 @@ class AddonHeader:
     anki_version_kind: AnkiVersionKind = AnkiVersionKind.UNKNOWN
 
 
-@dataclass
+@dataclass(frozen=True)
 class GitHubUser:
     user_name: GithubUserName
 
@@ -108,14 +108,14 @@ class GithubRepo:
         return URL(f"https://github.com/{self.user}/{self.repo_name}")
 
 
-@dataclass
+@dataclass(frozen=True)
 class GitHubLink:
     url: URL
     user: GitHubUser
     repo: Optional[GithubRepo]
 
 
-@dataclass
+@dataclass(frozen=True)
 class AddonManifest:
     """Parsed Anki addon `manifest.json` (the metadata Anki ships inside each add-on package)."""
     package: Optional[str] = None
@@ -164,7 +164,7 @@ class GithubIssueHistory:
     outside_prs_decided: int
 
 
-@dataclass
+@dataclass(frozen=True)
 class GithubInfo:
     github_links: list[GitHubLink]
     github_repo: Optional[GithubRepo]
@@ -198,7 +198,7 @@ class GithubInfo:
     issue_history: Optional[GithubIssueHistory] = None
 
 
-@dataclass
+@dataclass(frozen=True)
 class AddonBranch:
     min_anki_version: AnkiVersion
     max_anki_version: Optional[AnkiVersion]
@@ -208,7 +208,7 @@ class AddonBranch:
     max_version_kind: AnkiVersionKind = AnkiVersionKind.UNKNOWN
 
 
-@dataclass
+@dataclass(frozen=True)
 class PageLink:
     url: URL
     section: PageLinkSection
@@ -224,7 +224,7 @@ class AddonReview:
     author_reply: Optional[str] = None
 
 
-@dataclass
+@dataclass(frozen=True)
 class AddonPage:
     content: HtmlStr
     like_number: int
@@ -249,7 +249,7 @@ class AddonPage:
         return None
 
 
-@dataclass
+@dataclass(frozen=True)
 class AnkiForumInfo:
     anki_forum_url: Optional[URL]
     topic_slug: Optional[TopicSlug]
@@ -283,7 +283,7 @@ class AnkiForumCategoryTopic:
     posts_count: PostsCount
 
 
-@dataclass
+@dataclass(frozen=True)
 class AiInfo:
     summary: Optional[AiSummary] = None
     model: Optional[AiModel] = None
@@ -291,7 +291,7 @@ class AiInfo:
     fork_of: Optional[AddonId] = None
 
 
-@dataclass
+@dataclass(frozen=True)
 class AiTagDefinition:
     name: AiTag
     group: AiTagGroup
@@ -364,7 +364,7 @@ class ForkRelation:
     evidence: ForkEvidence
 
 
-@dataclass
+@dataclass(frozen=True)
 class AddonInfo:
     header: AddonHeader
     page: AddonPage
@@ -379,14 +379,14 @@ class AddonInfo:
 AddonInfos = NewType("AddonInfos", list[AddonInfo])
 
 
-@dataclass
+@dataclass(frozen=True)
 class RawMetadata:
     start_timestamp: Optional[datetime] = None
     finish_timestamp: Optional[datetime] = None
     script_version: Optional[ScriptVersion] = None
 
 
-@dataclass
+@dataclass(frozen=True)
 class DatasetSnapshotMetadata:
     data_collection_date: SnapshotDate
     report_generation_date: ReportDate

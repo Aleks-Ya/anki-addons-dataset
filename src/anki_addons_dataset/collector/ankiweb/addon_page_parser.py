@@ -127,13 +127,11 @@ class AddonPageParser:
 
     @staticmethod
     def __fold_anchors(anchors: list[tuple[URL, PageLinkSection, str]]) -> list[PageLink]:
-        links: dict[tuple[URL, PageLinkSection], PageLink] = {}
+        texts_by_link: dict[tuple[URL, PageLinkSection], list[str]] = {}
         for url, section, text in anchors:
-            link: PageLink = links.setdefault((url, section), PageLink(url, section, 0, []))
-            link.count += 1
-            if text and text not in link.texts:
-                link.texts.append(text)
-        return list(links.values())
+            texts_by_link.setdefault((url, section), []).append(text)
+        return [PageLink(url, section, len(texts), list(dict.fromkeys(text for text in texts if text)))
+                for (url, section), texts in texts_by_link.items()]
 
     @staticmethod
     def __anchor_text(anchor: Tag) -> str:

@@ -114,7 +114,7 @@ def test_addon_infos_to_json(addon_infos: AddonInfos):
 
 def test_addon_infos_to_json_empty_forum(addon_info: AddonInfo):
     forum: Optional[AnkiForumInfo] = None
-    addon_info.forum = forum
+    addon_info = replace(addon_info, forum=forum)
     addon_infos: AddonInfos = AddonInfos([addon_info])
 
     act_json: list[dict[str, Any]] = to_dicts(addon_infos)
@@ -212,7 +212,7 @@ def test_addon_infos_to_json_empty_forum(addon_info: AddonInfo):
 
 def test_addon_infos_to_json_empty_posts_count(addon_info: AddonInfo):
     posts_count: Optional[PostsCount] = None
-    addon_info.forum.posts_count = posts_count
+    addon_info = replace(addon_info, forum=replace(addon_info.forum, posts_count=posts_count))
     addon_infos: AddonInfos = AddonInfos([addon_info])
 
     act_json: list[dict[str, Any]] = to_dicts(addon_infos)
@@ -313,7 +313,7 @@ def test_addon_infos_to_json_empty_posts_count(addon_info: AddonInfo):
 
 
 def test_addon_infos_to_json_empty_last_posted_at(addon_info: AddonInfo):
-    addon_info.forum.last_posted_at = None
+    addon_info = replace(addon_info, forum=replace(addon_info.forum, last_posted_at=None))
     addon_infos: AddonInfos = AddonInfos([addon_info])
 
     act_json: list[dict[str, Any]] = to_dicts(addon_infos)
@@ -327,21 +327,22 @@ def test_addon_infos_to_json_empty_last_posted_at(addon_info: AddonInfo):
 def test_addon_infos_to_json_with_enrichment_fields(addon_info: AddonInfo):
     # Populates every enrichment field so the exported JSON is validated against schema.json with real data.
     assert addon_info.github is not None
-    addon_info.github.license = SpdxLicense("MIT")
-    addon_info.github.forks = 4
-    addon_info.github.topics = [Topic("anki")]
-    addon_info.github.homepage = URL("https://example.com")
-    addon_info.github.archived = False
-    addon_info.github.language_bytes = {LanguageName("Python"): 5, LanguageName("Rust"): 2}
-    addon_info.github.primary_language = LanguageName("Python")
-    addon_info.github.manifest = AddonManifest(package="note_size", name="Note Size", conflicts=["123"],
-                                               min_point_version=45, max_point_version=-250900,
-                                               homepage="https://example.com", mod=1678900000)
-    addon_info.github.dependencies = [DependencyName("requests")]
-    addon_info.github.readme = GithubReadme("# NoteSize")
-    addon_info.page.links = [
+    addon_info = replace(addon_info, github=replace(
+        addon_info.github,
+        license=SpdxLicense("MIT"),
+        forks=4,
+        topics=[Topic("anki")],
+        homepage=URL("https://example.com"),
+        archived=False,
+        language_bytes={LanguageName("Python"): 5, LanguageName("Rust"): 2},
+        primary_language=LanguageName("Python"),
+        manifest=AddonManifest(package="note_size", name="Note Size", conflicts=["123"],
+                               min_point_version=45, max_point_version=-250900,
+                               homepage="https://example.com", mod=1678900000),
+        dependencies=[DependencyName("requests")],
+        readme=GithubReadme("# NoteSize")), page=replace(addon_info.page, links=[
         PageLink(URL("https://forums.ankiweb.net/t/support/1"), PageLinkSection.DESCRIPTION, 2, ["Forum", "Support"]),
-        PageLink(URL("https://github.com/u/r/issues"), PageLinkSection.CONTACT_AUTHOR, 1, ["Contact Author"])]
+        PageLink(URL("https://github.com/u/r/issues"), PageLinkSection.CONTACT_AUTHOR, 1, ["Contact Author"])]))
 
     act_json: dict[str, Any] = to_dicts(AddonInfos([addon_info]))[0]
     assert act_json["anki_web"]["links"] == [
@@ -364,7 +365,7 @@ def test_addon_infos_to_json_with_enrichment_fields(addon_info: AddonInfo):
 
 def test_addon_infos_to_json_releases_not_collected(addon_info: AddonInfo):
     assert addon_info.github is not None
-    addon_info.github.releases = None
+    addon_info = replace(addon_info, github=replace(addon_info.github, releases=None))
     github: dict[str, Any] = to_dicts(AddonInfos([addon_info]))[0]["github"]
     assert [github[key] for key in ("release_count", "latest_release_tag", "latest_release_at",
                                     "release_downloads", "releases")] == [None] * 5
@@ -372,8 +373,7 @@ def test_addon_infos_to_json_releases_not_collected(addon_info: AddonInfo):
 
 def test_addon_infos_to_json_activity_not_collected(addon_info: AddonInfo):
     assert addon_info.github is not None
-    addon_info.github.contributors = None
-    addon_info.github.weekly_commits = None
+    addon_info = replace(addon_info, github=replace(addon_info.github, contributors=None, weekly_commits=None))
     github: dict[str, Any] = to_dicts(AddonInfos([addon_info]))[0]["github"]
     assert [github[key] for key in ("contributor_count", "contributors", "commits_last_year",
                                     "weekly_commits")] == [None] * 4
@@ -381,7 +381,7 @@ def test_addon_infos_to_json_activity_not_collected(addon_info: AddonInfo):
 
 def test_addon_infos_to_json_issue_history_not_collected(addon_info: AddonInfo):
     assert addon_info.github is not None
-    addon_info.github.issue_history = None
+    addon_info = replace(addon_info, github=replace(addon_info.github, issue_history=None))
     github: dict[str, Any] = to_dicts(AddonInfos([addon_info]))[0]["github"]
     assert [github[key] for key in ("has_issues_enabled", "open_issue_count", "closed_issue_count", "open_pr_count",
                                     "closed_pr_count", "merged_pr_count", "last_issue_closed_at",
@@ -392,7 +392,8 @@ def test_addon_infos_to_json_issue_history_not_collected(addon_info: AddonInfo):
 
 def test_addon_infos_to_json_no_decided_outside_prs(addon_info: AddonInfo):
     assert addon_info.github is not None
-    addon_info.github.issue_history = GithubIssueHistory(True, 0, 0, 0, 0, 0, None, None, 0, 0, 0)
+    addon_info = replace(addon_info, github=replace(
+        addon_info.github, issue_history=GithubIssueHistory(True, 0, 0, 0, 0, 0, None, None, 0, 0, 0)))
     github: dict[str, Any] = to_dicts(AddonInfos([addon_info]))[0]["github"]
     assert github["outside_pr_merge_share"] is None
     assert github["last_issue_closed_at"] is None
@@ -401,7 +402,7 @@ def test_addon_infos_to_json_no_decided_outside_prs(addon_info: AddonInfo):
 def test_addon_infos_to_json_only_prereleases(addon_info: AddonInfo):
     assert addon_info.github is not None
     assert addon_info.github.releases is not None
-    addon_info.github.releases = [addon_info.github.releases[0]]
+    addon_info = replace(addon_info, github=replace(addon_info.github, releases=[addon_info.github.releases[0]]))
     github: dict[str, Any] = to_dicts(AddonInfos([addon_info]))[0]["github"]
     assert github["release_count"] == 1
     assert github["latest_release_tag"] is None
@@ -424,12 +425,12 @@ def test_addon_infos_to_json_one_parent_with_several_forks(addon_info: AddonInfo
 
 
 def test_addon_infos_to_json_package_summarizes_the_newest_branch(addon_info: AddonInfo):
-    addon_info.package = AddonPackages([
+    addon_info = replace(addon_info, package=AddonPackages([
         AddonPackage("45-2024-01-15-aaaaaaaaaaaa.ankiaddon", AnkiPointVersion(45), date(2024, 1, 15), 10,
                      None, None, 1, 20, 1, 3, ["__init__.py"], {LanguageName("python"): 20}),
         AddonPackage("231000-2023-05-15-bbbbbbbbbbbb.ankiaddon", AnkiPointVersion(231000), date(2023, 5, 15), 100,
                      '{"name": "A"}', "{}", 3, 200, 2, 30, ["__init__.py", "config.json", "manifest.json"],
-                     {LanguageName("python"): 180, LanguageName("json"): 20})])
+                     {LanguageName("python"): 180, LanguageName("json"): 20})]))
 
     act_json: list[dict[str, Any]] = to_dicts(AddonInfos([addon_info]))
 
@@ -441,9 +442,9 @@ def test_addon_infos_to_json_package_summarizes_the_newest_branch(addon_info: Ad
 
 
 def test_addon_infos_to_json_package_without_languages(addon_info: AddonInfo):
-    addon_info.package = AddonPackages([
+    addon_info = replace(addon_info, package=AddonPackages([
         AddonPackage("45-2024-01-15-aaaaaaaaaaaa.ankiaddon", AnkiPointVersion(45), date(2024, 1, 15), 10,
-                     None, None, 1, 20, 0, 0, ["image.png"], {})])
+                     None, None, 1, 20, 0, 0, ["image.png"], {})]))
 
     act_json: list[dict[str, Any]] = to_dicts(AddonInfos([addon_info]))
 
@@ -452,11 +453,11 @@ def test_addon_infos_to_json_package_without_languages(addon_info: AddonInfo):
 
 
 def test_addon_infos_to_json_package_primary_language_skips_data_formats(addon_info: AddonInfo):
-    addon_info.package = AddonPackages([
+    addon_info = replace(addon_info, package=AddonPackages([
         AddonPackage("45-2024-01-15-aaaaaaaaaaaa.ankiaddon", AnkiPointVersion(45), date(2024, 1, 15), 10,
                      None, None, 4, 1000, 1, 3, ["__init__.py", "data.json", "words.csv", "web.js"],
                      {LanguageName("json"): 500, LanguageName("csv"): 300, LanguageName("javascript"): 150,
-                      LanguageName("python"): 50})])
+                      LanguageName("python"): 50})]))
 
     act_json: list[dict[str, Any]] = to_dicts(AddonInfos([addon_info]))
 
@@ -464,9 +465,9 @@ def test_addon_infos_to_json_package_primary_language_skips_data_formats(addon_i
 
 
 def test_addon_infos_to_json_package_with_only_data_formats_has_no_primary_language(addon_info: AddonInfo):
-    addon_info.package = AddonPackages([
+    addon_info = replace(addon_info, package=AddonPackages([
         AddonPackage("45-2024-01-15-aaaaaaaaaaaa.ankiaddon", AnkiPointVersion(45), date(2024, 1, 15), 10,
-                     None, None, 1, 500, 0, 0, ["data.json"], {LanguageName("json"): 500})])
+                     None, None, 1, 500, 0, 0, ["data.json"], {LanguageName("json"): 500})]))
 
     act_json: list[dict[str, Any]] = to_dicts(AddonInfos([addon_info]))
 

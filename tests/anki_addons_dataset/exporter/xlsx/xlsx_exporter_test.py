@@ -1,3 +1,4 @@
+from dataclasses import replace
 from datetime import date
 from pathlib import Path
 from typing import Optional
@@ -25,7 +26,7 @@ def test_export_addon_infos(xlsx_exporter: XlsxExporter, snapshot_dir: SnapshotD
 def test_export_addon_infos_empty_forum(xlsx_exporter: XlsxExporter, snapshot_dir: SnapshotDir, addon_info: AddonInfo,
                                         dataset_snapshot_metadata: DatasetSnapshotMetadata, raw_metadata: RawMetadata):
     forum: Optional[AnkiForumInfo] = None
-    addon_info.forum = forum
+    addon_info = replace(addon_info, forum=forum)
     addon_infos: AddonInfos = AddonInfos([addon_info])
 
     xlsx_exporter.export_addon_infos(addon_infos, dataset_snapshot_metadata, raw_metadata)
@@ -41,7 +42,7 @@ def test_export_addon_infos_renders_description_language_name(xlsx_exporter: Xls
                                                               dataset_snapshot_metadata: DatasetSnapshotMetadata,
                                                               raw_metadata: RawMetadata):
     # The Language column shows the full language name, not the stored ISO code.
-    addon_info.page.description_language = LanguageCode("es")
+    addon_info = replace(addon_info, page=replace(addon_info.page, description_language=LanguageCode("es")))
     addon_infos: AddonInfos = AddonInfos([addon_info])
 
     xlsx_exporter.export_addon_infos(addon_infos, dataset_snapshot_metadata, raw_metadata)

@@ -1,5 +1,6 @@
 import json
 import threading
+from dataclasses import replace
 from datetime import date, datetime
 from pathlib import Path
 from unittest.mock import Mock, patch
@@ -94,24 +95,26 @@ def test_addon_infos_dump_parses_datetimes(addon_infos: AddonInfos, script_versi
 def test_addon_infos_dump_round_trip_with_enrichment_fields(addon_info: AddonInfo, script_version: ScriptVersion,
                                                             working_dir_path: Path):
     assert addon_info.github is not None
-    addon_info.github.license = SpdxLicense("MIT")
-    addon_info.github.forks = 4
-    addon_info.github.open_issues = 2
-    addon_info.github.size_kb = 128
-    addon_info.github.topics = [Topic("anki"), Topic("flashcards")]
-    addon_info.github.repo_description = "A NoteSize addon"
-    addon_info.github.homepage = URL("https://example.com")
-    addon_info.github.archived = False
-    addon_info.github.pushed_at = datetime(2023, 3, 16, 10, 0, 0)
-    addon_info.github.created_at = datetime(2020, 1, 1, 9, 0, 0)
-    addon_info.github.primary_language = LanguageName("Python")
-    addon_info.github.language_bytes = {LanguageName("Python"): 5, LanguageName("Rust"): 2}
-    addon_info.github.manifest = AddonManifest(package="note_size", name="Note Size", conflicts=["123"],
-                                               min_point_version=45, max_point_version=None,
-                                               homepage="https://example.com", mod=1678900000)
-    addon_info.github.dependencies = [DependencyName("requests"), DependencyName("beautifulsoup4")]
-    addon_info.github.readme = GithubReadme("# NoteSize")
-    addon_info.github.ai_tooling_markers = ["claude-code", "cursor"]
+    addon_info = replace(addon_info, github=replace(
+        addon_info.github,
+        license=SpdxLicense("MIT"),
+        forks=4,
+        open_issues=2,
+        size_kb=128,
+        topics=[Topic("anki"), Topic("flashcards")],
+        repo_description="A NoteSize addon",
+        homepage=URL("https://example.com"),
+        archived=False,
+        pushed_at=datetime(2023, 3, 16, 10, 0, 0),
+        created_at=datetime(2020, 1, 1, 9, 0, 0),
+        primary_language=LanguageName("Python"),
+        language_bytes={LanguageName("Python"): 5, LanguageName("Rust"): 2},
+        manifest=AddonManifest(package="note_size", name="Note Size", conflicts=["123"],
+                               min_point_version=45, max_point_version=None,
+                               homepage="https://example.com", mod=1678900000),
+        dependencies=[DependencyName("requests"), DependencyName("beautifulsoup4")],
+        readme=GithubReadme("# NoteSize"),
+        ai_tooling_markers=["claude-code", "cursor"]))
     addon_infos: AddonInfos = AddonInfos([addon_info])
     dump_file: Path = working_dir_path / "addon-infos.json"
 
@@ -123,9 +126,11 @@ def test_addon_infos_dump_round_trip_with_enrichment_fields(addon_info: AddonInf
 
 def test_addon_infos_dump_round_trip_with_fork_fields(addon_info: AddonInfo, script_version: ScriptVersion,
                                                       working_dir_path: Path):
-    addon_info.github.fork_source = GithubRepo(GithubUserName("origin"), GithubRepoName("pokemanki"))
-    addon_info.ai.fork_of = AddonId(2)
-    addon_info.forked_from = ForkRelation(AddonId(2), ForkEvidence.GITHUB_FORK)
+    addon_info = replace(addon_info,
+                         github=replace(addon_info.github,
+                                        fork_source=GithubRepo(GithubUserName("origin"), GithubRepoName("pokemanki"))),
+                         ai=replace(addon_info.ai, fork_of=AddonId(2)),
+                         forked_from=ForkRelation(AddonId(2), ForkEvidence.GITHUB_FORK))
     addon_infos: AddonInfos = AddonInfos([addon_info])
     dump_file: Path = working_dir_path / "addon-infos.json"
 
@@ -138,7 +143,8 @@ def test_addon_infos_dump_round_trip_with_fork_fields(addon_info: AddonInfo, scr
 def test_addon_infos_dump_round_trip_preserves_ai_declaration_markers(addon_infos: AddonInfos,
                                                                       script_version: ScriptVersion,
                                                                       working_dir_path: Path):
-    addon_infos[0].page.ai_declaration_markers = ["claude", "vibe-coded"]
+    addon_infos = AddonInfos([replace(addon_infos[0], page=replace(
+        addon_infos[0].page, ai_declaration_markers=["claude", "vibe-coded"]))])
     dump_file: Path = working_dir_path / "addon-infos.json"
 
     JsonHelper.write_addon_infos_dump(addon_infos, script_version, dump_file)
@@ -150,8 +156,8 @@ def test_addon_infos_dump_round_trip_preserves_ai_declaration_markers(addon_info
 def test_addon_infos_dump_round_trip_preserves_description_language(addon_infos: AddonInfos,
                                                                     script_version: ScriptVersion,
                                                                     working_dir_path: Path):
-    addon_infos[0].page.description_language = LanguageCode("es")
-    addon_infos[0].page.description_language_confidence = 0.87
+    addon_infos = AddonInfos([replace(addon_infos[0], page=replace(
+        addon_infos[0].page, description_language=LanguageCode("es"), description_language_confidence=0.87))])
     dump_file: Path = working_dir_path / "addon-infos.json"
 
     JsonHelper.write_addon_infos_dump(addon_infos, script_version, dump_file)
@@ -180,8 +186,9 @@ def test_addon_infos_dump_reads_legacy_dump_without_description_language(
 def test_addon_infos_dump_round_trip_preserves_description_html(addon_infos: AddonInfos,
                                                                 script_version: ScriptVersion,
                                                                 working_dir_path: Path):
-    addon_infos[0].page.description_html = HtmlStr('<h2>Title</h2><a href="https://ankiweb.net/shared/info/2">x</a>')
-    addon_infos[0].page.description_pre_wrap = True
+    description_html: HtmlStr = HtmlStr('<h2>Title</h2><a href="https://ankiweb.net/shared/info/2">x</a>')
+    addon_infos = AddonInfos([replace(addon_infos[0], page=replace(
+        addon_infos[0].page, description_html=description_html, description_pre_wrap=True))])
     dump_file: Path = working_dir_path / "addon-infos.json"
 
     JsonHelper.write_addon_infos_dump(addon_infos, script_version, dump_file)
@@ -194,8 +201,8 @@ def test_addon_infos_dump_round_trip_preserves_description_html(addon_infos: Add
 
 def test_addon_infos_dump_reads_legacy_dump_without_description_html(
         addon_infos: AddonInfos, script_version: ScriptVersion, working_dir_path: Path):
-    addon_infos[0].page.description_html = HtmlStr("<p>x</p>")
-    addon_infos[0].page.description_pre_wrap = True
+    addon_infos = AddonInfos([replace(addon_infos[0], page=replace(
+        addon_infos[0].page, description_html=HtmlStr("<p>x</p>"), description_pre_wrap=True))])
     dump_file: Path = working_dir_path / "addon-infos.json"
     JsonHelper.write_addon_infos_dump(addon_infos, script_version, dump_file)
     envelope: dict = json.loads(dump_file.read_text())
@@ -266,7 +273,7 @@ def test_addon_infos_dump_round_trip_preserves_the_ai_summary(addon_infos: Addon
 
 def test_addon_infos_dump_round_trip_without_an_ai_summary(addon_info: AddonInfo, script_version: ScriptVersion,
                                                            working_dir_path: Path):
-    addon_info.ai = None
+    addon_info = replace(addon_info, ai=None)
     dump_file: Path = working_dir_path / "addon-infos.json"
     JsonHelper.write_addon_infos_dump(AddonInfos([addon_info]), script_version, dump_file)
 
@@ -308,9 +315,9 @@ def test_addon_infos_dump_reads_legacy_dump_without_author_fields(addon_infos: A
 
 def test_addon_infos_dump_round_trip_with_package(addon_info: AddonInfo, script_version: ScriptVersion,
                                                   working_dir_path: Path):
-    addon_info.package = AddonPackages([AddonPackage(
+    addon_info = replace(addon_info, package=AddonPackages([AddonPackage(
         "45-2026-01-15-0123456789ab.ankiaddon", AnkiPointVersion(45), date(2026, 1, 15), 100, '{"name": "A"}', None,
-        2, 300, 1, 10, ["__init__.py", "manifest.json"], {LanguageName("python"): 280, LanguageName("json"): 20})])
+        2, 300, 1, 10, ["__init__.py", "manifest.json"], {LanguageName("python"): 280, LanguageName("json"): 20})]))
     addon_infos: AddonInfos = AddonInfos([addon_info])
     dump_file: Path = working_dir_path / "addon-infos.json"
 
@@ -442,7 +449,8 @@ def test_addon_infos_dump_reads_legacy_dump_without_the_issue_history(
 def test_addon_infos_dump_round_trip_preserves_the_ai_tags(addon_infos: AddonInfos, script_version: ScriptVersion,
                                                            working_dir_path: Path):
     assert addon_infos[0].ai is not None
-    addon_infos[0].ai.tags = [AiTag("statistics"), AiTag("beta")]
+    addon_infos = AddonInfos([replace(addon_infos[0], ai=replace(
+        addon_infos[0].ai, tags=[AiTag("statistics"), AiTag("beta")]))])
     dump_file: Path = working_dir_path / "addon-infos.json"
     JsonHelper.write_addon_infos_dump(addon_infos, script_version, dump_file)
 
@@ -455,7 +463,7 @@ def test_addon_infos_dump_round_trip_preserves_the_ai_tags(addon_infos: AddonInf
 def test_addon_infos_dump_round_trip_preserves_empty_ai_tags(addon_infos: AddonInfos, script_version: ScriptVersion,
                                                              working_dir_path: Path):
     assert addon_infos[0].ai is not None
-    addon_infos[0].ai.tags = []
+    addon_infos = AddonInfos([replace(addon_infos[0], ai=replace(addon_infos[0].ai, tags=[]))])
     dump_file: Path = working_dir_path / "addon-infos.json"
     JsonHelper.write_addon_infos_dump(addon_infos, script_version, dump_file)
 
@@ -533,7 +541,7 @@ def test_addon_infos_dump_round_trip_preserves_reviews(addon_infos: AddonInfos, 
                                                        working_dir_path: Path):
     reviews: list[AddonReview] = [AddonReview(ReviewVote.DISLIKE, date(2026, 7, 5), "Produces errors"),
                                   AddonReview(ReviewVote.LIKE, date(2025, 6, 6), "Works\nfine", "Thank you!")]
-    addon_infos[0].page.reviews = reviews
+    addon_infos = AddonInfos([replace(addon_infos[0], page=replace(addon_infos[0].page, reviews=reviews))])
     dump_file: Path = working_dir_path / "addon-infos.json"
 
     JsonHelper.write_addon_infos_dump(addon_infos, script_version, dump_file)
