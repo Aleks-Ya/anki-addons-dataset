@@ -34,6 +34,7 @@ tests are checked here or not at all. Don't ask before running them, even though
 
 ```bash
 ./uv_update.sh   # uv lock --upgrade && uv sync
+uv run mypy
 uv run pytest
 uv run pytest tests_integration
 ```
@@ -42,6 +43,8 @@ uv run pytest tests_integration
   - upgrades every dependency to its latest allowed version and refreshes `uv.lock`
   - syncs `.venv` with the project (editable) plus its `dev` dependency group, so `pytest` and the rest of the
     toolchain are present and up to date
+- If `uv run mypy` **fails**, **stop.** Do not push. Fix the type errors in the working tree first, the same way as
+  failing unit tests below.
 - If `uv run pytest` **fails**, **stop.** Do not push. Fix the failing tests in the working tree first (and, per
   step 1, don't commit the fixes on the user's behalf unless they ask). Re-run `pytest` until green, then continue.
   Don't start the integration tests until the unit tests pass.
@@ -77,7 +80,7 @@ Never force-push on your own initiative: if the push is rejected and the user ha
 
 ## 4. Wait for GitHub Actions and check success
 
-The push triggers the **Unit-tests** workflow (`.github/workflows/unit-tests.yml`: TruffleHog → PyTest → SonarCloud Scan). Wait for the run that corresponds to the commit just pushed.
+The push triggers the **Unit-tests** workflow (`.github/workflows/unit-tests.yml`: TruffleHog → Mypy → PyTest → SonarCloud Scan). Wait for the run that corresponds to the commit just pushed.
 
 ```bash
 # Find the run for the just-pushed commit

@@ -26,6 +26,8 @@ jobs:
           enable-cache: true
       - name: Install dependencies
         run: uv sync --locked
+      - name: Mypy
+        run: uv run mypy
       - name: PyTest
         run: uv run pytest -v --cov=anki_addons_dataset --cov-report=xml --cov-branch
       - name: SonarCloud Scan
