@@ -10,7 +10,9 @@ def test_find_github_links():
         URL("https://ankiweb.net/logo.png"),
         URL("https://github.com/Arthur-Milchior/anki-copy-note?tab=readme-ov-file#copy-notes"),
         URL("https://github.com/kanjieater/anki-plugin-heisigs-rtk#readme"),
-        URL("https://github.com/Arthur-Milchior/note-organizer)*")
+        URL("https://github.com/Arthur-Milchior/note-organizer)*"),
+        URL("https://github.com/Glutanimate"),
+        URL("https://github.com/Arthur-Milchior/")
     ]
     github_links: list[GithubLink] = UrlParser.find_github_links(links)
     assert github_links == [
@@ -28,7 +30,9 @@ def test_find_github_links():
                    GithubRepo(GithubUserName("kanjieater"), GithubRepoName("anki-plugin-heisigs-rtk"))),
         GithubLink(URL("https://github.com/Arthur-Milchior/note-organizer)*"),
                    GithubUser(GithubUserName("arthur-milchior")),
-                   GithubRepo(GithubUserName("arthur-milchior"), GithubRepoName("note-organizer")))
+                   GithubRepo(GithubUserName("arthur-milchior"), GithubRepoName("note-organizer"))),
+        GithubLink(URL("https://github.com/Glutanimate"), GithubUser(GithubUserName("glutanimate")), None),
+        GithubLink(URL("https://github.com/Arthur-Milchior/"), GithubUser(GithubUserName("arthur-milchior")), None)
     ]
 
 
