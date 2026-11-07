@@ -12,12 +12,13 @@
 working_dir: ~/anki-addons-dataset
 
 github:
-  # Personal access token used by the download and parse steps.
-  # No scopes are required for public repositories.
+  # Personal access token used by the download step to call the GitHub API. The ai and parse
+  # steps make no request but still require the file. No scopes are required for public repositories.
   token_file: ~/.github/token.txt
 
 ai:
-  # Used by the `ai` step to generate the short addon summaries. Any OpenAI-compatible
+  # Used by the `ai` step for the addon summaries and tags and the GitHub repo, forum topic and fork
+  # checks. Any OpenAI-compatible
   # endpoint works; the key is read from api_key_file (never from this file).
   endpoint: https://api.deepseek.com
   api_key_file: ~/.config/anki-addons-dataset/deepseek-api-key.txt

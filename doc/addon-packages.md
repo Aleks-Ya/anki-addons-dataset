@@ -78,12 +78,8 @@ Packages are already zips, and most stay unchanged between snapshots, so they ar
   `package-list.json`, the list of the files that snapshot used.
 - **UPLOAD** pushes `packages/` with the rest of the bundle. `packages` is not in `huggingface.synced_dirs`, so
   `prune_orphans` never deletes a remote package, even if a local file is lost. Old versions stay on HuggingFace
-  unless removed by hand.
+  unless removed by hand. The remote `.gitattributes` has a `*.ankiaddon` rule, so packages are stored in LFS.
 - **INIT** downloads `packages/` once and links the listed files into each snapshot. Snapshots without a package
   list are skipped.
 
 History cannot be backfilled: AnkiWeb serves only current packages.
-
-## Before the first real upload
-Confirm that the packages land in LFS/Xet storage. If they do not, add a `*.ankiaddon` rule to the remote
-`.gitattributes`.

@@ -4,7 +4,7 @@
 - [Running the pipeline](doc/pipeline.md) — `-d`, release vs working source, sample runs
 - [Configuration](doc/configuration.md) — config file, GitHub token, logging, browser timeouts
 - [AI summaries and tags](doc/ai.md) — the `ai` step, its cache and costs
-- [Anki versions](doc/anki-versions.md) — how addon version ranges are parsed
+- [Anki versions](doc/anki-versions.md) — how addon version ranges are parsed, the `anki_versions` table
 - [Addon packages](doc/addon-packages.md) — downloading `.ankiaddon` files, their cache and publishing
 - [Integration tests](doc/testing.md) — live tests and their requirements
 - [HuggingFace](doc/huggingface.md) — CLI login, the visualization Space
@@ -52,7 +52,9 @@ Integration tests: [doc/testing.md](doc/testing.md).
 ## Running the pipeline
 
 The pipeline has seven steps run in order: `init download ai parse report bundle upload`.
-There is also an `info` step that logs the app version and runtime configuration (working dir, HuggingFace dataset, GitHub token file, Python/platform, snapshot/report dates, browser timeouts) without side effects. It fails fast on bad credentials: a GitHub token that is absent, empty or
+There is also an `info` step that logs the app version and runtime configuration (Python/platform, working dir, log
+file, HuggingFace dataset, GitHub token file, AI endpoint, models and key file, snapshot/report dates, browser
+timeouts, sample limits) without side effects. It fails fast on bad credentials: a GitHub token that is absent, empty or
 rejected by the API, an AI API key file that is absent, empty or rejected by the provider, or missing
 HuggingFace write access. All three checks need network access: the AI one asks the configured endpoint
 for the shortest possible answer, so it costs a handful of tokens per `info` run, and it reports the
@@ -91,22 +93,24 @@ Snapshot dates, ways to run a release or the working source, and sample runs: [d
 3. Initialize a working directory: `uv run anki-addons-dataset init` (creates `~/anki-addons-dataset`; any
    existing content except `logs/` is moved to `~/anki-addons-dataset/backups/YYYYmmdd-HHMMSS`)
 4. Download new snapshot: `uv run anki-addons-dataset download -d 2026-01-01` (creates `~/anki-addons-dataset/history/2026-01-01/1-raw`)
-5. Parse dataset: `uv run anki-addons-dataset parse` (enriches `~/anki-addons-dataset/history/YYYY-MM-DD/2-stage`)
-6. Generate reports: `uv run anki-addons-dataset report` (creates `~/anki-addons-dataset/history/YYYY-MM-DD/3-final`)
-7. Create a bundle: `uv run anki-addons-dataset bundle` (creates `~/anki-addons-dataset/bundle`)
-8. Upload the bundle: `uv run anki-addons-dataset upload` (syncs `~/anki-addons-dataset/bundle` to HuggingFace)
-9. Restart the visualization space: https://huggingface.co/spaces/Ya-Alex/anki-addons
-   (its startup log warns about `HF_TOKEN`, see [HuggingFace Spaces](doc/huggingface.md#huggingface-spaces))
-10. Post on Anki Forum: https://forums.ankiweb.net/t/anki-addons-dataset-a-detailed-list-of-addons/63090
+5. Buy the AI answers: `uv run anki-addons-dataset ai -d 2026-01-01` (fills `~/anki-addons-dataset/history/2026-01-01/1-raw/4-ai/ai-cache.jsonl`, costs money, see [AI summaries and tags](doc/ai.md))
+6. Parse dataset: `uv run anki-addons-dataset parse` (writes `~/anki-addons-dataset/history/YYYY-MM-DD/addon-infos.json` and `2-stage`)
+7. Generate reports: `uv run anki-addons-dataset report` (creates `~/anki-addons-dataset/history/YYYY-MM-DD/3-final`)
+8. Create a bundle: `uv run anki-addons-dataset bundle` (creates `~/anki-addons-dataset/bundle`)
+9. Upload the bundle: `uv run anki-addons-dataset upload` (syncs `~/anki-addons-dataset/bundle` to HuggingFace)
+10. Restart the visualization space: https://huggingface.co/spaces/Ya-Alex/anki-addons
+    (its startup log warns about `HF_TOKEN`, see [HuggingFace Spaces](doc/huggingface.md#huggingface-spaces))
+11. Post on Anki Forum: https://forums.ankiweb.net/t/anki-addons-dataset-a-detailed-list-of-addons/63090
 
 ## Release a new version of this repository
 1. Checkout branch `main`
 2. Pass Sonar Qube analysis (skill `/push`):
     1. Upgrade Python packages: `./uv_update.sh`
     2. Execute unit-tests: `uv run pytest`
-    3. Push changes: `git push`
-    4. Review GitHub Actions: https://github.com/Aleks-Ya/anki-addons-dataset/actions
-    5. Review Sonar Qube report: https://sonarcloud.io/summary/overall?id=Aleks-Ya_anki-addons-dataset&branch=main
+    3. Execute integration tests: `uv run pytest tests_integration`
+    4. Push changes: `git push`
+    5. Review GitHub Actions: https://github.com/Aleks-Ya/anki-addons-dataset/actions
+    6. Review Sonar Qube report: https://sonarcloud.io/summary/overall?id=Aleks-Ya_anki-addons-dataset&branch=main
 3. Increment the version and create a GitHub release (skill `/release`):
     1. Choose the next version from the latest release tag (`v2.3.0`): patch `2.3.1`, minor `2.4.0` or major `3.0.0`
     2. Bump to it and tag it: `uv run bump-my-version bump --new-version 2.4.0 --tag`

@@ -1,15 +1,24 @@
 # AI summaries and tags
 The `ai` step generates the one-sentence addon summary exported as `ai.summary` and the addon tags
-exported as `ai.tags`, picked from the vocabulary hard-coded in `AiTagger`. It is the only step
+exported as `ai.tags`, picked from the vocabulary hard-coded in `AiTagVocabulary`. It is the only step
 that spends money, so it is separate from `download`: it reads the snapshots already in `history/`,
 builds a prompt from the addon title, the AnkiWeb description and the GitHub README, and
 writes every answer to `history/<date>/1-raw/4-ai/ai-cache.jsonl`. `parse` then reads that cache
 offline and attaches the summaries and tags to the dump; an addon with no cached answer simply gets
-no summary or tags, and `parse` logs how many answers were missing (two per addon, plus the fork and
-forum checks below where they apply).
+no summary or tags, and `parse` logs how many answers were missing (two per addon, plus the repo
+choice, fork and forum checks below where they apply).
 The step works on 50 addons at once, so up to 50 AI requests are in flight.
 
-For an addon whose description or README links other catalog addons, a third request asks which one
+An addon's GitHub repo comes from a `GitHubUrl` override or the Contact Author button when it has one.
+Otherwise every repo its description links is a candidate, and the one candidate whose README,
+description, homepage or manifest homepage mentions the addon id wins (`self_reference`). When none or
+several do, one request shows the AI the addon page and the candidates and asks for the repo that holds
+the addon's source code, answered as `owner/repo` or `none`. `none` leaves the addon without GitHub
+data; a chosen repo exports `github.repo_source` as `ai`. With no cached answer the most-linked repo
+is kept, as `most_linked`. The README the summary and tag prompts read is the chosen repo's, so this
+answer comes first.
+
+For an addon whose description or README links other catalog addons, one more request asks which one
 of them, if any, the addon is a fork of. When that answer names a parent, the same prompt is asked
 again of `ai.fork_verify_model` (`deepseek-v4-pro` by default), and the stronger model's answer is
 final. Only a few hundred answers per snapshot name a parent, so this costs little. It is skipped when

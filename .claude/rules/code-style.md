@@ -18,7 +18,7 @@ paths:
 ## Tests
 
 - A new test mirrors the `src/` structure under `tests/`.
-- HTML fixtures for the AnkiWeb parser tests live in `src/collector/ankiweb/`.
+- HTML fixtures for the AnkiWeb parser tests live in `tests/anki_addons_dataset/collector/ankiweb/`.
 - Use `conftest.py` with `tmp_path`-based working directories and mock every external API: the whole
   suite must run without network access.
 - Use `freezegun` for time-sensitive tests.

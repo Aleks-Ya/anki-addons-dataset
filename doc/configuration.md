@@ -8,7 +8,7 @@ optional; omitted keys keep the defaults shown below, and with no file at all th
 ```yaml
 working_dir: ~/anki-addons-dataset       # where snapshots and the bundle are kept; -w overrides it
 github:
-  token_file: ~/.github/token.txt        # GitHub personal access token, read by download/parse
+  token_file: ~/.github/token.txt        # GitHub personal access token, read by download/ai/parse
 ai:
   endpoint: https://api.deepseek.com     # any OpenAI-compatible endpoint, used by the ai step
   api_key_file: ~/.config/anki-addons-dataset/deepseek-api-key.txt
@@ -55,9 +55,10 @@ The HuggingFace token is not part of this file — `huggingface_hub` reads it fr
 `hf auth login`.
 
 ## GitHub token
-The `download` and `parse` steps call the GitHub REST API and need a personal access token
+The `download` step calls the GitHub REST and GraphQL APIs and needs a personal access token
 (no scopes required for public repositories) in `~/.github/token.txt` (or wherever
-`github.token_file` points):
+`github.token_file` points). `ai` and `parse` read only the cached responses and make no GitHub
+request, but they still fail without the token file:
 
 ```bash
 mkdir -p ~/.github
