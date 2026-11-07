@@ -1,7 +1,10 @@
+import logging
+import sys
 from dataclasses import replace
 from datetime import date
-from typing import Optional
-from unittest.mock import Mock
+from pathlib import Path
+from typing import Any, Optional
+from unittest.mock import Mock, patch
 
 import pytest
 from _pytest.logging import LogCaptureFixture
@@ -120,3 +123,61 @@ def test_a_system_exit_is_not_swallowed(monkeypatch: MonkeyPatch, caplog: LogCap
 def test_a_successful_run_returns(monkeypatch: MonkeyPatch):
     monkeypatch.setattr(addon_catalog, "_run", lambda: None)
     main()
+
+
+def __run(monkeypatch: MonkeyPatch, tmp_path: Path, *cli_args: str) -> Mock:
+    monkeypatch.setattr(sys, "argv", ["anki-addons-dataset", *cli_args, "-w", str(tmp_path / "working-dir"),
+                                      "-c", str(tmp_path / "missing-config.yaml")])
+    with patch.object(addon_catalog, "Facade") as facade_class, \
+            patch.object(addon_catalog, "HfApi"), \
+            patch.object(addon_catalog.Log, "apply"):
+        addon_catalog._run()
+    return facade_class.return_value.process
+
+
+def __steps(process: Mock) -> list[tuple[Operation, Optional[SnapshotDate]]]:
+    return [(process_call.args[0], process_call.args[1]) for process_call in process.call_args_list]
+
+
+def test_run_all_runs_every_step_and_hides_the_date_from_the_offline_steps(
+        monkeypatch: MonkeyPatch, tmp_path: Path, caplog: LogCaptureFixture):
+    snapshot_date: SnapshotDate = SnapshotDate(date.fromisoformat("2025-01-01"))
+
+    with caplog.at_level(logging.INFO):
+        process: Mock = __run(monkeypatch, tmp_path, "all", "-d", "2025-01-01")
+
+    assert __steps(process) == [
+        (Operation.INFO, snapshot_date), (Operation.INIT, snapshot_date), (Operation.DOWNLOAD, snapshot_date),
+        (Operation.AI, None), (Operation.PARSE, None), (Operation.REPORT, None),
+        (Operation.BUNDLE, snapshot_date), (Operation.UPLOAD, snapshot_date)]
+    report_dates: set[Any] = {process_call.args[2] for process_call in process.call_args_list}
+    assert len(report_dates) == 1
+    assert "not found, using defaults" in caplog.text
+    assert "===== Execution time =====" in caplog.text
+    assert "Total" in caplog.text
+
+
+def test_run_passes_the_date_to_an_explicit_parse(monkeypatch: MonkeyPatch, tmp_path: Path):
+    process: Mock = __run(monkeypatch, tmp_path, "parse", "-d", "2025-01-01")
+
+    assert __steps(process) == [(Operation.PARSE, SnapshotDate(date.fromisoformat("2025-01-01")))]
+
+
+def test_run_all_of_a_sampled_run_skips_upload(monkeypatch: MonkeyPatch, tmp_path: Path):
+    process: Mock = __run(monkeypatch, tmp_path, "all", "-d", "2025-01-01", "--sample-addons", "5")
+
+    assert [operation for operation, _ in __steps(process)] == [
+        Operation.INFO, Operation.INIT, Operation.DOWNLOAD, Operation.AI, Operation.PARSE, Operation.REPORT,
+        Operation.BUNDLE]
+
+
+def test_run_rejects_an_upload_of_a_sampled_run_before_any_step(monkeypatch: MonkeyPatch, tmp_path: Path):
+    monkeypatch.setattr(sys, "argv", ["anki-addons-dataset", "bundle", "upload", "--sample-addons", "5",
+                                      "-w", str(tmp_path / "working-dir"), "-c", str(tmp_path / "missing.yaml")])
+    with patch.object(addon_catalog, "Facade") as facade_class, \
+            patch.object(addon_catalog, "HfApi"), \
+            patch.object(addon_catalog.Log, "apply"):
+        with pytest.raises(ValueError, match="must not be uploaded"):
+            addon_catalog._run()
+
+    facade_class.return_value.process.assert_not_called()

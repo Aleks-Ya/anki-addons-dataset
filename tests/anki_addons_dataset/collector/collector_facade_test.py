@@ -1,7 +1,8 @@
 import logging
 from dataclasses import replace
-from datetime import date
+from datetime import date, datetime
 from pathlib import Path
+from typing import Optional
 from unittest.mock import ANY, patch
 
 import pandas
@@ -9,10 +10,16 @@ import pandas.testing as pdt
 import pytest
 from pandas import DataFrame
 
+from anki_addons_dataset import __version__
 from anki_addons_dataset.collector.ai.cache.ai_cache_stats import AiCacheStats
+from anki_addons_dataset.collector.ai.provider.ai_provider import AiInstructions, AiPrompt, AiProvider, \
+    AiResponseText
 from anki_addons_dataset.collector.collector_facade import CollectorFacade
+from anki_addons_dataset.collector.raw_metadata_collector import RawMetadataCollector
+from anki_addons_dataset.collector.sample_collector import SampleCollector
 from anki_addons_dataset.common.data_types import AddonInfos, ElementWaitTimeout, PageLoadTimeout, ReportDate, \
-    ScriptVersion, SnapshotDate, AddonPackage, AddonPackages, AddonReview, AnkiPointVersion, LanguageName, ReviewVote
+    ScriptVersion, SnapshotDate, AiModel, AddonPackage, AddonPackages, AddonReview, AnkiPointVersion, LanguageName, \
+    ReviewVote
 from anki_addons_dataset.common.json_helper import JsonHelper
 from anki_addons_dataset.common.working_dir import SnapshotDir, WorkingDir
 from anki_addons_dataset.config.app_config import AppConfig
@@ -26,6 +33,20 @@ __COLLECT: str = \
     "anki_addons_dataset.collector.collector_facade.CollectorFacade._CollectorFacade__collect"
 __REPORT_SNAPSHOT: str = \
     "anki_addons_dataset.collector.collector_facade.CollectorFacade._CollectorFacade__report_snapshot"
+__PAGE_DOWNLOADER: str = "anki_addons_dataset.collector.collector_facade.PageDownloader"
+__ADDON_INFOS_COLLECTOR: str = "anki_addons_dataset.collector.collector_facade.AddonInfosCollector"
+__AI_PROVIDER_FACTORY: str = "anki_addons_dataset.collector.collector_facade.AiProviderFactory"
+
+
+class AnsweringAiProvider(AiProvider):
+    def __init__(self):
+        super().__init__(AiModel("test-model"))
+
+    def response(self, prompt: AiPrompt, instructions: Optional[AiInstructions] = None) -> Optional[AiResponseText]:
+        return AiResponseText("statistics")
+
+    def verify_access(self) -> Optional[str]:
+        return None
 
 
 def test_download_snapshot_collects_packages_of_scraped_addons(
@@ -282,3 +303,94 @@ def test_report_snapshots_with_an_unknown_date_raises(collector_facade: Collecto
 
     with pytest.raises(FileNotFoundError, match="No snapshot for 1999-01-01"):
         collector_facade.report_snapshots(unknown_date, report_date)
+
+
+def test_download_snapshot_without_a_date_raises(collector_facade: CollectorFacade):
+    with pytest.raises(ValueError, match="Snapshot date is required"):
+        collector_facade.download_snapshot(None)
+
+
+def test_download_snapshot_resumed_keeps_the_recorded_timestamps(
+        collector_facade: CollectorFacade, snapshot_dir: SnapshotDir, snapshot_date: SnapshotDate,
+        addon_infos: AddonInfos):
+    raw_metadata_collector: RawMetadataCollector = RawMetadataCollector(snapshot_dir)
+    raw_metadata_collector.set_start_datetime(datetime(2025, 1, 1, 10, 0, 0))
+    raw_metadata_collector.set_finish_datetime(datetime(2025, 1, 1, 12, 0, 0))
+
+    with patch(__COLLECT, return_value=addon_infos), \
+            patch("anki_addons_dataset.collector.collector_facade.AnkiVersionsCollector"), \
+            patch("anki_addons_dataset.collector.collector_facade.PackageCollector"):
+        collector_facade.download_snapshot(snapshot_date)
+
+    raw_metadata = raw_metadata_collector.read_metadata()
+    assert raw_metadata.start_timestamp == datetime(2025, 1, 1, 10, 0, 0)
+    assert raw_metadata.finish_timestamp == datetime(2025, 1, 1, 12, 0, 0)
+
+
+def test_report_snapshots_of_a_current_dump_does_not_warn(
+        collector_facade: CollectorFacade, snapshot_dir: SnapshotDir, addon_infos: AddonInfos,
+        report_date: ReportDate, caplog: pytest.LogCaptureFixture):
+    JsonHelper.write_addon_infos_dump(addon_infos, ScriptVersion(__version__), snapshot_dir.get_addon_infos_dump())
+
+    with caplog.at_level(logging.WARNING):
+        collector_facade.report_snapshots(None, report_date)
+
+    assert (snapshot_dir.get_final_dir() / "parquet" / "data.parquet").exists()
+    assert "Dump was parsed with script version" not in caplog.text
+
+
+@pytest.mark.parametrize("fork_verify_model", [None, "verify-model"])
+def test_parse_snapshots_writes_the_dump_and_warns_about_missing_ai_answers(
+        working_dir: WorkingDir, app_config: AppConfig, page_load_timeout: PageLoadTimeout,
+        element_wait_timeout: ElementWaitTimeout, snapshot_dir: SnapshotDir, addon_infos: AddonInfos,
+        caplog: pytest.LogCaptureFixture, fork_verify_model: Optional[str]):
+    config: AppConfig = replace(app_config, ai=replace(app_config.ai, fork_verify_model=fork_verify_model))
+    SampleCollector(snapshot_dir).set_addons(3)
+    collector_facade: CollectorFacade = CollectorFacade(working_dir, config, page_load_timeout, element_wait_timeout)
+
+    with patch(__PAGE_DOWNLOADER), patch(__ADDON_INFOS_COLLECTOR) as addon_infos_collector:
+        addon_infos_collector.return_value.collect_addons.return_value = addon_infos
+        with caplog.at_level(logging.WARNING):
+            collector_facade.parse_snapshots(None)
+
+    _, dumped_addon_infos = JsonHelper.read_addon_infos_dump(snapshot_dir.get_addon_infos_dump())
+    assert [addon_info.header.id for addon_info in dumped_addon_infos] == [
+        addon_info.header.id for addon_info in addon_infos]
+    assert "AI answers (repo choices, forum topic checks, summaries, tags or fork labels) are missing" in caplog.text
+    assert addon_infos_collector.call_args.args[5] == 3
+
+
+def test_summarize_snapshots_fills_the_ai_cache_and_keeps_the_report(
+        collector_facade: CollectorFacade, snapshot_dir: SnapshotDir, addon_infos: AddonInfos,
+        caplog: pytest.LogCaptureFixture):
+    report_file: Path = snapshot_dir.get_final_dir() / "parquet" / "data.parquet"
+    report_file.parent.mkdir(parents=True, exist_ok=True)
+    report_file.write_text("existing report")
+
+    with patch(__PAGE_DOWNLOADER), patch(__ADDON_INFOS_COLLECTOR) as addon_infos_collector, \
+            patch(__AI_PROVIDER_FACTORY) as ai_provider_factory:
+        addon_infos_collector.return_value.collect_addons.return_value = addon_infos
+        ai_provider_factory.create.return_value = AnsweringAiProvider()
+        with caplog.at_level(logging.INFO):
+            collector_facade.summarize_snapshots(None)
+
+    assert snapshot_dir.get_ai_cache_file().read_text().strip()
+    assert report_file.read_text() == "existing report"
+    assert "AI cache hits: 0, misses: " in caplog.text
+    ai_provider_factory.create.assert_called_once_with(ANY, False, None)
+
+
+def test_parse_snapshots_reads_back_the_answers_the_ai_step_cached(
+        collector_facade: CollectorFacade, snapshot_dir: SnapshotDir, addon_infos: AddonInfos,
+        caplog: pytest.LogCaptureFixture):
+    with patch(__PAGE_DOWNLOADER), patch(__ADDON_INFOS_COLLECTOR) as addon_infos_collector, \
+            patch(__AI_PROVIDER_FACTORY) as ai_provider_factory:
+        addon_infos_collector.return_value.collect_addons.return_value = addon_infos
+        ai_provider_factory.create.return_value = AnsweringAiProvider()
+        collector_facade.summarize_snapshots(None)
+        with caplog.at_level(logging.WARNING):
+            collector_facade.parse_snapshots(None)
+
+    _, dumped_addon_infos = JsonHelper.read_addon_infos_dump(snapshot_dir.get_addon_infos_dump())
+    assert [addon_info.ai.summary for addon_info in dumped_addon_infos if addon_info.ai] == ["statistics"]
+    assert "are missing from the cache" not in caplog.text
