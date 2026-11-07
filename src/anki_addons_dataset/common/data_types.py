@@ -176,7 +176,7 @@ class GithubInfo:
     tests_count: Optional[int]
     # Developer-facing enrichment (all optional; populated by GithubEnricher, default-empty elsewhere).
     license: Optional[SpdxLicense] = None
-    forks: Optional[int] = None
+    fork_count: Optional[int] = None
     open_issues: Optional[int] = None
     size_kb: Optional[int] = None
     topics: list[Topic] = field(default_factory=list)

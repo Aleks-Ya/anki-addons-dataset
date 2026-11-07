@@ -323,7 +323,7 @@ def test_get_repo_info_200(github_service: GithubService, github_rest_client: Gi
         "archived":false,"pushed_at":"2023-03-16T10:00:00Z","created_at":"2020-01-01T09:00:00Z"}"""
     github_rest_client.get_from_url = __mock_content(content)
     meta: GithubRepoMeta = github_service.get_repo_info(github_repo)
-    assert meta == GithubRepoMeta(license=SpdxLicense("MIT"), forks=4, open_issues=2, size_kb=128,
+    assert meta == GithubRepoMeta(license=SpdxLicense("MIT"), fork_count=4, open_issues=2, size_kb=128,
                                   topics=[Topic("anki"), Topic("flashcards")], repo_description="An addon",
                                   homepage="https://example.com", archived=False,
                                   pushed_at=datetime(2023, 3, 16, 10, 0, 0), created_at=datetime(2020, 1, 1, 9, 0, 0))

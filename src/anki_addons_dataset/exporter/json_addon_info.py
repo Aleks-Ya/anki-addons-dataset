@@ -75,7 +75,7 @@ class GitHub:
     action_count: Optional[int]
     tests_count: Optional[int]
     license: Optional[str]
-    forks: Optional[int]
+    fork_count: Optional[int]
     open_issues: Optional[int]
     size_kb: Optional[int]
     topics: list[str]
@@ -281,7 +281,7 @@ class JsonAddonInfo:
         releases: Optional[list[GithubRelease]] = github.releases
         latest_release: Optional[GithubRelease] = JsonAddonInfo.__latest_release(releases)
         return GitHub(user, repo_str, github.languages, github.stars, last_commit_str, links, github.action_count,
-                      github.tests_count, github.license, github.forks, github.open_issues, github.size_kb,
+                      github.tests_count, github.license, github.fork_count, github.open_issues, github.size_kb,
                       list(github.topics), github.repo_description, github.homepage, github.archived, pushed_at_str,
                       created_at_str, github.primary_language, language_bytes, manifest,
                       list(github.dependencies), github.readme, list(github.ai_tooling_markers),

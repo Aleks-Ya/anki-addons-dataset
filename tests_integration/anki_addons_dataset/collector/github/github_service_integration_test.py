@@ -42,7 +42,7 @@ def test_known_repo(github_service: GithubService, snapshot_dir: SnapshotDir,
     assert tests_count > 0
 
     meta: GithubRepoMeta = github_service.get_repo_info(known_github_repo)
-    assert meta.forks is not None
+    assert meta.fork_count is not None
     assert meta.open_issues is not None
     assert meta.size_kb is not None
     assert meta.created_at is not None

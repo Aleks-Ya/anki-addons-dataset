@@ -192,7 +192,7 @@ class JsonHelper:
             action_count=data["action_count"],
             tests_count=data["tests_count"],
             license=SpdxLicense(license_str) if license_str is not None else None,
-            forks=data.get("forks"),
+            fork_count=data.get("fork_count", data.get("forks")),
             open_issues=data.get("open_issues"),
             size_kb=data.get("size_kb"),
             topics=[Topic(topic) for topic in data.get("topics", [])],

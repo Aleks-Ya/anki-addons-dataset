@@ -79,7 +79,7 @@ class GithubInfo <<frozen dataclass>> {
   action_count : Optional[int]
   tests_count : Optional[int]
   license : Optional[SpdxLicense]
-  forks : Optional[int]
+  fork_count : Optional[int]
   open_issues : Optional[int]
   size_kb : Optional[int]
   topics : list[Topic]

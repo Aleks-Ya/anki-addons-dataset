@@ -90,7 +90,9 @@ AnkiWeb description and found that the addon is a modified copy of an addon it l
 set by hand. An addon has at most one parent; when GitHub and the AI disagree, GitHub wins. `forks` is the
 reverse: the addons that were forked from this one, any number of them. Detection is incomplete: a fork
 that neither uses a GitHub fork nor links the original from its description is not found, and `ai` evidence
-may be inaccurate.
+may be inaccurate. `github.fork_count` is unrelated to `forks`: it is the number of forks of the addon's GitHub repo
+as GitHub reports it, most of which are not published as addons. It was called `github.forks` in earlier releases of
+this dataset.
 
 The `anki_versions` table (`latest/parquet/anki_versions.parquet`, also in Excel) lists the stable
 Anki releases from 2.1.0 on, newest first, taken from the tags of the [Anki repository](https://github.com/ankitects/anki)

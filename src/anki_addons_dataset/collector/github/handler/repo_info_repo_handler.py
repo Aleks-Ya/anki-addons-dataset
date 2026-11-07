@@ -10,7 +10,7 @@ from anki_addons_dataset.common.data_types import GithubRepo, GithubRepoName, Gi
 class GithubRepoMeta:
     """Developer-facing fields extracted from the `GET /repos/{u}/{r}` response (already fetched for stars)."""
     license: Optional[SpdxLicense] = None
-    forks: Optional[int] = None
+    fork_count: Optional[int] = None
     open_issues: Optional[int] = None
     size_kb: Optional[int] = None
     topics: list[Topic] = field(default_factory=list)
@@ -39,7 +39,7 @@ class RepoInfoRepoHandler(RepoHandler):
         spdx: Optional[str] = license_obj.get("spdx_id") if license_obj else None
         return GithubRepoMeta(
             license=SpdxLicense(spdx) if spdx and spdx != "NOASSERTION" else None,
-            forks=content_obj.get("forks_count"),
+            fork_count=content_obj.get("forks_count"),
             open_issues=content_obj.get("open_issues_count"),
             size_kb=content_obj.get("size"),
             topics=[Topic(topic) for topic in content_obj.get("topics", [])],
@@ -54,7 +54,7 @@ class RepoInfoRepoHandler(RepoHandler):
     def _prepare_stage_dict(self, return_value: GithubRepoMeta) -> dict[str, Any]:
         return {
             "license": return_value.license,
-            "forks": return_value.forks,
+            "fork_count": return_value.fork_count,
             "open_issues": return_value.open_issues,
             "size_kb": return_value.size_kb,
             "topics": return_value.topics,

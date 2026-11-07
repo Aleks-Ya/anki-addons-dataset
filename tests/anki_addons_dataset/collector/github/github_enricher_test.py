@@ -69,7 +69,7 @@ def test_enrich(github_enricher: GithubEnricher, github_service: GithubService, 
     github_service.get_action_count = Mock(return_value=5)
     github_service.get_tests_count = Mock(return_value=7)
     github_service.get_repo_info = Mock(return_value=GithubRepoMeta(
-        license=SpdxLicense("MIT"), forks=4, open_issues=2, size_kb=128, topics=[Topic("anki")],
+        license=SpdxLicense("MIT"), fork_count=4, open_issues=2, size_kb=128, topics=[Topic("anki")],
         repo_description="A NoteSize addon", homepage=URL("https://example.com"), archived=False,
         pushed_at=pushed_at, created_at=created_at))
     github_service.get_manifest = Mock(return_value=manifest)
@@ -115,7 +115,7 @@ def test_enrich(github_enricher: GithubEnricher, github_service: GithubService, 
             action_count=5,
             tests_count=7,
             license=SpdxLicense("MIT"),
-            forks=4,
+            fork_count=4,
             open_issues=2,
             size_kb=128,
             topics=[Topic("anki")],

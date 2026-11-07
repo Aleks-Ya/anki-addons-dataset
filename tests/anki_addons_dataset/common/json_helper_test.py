@@ -98,7 +98,7 @@ def test_addon_infos_dump_round_trip_with_enrichment_fields(addon_info: AddonInf
     addon_info = replace(addon_info, github=replace(
         addon_info.github,
         license=SpdxLicense("MIT"),
-        forks=4,
+        fork_count=4,
         open_issues=2,
         size_kb=128,
         topics=[Topic("anki"), Topic("flashcards")],
@@ -237,7 +237,7 @@ def test_addon_infos_dump_reads_legacy_dump_without_enrichment_fields(addon_info
     dump_file: Path = working_dir_path / "addon-infos.json"
     JsonHelper.write_addon_infos_dump(addon_infos, script_version, dump_file)
     envelope: dict = json.loads(dump_file.read_text())
-    legacy_keys = ["license", "forks", "open_issues", "size_kb", "topics", "repo_description", "homepage",
+    legacy_keys = ["license", "fork_count", "open_issues", "size_kb", "topics", "repo_description", "homepage",
                    "archived", "pushed_at", "created_at", "primary_language", "language_bytes", "manifest",
                    "dependencies", "readme", "ai_tooling_markers"]
     for key in legacy_keys:
@@ -258,6 +258,21 @@ def test_addon_infos_dump_reads_legacy_dump_without_enrichment_fields(addon_info
     forum = read_addon_infos[0].forum
     assert forum is not None
     assert isinstance(forum.last_posted_at, datetime)
+
+
+def test_addon_infos_dump_reads_legacy_forks_as_fork_count(addon_infos: AddonInfos, script_version: ScriptVersion,
+                                                           working_dir_path: Path):
+    dump_file: Path = working_dir_path / "addon-infos.json"
+    JsonHelper.write_addon_infos_dump(addon_infos, script_version, dump_file)
+    envelope: dict = json.loads(dump_file.read_text())
+    github_dict: dict = envelope["addon_infos"][0]["github"]
+    github_dict.pop("fork_count")
+    github_dict["forks"] = 7
+    dump_file.write_text(json.dumps(envelope))
+
+    _, read_addon_infos = JsonHelper.read_addon_infos_dump(dump_file)
+
+    assert read_addon_infos[0].github.fork_count == 7
 
 
 def test_addon_infos_dump_round_trip_preserves_the_ai_summary(addon_infos: AddonInfos,
