@@ -1,11 +1,13 @@
+import zlib
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Optional
-from zipfile import ZipFile, ZipInfo
+from zipfile import BadZipFile, LargeZipFile, ZipFile, ZipInfo
 
 from magika import Magika
 from magika.types import MagikaResult
 
+from anki_addons_dataset.collector.package.package_client import PackageError
 from anki_addons_dataset.common.data_types import LanguageName
 
 
@@ -22,6 +24,7 @@ class PackageAnalysis:
 
 
 class PackageAnalyzer:
+    __encrypted_flag: int = 0x1
     __max_read_bytes: int = 5_000_000
     __max_metadata_bytes: int = 64_000
 
@@ -32,7 +35,10 @@ class PackageAnalyzer:
     def analyze(self, package_file: Path) -> PackageAnalysis:
         analysis: Optional[PackageAnalysis] = self.__analyses.get(package_file.name)
         if analysis is None:
-            analysis = self.__analyze(package_file)
+            try:
+                analysis = self.__analyze(package_file)
+            except (BadZipFile, LargeZipFile, zlib.error, EOFError, OSError, NotImplementedError) as e:
+                raise PackageError(f"{type(e).__name__}: {e}") from e
             self.__analyses[package_file.name] = analysis
         return analysis
 
@@ -40,6 +46,8 @@ class PackageAnalyzer:
         with ZipFile(package_file) as archive:
             entries: dict[str, ZipInfo] = {entry.filename: entry for entry in archive.infolist()
                                            if not entry.is_dir() and not self.__is_macos_junk(entry.filename)}
+            if any(entry.flag_bits & PackageAnalyzer.__encrypted_flag for entry in entries.values()):
+                raise PackageError("The package holds encrypted files")
             python_file_count: int = 0
             python_lines: int = 0
             language_bytes: dict[LanguageName, int] = {}

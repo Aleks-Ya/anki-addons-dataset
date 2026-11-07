@@ -8,6 +8,7 @@ from typing import Optional
 
 from anki_addons_dataset.collector.package.package_analyzer import PackageAnalysis, PackageAnalyzer
 from anki_addons_dataset.collector.package.package_cache_index import PackageKey
+from anki_addons_dataset.collector.package.package_client import PackageError
 from anki_addons_dataset.common.data_types import AddonId, AddonInfo, AddonInfos, AddonPackage, AddonPackages, \
     AnkiPointVersion
 from anki_addons_dataset.common.working_dir import SnapshotDir
@@ -52,7 +53,7 @@ class PackageEnricher:
     def __analyze(self, key: PackageKey, file: Path) -> Optional[AddonPackage]:
         try:
             analysis: PackageAnalysis = self.__package_analyzer.analyze(file)
-        except Exception as e:
+        except PackageError as e:
             log.warning(f"Cannot read package {file}: {e}")
             return None
         return AddonPackage(file.name, key.min_point_version, key.updated, file.stat().st_size, analysis.manifest_json,

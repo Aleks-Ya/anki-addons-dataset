@@ -1,9 +1,10 @@
 from pathlib import Path
-from zipfile import BadZipFile, ZipFile
+from zipfile import ZipFile
 
 import pytest
 
 from anki_addons_dataset.collector.package.package_analyzer import PackageAnalysis, PackageAnalyzer
+from anki_addons_dataset.collector.package.package_client import PackageError
 from anki_addons_dataset.common.data_types import LanguageName
 
 __PYTHON: bytes = (b'import os\nimport sys\n\n\ndef main():\n    for path in sys.argv[1:]:\n'
@@ -104,7 +105,7 @@ def test_analyze_raises_on_a_corrupt_package(analyzer: PackageAnalyzer, tmp_path
     package_file: Path = tmp_path / "package.ankiaddon"
     package_file.write_bytes(b"not a zip")
 
-    with pytest.raises(BadZipFile):
+    with pytest.raises(PackageError, match="BadZipFile"):
         analyzer.analyze(package_file)
 
 
@@ -153,3 +154,14 @@ def test_analyze_reuses_the_analysis_of_a_package_with_the_same_name(analyzer: P
     first_analysis: PackageAnalysis = analyzer.analyze(first_file)
 
     assert analyzer.analyze(second_file) == first_analysis
+
+
+def test_analyze_raises_on_an_encrypted_package(analyzer: PackageAnalyzer, tmp_path: Path):
+    package_file: Path = __package(tmp_path, {"__init__.py": b"a = 1\n"})
+    content: bytearray = bytearray(package_file.read_bytes())
+    for signature, flag_offset in ((b"PK\x03\x04", 6), (b"PK\x01\x02", 8)):
+        content[content.index(signature) + flag_offset] |= 0x1
+    package_file.write_bytes(bytes(content))
+
+    with pytest.raises(PackageError, match="encrypted"):
+        analyzer.analyze(package_file)

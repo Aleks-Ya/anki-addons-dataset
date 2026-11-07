@@ -10,6 +10,7 @@ from unittest.mock import Mock
 from zipfile import ZipFile
 
 import pytest
+from requests import ConnectionError as RequestsConnectionError
 
 from anki_addons_dataset.collector.package.package_cache_index import PackageCacheIndex
 from anki_addons_dataset.collector.package.package_client import PackageClient, PackageError, PackageLocation
@@ -256,3 +257,23 @@ def test_failed_download_removes_part_file_and_continues_with_next_branch(workin
     __collect(working_dir, snapshot_dir, client, __addon_infos(addon_info, [__branch(45, 50), __branch(60, 70)]))
 
     assert [file.name for file in __files(snapshot_dir)] == [__exp_name(__zip_bytes(), 60)]
+
+
+def test_a_request_failure_is_counted_as_a_failed_package(working_dir: WorkingDir, addon_info: AddonInfo,
+                                                          caplog: pytest.LogCaptureFixture):
+    snapshot_dir: SnapshotDir = __snapshot(working_dir, "2026-02-01")
+    client: Mock = __client()
+    client.locate.side_effect = RequestsConnectionError("reset")
+
+    __collect(working_dir, snapshot_dir, client, __addon_infos(addon_info, [__branch()]))
+
+    assert "failed: 1" in caplog.text
+
+
+def test_a_programming_error_is_not_counted_as_a_failed_package(working_dir: WorkingDir, addon_info: AddonInfo):
+    snapshot_dir: SnapshotDir = __snapshot(working_dir, "2026-02-01")
+    client: Mock = __client()
+    client.locate.side_effect = TypeError("bug")
+
+    with pytest.raises(TypeError, match="bug"):
+        __collect(working_dir, snapshot_dir, client, __addon_infos(addon_info, [__branch()]))

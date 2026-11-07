@@ -5,7 +5,9 @@ DOWNLOAD saves the `.ankiaddon` package of every addon branch. PARSE derives met
 ## What PARSE derives
 `PackageEnricher` runs after `ForkResolver` and reads only `1-raw/5-package/`, so a changed `PackageAnalyzer` takes
 effect by re-running PARSE. It keeps the newest `updated` per minimum point version, and a package that cannot be read
-gets a warning and no row. The AI step does not call it. An addon or snapshot without packages gets `package=None`.
+(not a zip, truncated, an unsupported compression method or encrypted files) gets a warning and no row. Any other
+error stops PARSE, so a bug in the analyzer is not mistaken for broken packages. The AI step does not call it. An
+addon or snapshot without packages gets `package=None`.
 
 `PackageAnalyzer` reads the zip in memory, never extracts it and never executes anything:
 
@@ -44,7 +46,8 @@ GET /shared/download/<addon id>?v=2.1&p=<point version>
 - Branches can overlap. A page listing `2.1.24-2.1.36` and `2.1.36-2.1.38` gets the lower branch for `p=36`,
   so a branch whose `p=min` lands elsewhere is requested again with `p=max`.
 - A package can be missing: one addon of 50 had a valid redirect and then a 404. It gets a warning and is
-  retried on the next run.
+  retried on the next run, as is a package that fails with a request or file system error or an unexpected
+  redirect. Any other error stops DOWNLOAD.
 - The responses have no `ETag` or `Last-Modified`, so conditional requests are not possible.
 
 ## Layout

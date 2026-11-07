@@ -2,6 +2,7 @@ import dataclasses
 from datetime import date
 from pathlib import Path
 from typing import Optional
+from unittest.mock import Mock
 from zipfile import ZipFile
 
 import pytest
@@ -101,3 +102,14 @@ def test_enrich_keeps_other_fields(snapshot_dir: SnapshotDir, addon_info: AddonI
     enriched: AddonInfo = PackageEnricher(snapshot_dir, PackageAnalyzer()).enrich(AddonInfos([addon_info]))[0]
 
     assert dataclasses.replace(enriched, package=None) == addon_info
+
+
+def test_enrich_does_not_hide_a_programming_error(snapshot_dir: SnapshotDir, addon_info: AddonInfo):
+    __add_package(snapshot_dir, "45-2026-01-15-0123456789ab.ankiaddon")
+    package_analyzer: Mock = Mock(spec=PackageAnalyzer)
+    package_analyzer.analyze.side_effect = TypeError("bug")
+    addon_infos: AddonInfos = AddonInfos([dataclasses.replace(
+        addon_info, header=dataclasses.replace(addon_info.header, id=__ADDON_ID))])
+
+    with pytest.raises(TypeError, match="bug"):
+        PackageEnricher(snapshot_dir, package_analyzer).enrich(addon_infos)

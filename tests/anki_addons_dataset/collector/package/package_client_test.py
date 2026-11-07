@@ -120,3 +120,13 @@ def test_session_is_reused_within_a_thread():
     client.locate(__ADDON_ID, AnkiPointVersion(2))
 
     factory.assert_called_once()
+
+
+def test_locate_rejects_a_redirect_without_the_expected_parameters():
+    session: MagicMock = MagicMock(spec=Session)
+    session.get.return_value = __response(303, "/svc/shared/download-addon/100?t=soon")
+    client: PackageClient = __client(session)
+    point_version: AnkiPointVersion = AnkiPointVersion(1)
+
+    with pytest.raises(PackageError, match="Unexpected download location"):
+        client.locate(__ADDON_ID, point_version)

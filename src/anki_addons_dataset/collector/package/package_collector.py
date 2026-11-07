@@ -8,6 +8,8 @@ from pathlib import Path
 from threading import Lock
 from typing import Optional
 
+from requests import RequestException
+
 from anki_addons_dataset.collector.package.package_cache_index import CachedPackage, PackageCacheIndex, PackageKey
 from anki_addons_dataset.collector.package.package_client import PackageClient, PackageError, PackageLocation
 from anki_addons_dataset.collector.package.package_list import PackageList
@@ -54,7 +56,7 @@ class PackageCollector:
                     self.__collect_without_branch(addon_info.header)
                 else:
                     self.__collect_branch(addon_id, branch)
-            except Exception as e:
+            except (PackageError, RequestException, OSError) as e:
                 log.warning(f"Cannot collect package of addon {addon_id} (branch {branch}): {e}")
                 self.__count_failed()
 

@@ -90,5 +90,8 @@ class PackageClient:
     @staticmethod
     def __parse_location(location_path: str) -> PackageLocation:
         query: dict[str, list[str]] = parse_qs(urlsplit(location_path).query)
-        uploaded: date = datetime.fromtimestamp(int(query["t"][0]), timezone.utc).date()
-        return PackageLocation(location_path, AnkiPointVersion(int(query["minpt"][0])), uploaded)
+        try:
+            uploaded: date = datetime.fromtimestamp(int(query["t"][0]), timezone.utc).date()
+            return PackageLocation(location_path, AnkiPointVersion(int(query["minpt"][0])), uploaded)
+        except (KeyError, ValueError, OverflowError, OSError) as e:
+            raise PackageError(f"Unexpected download location {location_path}: {e!r}") from e
