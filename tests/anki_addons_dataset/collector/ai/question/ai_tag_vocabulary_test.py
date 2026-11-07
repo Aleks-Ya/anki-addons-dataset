@@ -1,3 +1,8 @@
+import operator
+from collections.abc import Mapping
+
+import pytest
+
 from anki_addons_dataset.collector.ai.question.ai_tag_vocabulary import AiTagVocabulary
 from anki_addons_dataset.common.data_types import AiTagDefinition, AiTag, AiTagGroup
 
@@ -22,3 +27,9 @@ def test_definition_carries_the_description() -> None:
         AiTag("card-creation"), AiTagGroup("function"),
         "Building notes from text, words, clipboard; field auto-fill")
     assert definitions[-1] == AiTagDefinition(AiTag("beta"), AiTagGroup("status"), "Self-declared alpha, beta or WIP")
+
+
+@pytest.mark.parametrize("tags", [AiTagVocabulary.function_tags, AiTagVocabulary.status_tags])
+def test_vocabulary_is_read_only(tags: Mapping[AiTag, str]) -> None:
+    with pytest.raises(TypeError):
+        operator.setitem(tags, AiTag("new-tag"), "A tag added at runtime")

@@ -1,8 +1,11 @@
+from collections.abc import Mapping
+from types import MappingProxyType
+
 from anki_addons_dataset.common.data_types import AiTag, AiTagDefinition, AiTagGroup
 
 
 class AiTagVocabulary:
-    function_tags: dict[AiTag, str] = {
+    function_tags: Mapping[AiTag, str] = MappingProxyType({
         AiTag("card-creation"): "Building notes from text, words, clipboard; field auto-fill",
         AiTag("ai"): "LLM-powered features: generation, explanations, rewording, chat (ChatGPT/Gemini/DeepSeek/Ollama)",
         AiTag("import"): "From files and services: CSV, Quizlet, Notion, OneNote, Kindle, PDF, apkg",
@@ -37,8 +40,8 @@ class AiTagVocabulary:
         AiTag("bugfix-workaround"): "Fixes for Anki bugs or OS quirks (Bluetooth lag, SSL, caps lock)",
         AiTag("developer-tools"): "Debug info, inspector, config editor, add-on dev helpers",
         AiTag("accessibility"): "Readability, larger text, remote control, controllers",
-    }
-    status_tags: dict[AiTag, str] = {
+    })
+    status_tags: Mapping[AiTag, str] = MappingProxyType({
         AiTag("no-description"): "Empty, test or placeholder addons (\"hello world\", \"up to date\", bare numbers)",
         AiTag("obsolete"): "Built into Anki now, or stated as no longer working",
         AiTag("fork-or-reupload"): "\"Fixed by Shige\", forks, ports to 2.1",
@@ -46,7 +49,7 @@ class AiTagVocabulary:
         AiTag("service-client"): "Companion to a commercial service (Migaku, Kimchi Reader, IvyTutoring, Picmonic)",
         AiTag("mobile-compatible"): "Works on AnkiDroid or AnkiMobile through templates",
         AiTag("beta"): "Self-declared alpha, beta or WIP",
-    }
+    })
 
     @staticmethod
     def definitions() -> list[AiTagDefinition]:
@@ -54,5 +57,5 @@ class AiTagVocabulary:
                 *AiTagVocabulary.__group(AiTagVocabulary.status_tags, AiTagGroup("status"))]
 
     @staticmethod
-    def __group(tags: dict[AiTag, str], group: AiTagGroup) -> list[AiTagDefinition]:
+    def __group(tags: Mapping[AiTag, str], group: AiTagGroup) -> list[AiTagDefinition]:
         return [AiTagDefinition(name, group, description) for name, description in tags.items()]

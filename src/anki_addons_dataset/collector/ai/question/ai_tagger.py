@@ -1,5 +1,6 @@
 import logging
 import re
+from collections.abc import Mapping
 from logging import Logger
 from textwrap import dedent
 from typing import Optional
@@ -13,9 +14,9 @@ log: Logger = logging.getLogger(__name__)
 
 
 class AiTagger:
-    __function_tags: dict[AiTag, str] = AiTagVocabulary.function_tags
-    __status_tags: dict[AiTag, str] = AiTagVocabulary.status_tags
-    __all_tags: list[AiTag] = [*__function_tags, *__status_tags]
+    __function_tags: Mapping[AiTag, str] = AiTagVocabulary.function_tags
+    __status_tags: Mapping[AiTag, str] = AiTagVocabulary.status_tags
+    __all_tags: tuple[AiTag, ...] = (*__function_tags, *__status_tags)
 
     def __init__(self, ai_provider: AiProvider, readme_max_chars: int):
         self.__ai_provider: AiProvider = ai_provider
@@ -52,7 +53,7 @@ class AiTagger:
         return tags if tags else None
 
     @staticmethod
-    def __format_tags(tags: dict[AiTag, str]) -> str:
+    def __format_tags(tags: Mapping[AiTag, str]) -> str:
         return "\n".join(f'<tag name="{tag}">{description}</tag>' for tag, description in tags.items())
 
     def __parse_tags(self, ai_response: AiResponseText) -> list[AiTag]:
