@@ -53,7 +53,8 @@ class AnkiForumTopicDiscoverer:
                           verifier: AiForumVerifier) -> AddonInfos:
         result: list[AddonInfo] = [self.__attach(addon_info, candidates.get(addon_info.header.id, []), verifier)
                                    if addon_info.forum is None else addon_info for addon_info in addon_infos]
-        attached: int = sum(1 for before, after in zip(addon_infos, result) if before.forum is None and after.forum)
+        attached: int = sum(1 for before, after in zip(addon_infos, result, strict=True)
+                            if before.forum is None and after.forum)
         log.info(f"Forum topics attached by title match: {attached}")
         return AddonInfos(result)
 

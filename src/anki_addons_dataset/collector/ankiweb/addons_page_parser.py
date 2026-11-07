@@ -4,8 +4,8 @@ from typing import Optional
 from bs4 import ResultSet, Tag, BeautifulSoup
 
 from anki_addons_dataset.common.anki_version import AnkiVersionCodec
-from anki_addons_dataset.common.data_types import AddonHeader, AddonId, HtmlStr, AnkiVersion, URL, AddonRating, UpdateDate, \
-    AddonTitle
+from anki_addons_dataset.common.data_types import AddonHeader, AddonId, HtmlStr, AnkiVersion, URL, AddonRating, \
+    UpdateDate, AddonTitle
 
 
 class AddonsPageParser:

@@ -74,7 +74,8 @@ def test_parse_addon_page():
                 PageLink(URL('https://github.com/Aleks-Ya/note-size-anki-addon/issues'),
                          PageLinkSection.CONTACT_AUTHOR, 1, ['Contact Author'])
             ],
-            description=AddonDescription('"Note Size" addon displays detailed information about size ("in bytes") of your '
+            description=AddonDescription(
+                        '"Note Size" addon displays detailed information about size ("in bytes") of your '
                         'collection and individual notes including attachments. Screenshots Size of collection, media '
                         'files, unused media files, trash files, revision log Size of a note Sort notes by size Size '
                         'of found notes Size of a deck Size when adding a new note Open configuration dialog Contacts '

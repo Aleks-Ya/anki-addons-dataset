@@ -18,14 +18,11 @@ def test_summarize(ai_provider: AiProvider, integration_config: AppConfig, snaps
     ai_summarizer: AiSummarizer = AiSummarizer(cached_ai_provider, integration_config.ai.readme_max_chars)
     title: AddonTitle = AddonTitle("Note Size anki addon")
     description: AddonDescription = AddonDescription(
-        """
-        "Note Size" addon displays detailed information about size ("in bytes") of your collection and individual notes including attachments.
-        """)
+        '"Note Size" addon displays detailed information about size ("in bytes") of your collection and individual '
+        'notes including attachments.')
     readme: GithubReadme = GithubReadme(
-        """
-        An addon for Anki flashcard program that shows sizes of collection and individual notes including attached files (images, audios, videos, etc.).
-        See User Manual for details.
-        """)
+        'An addon for Anki flashcard program that shows sizes of collection and individual notes including attached '
+        'files (images, audios, videos, etc.).\nSee User Manual for details.')
     summary: Optional[AiSummary] = ai_summarizer.summarize(title, description, readme)
     print(summary)
     print(f"Cache hits: {cached_ai_provider.get_cache_stats().hit_count}")

@@ -49,7 +49,8 @@ def test_addon_infos_dump_without_anki_point_versions(addon_infos: AddonInfos, s
 def test_addon_infos_dump_round_trip_with_none_fields(script_version: ScriptVersion, working_dir_path: Path):
     addon_info: AddonInfo = AddonInfo(
         header=AddonHeader(id=AddonId(1), title=AddonTitle("No GitHub"), addon_page_url=URL("https://ankiweb.net/shared/info/1"),
-                           rating=AddonRating(0), update_date=UpdateDate(date(2024, 1, 1)), anki_version=AnkiVersion("24.04.1")),
+                           rating=AddonRating(0), update_date=UpdateDate(date(2024, 1, 1)),
+                           anki_version=AnkiVersion("24.04.1")),
         page=AddonPage(
             content=HtmlStr("<html></html>"), like_number=0, dislike_number=0,
             branches=[AddonBranch(min_anki_version=AnkiVersion("24.04.1"), max_anki_version=None,

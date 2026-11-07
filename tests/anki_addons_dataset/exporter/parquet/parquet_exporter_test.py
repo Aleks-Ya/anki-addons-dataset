@@ -142,8 +142,9 @@ def test_export_tags(snapshot_dir: SnapshotDir, dataset_snapshot_metadata: Datas
 
 def test_export_anki_versions(snapshot_dir: SnapshotDir, dataset_snapshot_metadata: DatasetSnapshotMetadata,
                               raw_metadata: RawMetadata):
-    anki_versions: list[AnkiRelease] = [AnkiRelease(AnkiVersion("25.09.2"), AnkiPointVersion(250902), date(2025, 10, 1)),
-                                        AnkiRelease(AnkiVersion("2.1.66"), AnkiPointVersion(66))]
+    anki_versions: list[AnkiRelease] = [
+        AnkiRelease(AnkiVersion("25.09.2"), AnkiPointVersion(250902), date(2025, 10, 1)),
+        AnkiRelease(AnkiVersion("2.1.66"), AnkiPointVersion(66))]
     final_dir: Path = snapshot_dir.get_final_dir()
     exporter: ParquetExporter = ParquetExporter(final_dir)
     exporter.export_anki_versions(anki_versions, dataset_snapshot_metadata, raw_metadata)

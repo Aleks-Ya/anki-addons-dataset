@@ -23,7 +23,8 @@ def test_extract_topic_slug_invalid():
     with pytest.raises(ValueError) as ex_info:
         AnkiForumTopic.extract_topic_slug(anki_forum_url)
     e: ValueError = ex_info.value
-    assert "Cannot extract Topic Slug from Anki Forum Topic URL: 'https://www.linux.org/threads/system-will-not-boot.62847/'" in e.args
+    assert ("Cannot extract Topic Slug from Anki Forum Topic URL: "
+            "'https://www.linux.org/threads/system-will-not-boot.62847/'") in e.args
 
 
 def test_extract_topic_id(topic_id: TopicId):
@@ -37,4 +38,5 @@ def test_extract_topic_id_invalid():
     with pytest.raises(ValueError) as ex_info:
         AnkiForumTopic.extract_topic_id(anki_forum_url)
     e: ValueError = ex_info.value
-    assert "Cannot extract Topic ID from Anki Forum Topic URL: 'https://www.linux.org/threads/system-will-not-boot.62847/'" in e.args
+    assert ("Cannot extract Topic ID from Anki Forum Topic URL: "
+            "'https://www.linux.org/threads/system-will-not-boot.62847/'") in e.args

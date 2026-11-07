@@ -27,7 +27,7 @@ class PackageEnricher:
             analyzed: list[list[Optional[AddonPackage]]] = list(executor.map(self.__analyze_addon, addon_infos))
         failed_count: int = sum(1 for packages in analyzed for package in packages if package is None)
         enriched: list[AddonInfo] = []
-        for addon_info, packages in zip(addon_infos, analyzed):
+        for addon_info, packages in zip(addon_infos, analyzed, strict=True):
             branches: list[AddonPackage] = [package for package in packages if package is not None]
             enriched.append(copy.replace(addon_info, package=AddonPackages(branches) if branches else None))
         log.info(f"Addons with a package: {sum(1 for addon_info in enriched if addon_info.package is not None)}")

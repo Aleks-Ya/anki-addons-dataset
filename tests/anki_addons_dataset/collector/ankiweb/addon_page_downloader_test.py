@@ -7,8 +7,8 @@ import pytest
 
 from anki_addons_dataset.collector.ankiweb.addon_page_downloader import AddonPageDownloader
 from anki_addons_dataset.collector.ankiweb.page_downloader import PageDownloader
-from anki_addons_dataset.common.data_types import AddonInfo, HtmlStr, AddonHeader, AddonId, AnkiVersion, URL, AddonRating, \
-    UpdateDate, AddonTitle
+from anki_addons_dataset.common.data_types import AddonInfo, HtmlStr, AddonHeader, AddonId, AnkiVersion, URL, \
+    AddonRating, UpdateDate, AddonTitle
 from anki_addons_dataset.common.working_dir import SnapshotDir
 
 

@@ -221,12 +221,14 @@ class JsonAddonInfo:
                                         addon.page.contact_author_url, addon.page.description, addon.header.rating,
                                         addon.header.update_date.isoformat(), addon.header.anki_version,
                                         addon.header.anki_point_version, str(addon.header.anki_version_kind), branches,
-                                        JsonAddonInfo.__anki_web_links(addon), addon.page.like_number, addon.page.dislike_number,
+                                        JsonAddonInfo.__anki_web_links(addon), addon.page.like_number,
+                                        addon.page.dislike_number,
                                         list(addon.page.ai_declaration_markers), addon.page.description_language,
                                         addon.page.description_language_confidence, addon.page.description_html,
                                         addon.page.description_pre_wrap, addon.page.other_items_count,
                                         addon.page.package_size_kb)
-            forked_from: Optional[ForkedFrom] = ForkedFrom(addon.forked_from.addon_id, str(addon.forked_from.evidence)) \
+            forked_from: Optional[ForkedFrom] = \
+                ForkedFrom(addon.forked_from.addon_id, str(addon.forked_from.evidence)) \
                 if addon.forked_from is not None else None
             json_obj: Details = Details(addon.header.id, anki_web, github, forum, JsonAddonInfo.__ai(addon),
                                         JsonAddonInfo.__author(addon), forked_from, forks.get(addon.header.id, []),
@@ -279,7 +281,8 @@ class JsonAddonInfo:
                                                for name, count in github.language_bytes.items()]
         releases: Optional[list[GithubRelease]] = github.releases
         latest_release: Optional[GithubRelease] = JsonAddonInfo.__latest_release(releases)
-        return GitHub(user, repo_str, list(github.language_bytes), github.stars, last_commit_str, links, github.action_count,
+        return GitHub(user, repo_str, list(github.language_bytes), github.stars, last_commit_str, links,
+                      github.action_count,
                       github.tests_count, github.license, github.fork_count, github.open_issues, github.size_kb,
                       list(github.topics), github.repo_description, github.homepage, github.archived, pushed_at_str,
                       created_at_str, github.primary_language, language_bytes, manifest,

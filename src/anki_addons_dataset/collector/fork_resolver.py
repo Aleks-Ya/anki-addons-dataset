@@ -22,7 +22,8 @@ class ForkResolver:
             override: Optional[ForkOverride] = self.__overrider.override_fork_of(addon_info.header.id)
             forked_from: Optional[ForkRelation] = None
             if override is not None:
-                if override.parent is not None and override.parent in catalog and override.parent != addon_info.header.id:
+                if override.parent is not None and override.parent in catalog \
+                        and override.parent != addon_info.header.id:
                     forked_from = ForkRelation(override.parent, ForkEvidence.OVERRIDE)
             else:
                 forked_from = ForkResolver.__detect(addon_info, github_fork_owners.get(addon_info.header.id, []))

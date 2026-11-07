@@ -22,14 +22,11 @@ def test_tag(ai_provider: AiProvider, integration_config: AppConfig, snapshot_di
     ai_tagger: AiTagger = AiTagger(cached_ai_provider, integration_config.ai.readme_max_chars)
     title: AddonTitle = AddonTitle("Note Size anki addon")
     description: AddonDescription = AddonDescription(
-        """
-        "Note Size" addon displays detailed information about size ("in bytes") of your collection and individual notes including attachments.
-        """)
+        '"Note Size" addon displays detailed information about size ("in bytes") of your collection and individual '
+        'notes including attachments.')
     readme: GithubReadme = GithubReadme(
-        """
-        An addon for Anki flashcard program that shows sizes of collection and individual notes including attached files (images, audios, videos, etc.).
-        See User Manual for details.
-        """)
+        'An addon for Anki flashcard program that shows sizes of collection and individual notes including attached '
+        'files (images, audios, videos, etc.).\nSee User Manual for details.')
     tags: Optional[list[AiTag]] = ai_tagger.tag(title, description, readme)
     log.info(f"Tags: {tags}")
     log.info(f"Cache hits: {cached_ai_provider.get_cache_stats().hit_count}")

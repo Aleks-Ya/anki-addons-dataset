@@ -3,9 +3,9 @@ from dataclasses import replace
 from datetime import date
 from typing import Any, Optional
 
-from anki_addons_dataset.common.data_types import GithubIssueHistory, AddonInfos, AddonInfo, AnkiForumInfo, PostsCount, AddonManifest, \
-    SpdxLicense, Topic, DependencyName, LanguageName, URL, GithubReadme, PageLink, PageLinkSection, AddonId, \
-    ForkRelation, ForkEvidence, AddonPackage, AddonPackages, AnkiPointVersion
+from anki_addons_dataset.common.data_types import GithubIssueHistory, AddonInfos, AddonInfo, AnkiForumInfo, \
+    PostsCount, AddonManifest, SpdxLicense, Topic, DependencyName, LanguageName, URL, GithubReadme, PageLink, \
+    PageLinkSection, AddonId, ForkRelation, ForkEvidence, AddonPackage, AddonPackages, AnkiPointVersion
 from anki_addons_dataset.exporter.json_addon_info import JsonAddonInfo
 
 

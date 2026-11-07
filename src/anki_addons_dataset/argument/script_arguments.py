@@ -78,14 +78,14 @@ class ScriptArguments:
             return datetime.strptime(s, "%Y-%m-%d").date()
         except ValueError:
             msg: str = f"Not a valid date: '{s}'. Expected format: YYYY-MM-DD."
-            raise ArgumentTypeError(msg)
+            raise ArgumentTypeError(msg) from None
 
     @staticmethod
     def __valid_log_level(s: str) -> int:
         try:
             return Log.parse_level(s)
         except ValueError as e:
-            raise ArgumentTypeError(str(e))
+            raise ArgumentTypeError(str(e)) from None
 
     @staticmethod
     def __valid_timeout(s: str) -> int:
@@ -102,7 +102,7 @@ class ScriptArguments:
         try:
             value: int = int(s)
         except ValueError:
-            raise ArgumentTypeError(msg)
+            raise ArgumentTypeError(msg) from None
         if value <= 0:
             raise ArgumentTypeError(msg)
         return value

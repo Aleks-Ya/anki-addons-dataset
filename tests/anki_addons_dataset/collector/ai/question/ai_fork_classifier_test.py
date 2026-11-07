@@ -58,7 +58,8 @@ def test_prompt_lists_the_linked_catalog_addons(addon_info: AddonInfo) -> None:
     assert answer == AiForkAnswer(AddonId(10))
     prompt: AiPrompt = provider.prompts[0]
     assert addon_info.page.description in prompt
-    assert '<linked_addon id="10">\n<title>Original Addon</title>\n<link_texts>original add-on; here</link_texts>' in prompt
+    assert ('<linked_addon id="10">\n<title>Original Addon</title>\n'
+            '<link_texts>original add-on; here</link_texts>') in prompt
     assert prompt.index('id="10"') < prompt.index('id="20"')
     assert "at most one addon" in provider.instructions
 
@@ -69,7 +70,8 @@ def test_own_author_group_unknown_and_contact_links_are_skipped(addon_info: Addo
                                     __link(f"https://ankiweb.net/shared/info/{addon_info.header.id}", "self"),
                                     __link("https://ankiweb.net/shared/info/1312127886", "my other addon"),
                                     __link("https://ankiweb.net/shared/info/99", "not in catalog"),
-                                    __link("https://ankiweb.net/shared/info/10", section=PageLinkSection.CONTACT_AUTHOR),
+                                    __link("https://ankiweb.net/shared/info/10",
+                                           section=PageLinkSection.CONTACT_AUTHOR),
                                     __link("https://ankiweb.net/shared/decks/10", "a deck"))
 
     answer: Optional[AiForkAnswer] = __classifier(provider).classify(addon)

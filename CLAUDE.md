@@ -15,6 +15,10 @@ Collects, processes, and publishes structured data about Anki flashcard addons t
 # Run all tests (coverage is opt-in; pytest.ini sets no addopts)
 uv run pytest
 
+# Lint src and tests (as CI does). The AI prompt templates in collector/ai/question/ are exempt from the
+# line limit: rewrapping a prompt changes its cache key, so every answer of that prompt would be bought again
+uv run ruff check
+
 # Type-check src (as CI does)
 uv run mypy
 

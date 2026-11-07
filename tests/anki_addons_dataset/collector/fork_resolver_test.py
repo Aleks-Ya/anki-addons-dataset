@@ -40,7 +40,8 @@ def test_fork_of_a_repo_owned_by_one_addon(addon_info: AddonInfo):
 
 
 def test_fork_of_a_monorepo_needs_the_ai_to_pick_the_parent(addon_info: AddonInfo):
-    monorepo: list[AddonInfo] = [__addon(addon_info, 10, "glutanimate/misc"), __addon(addon_info, 11, "glutanimate/misc")]
+    monorepo: list[AddonInfo] = [__addon(addon_info, 10, "glutanimate/misc"),
+                                 __addon(addon_info, 11, "glutanimate/misc")]
 
     confirmed: dict[int, Optional[ForkRelation]] = __resolve([
         *monorepo, __addon(addon_info, 20, "fixer/misc", "glutanimate/misc", 11)])

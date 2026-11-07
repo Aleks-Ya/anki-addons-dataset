@@ -13,9 +13,9 @@ from requests import Response
 from anki_addons_dataset.collector.github.github_rest_client import GithubRestClient
 from anki_addons_dataset.collector.github.github_service import GithubService
 from anki_addons_dataset.collector.github.handler.repo_info_repo_handler import GithubRepoMeta
-from anki_addons_dataset.common.data_types import AddonManifest, DependencyName, GithubRepo, LanguageName, SnapshotDate, \
-    SpdxLicense, Topic, GithubRepoName, GithubUserName, GithubRelease, GithubReleaseAsset, GithubContributor, \
-    GithubIssueHistory
+from anki_addons_dataset.common.data_types import AddonManifest, DependencyName, GithubRepo, LanguageName, \
+    SnapshotDate, SpdxLicense, Topic, GithubRepoName, GithubUserName, GithubRelease, GithubReleaseAsset, \
+    GithubContributor, GithubIssueHistory
 from anki_addons_dataset.common.working_dir import SnapshotDir, WorkingDir
 
 
@@ -58,7 +58,8 @@ def test_get_languages_409(github_service: GithubService, github_rest_client: Gi
 
 def test_get_tag_names_200(github_service: GithubService, github_rest_client: GithubRestClient,
                            github_repo: GithubRepo):
-    content: str = """[{"ref":"refs/tags/2.1.66","object":{"sha":"a"}},{"ref":"refs/tags/25.09.2","object":{"sha":"b"}}]"""
+    content: str = ('[{"ref":"refs/tags/2.1.66","object":{"sha":"a"}},'
+                    '{"ref":"refs/tags/25.09.2","object":{"sha":"b"}}]')
     github_rest_client.get_from_url = __mock_content(content)
     exp: list[str] = ["2.1.66", "25.09.2"]
     assert github_service.get_tag_names(github_repo) == exp
@@ -400,7 +401,8 @@ def test_get_dependencies(github_service: GithubService, github_rest_client: Git
         "https://api.github.com/repos/John/app/contents/requirements.txt":
             f'{{"encoding":"base64","content":"{requirements}"}}',
     })
-    assert github_service.get_dependencies(github_repo) == [DependencyName("requests"), DependencyName("beautifulsoup4")]
+    assert github_service.get_dependencies(github_repo) == [DependencyName("requests"),
+                                                            DependencyName("beautifulsoup4")]
 
 
 def test_offline_returns_empties_without_downloading(snapshot_dir: SnapshotDir,

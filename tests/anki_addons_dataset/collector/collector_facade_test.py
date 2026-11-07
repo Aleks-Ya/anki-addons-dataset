@@ -112,7 +112,8 @@ def test_report_snapshots_exports_reviews_newest_first(
     pdt.assert_frame_equal(pandas.read_parquet(final_dir / "parquet" / "reviews.parquet"), DataFrame([
         {"addon_id": addon_id, "date": date(2026, 7, 5), "vote": "dislike", "text": "Produces errors",
          "author_reply": None},
-        {"addon_id": addon_id, "date": date(2025, 6, 6), "vote": "like", "text": "Works", "author_reply": "Thank you!"}]))
+        {"addon_id": addon_id, "date": date(2025, 6, 6), "vote": "like", "text": "Works",
+         "author_reply": "Thank you!"}]))
     assert not (final_dir / "xlsx" / "reviews.xlsx").exists()
 
 
@@ -243,7 +244,8 @@ def test_report_snapshots_honours_the_snapshot_sample(
     for snapshot_dir in [old_dir, new_dir]:
         JsonHelper.write_addon_infos_dump(addon_infos, script_version, snapshot_dir.get_addon_infos_dump())
 
-    CollectorFacade(working_dir, app_config, page_load_timeout, element_wait_timeout).report_snapshots(None, report_date)
+    CollectorFacade(working_dir, app_config, page_load_timeout, element_wait_timeout).report_snapshots(
+        None, report_date)
 
     assert (new_dir.get_final_dir() / "parquet" / "data.parquet").exists()
     assert not (old_dir.get_final_dir() / "parquet" / "data.parquet").exists()
