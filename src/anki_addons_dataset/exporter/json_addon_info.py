@@ -158,7 +158,6 @@ class Branch:
 class AnkiWeb:
     title: str
     addon_page_url: str
-    addon_page_content: str
     contact_author_url: Optional[str]
     description: AddonDescription
     rating: int
@@ -218,7 +217,7 @@ class JsonAddonInfo:
             github: Optional[GitHub] = JsonAddonInfo.__github(addon)
             forum: Optional[Forum] = JsonAddonInfo.__forum(addon)
             branches: list[Branch] = JsonAddonInfo.__branches(addon)
-            anki_web: AnkiWeb = AnkiWeb(addon.header.title, addon.header.addon_page_url, addon.page.content,
+            anki_web: AnkiWeb = AnkiWeb(addon.header.title, addon.header.addon_page_url,
                                         addon.page.contact_author_url, addon.page.description, addon.header.rating,
                                         addon.header.update_date.isoformat(), addon.header.anki_version,
                                         addon.header.anki_point_version, str(addon.header.anki_version_kind), branches,

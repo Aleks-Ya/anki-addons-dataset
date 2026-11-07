@@ -27,7 +27,6 @@ def test_export_addon_infos(snapshot_dir: SnapshotDir, addon_infos: AddonInfos,
         [{
             'id': 1188705668,
             'anki_web': {'addon_page_url': 'https://ankiweb.net/shared/info/1188705668',
-                         'addon_page_content': '<html><body><h1>Sample addon page content</h1></body></html>',
                                       'contact_author_url': None,
                          'ai_declaration_markers': ['chatgpt'],
                          'description': 'Sample addon description for full text search',

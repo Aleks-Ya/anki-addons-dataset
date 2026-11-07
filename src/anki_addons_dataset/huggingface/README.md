@@ -187,8 +187,9 @@ in the Git history of this repository.
 
 ## Raw and Stage data
 Raw data (collected during the dataset construction) are available in `history/YYYY-MM-DD/raw.zip`.  
-It includes HTML pages of the Addon Catalog, responses of GitHub REST API (including the tag list of the
-Anki repository behind the `anki_versions` table), responses of Anki Forum API,
+It includes HTML pages of the Addon Catalog (the full page of each addon is `1-anki-web/addon/{addon-id}.html`;
+earlier releases also published it as `anki_web.addon_page_content` in the main table), responses of GitHub REST API
+(including the tag list of the Anki repository behind the `anki_versions` table), responses of Anki Forum API,
 and the cached AI answers behind `ai.summary` and `ai.tags` (each keyed by a hash of the prompt, which is not stored).  
 Structure of the raw data:
 ```
