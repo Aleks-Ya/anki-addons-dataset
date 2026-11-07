@@ -118,8 +118,7 @@ class CollectorFacade:
     def parse_snapshots(self, snapshot_date: Optional[SnapshotDate]) -> None:
         package_analyzer: PackageAnalyzer = PackageAnalyzer()
         for snapshot_dir in self.__selected_snapshot_dirs(snapshot_date):
-            snapshot_date: SnapshotDate = snapshot_dir.snapshot_dir_to_snapshot_date()
-            self.__parse_snapshot(snapshot_date, package_analyzer)
+            self.__parse_snapshot(snapshot_dir.snapshot_dir_to_snapshot_date(), package_analyzer)
 
     def __parse_snapshot(self, snapshot_date: SnapshotDate, package_analyzer: PackageAnalyzer) -> None:
         log.info(f"===== Parse snapshot for {snapshot_date} =====")
@@ -140,8 +139,7 @@ class CollectorFacade:
 
     def report_snapshots(self, snapshot_date: Optional[SnapshotDate], report_date: ReportDate) -> None:
         for snapshot_dir in self.__selected_snapshot_dirs(snapshot_date):
-            snapshot_date: SnapshotDate = snapshot_dir.snapshot_dir_to_snapshot_date()
-            self.__report_snapshot(snapshot_date, report_date)
+            self.__report_snapshot(snapshot_dir.snapshot_dir_to_snapshot_date(), report_date)
 
     def __report_snapshot(self, snapshot_date: SnapshotDate, report_date: ReportDate) -> None:
         log.info(f"===== Report snapshot for {snapshot_date} =====")

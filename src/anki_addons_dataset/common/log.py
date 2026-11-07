@@ -44,7 +44,7 @@ class Log:
             file_handler.setLevel(logging.DEBUG)
             logging.getLogger().addHandler(file_handler)
         Log.set_log_level(logging.DEBUG if run_file else level)
-        if run_file:
+        if config.file:
             log.info(f"Log file: {run_file}")
             Log.__prune_old_logs(config.file, config.keep)
 

@@ -15,7 +15,7 @@ Collects, processes, and publishes structured data about Anki flashcard addons t
 # Run all tests (coverage is opt-in; pytest.ini sets no addopts)
 uv run pytest
 
-# Type-check src (as CI does); modules with errors that predate the check are listed under ignore_errors in pyproject.toml
+# Type-check src (as CI does)
 uv run mypy
 
 # Run a single test file

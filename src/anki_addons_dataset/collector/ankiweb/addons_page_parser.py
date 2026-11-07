@@ -25,7 +25,10 @@ class AddonsPageParser:
         for row in table_rows:
             cells: ResultSet[Tag] = row.find_all("td")
             addon_name: AddonTitle = AddonTitle(cells[0].text)
-            addon_page: URL = URL(f"""https://ankiweb.net{cells[0].find("a")["href"]}""")
+            anchor: Optional[Tag] = cells[0].find("a")
+            if anchor is None:
+                raise ValueError(f"No addon link in row: {row}")
+            addon_page: URL = URL(f"https://ankiweb.net{anchor['href']}")
             addon_id: AddonId = AddonId(int(addon_page.split("/")[-1]))
             rating: AddonRating = AddonRating(int(cells[1].text))
             update_date: UpdateDate = UpdateDate(date.fromisoformat(cells[2].text))

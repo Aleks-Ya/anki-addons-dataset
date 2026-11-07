@@ -31,9 +31,8 @@ class UrlParser:
         user_pattern: str = r'https://github\.com[:/](?P<user>[^/]+)'
         user_match: Optional[Match[str]] = re.search(user_pattern, url)
         if user_match:
-            user_name: GithubUserName = GithubUserName(user_match.group('user'))
-            user: GithubUser = GithubUser(user_name)
-            return GithubLink(url, user, None)
+            owner: GithubUser = GithubUser(GithubUserName(user_match.group('user')))
+            return GithubLink(url, owner, None)
         return None
 
     @staticmethod

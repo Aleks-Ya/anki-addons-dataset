@@ -4,7 +4,7 @@ from typing import Any, Optional
 
 from anki_addons_dataset.common.anki_version import AnkiVersionCodec
 from anki_addons_dataset.common.data_types import AddonInfos, AddonInfo, AddonDescription, GithubInfo, AddonManifest, \
-    HtmlStr, AddonId, AddonPackage, GithubRelease, GithubContributor, GithubIssueHistory
+    HtmlStr, AddonId, AddonPackage, GithubRelease, GithubContributor, GithubIssueHistory, AiTag
 
 
 @dataclass
@@ -129,7 +129,7 @@ class Forum:
 class Ai:
     summary: Optional[str]
     model: Optional[str]
-    tags: Optional[list[str]]
+    tags: Optional[list[AiTag]]
 
 
 @dataclass

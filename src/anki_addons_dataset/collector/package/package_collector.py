@@ -47,7 +47,8 @@ class PackageCollector:
 
     def __collect_addon(self, addon_info: AddonInfo) -> None:
         addon_id: AddonId = addon_info.header.id
-        for branch in addon_info.page.branches or [None]:
+        branches: list[Optional[AddonBranch]] = list(addon_info.page.branches or []) or [None]
+        for branch in branches:
             try:
                 if branch is None:
                     self.__collect_without_branch(addon_info.header)

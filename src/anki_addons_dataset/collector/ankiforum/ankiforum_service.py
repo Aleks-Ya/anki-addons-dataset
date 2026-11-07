@@ -85,16 +85,17 @@ class AnkiForumService:
 
     def __read_topic_json(self, topic_slug: Optional[TopicSlug], topic_id: Optional[TopicId]) -> Optional[dict]:
         json_file: Path = self.__topic / f"{topic_id}.json"
+        topic_dict: Optional[dict]
         if json_file.exists():
             json_str: str = json_file.read_text()
             if json_str == "None":
                 return None
-            topic_dict: dict = json.loads(json_str)
+            topic_dict = json.loads(json_str)
         else:
             if self.__offline:
                 log.debug(f"Offline mode is enabled. Skip fetching last_posted_at for topic '{topic_slug}/{topic_id}'")
                 return None
-            topic_dict: dict = self.__discourse_client.topic(
+            topic_dict = self.__discourse_client.topic(
                 topic_slug, topic_id, override_request_kwargs={"allow_redirects": True})
             if topic_dict is None:
                 json_file.write_text("None")

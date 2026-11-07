@@ -57,7 +57,7 @@ class AddonPageParser:
             tags.append((contact_author_anchor, PageLinkSection.CONTACT_AUTHOR))
         anchors: list[tuple[URL, PageLinkSection, str]] = []
         for tag, section in tags:
-            href: Optional[str] = tag.get('href')
+            href: str = str(tag.get('href') or "")
             if not href:
                 continue
             url: URL = URL(urljoin(page_url, href.strip()))
@@ -132,13 +132,15 @@ class AddonPageParser:
             return []
         reviews: list[AddonReview] = []
         for vote_image in reviews_heading.find_all_next('img', alt=[vote.value for vote in ReviewVote]):
-            header: Tag = vote_image.parent
-            timestamp: Tag = header.find('span', class_='timestamp')
+            header: Optional[Tag] = vote_image.parent
+            timestamp: Optional[Tag] = header.find('span', class_='timestamp') if header else None
+            if header is None or timestamp is None:
+                raise ValueError(f"No timestamp in review: {vote_image}")
             body: Optional[Tag] = header.find_next_sibling('div')
             text_tag: Optional[Tag] = body.find('div', class_='break-word', recursive=False) if body else None
             reply_tag: Optional[Tag] = body.find('div', class_='card-body') if body else None
             reviews.append(AddonReview(
-                ReviewVote(vote_image['alt']),
+                ReviewVote(str(vote_image['alt'])),
                 date.fromisoformat(timestamp.get_text(strip=True)),
                 text_tag.get_text().strip() if text_tag else "",
                 reply_tag.get_text().strip() if reply_tag else None))
@@ -156,7 +158,7 @@ class AddonPageParser:
             return None
         description_copy: Tag = copy.copy(description_tag)
         for attribute in ('href', 'src'):
-            for tag in description_copy.find_all(attrs={attribute: True}):
+            for tag in description_copy.find_all(True, attrs={attribute: True}):
                 tag[attribute] = AddonPageParser.__absolute_url(page_url, str(tag[attribute]))
         for tag in description_copy.find_all(srcset=True):
             tag['srcset'] = AddonPageParser.__absolute_srcset(page_url, str(tag['srcset']))

@@ -36,7 +36,7 @@ class AuthorResolver:
         resolved: list[AddonInfo] = []
         unresolved_count: int = 0
         for addon_info in addon_infos:
-            addon_id: AddonId = addon_info.header.id
+            addon_id = addon_info.header.id
             group: list[AddonId] = groups[AuthorResolver.__find(parents, addon_id)]
             if addon_id in covered or not addon_info.page.other_items_count:
                 author: Optional[AuthorInfo] = AuthorInfo(AuthorId(group[0]), list(group))

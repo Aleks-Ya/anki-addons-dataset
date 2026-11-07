@@ -27,7 +27,7 @@ class GithubRepoSelector:
         return (contact_repo, GithubRepoSource.CONTACT_AUTHOR) if contact_repo is not None else None
 
     def candidate_repos(self, github_links: list[GithubLink]) -> list[GithubRepo]:
-        return list(dict.fromkeys(link.repo for link in self.__allowed_repo_links(github_links)))
+        return list(dict.fromkeys(self.__allowed_repos(github_links)))
 
     def select(self, addon_info: AddonInfo, candidates: list[GithubInfo]) -> Optional[GithubInfo]:
         if not candidates:
@@ -47,11 +47,11 @@ class GithubRepoSelector:
     def __contact_author_repo(self, contact_author_url: Optional[URL]) -> Optional[GithubRepo]:
         if contact_author_url is None:
             return None
-        allowed_links: list[GithubLink] = self.__allowed_repo_links(UrlParser.find_github_links([contact_author_url]))
-        return allowed_links[0].repo if allowed_links else None
+        allowed_repos: list[GithubRepo] = self.__allowed_repos(UrlParser.find_github_links([contact_author_url]))
+        return allowed_repos[0] if allowed_repos else None
 
-    def __allowed_repo_links(self, github_links: list[GithubLink]) -> list[GithubLink]:
-        return [link for link in github_links
+    def __allowed_repos(self, github_links: list[GithubLink]) -> list[GithubRepo]:
+        return [link.repo for link in github_links
                 if link.repo is not None and not self.__overrider.is_excluded_github_repo(link.url)]
 
     @staticmethod

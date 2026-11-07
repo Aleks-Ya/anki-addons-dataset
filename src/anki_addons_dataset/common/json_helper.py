@@ -186,7 +186,7 @@ class JsonHelper:
         readme: Optional[str] = data.get("readme")
         repo_source: Optional[str] = data.get("repo_source")
         return GithubInfo(
-            github_repo=JsonHelper.__github_repo_from_dict(data["github_repo"]),
+            github_repo=JsonHelper.__required_github_repo_from_dict(data["github_repo"]),
             stars=data["stars"],
             last_commit=datetime.fromisoformat(last_commit) if last_commit is not None else None,
             action_count=data["action_count"],
@@ -266,6 +266,10 @@ class JsonHelper:
     def __github_repo_from_dict(data: Optional[dict[str, Any]]) -> Optional[GithubRepo]:
         if data is None:
             return None
+        return JsonHelper.__required_github_repo_from_dict(data)
+
+    @staticmethod
+    def __required_github_repo_from_dict(data: dict[str, Any]) -> GithubRepo:
         return GithubRepo(user=GithubUserName(data["user"]), repo_name=GithubRepoName(data["repo_name"]))
 
     @staticmethod

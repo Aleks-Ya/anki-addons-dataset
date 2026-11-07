@@ -79,33 +79,3 @@ files = ["src"]
 [[tool.mypy.overrides]]
 module = ["xlsxwriter.*", "pyarrow.*", "pydiscourse.*"]
 ignore_missing_imports = true
-
-[[tool.mypy.overrides]]
-module = [
-    "anki_addons_dataset.collector.ankiforum.ankiforum_service",
-    "anki_addons_dataset.collector.ankiforum.ankiforum_topic_discoverer",
-    "anki_addons_dataset.collector.anki_versions_collector",
-    "anki_addons_dataset.collector.ankiweb.addon_page_parser",
-    "anki_addons_dataset.collector.ankiweb.addons_page_parser",
-    "anki_addons_dataset.collector.author_resolver",
-    "anki_addons_dataset.collector.collector_facade",
-    "anki_addons_dataset.collector.github.github_rate_limit",
-    "anki_addons_dataset.collector.github.github_repo_selector",
-    "anki_addons_dataset.collector.github.handler.actions_repo_handler",
-    "anki_addons_dataset.collector.github.handler.contents_repo_handler",
-    "anki_addons_dataset.collector.github.handler.issue_history_repo_handler",
-    "anki_addons_dataset.collector.github.handler.languages_repo_handler",
-    "anki_addons_dataset.collector.github.handler.last_commit_repo_handler",
-    "anki_addons_dataset.collector.github.handler.readme_repo_handler",
-    "anki_addons_dataset.collector.github.handler.repo_info_repo_handler",
-    "anki_addons_dataset.collector.github.handler.stars_repo_handler",
-    "anki_addons_dataset.collector.github.handler.tests_repo_handler",
-    "anki_addons_dataset.collector.github.handler.tree_entries_repo_handler",
-    "anki_addons_dataset.collector.package.package_collector",
-    "anki_addons_dataset.collector.url_parser",
-    "anki_addons_dataset.common.json_helper",
-    "anki_addons_dataset.common.log",
-    "anki_addons_dataset.exporter.json_addon_info",
-    "Found 35 errors in 24 files (checked 103 source files)",
-]
-ignore_errors = true

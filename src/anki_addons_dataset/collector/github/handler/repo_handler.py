@@ -86,7 +86,7 @@ class RepoHandler(ABC):
     def get_stage_file(self) -> Path:
         return self.__stage_dir / self._repo.user / self._repo.repo_name / f"{self._get_stage_filename()}.json"
 
-    def extract_return_value(self) -> Optional[Any]:
+    def extract_return_value(self) -> Any:
         try:
             raw_file: Path = self.get_raw_file()
             content_dict: object = json.loads(raw_file.read_text())
@@ -111,7 +111,7 @@ class RepoHandler(ABC):
         ...
 
     @abstractmethod
-    def _extract_return_value_from_dict(self, content_obj: object) -> Any:
+    def _extract_return_value_from_dict(self, content_obj: Any) -> Any:
         ...
 
     @abstractmethod

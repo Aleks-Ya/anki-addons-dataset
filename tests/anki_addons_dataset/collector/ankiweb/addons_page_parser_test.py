@@ -1,5 +1,7 @@
 from pathlib import Path
 
+import pytest
+
 from anki_addons_dataset.collector.ankiweb.addons_page_parser import AddonsPageParser
 from anki_addons_dataset.common.data_types import AddonHeader, AddonId, HtmlStr, AnkiVersionKind
 
@@ -27,3 +29,10 @@ def test_addons_anki_version():
     assert [(header.anki_version, header.anki_point_version, header.anki_version_kind)
             for header in addon_headers] == [("25.02.1~", 250201, AnkiVersionKind.TESTED),
                                              ("23.12~", 231200, AnkiVersionKind.TESTED)]
+
+
+def test_row_without_addon_link_raises():
+    html: HtmlStr = HtmlStr("<html><body><main><table><tr><th>Title</th></tr>"
+                            "<tr><td>No link</td><td>5</td></tr></table></main></body></html>")
+    with pytest.raises(ValueError, match="No addon link in row"):
+        AddonsPageParser.parse_addons_page(html)

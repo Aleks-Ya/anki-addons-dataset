@@ -2,6 +2,8 @@ import datetime
 from dataclasses import replace
 from pathlib import Path
 
+import pytest
+
 from anki_addons_dataset.collector.ankiweb.addon_page_parser import AddonPageParser
 from anki_addons_dataset.common.data_types import AddonHeader, AddonInfo, AddonPage, AddonId, GithubLink, \
     URL, GithubUser, GithubRepo, GithubUserName, GithubRepoName, AddonBranch, HtmlStr, AnkiVersion, \
@@ -136,6 +138,16 @@ def test_parse_addon_page_reviews():
     assert addon_info.page.reviews == [
         AddonReview(ReviewVote.DISLIKE, datetime.date(2026, 7, 5), 'Passively produces errors'),
         AddonReview(ReviewVote.LIKE, datetime.date(2026, 6, 14), '', 'Thanks!')]
+
+
+def test_parse_addon_page_review_without_timestamp_raises():
+    parser: AddonPageParser = AddonPageParser()
+    html: HtmlStr = HtmlStr(
+        '<html><body><main><h2>Reviews</h2>'
+        '<div class=""><img class="twox" alt="like"> on 2026-06-14</div>'
+        '</main></body></html>')
+    with pytest.raises(ValueError, match="No timestamp in review"):
+        parser.parse_addon_page(__header(3), html)
 
 
 def test_parse_addon_page_other_items_count():

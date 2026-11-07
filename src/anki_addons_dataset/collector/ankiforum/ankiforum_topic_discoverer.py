@@ -31,7 +31,7 @@ class AnkiForumTopicDiscoverer:
         if self.__ai_forum_verifier is None:
             self.__download_candidates(addon_infos, candidates)
             return addon_infos
-        return self.__attach_verified(addon_infos, candidates)
+        return self.__attach_verified(addon_infos, candidates, self.__ai_forum_verifier)
 
     def __download_candidates(self, addon_infos: AddonInfos,
                               candidates: dict[AddonId, list[AnkiForumTitleCandidate]]) -> None:
@@ -49,26 +49,27 @@ class AnkiForumTopicDiscoverer:
             except DiscourseClientError as e:
                 log.warning(f"Cannot download forum topic {topic.slug}/{topic.id}: {e}")
 
-    def __attach_verified(self, addon_infos: AddonInfos,
-                          candidates: dict[AddonId, list[AnkiForumTitleCandidate]]) -> AddonInfos:
-        result: list[AddonInfo] = [self.__attach(addon_info, candidates.get(addon_info.header.id, []))
+    def __attach_verified(self, addon_infos: AddonInfos, candidates: dict[AddonId, list[AnkiForumTitleCandidate]],
+                          verifier: AiForumVerifier) -> AddonInfos:
+        result: list[AddonInfo] = [self.__attach(addon_info, candidates.get(addon_info.header.id, []), verifier)
                                    if addon_info.forum is None else addon_info for addon_info in addon_infos]
         attached: int = sum(1 for before, after in zip(addon_infos, result) if before.forum is None and after.forum)
         log.info(f"Forum topics attached by title match: {attached}")
         return AddonInfos(result)
 
-    def __attach(self, addon_info: AddonInfo, candidates: list[AnkiForumTitleCandidate]) -> AddonInfo:
+    def __attach(self, addon_info: AddonInfo, candidates: list[AnkiForumTitleCandidate],
+                 verifier: AiForumVerifier) -> AddonInfo:
         for candidate in candidates:
-            if self.__is_own_topic(addon_info, candidate.topic):
+            if self.__is_own_topic(addon_info, candidate.topic, verifier):
                 return copy.replace(addon_info, forum=self.__forum_info(candidate.topic))
         return addon_info
 
-    def __is_own_topic(self, addon_info: AddonInfo, topic: AnkiForumCategoryTopic) -> bool:
+    def __is_own_topic(self, addon_info: AddonInfo, topic: AnkiForumCategoryTopic, verifier: AiForumVerifier) -> bool:
         content: Optional[AnkiForumTopicContent] = self.__anki_forum_service.get_topic_content(topic.slug, topic.id)
         if content is None:
             return False
         try:
-            answer: Optional[AiForumAnswer] = self.__ai_forum_verifier.verify_title_match(addon_info, content)
+            answer: Optional[AiForumAnswer] = verifier.verify_title_match(addon_info, content)
         except Exception as e:
             raise RuntimeError(f"Cannot verify forum topic {topic.id} of addon: {addon_info.header.id}") from e
         return answer is not None and answer.own
