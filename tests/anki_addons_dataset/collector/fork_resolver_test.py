@@ -15,8 +15,8 @@ def __repo(repo_id: str) -> GithubRepo:
 
 def __addon(addon_info: AddonInfo, addon_id: int, repo: Optional[str] = None, fork_source: Optional[str] = None,
             ai_fork_of: Optional[int] = None) -> AddonInfo:
-    github = replace(addon_info.github, github_repo=__repo(repo) if repo else None,
-                     fork_source=__repo(fork_source) if fork_source else None)
+    github = replace(addon_info.github, github_repo=__repo(repo),
+                     fork_source=__repo(fork_source) if fork_source else None) if repo else None
     ai: AiInfo = AiInfo(fork_of=AddonId(ai_fork_of) if ai_fork_of is not None else None)
     return replace(addon_info, header=replace(addon_info.header, id=AddonId(addon_id)), github=github, ai=ai)
 

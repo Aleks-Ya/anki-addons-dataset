@@ -8,7 +8,7 @@ from unittest.mock import Mock, patch
 import pytest
 
 from anki_addons_dataset.common.data_types import AddonInfo, AddonInfos, AddonHeader, AddonPage, AddonBranch, \
-    GithubInfo, GithubLink, GithubUser, GithubRepo, AddonId, AnkiVersion, HtmlStr, URL, \
+    GithubLink, GithubUser, GithubRepo, AddonId, AnkiVersion, HtmlStr, URL, \
     GithubUserName, GithubRepoName, LanguageName, LanguageCode, ScriptVersion, AddonRating, UpdateDate, AddonTitle, \
     AddonManifest, SpdxLicense, Topic, DependencyName, GithubReadme, AiTag, AnkiVersionKind, \
     PageLink, PageLinkSection, ForkEvidence, ForkRelation, AddonReview, ReviewVote, AddonPackage, AddonPackages, \
@@ -56,13 +56,11 @@ def test_addon_infos_dump_round_trip_with_none_fields(script_version: ScriptVers
                                   updated=date(2024, 1, 1))],
             links=[PageLink(URL("https://example.com"), PageLinkSection.DESCRIPTION, 2, ["Example", "Site"]),
                    PageLink(URL("https://example.com/contact"), PageLinkSection.CONTACT_AUTHOR, 1,
-                            ["Contact Author"])]),
-        github=GithubInfo(
+                            ["Contact Author"])],
             github_links=[GithubLink(url=URL("https://github.com/u/r"),
                                      user=GithubUser(user_name=GithubUserName("u")),
-                                     repo=GithubRepo(GithubUserName("u"), GithubRepoName("r")))],
-            github_repo=None, languages=[LanguageName("Python")], stars=0,
-            last_commit=None, action_count=None, tests_count=None),
+                                     repo=GithubRepo(GithubUserName("u"), GithubRepoName("r")))]),
+        github=None,
         forum=None,
     )
     addon_infos: AddonInfos = AddonInfos([addon_info])
@@ -73,8 +71,7 @@ def test_addon_infos_dump_round_trip_with_none_fields(script_version: ScriptVers
 
     assert read_addon_infos == addon_infos
     assert read_addon_infos[0].page.contact_author_url == URL("https://example.com/contact")
-    assert read_addon_infos[0].github is not None
-    assert read_addon_infos[0].github.github_repo is None
+    assert read_addon_infos[0].github is None
     assert read_addon_infos[0].forum is None
     assert read_addon_infos[0].page.branches[0].max_anki_version is None
     assert isinstance(read_addon_infos[0].page.branches[0].updated, date)
@@ -273,6 +270,44 @@ def test_addon_infos_dump_reads_legacy_forks_as_fork_count(addon_infos: AddonInf
     _, read_addon_infos = JsonHelper.read_addon_infos_dump(dump_file)
 
     assert read_addon_infos[0].github.fork_count == 7
+
+
+def test_addon_infos_dump_reads_legacy_github_links_from_the_github_block(addon_infos: AddonInfos,
+                                                                         script_version: ScriptVersion,
+                                                                         working_dir_path: Path):
+    links: list[GithubLink] = [GithubLink(URL("https://github.com/u/r"), GithubUser(GithubUserName("u")),
+                                          GithubRepo(GithubUserName("u"), GithubRepoName("r")))]
+    addon_infos = AddonInfos([replace(addon_infos[0], page=replace(addon_infos[0].page, github_links=links))])
+    dump_file: Path = working_dir_path / "addon-infos.json"
+    JsonHelper.write_addon_infos_dump(addon_infos, script_version, dump_file)
+    envelope: dict = json.loads(dump_file.read_text())
+    item: dict = envelope["addon_infos"][0]
+    item["github"]["github_links"] = item["page"].pop("github_links")
+    dump_file.write_text(json.dumps(envelope))
+
+    _, read_addon_infos = JsonHelper.read_addon_infos_dump(dump_file)
+
+    assert read_addon_infos == addon_infos
+
+
+def test_addon_infos_dump_reads_legacy_github_block_without_a_repo_as_none(addon_infos: AddonInfos,
+                                                                          script_version: ScriptVersion,
+                                                                          working_dir_path: Path):
+    dump_file: Path = working_dir_path / "addon-infos.json"
+    JsonHelper.write_addon_infos_dump(addon_infos, script_version, dump_file)
+    envelope: dict = json.loads(dump_file.read_text())
+    item: dict = envelope["addon_infos"][0]
+    item["github"] = {"github_links": [{"url": "https://github.com/u", "user": {"user_name": "u"}, "repo": None}],
+                      "github_repo": None, "languages": [], "stars": 0, "last_commit": None,
+                      "action_count": 0, "tests_count": 0}
+    item["page"].pop("github_links")
+    dump_file.write_text(json.dumps(envelope))
+
+    _, read_addon_infos = JsonHelper.read_addon_infos_dump(dump_file)
+
+    assert read_addon_infos[0].github is None
+    assert read_addon_infos[0].page.github_links == [
+        GithubLink(URL("https://github.com/u"), GithubUser(GithubUserName("u")), None)]
 
 
 def test_addon_infos_dump_round_trip_preserves_the_ai_summary(addon_infos: AddonInfos,

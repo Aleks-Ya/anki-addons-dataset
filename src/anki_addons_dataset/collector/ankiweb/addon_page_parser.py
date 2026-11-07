@@ -12,9 +12,9 @@ from anki_addons_dataset.collector.ankiweb.addon_branch_parser import AddonBranc
 from anki_addons_dataset.collector.ankiweb.ai_declaration_detector import AiDeclarationDetector
 from anki_addons_dataset.collector.ankiweb.description_language_detector import DescriptionLanguageDetector
 from anki_addons_dataset.collector.overrider.overrider import Overrider
-from anki_addons_dataset.common.data_types import AddonHeader, AddonInfo, AddonId, URL, GithubLink, GithubRepo, \
-    GithubInfo, AddonPage, AddonBranch, HtmlStr, AnkiForumInfo, AddonDescription, LanguageCode, PageLink, \
-    PageLinkSection, GithubRepoSource, AddonReview, ReviewVote, AnkiForumTopicSource
+from anki_addons_dataset.common.data_types import AddonHeader, AddonInfo, AddonId, URL, GithubLink, \
+    AddonPage, AddonBranch, HtmlStr, AnkiForumInfo, AddonDescription, LanguageCode, PageLink, \
+    PageLinkSection, AddonReview, ReviewVote, AnkiForumTopicSource
 
 
 class AddonPageParser:
@@ -31,16 +31,11 @@ class AddonPageParser:
         github_links: list[GithubLink] = UrlParser.find_github_links(description_links)
         contact_author_url: Optional[URL] = next(
             (link.url for link in links if link.section == PageLinkSection.CONTACT_AUTHOR), None)
-        github_repo: Optional[GithubRepo]
-        github_repo_source: Optional[GithubRepoSource]
-        github_repo, github_repo_source = self.__decided_github_repo(addon_header.id, contact_author_url)
         anki_forum_links: list[URL] = UrlParser.find_anki_forum_links(description_links)
         anki_forum_url: Optional[URL]
         anki_forum_source: Optional[AnkiForumTopicSource]
         anki_forum_url, anki_forum_source = self.__deduce_anki_forum_url(
             addon_header.id, anki_forum_links, contact_author_url)
-        github_info: GithubInfo = GithubInfo(github_links, github_repo, [], 0, None, 0, 0,
-                                             repo_source=github_repo_source)
         likes: int = self.__extract_likes(soup)
         dislikes: int = self.__extract_dislikes(soup)
         addon_branches: list[AddonBranch] = self.__extract_addon_branches(soup)
@@ -58,21 +53,11 @@ class AddonPageParser:
         addon_page: AddonPage = AddonPage(
             html, likes, dislikes, addon_branches, links, description, ai_declaration_markers, description_language,
             description_language_confidence, description_html, description_pre_wrap, other_items_count, reviews,
-            package_size_kb=package_size_kb)
+            package_size_kb=package_size_kb, github_links=github_links)
         anki_forum_info: AnkiForumInfo = AnkiForumInfo(anki_forum_url, None, None, None, None,
                                                        topic_source=anki_forum_source)
-        addon_info: AddonInfo = AddonInfo(addon_header, addon_page, github_info, anki_forum_info)
+        addon_info: AddonInfo = AddonInfo(addon_header, addon_page, None, anki_forum_info)
         return addon_info
-
-    def __decided_github_repo(self, addon_id: AddonId, contact_author_url: Optional[URL]
-                              ) -> tuple[Optional[GithubRepo], Optional[GithubRepoSource]]:
-        override_link: Optional[GithubLink] = self.overrider.override_github_link(addon_id)
-        if override_link:
-            return override_link.repo, GithubRepoSource.OVERRIDE
-        contact_repo: Optional[GithubRepo] = self.__contact_author_github_repo(contact_author_url)
-        if contact_repo is not None:
-            return contact_repo, GithubRepoSource.CONTACT_AUTHOR
-        return None, None
 
     def __deduce_anki_forum_url(self, addon_id: AddonId, anki_forum_urls: list[URL],
                                 contact_author_url: Optional[URL]
@@ -92,19 +77,6 @@ class AddonPageParser:
             return None, None
         max_tuple: tuple[URL, int] = max(counts.items(), key=lambda item: item[1])
         return max_tuple[0], AnkiForumTopicSource.MOST_LINKED
-
-    def __contact_author_github_repo(self, contact_author_url: Optional[URL]) -> Optional[GithubRepo]:
-        if contact_author_url is None:
-            return None
-        contact_links: list[GithubLink] = UrlParser.find_github_links([contact_author_url])
-        allowed_links: list[GithubLink] = self.__exclude_links(contact_links)
-        for link in allowed_links:
-            if link.repo is not None:
-                return link.repo
-        return None
-
-    def __exclude_links(self, links: list[GithubLink]) -> list[GithubLink]:
-        return [link for link in links if not self.overrider.is_excluded_github_repo(link.url)]
 
     @staticmethod
     def __extract_anchors(soup: BeautifulSoup, description_tag: Optional[Tag],

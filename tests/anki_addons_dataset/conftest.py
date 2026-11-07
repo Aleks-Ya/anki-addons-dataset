@@ -25,7 +25,7 @@ from anki_addons_dataset.common.data_types import AddonId, GithubRepo, GithubUse
     URL, PostsCount, AddonInfo, AddonHeader, AddonPage, GithubInfo, AnkiForumInfo, LanguageName, AddonInfos, \
     DatasetSnapshotMetadata, RawMetadata, AnkiVersion, AnkiPointVersion, AnkiVersionKind, AddonBranch, HtmlStr, \
     SnapshotDate, ReportDate, ScriptVersion, AddonRating, UpdateDate, AddonTitle, AddonDescription, PageLoadTimeout, \
-    ElementWaitTimeout, AiInfo, AiSummary, AiTag, AiModel, AuthorInfo, AnkiForumTopicSource, GithubRelease, \
+    ElementWaitTimeout, AiInfo, AiSummary, AiTag, AiModel, AuthorInfo, AuthorId, AnkiForumTopicSource, GithubRelease, \
     GithubReleaseAsset, GithubContributor, GithubIssueHistory
 from anki_addons_dataset.common.working_dir import WorkingDir, SnapshotDir
 from anki_addons_dataset.config.app_config import AppConfig, AiConfig, GithubConfig, HuggingFaceConfig
@@ -224,7 +224,6 @@ def addon_info(addon_header: AddonHeader, github_repo: GithubRepo, topic_slug: T
             package_size_kb=230
         ),
         github=GithubInfo(
-            github_links=[],
             github_repo=github_repo,
             languages=[LanguageName("Python"), LanguageName("Rust")],
             stars=3,
@@ -254,7 +253,7 @@ def addon_info(addon_header: AddonHeader, github_repo: GithubRepo, topic_slug: T
             tags=[AiTag("statistics")]
         ),
         author=AuthorInfo(
-            author_id=AddonId(1188705668),
+            author_id=AuthorId(1188705668),
             addon_ids=[AddonId(1188705668), AddonId(1312127886), AddonId(1956435337)]
         )
     )

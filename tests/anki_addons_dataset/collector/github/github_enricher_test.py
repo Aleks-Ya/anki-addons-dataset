@@ -14,7 +14,7 @@ from anki_addons_dataset.common.data_types import AddonInfo, AddonHeader, AddonI
     LanguageName, GithubInfo, AddonInfos, AnkiForumInfo, TopicSlug, TopicId, LastPostedAt, PostsCount, AnkiVersion, \
     HtmlStr, URL, AddonRating, UpdateDate, AddonTitle, AddonManifest, SpdxLicense, Topic, DependencyName, \
     GithubReadme, GithubUserName, GithubRepoName, GithubLink, GithubRepoSource, GithubRelease, GithubReleaseAsset, \
-    GithubContributor, GithubIssueHistory
+    GithubContributor, GithubIssueHistory, PageLink, PageLinkSection
 from anki_addons_dataset.common.working_dir import SnapshotDir
 
 log: Logger = logging.getLogger(__name__)
@@ -23,6 +23,8 @@ log: Logger = logging.getLogger(__name__)
 def test_enrich(github_enricher: GithubEnricher, github_service: GithubService, note_size_addon_id: AddonId,
                 topic_slug: TopicSlug, topic_id: TopicId, last_posted_at: LastPostedAt, posts_count: PostsCount,
                 github_repo: GithubRepo):
+    contact_author_links: list[PageLink] = [PageLink(github_repo.get_url(), PageLinkSection.CONTACT_AUTHOR)]
+    decided_repo: GithubRepo = UrlParser.parse_github_url(github_repo.get_url()).repo
     addon_info: AddonInfo = AddonInfo(
         header=AddonHeader(
             id=note_size_addon_id,
@@ -37,17 +39,9 @@ def test_enrich(github_enricher: GithubEnricher, github_service: GithubService, 
             like_number=0,
             dislike_number=0,
             branches=[],
-            links=[]
+            links=contact_author_links
         ),
-        github=GithubInfo(
-            github_links=[],
-            github_repo=github_repo,
-            languages=[],
-            stars=0,
-            last_commit=None,
-            action_count=0,
-            tests_count=0
-        ),
+        github=None,
         forum=AnkiForumInfo(
             anki_forum_url=None,
             topic_slug=topic_slug,
@@ -104,11 +98,10 @@ def test_enrich(github_enricher: GithubEnricher, github_service: GithubService, 
             like_number=0,
             dislike_number=0,
             branches=[],
-            links=[]
+            links=contact_author_links
         ),
         github=GithubInfo(
-            github_links=[],
-            github_repo=github_repo,
+            github_repo=decided_repo,
             languages=[LanguageName("Python"), LanguageName("Rust")],
             stars=3,
             last_commit=last_commit,
@@ -133,7 +126,8 @@ def test_enrich(github_enricher: GithubEnricher, github_service: GithubService, 
             releases=releases,
             contributors=contributors,
             weekly_commits=[1] * 52,
-            issue_history=issue_history
+            issue_history=issue_history,
+            repo_source=GithubRepoSource.CONTACT_AUTHOR
         ),
         forum=AnkiForumInfo(
             anki_forum_url=None,
@@ -156,8 +150,7 @@ def test_enrich_fetches_every_candidate_and_keeps_the_selected(snapshot_dir: Sna
     addon_info: AddonInfo = AddonInfo(
         AddonHeader(AddonId(1), AddonTitle("My Addon"), URL("https://ankiweb.net/shared/info/1"), AddonRating(0),
                     UpdateDate(date(2026, 1, 1)), AnkiVersion("25.09")),
-        AddonPage(HtmlStr(""), 0, 0, [], []),
-        GithubInfo(github_links, None, [], 0, None, None, None), None)
+        AddonPage(HtmlStr(""), 0, 0, [], [], github_links=github_links), None, None)
     github_service.get_languages = Mock(return_value={})
     github_service.get_stars_count = Mock(return_value=0)
     github_service.get_last_commit = Mock(return_value=None)
@@ -190,7 +183,6 @@ def test_enrich_fetches_every_candidate_and_keeps_the_selected(snapshot_dir: Sna
     assert act_github.github_repo == own_repo
     assert act_github.readme == "README of author/my-addon"
     assert act_github.repo_source == GithubRepoSource.AI
-    assert act_github.github_links == github_links
 
 
 def test_enrich_drops_candidates_without_data(snapshot_dir: SnapshotDir, github_service: GithubService):
@@ -202,8 +194,7 @@ def test_enrich_drops_candidates_without_data(snapshot_dir: SnapshotDir, github_
     addon_info: AddonInfo = AddonInfo(
         AddonHeader(AddonId(1), AddonTitle("My Addon"), URL("https://ankiweb.net/shared/info/1"), AddonRating(0),
                     UpdateDate(date(2026, 1, 1)), AnkiVersion("25.09")),
-        AddonPage(HtmlStr(""), 0, 0, [], []),
-        GithubInfo(github_links, None, [], 0, None, None, None), None)
+        AddonPage(HtmlStr(""), 0, 0, [], [], github_links=github_links), None, None)
     github_service.get_languages = Mock(return_value={})
     github_service.get_stars_count = Mock(return_value=0)
     github_service.get_last_commit = Mock(return_value=None)
@@ -229,3 +220,20 @@ def test_enrich_drops_candidates_without_data(snapshot_dir: SnapshotDir, github_
 
     assert act_github.github_repo == own_repo
     assert act_github.repo_source == GithubRepoSource.MOST_LINKED
+
+
+def test_enrich_without_a_usable_repo_leaves_no_github(snapshot_dir: SnapshotDir, github_service: GithubService):
+    github_links: list[GithubLink] = UrlParser.find_github_links(
+        [URL("https://github.com/author"), URL("https://github.com/ankitects/anki")])
+    addon_info: AddonInfo = AddonInfo(
+        AddonHeader(AddonId(1), AddonTitle("My Addon"), URL("https://ankiweb.net/shared/info/1"), AddonRating(0),
+                    UpdateDate(date(2026, 1, 1)), AnkiVersion("25.09")),
+        AddonPage(HtmlStr(""), 0, 0, [], [], github_links=github_links), None, None)
+    github_enricher: GithubEnricher = GithubEnricher(
+        snapshot_dir, github_service, GithubRepoSelector(Overrider(snapshot_dir), None), offline=True)
+
+    github_enricher.start()
+    github_enricher.download_in_background(addon_info)
+    github_enricher.wait_download_finish()
+
+    assert github_enricher.enrich(AddonInfos([addon_info]))[0].github is None

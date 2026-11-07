@@ -8,7 +8,7 @@ from anki_addons_dataset.collector.overrider.overrider import Overrider
 from anki_addons_dataset.collector.url_parser import UrlParser
 from anki_addons_dataset.common.data_types import AddonInfo, AddonHeader, AddonId, AddonTitle, URL, AddonRating, \
     UpdateDate, AnkiVersion, AddonPage, HtmlStr, GithubInfo, GithubRepo, GithubUserName, GithubRepoName, \
-    GithubReadme, GithubRepoSource, GithubLink, AddonManifest
+    GithubReadme, GithubRepoSource, GithubLink, AddonManifest, GithubUser, PageLink, PageLinkSection
 
 addon_id: AddonId = AddonId(123456789)
 own_repo: GithubRepo = GithubRepo(GithubUserName("author"), GithubRepoName("my-addon"))
@@ -19,17 +19,23 @@ def __links(*urls: str) -> list[GithubLink]:
     return UrlParser.find_github_links([URL(url) for url in urls])
 
 
-def __addon_info(github_links: list[GithubLink]) -> AddonInfo:
+def __addon_info(github_links: list[GithubLink], contact_author_url: Optional[str] = None,
+                 page_addon_id: AddonId = addon_id) -> AddonInfo:
+    page_links: list[PageLink] = [PageLink(URL(contact_author_url), PageLinkSection.CONTACT_AUTHOR)] \
+        if contact_author_url else []
     return AddonInfo(
-        AddonHeader(addon_id, AddonTitle("My Addon"), URL(f"https://ankiweb.net/shared/info/{addon_id}"),
+        AddonHeader(page_addon_id, AddonTitle("My Addon"), URL(f"https://ankiweb.net/shared/info/{page_addon_id}"),
                     AddonRating(0), UpdateDate(date(2026, 1, 1)), AnkiVersion("25.09")),
-        AddonPage(HtmlStr(""), 0, 0, [], []),
-        GithubInfo(github_links, None, [], 0, None, None, None), None)
+        AddonPage(HtmlStr(""), 0, 0, [], page_links, github_links=github_links), None, None)
+
+
+def __parsed_repo(url: str) -> GithubRepo:
+    return UrlParser.parse_github_url(URL(url)).repo
 
 
 def __candidate(repo: GithubRepo, readme: Optional[str] = None,
                 manifest: Optional[AddonManifest] = None) -> GithubInfo:
-    return GithubInfo([], repo, [], 0, None, None, None, readme=GithubReadme(readme) if readme else None,
+    return GithubInfo(repo, [], 0, None, None, None, readme=GithubReadme(readme) if readme else None,
                       manifest=manifest)
 
 
@@ -108,3 +114,35 @@ def test_without_ai_falls_back_to_most_linked(overrider: Overrider) -> None:
         __addon_info(library_links), [__candidate(own_repo), __candidate(library_repo)])
     assert selected.github_repo == library_repo
     assert selected.repo_source == GithubRepoSource.MOST_LINKED
+
+
+def test_contact_author_repo_is_decided_over_description_links(overrider: Overrider) -> None:
+    addon_info: AddonInfo = __addon_info(__links("https://github.com/other/other-repo"),
+                                         "https://github.com/real-author/real-addon/issues")
+    assert GithubRepoSelector(overrider, None).decided_repo(addon_info) == (
+        __parsed_repo("https://github.com/real-author/real-addon"), GithubRepoSource.CONTACT_AUTHOR)
+
+
+def test_override_is_decided_over_contact_author(overrider: Overrider) -> None:
+    addon_info: AddonInfo = __addon_info([], "https://github.com/real-author/real-addon/issues",
+                                         AddonId(2055492159))
+    assert GithubRepoSelector(overrider, None).decided_repo(addon_info) == (
+        __parsed_repo("https://github.com/FooSoft/anki-connect/"), GithubRepoSource.OVERRIDE)
+
+
+def test_override_without_a_repo_decides_nothing_and_skips_contact_author() -> None:
+    overrider: Mock = Mock(spec=Overrider)
+    overrider.override_github_link.return_value = GithubLink(
+        URL("https://github.com/author"), GithubUser(GithubUserName("author")), None)
+    overrider.is_excluded_github_repo.return_value = False
+    addon_info: AddonInfo = __addon_info([], "https://github.com/real-author/real-addon/issues")
+    assert GithubRepoSelector(overrider, None).decided_repo(addon_info) is None
+
+
+def test_excluded_contact_author_repo_is_not_decided(overrider: Overrider) -> None:
+    addon_info: AddonInfo = __addon_info([], "https://github.com/ankitects/anki/issues")
+    assert GithubRepoSelector(overrider, None).decided_repo(addon_info) is None
+
+
+def test_description_links_leave_the_repo_undecided(overrider: Overrider) -> None:
+    assert GithubRepoSelector(overrider, None).decided_repo(__addon_info(library_links)) is None

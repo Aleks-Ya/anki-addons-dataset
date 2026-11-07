@@ -167,8 +167,7 @@ class GithubIssueHistory:
 
 @dataclass(frozen=True)
 class GithubInfo:
-    github_links: list[GithubLink]
-    github_repo: Optional[GithubRepo]
+    github_repo: GithubRepo
     languages: list[LanguageName]
     stars: int
     last_commit: Optional[datetime]
@@ -241,6 +240,7 @@ class AddonPage:
     other_items_count: Optional[int] = None
     reviews: list[AddonReview] = field(default_factory=list)
     package_size_kb: Optional[int] = None
+    github_links: list[GithubLink] = field(default_factory=list)
 
     @property
     def contact_author_url(self) -> Optional[URL]:

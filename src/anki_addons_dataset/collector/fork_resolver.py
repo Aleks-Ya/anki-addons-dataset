@@ -69,6 +69,6 @@ class ForkResolver:
 
     @staticmethod
     def __own_repo_id(addon_info: AddonInfo) -> Optional[GithubRepoId]:
-        if addon_info.github is None or addon_info.github.github_repo is None:
+        if addon_info.github is None:
             return None
         return GithubRepoId(addon_info.github.github_repo.get_id().lower())

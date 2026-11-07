@@ -43,6 +43,7 @@ class AddonPage <<frozen dataclass>> {
   description_pre_wrap : bool
   other_items_count : Optional[int]
   reviews : list[AddonReview]
+  github_links : list[GithubLink]
   --
   contact_author_url : Optional[URL]
 }
@@ -71,8 +72,7 @@ class AddonBranch <<frozen dataclass>> {
 }
 
 class GithubInfo <<frozen dataclass>> {
-  github_links : list[GithubLink]
-  github_repo : Optional[GithubRepo]
+  github_repo : GithubRepo
   languages : list[LanguageName]
   stars : int
   last_commit : Optional[datetime]
@@ -167,9 +167,9 @@ AddonInfo o-- "0..1" ForkRelation
 AddonPage "1" o-- "*" AddonBranch
 AddonPage "1" o-- "*" PageLink
 AddonPage "1" o-- "*" AddonReview
+AddonPage "1" o-- "*" GithubLink
 
-GithubInfo "1" o-- "*" GithubLink
-GithubInfo o-- "0..1" GithubRepo
+GithubInfo *-- "1" GithubRepo
 GithubInfo o-- "0..1" AddonManifest
 
 GithubLink *-- "1" GithubUser

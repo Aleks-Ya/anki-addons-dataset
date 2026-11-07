@@ -30,14 +30,14 @@ def __addon_info(addon_id: AddonId, own_repo: GithubRepo) -> AddonInfo:
 
 
 def __own_candidate(own_repo: GithubRepo) -> GithubInfo:
-    return GithubInfo([], own_repo, [], 30, None, None, None, readme=GithubReadme(
+    return GithubInfo(own_repo, [], 30, None, None, None, readme=GithubReadme(
         "An addon for Anki flashcard program that shows sizes of collection and individual notes "
         "including attached files (images, audios, videos, etc.)."),
                       manifest=AddonManifest(homepage=None))
 
 
 def __library_candidate() -> GithubInfo:
-    return GithubInfo([], library_repo, [], 2500, None, None, None,
+    return GithubInfo(library_repo, [], 2500, None, None, None,
                       readme=GithubReadme("A Python 3 library for generating Anki decks."),
                       repo_description="A Python 3 library for generating Anki decks")
 

@@ -4,7 +4,7 @@ from typing import Any, Optional
 
 from anki_addons_dataset.common.anki_version import AnkiVersionCodec
 from anki_addons_dataset.common.data_types import AddonInfos, AddonInfo, AddonDescription, GithubInfo, AddonManifest, \
-    AnkiPointVersion, HtmlStr, AddonId, AddonPackage, GithubRelease, GithubContributor, GithubIssueHistory
+    HtmlStr, AddonId, AddonPackage, GithubRelease, GithubContributor, GithubIssueHistory
 
 
 @dataclass
@@ -265,13 +265,13 @@ class JsonAddonInfo:
 
     @staticmethod
     def __github(addon: AddonInfo) -> Optional[GitHub]:
-        if not addon.github or not addon.github.github_repo:
+        if not addon.github:
             return None
         github: GithubInfo = addon.github
         user: str = github.github_repo.user
         repo_str: str = github.github_repo.repo_name
         links: list[Link] = [Link(link.url, link.user.user_name, link.repo.repo_name if link.repo else None)
-                             for link in github.github_links]
+                             for link in addon.page.github_links]
         last_commit_str: Optional[str] = github.last_commit.isoformat() if github.last_commit else None
         pushed_at_str: Optional[str] = github.pushed_at.isoformat() if github.pushed_at else None
         created_at_str: Optional[str] = github.created_at.isoformat() if github.created_at else None

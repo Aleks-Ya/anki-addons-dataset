@@ -4,7 +4,7 @@ from unittest.mock import Mock
 
 from anki_addons_dataset.collector.author_resolver import AuthorResolver
 from anki_addons_dataset.collector.overrider.overrider import Overrider
-from anki_addons_dataset.common.data_types import AddonId, AddonInfo, AddonInfos, AuthorInfo
+from anki_addons_dataset.common.data_types import AddonId, AddonInfo, AddonInfos, AuthorInfo, AuthorId
 
 
 def __addon_infos(addon_info: AddonInfo, other_items_counts: dict[int, int]) -> AddonInfos:
@@ -33,8 +33,8 @@ def test_groups_chained_pages_under_the_smallest_id(addon_info: AddonInfo):
 
     authors: dict[int, Optional[AuthorInfo]] = __authors(__resolver().resolve(addon_infos, author_items))
 
-    group: AuthorInfo = AuthorInfo(AddonId(10), __ids(10, 20, 30))
-    assert authors == {30: group, 10: group, 20: group, 40: AuthorInfo(AddonId(40), __ids(40))}
+    group: AuthorInfo = AuthorInfo(AuthorId(10), __ids(10, 20, 30))
+    assert authors == {30: group, 10: group, 20: group, 40: AuthorInfo(AuthorId(40), __ids(40))}
 
 
 def test_ignores_items_outside_the_catalog(addon_info: AddonInfo):
@@ -43,7 +43,7 @@ def test_ignores_items_outside_the_catalog(addon_info: AddonInfo):
 
     authors: dict[int, Optional[AuthorInfo]] = __authors(__resolver().resolve(addon_infos, author_items))
 
-    assert authors == {20: AuthorInfo(AddonId(20), __ids(20))}
+    assert authors == {20: AuthorInfo(AuthorId(20), __ids(20))}
 
 
 def test_an_uncovered_addon_with_other_items_is_unknown(addon_info: AddonInfo):
@@ -67,5 +67,5 @@ def test_the_same_author_override_merges_groups(addon_info: AddonInfo):
 
     authors: dict[int, Optional[AuthorInfo]] = __authors(__resolver({30: 20}).resolve(addon_infos, {}))
 
-    group: AuthorInfo = AuthorInfo(AddonId(20), __ids(20, 30))
-    assert authors == {10: AuthorInfo(AddonId(10), __ids(10)), 20: group, 30: group}
+    group: AuthorInfo = AuthorInfo(AuthorId(20), __ids(20, 30))
+    assert authors == {10: AuthorInfo(AuthorId(10), __ids(10)), 20: group, 30: group}

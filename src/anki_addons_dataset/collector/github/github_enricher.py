@@ -9,7 +9,7 @@ from logging import Logger
 from anki_addons_dataset.collector.enricher import Enricher
 from anki_addons_dataset.collector.github.handler.repo_info_repo_handler import GithubRepoMeta
 from anki_addons_dataset.common.data_types import AddonInfo, LanguageName, GithubInfo, AddonId, \
-    AddonInfos, GithubRepo, GithubLink, AddonManifest, DependencyName, GithubReadme, GithubRelease, \
+    AddonInfos, GithubRepo, GithubRepoSource, AddonManifest, DependencyName, GithubReadme, GithubRelease, \
     GithubContributor, GithubIssueHistory
 from anki_addons_dataset.collector.github.github_repo_selector import GithubRepoSelector
 from anki_addons_dataset.collector.github.github_service import GithubService
@@ -32,7 +32,7 @@ class GithubEnricher(Enricher):
         self.__github_repo_selector: GithubRepoSelector = github_repo_selector
         self.__stage_dir: Path = snapshot_dir.get_stage_dir() / "3-enricher" / "github"
         self.__github_service: GithubService = github_service
-        self.__github_infos: dict[AddonId, GithubInfo] = {}
+        self.__github_infos: dict[AddonId, Optional[GithubInfo]] = {}
         self.__lock: Lock = Lock()
 
     def enrich(self, addon_infos: AddonInfos) -> AddonInfos:
@@ -40,26 +40,24 @@ class GithubEnricher(Enricher):
                            for addon_info in addon_infos])
 
     def _download(self, addon_info: AddonInfo) -> None:
-        github_info: GithubInfo = self.__select(addon_info) or GithubInfo([], None, [], 0, None, None, None)
+        github_info: Optional[GithubInfo] = self.__select(addon_info)
         with self.__lock:
             self.__github_infos[addon_info.header.id] = github_info
 
     def __select(self, addon_info: AddonInfo) -> Optional[GithubInfo]:
-        if not addon_info.github:
-            return None
-        github_links: list[GithubLink] = addon_info.github.github_links
-        if addon_info.github.github_repo:
-            decided: GithubInfo = self.__fetch(github_links, addon_info.github.github_repo)
-            return copy.replace(decided, repo_source=addon_info.github.repo_source)
+        decided: Optional[tuple[GithubRepo, GithubRepoSource]] = self.__github_repo_selector.decided_repo(addon_info)
+        if decided is not None:
+            decided_repo, repo_source = decided
+            return copy.replace(self.__fetch(decided_repo), repo_source=repo_source)
         # Fetching first lets DOWNLOAD fill the raw cache; a repo without data (404, or never downloaded
         # into an old snapshot) would only show the AI an empty candidate.
-        fetched: list[GithubInfo] = [self.__fetch(github_links, repo)
-                                     for repo in self.__github_repo_selector.candidate_repos(github_links)]
+        fetched: list[GithubInfo] = [self.__fetch(repo) for repo in
+                                     self.__github_repo_selector.candidate_repos(addon_info.page.github_links)]
         candidates: list[GithubInfo] = [candidate for candidate in fetched
                                         if self.__github_service.has_repo_data(candidate.github_repo)]
         return self.__github_repo_selector.select(addon_info, candidates)
 
-    def __fetch(self, github_links: list[GithubLink], github_repo: GithubRepo) -> GithubInfo:
+    def __fetch(self, github_repo: GithubRepo) -> GithubInfo:
         # get_stars_count runs before get_repo_info (both share info.json), and get_tests_count runs
         # before get_manifest/get_dependencies (both read the repo tree), so each is fetched once.
         language_bytes: dict[LanguageName, int] = self.__github_service.get_languages(github_repo)
@@ -77,7 +75,7 @@ class GithubEnricher(Enricher):
         weekly_commits: Optional[list[int]] = self.__github_service.get_weekly_commits(github_repo)
         issue_history: Optional[GithubIssueHistory] = self.__github_service.get_issue_history(github_repo)
         return GithubInfo(
-            github_links, github_repo, list(language_bytes.keys()), stars, last_commit, action_count, tests_count,
+            github_repo, list(language_bytes.keys()), stars, last_commit, action_count, tests_count,
             license=repo_meta.license, fork_count=repo_meta.fork_count, open_issues=repo_meta.open_issues,
             size_kb=repo_meta.size_kb, topics=repo_meta.topics, repo_description=repo_meta.repo_description,
             homepage=repo_meta.homepage, archived=repo_meta.archived, pushed_at=repo_meta.pushed_at,
@@ -96,7 +94,7 @@ class GithubEnricher(Enricher):
             return None
         return max(language_bytes.items(), key=lambda item: item[1])[0]
 
-    def __enrich(self, addon_info: AddonInfo, github_info: GithubInfo) -> AddonInfo:
+    def __enrich(self, addon_info: AddonInfo, github_info: Optional[GithubInfo]) -> AddonInfo:
         enriched_addon_info: AddonInfo = copy.replace(addon_info, github=github_info)
         addon_json_file: Path = self.__stage_dir / f"{addon_info.header.id}.json"
         JsonHelper.write_addon_info_to_file(addon_info, addon_json_file)

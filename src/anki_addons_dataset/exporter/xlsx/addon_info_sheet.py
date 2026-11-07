@@ -220,8 +220,7 @@ class AddonInfoSheet:
 
     def __fill_github_row_columns(self, addon: AddonInfo, row: int, worksheet: Worksheet):
         if addon.github:
-            if addon.github.github_repo:
-                worksheet.write_url(row, self.__github_url_col, addon.github.github_repo.get_url(), string='link')
+            worksheet.write_url(row, self.__github_url_col, addon.github.github_repo.get_url(), string='link')
             if addon.github.stars:
                 worksheet.write_number(row, self.__stars_col, addon.github.stars)
             commit_str: str = addon.github.last_commit.strftime("%Y-%m-%d") if addon.github.last_commit else ""

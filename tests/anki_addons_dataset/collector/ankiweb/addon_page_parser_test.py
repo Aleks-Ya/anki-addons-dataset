@@ -4,10 +4,10 @@ from pathlib import Path
 
 from anki_addons_dataset.collector.ankiweb.addon_page_parser import AddonPageParser
 from anki_addons_dataset.collector.overrider.overrider import Overrider
-from anki_addons_dataset.common.data_types import AddonHeader, AddonInfo, AddonPage, GithubInfo, AddonId, GithubLink, \
+from anki_addons_dataset.common.data_types import AddonHeader, AddonInfo, AddonPage, AddonId, GithubLink, \
     URL, GithubUser, GithubRepo, GithubUserName, GithubRepoName, AddonBranch, HtmlStr, AnkiForumInfo, AnkiVersion, \
     AnkiPointVersion, AnkiVersionKind, AddonRating, UpdateDate, AddonTitle, AddonDescription, \
-    PageLink, PageLinkSection, GithubRepoSource, AddonReview, ReviewVote, AnkiForumTopicSource
+    PageLink, PageLinkSection, AddonReview, ReviewVote, AnkiForumTopicSource
 
 
 def test_parse_addon_page(overrider: Overrider):
@@ -82,9 +82,7 @@ def test_parse_addon_page(overrider: Overrider):
                         'feature request or another idea, reply at Support page at Anki Forum . For more details see '
                         'User Manual . Links Support page at Anki Forum GitHub project Bug tracker Changelog'),
             other_items_count=2,
-            package_size_kb=230
-        ),
-        GithubInfo(
+            package_size_kb=230,
             github_links=[
                 GithubLink(URL('https://github.com/Aleks-Ya/note-size-anki-addon/issues'), github_user, github_repo),
                 GithubLink(URL('https://github.com/Aleks-Ya/note-size-anki-addon/blob/main/docs/user-manual.md'),
@@ -96,15 +94,9 @@ def test_parse_addon_page(overrider: Overrider):
                 GithubLink(
                     URL('https://github.com/Aleks-Ya/note-size-anki-addon/actions/workflows/unit-tests-linux.yml'),
                     github_user, github_repo)
-            ],
-            github_repo=github_repo,
-            languages=[],
-            stars=0,
-            last_commit=None,
-            action_count=0,
-            tests_count=0,
-            repo_source=GithubRepoSource.CONTACT_AUTHOR
+            ]
         ),
+        None,
         forum=AnkiForumInfo(
             anki_forum_url=URL("https://forums.ankiweb.net/t/note-size-addon-support/46001"),
             topic_slug=None,
@@ -264,8 +256,8 @@ def test_comment_github_url_does_not_override_description_repo(overrider: Overri
         '<div class="mb-3"><a href="https://github.com/spammer/other-repo">and this too</a></div>'
         '</main></body></html>')
     addon_info: AddonInfo = parser.parse_addon_page(addon_header, html)
-    assert addon_info.github.github_repo is None
-    assert [link.url for link in addon_info.github.github_links] == [
+    assert addon_info.github is None
+    assert [link.url for link in addon_info.page.github_links] == [
         URL("https://github.com/real-author/real-addon")]
 
 
@@ -298,8 +290,7 @@ def test_contact_author_forum_link_wins_over_description_vote(overrider: Overrid
     assert addon_info.forum.topic_source == AnkiForumTopicSource.CONTACT_AUTHOR
 
 
-def test_contact_author_github_link_wins_over_description_vote(overrider: Overrider):
-    """The Contact Author button's GitHub repo beats a differently-voted repo in the description."""
+def test_contact_author_github_link_is_kept_apart_from_the_description_links(overrider: Overrider):
     parser: AddonPageParser = AddonPageParser(overrider)
     html: HtmlStr = HtmlStr(
         '<html><body><main>'
@@ -308,25 +299,13 @@ def test_contact_author_github_link_wins_over_description_vote(overrider: Overri
         '<div class="shared-item-description">'
         '<a href="https://github.com/other/other-repo">A</a>'
         '<a href="https://github.com/other/other-repo">B</a>'
-        '<a href="https://github.com/other/other-repo">C</a>'
         '</div>'
         '</main></body></html>')
     addon_info: AddonInfo = parser.parse_addon_page(__header(4), html)
-    assert addon_info.github.github_repo == GithubRepo(GithubUserName("real-author"), GithubRepoName("real-addon"))
-    assert addon_info.github.repo_source == GithubRepoSource.CONTACT_AUTHOR
-
-
-def test_description_links_leave_the_repo_undecided(overrider: Overrider):
-    parser: AddonPageParser = AddonPageParser(overrider)
-    html: HtmlStr = HtmlStr(
-        '<html><body><main>'
-        '<div class="shared-item-description">'
-        '<a href="https://github.com/real-author/real-addon">Source</a>'
-        '</div>'
-        '</main></body></html>')
-    addon_info: AddonInfo = parser.parse_addon_page(__header(8), html)
-    assert addon_info.github.github_repo is None
-    assert addon_info.github.repo_source is None
+    assert addon_info.github is None
+    assert addon_info.page.contact_author_url == URL("https://github.com/real-author/real-addon/issues")
+    assert [link.url for link in addon_info.page.github_links] == [
+        URL("https://github.com/other/other-repo"), URL("https://github.com/other/other-repo")]
 
 
 def test_manual_override_beats_contact_author_forum_link(overrider: Overrider):
@@ -353,7 +332,7 @@ def test_ai_declaration_detected_without_github_repo(overrider: Overrider):
         '</div>'
         '</main></body></html>')
     addon_info: AddonInfo = parser.parse_addon_page(__header(6), html)
-    assert addon_info.github.github_repo is None
+    assert addon_info.github is None
     assert addon_info.page.ai_declaration_markers == ["chatgpt"]
 
 

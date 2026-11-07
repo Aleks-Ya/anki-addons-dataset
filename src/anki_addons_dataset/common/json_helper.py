@@ -45,7 +45,7 @@ class JsonHelper:
     def __addon_info_from_dict(data: dict[str, Any]) -> AddonInfo:
         return AddonInfo(
             header=JsonHelper.__addon_header_from_dict(data["header"]),
-            page=JsonHelper.__addon_page_from_dict(data["page"]),
+            page=JsonHelper.__addon_page_from_dict(data["page"], data["github"]),
             github=JsonHelper.__github_info_from_dict(data["github"]),
             forum=JsonHelper.__anki_forum_info_from_dict(data["forum"]),
             ai=JsonHelper.__ai_info_from_dict(data.get("ai")),  # get(): dumps written before the 'ai' step have none
@@ -119,7 +119,7 @@ class JsonHelper:
         )
 
     @staticmethod
-    def __addon_page_from_dict(data: dict[str, Any]) -> AddonPage:
+    def __addon_page_from_dict(data: dict[str, Any], legacy_github: Optional[dict[str, Any]]) -> AddonPage:
         return AddonPage(
             content=HtmlStr(data["content"]),
             like_number=data["like_number"],
@@ -137,6 +137,8 @@ class JsonHelper:
             other_items_count=data.get("other_items_count"),
             package_size_kb=data.get("package_size_kb"),
             reviews=[JsonHelper.__addon_review_from_dict(review) for review in data.get("reviews", [])],
+            github_links=[JsonHelper.__github_link_from_dict(link) for link in
+                          data.get("github_links", (legacy_github or {}).get("github_links", []))],
         )
 
     @staticmethod
@@ -175,7 +177,7 @@ class JsonHelper:
 
     @staticmethod
     def __github_info_from_dict(data: Optional[dict[str, Any]]) -> Optional[GithubInfo]:
-        if data is None:
+        if data is None or data["github_repo"] is None:
             return None
         last_commit: Optional[str] = data["last_commit"]
         homepage: Optional[str] = data.get("homepage")
@@ -184,7 +186,6 @@ class JsonHelper:
         readme: Optional[str] = data.get("readme")
         repo_source: Optional[str] = data.get("repo_source")
         return GithubInfo(
-            github_links=[JsonHelper.__github_link_from_dict(link) for link in data["github_links"]],
             github_repo=JsonHelper.__github_repo_from_dict(data["github_repo"]),
             languages=[LanguageName(language) for language in data["languages"]],
             stars=data["stars"],

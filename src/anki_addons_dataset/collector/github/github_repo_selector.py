@@ -6,8 +6,9 @@ from typing import Optional
 
 from anki_addons_dataset.collector.ai.question.ai_repo_selector import AiRepoSelector, AiRepoAnswer
 from anki_addons_dataset.collector.overrider.overrider import Overrider
+from anki_addons_dataset.collector.url_parser import UrlParser
 from anki_addons_dataset.common.data_types import AddonInfo, AddonId, GithubInfo, GithubRepo, GithubRepoSource, \
-    GithubLink
+    GithubLink, URL
 
 log: Logger = logging.getLogger(__name__)
 
@@ -18,10 +19,15 @@ class GithubRepoSelector:
         self.__overrider: Overrider = overrider
         self.__ai_repo_selector: Optional[AiRepoSelector] = ai_repo_selector
 
+    def decided_repo(self, addon_info: AddonInfo) -> Optional[tuple[GithubRepo, GithubRepoSource]]:
+        override_link: Optional[GithubLink] = self.__overrider.override_github_link(addon_info.header.id)
+        if override_link:
+            return (override_link.repo, GithubRepoSource.OVERRIDE) if override_link.repo is not None else None
+        contact_repo: Optional[GithubRepo] = self.__contact_author_repo(addon_info.page.contact_author_url)
+        return (contact_repo, GithubRepoSource.CONTACT_AUTHOR) if contact_repo is not None else None
+
     def candidate_repos(self, github_links: list[GithubLink]) -> list[GithubRepo]:
-        allowed_links: list[GithubLink] = [link for link in github_links if link.repo is not None
-                                           and not self.__overrider.is_excluded_github_repo(link.url)]
-        return list(dict.fromkeys(link.repo for link in allowed_links))
+        return list(dict.fromkeys(link.repo for link in self.__allowed_repo_links(github_links)))
 
     def select(self, addon_info: AddonInfo, candidates: list[GithubInfo]) -> Optional[GithubInfo]:
         if not candidates:
@@ -38,6 +44,16 @@ class GithubRepoSelector:
                 return self.__with_source(chosen, GithubRepoSource.AI) if chosen is not None else None
         return self.__with_source(self.__most_linked(addon_info, candidates), GithubRepoSource.MOST_LINKED)
 
+    def __contact_author_repo(self, contact_author_url: Optional[URL]) -> Optional[GithubRepo]:
+        if contact_author_url is None:
+            return None
+        allowed_links: list[GithubLink] = self.__allowed_repo_links(UrlParser.find_github_links([contact_author_url]))
+        return allowed_links[0].repo if allowed_links else None
+
+    def __allowed_repo_links(self, github_links: list[GithubLink]) -> list[GithubLink]:
+        return [link for link in github_links
+                if link.repo is not None and not self.__overrider.is_excluded_github_repo(link.url)]
+
     @staticmethod
     def __references_addon(candidate: GithubInfo, addon_id: AddonId) -> bool:
         id_pattern: re.Pattern[str] = re.compile(rf"(?<!\d){addon_id}(?!\d)")
@@ -47,7 +63,7 @@ class GithubRepoSelector:
 
     @staticmethod
     def __most_linked(addon_info: AddonInfo, candidates: list[GithubInfo]) -> GithubInfo:
-        link_repos: list[Optional[GithubRepo]] = [link.repo for link in addon_info.github.github_links]
+        link_repos: list[Optional[GithubRepo]] = [link.repo for link in addon_info.page.github_links]
         return max(sorted(candidates, key=lambda candidate: candidate.github_repo.get_id()),
                    key=lambda candidate: link_repos.count(candidate.github_repo))
 

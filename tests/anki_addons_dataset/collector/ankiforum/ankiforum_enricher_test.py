@@ -13,7 +13,7 @@ from anki_addons_dataset.collector.ankiforum.ankiforum_service import AnkiForumS
 from anki_addons_dataset.common.data_types import AddonInfo, AddonHeader, AddonId, AddonPage, GithubInfo, AddonInfos, \
     AnkiForumInfo, TopicSlug, TopicId, LastPostedAt, URL, PostsCount, LanguageName, GithubRepo, GithubUserName, \
     GithubRepoName, AnkiVersion, AddonBranch, HtmlStr, AddonRating, UpdateDate, AddonTitle, AddonDescription, \
-    AiInfo, AiSummary, AiModel, AiTag, AnkiPointVersion, AnkiVersionKind, AuthorInfo, AnkiForumTopicSource, \
+    AiInfo, AiSummary, AiModel, AiTag, AnkiPointVersion, AnkiVersionKind, AuthorInfo, AuthorId, AnkiForumTopicSource, \
     AnkiForumTopicContent, AnkiForumPost, GithubRelease, GithubReleaseAsset, \
     GithubContributor, GithubIssueHistory
 from anki_addons_dataset.common.working_dir import SnapshotDir
@@ -60,7 +60,6 @@ def test_enrich(anki_forum_enricher: AnkiForumEnricher, anki_forum_service: Anki
             package_size_kb=230
         ),
         github=GithubInfo(
-            github_links=[],
             github_repo=GithubRepo(GithubUserName("John"), GithubRepoName("app")),
             languages=[LanguageName("Python"), LanguageName("Rust")],
             stars=3,
@@ -90,7 +89,7 @@ def test_enrich(anki_forum_enricher: AnkiForumEnricher, anki_forum_service: Anki
             tags=[AiTag("statistics")]
         ),
         author=AuthorInfo(
-            author_id=AddonId(1188705668),
+            author_id=AuthorId(1188705668),
             addon_ids=[AddonId(1188705668), AddonId(1312127886), AddonId(1956435337)]
         )
     )
