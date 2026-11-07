@@ -212,7 +212,7 @@ def test_export_packages(snapshot_dir: SnapshotDir):
     packages: list[PackageRow] = [
         PackageRow(AddonId(100), AddonPackage(
             "45-2026-01-15-0123456789ab.ankiaddon", AnkiPointVersion(45), date(2026, 1, 15), 10, '{"name": "A"}', None,
-            2, 30, 1, 4, ["__init__.py", "manifest.json"], {LanguageName("python"): 25, LanguageName("json"): 5}))]
+            2, 30, 1, 4, ["__init__.py", "manifest.json"], {LanguageName("Python"): 25, LanguageName("JSON"): 5}))]
     final_dir: Path = snapshot_dir.get_final_dir()
     ParquetExporter(final_dir).export_packages(packages)
 
@@ -222,7 +222,7 @@ def test_export_packages(snapshot_dir: SnapshotDir):
                          'manifest_json': '{"name": "A"}', 'config_json': None, 'file_count': 2,
                          'uncompressed_bytes': 30, 'python_file_count': 1, 'python_lines': 4,
                          'files': ['__init__.py', 'manifest.json'],
-                         'language_bytes': [{'name': 'python', 'bytes': 25}, {'name': 'json', 'bytes': 5}]}]
+                         'language_bytes': [{'name': 'Python', 'bytes': 25}, {'name': 'JSON', 'bytes': 5}]}]
 
 
 def test_export_packages_empty_keeps_types(snapshot_dir: SnapshotDir):

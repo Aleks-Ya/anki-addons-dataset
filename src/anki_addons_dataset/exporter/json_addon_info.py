@@ -206,8 +206,8 @@ class Details:
 
 class JsonAddonInfo:
     __data_languages: frozenset[str] = frozenset({
-        "csproj", "csv", "gitattributes", "gitmodules", "htaccess", "ignorefile", "json", "jsonl", "mht", "textproto",
-        "tsv", "vcxproj", "xml", "yaml"})
+        "ApacheConf", "CSV", "Git Attributes", "Git Config", "Ignore List", "JSON", "MHTML",
+        "Protocol Buffer Text Format", "TSV", "XML", "YAML"})
 
     @staticmethod
     def addon_infos_to_json(addon_infos: AddonInfos) -> list[Details]:

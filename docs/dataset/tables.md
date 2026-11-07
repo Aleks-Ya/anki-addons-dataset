@@ -26,7 +26,9 @@ from the votes of the listed reviews. Parquet only.
 ## packages
 The `.ankiaddon` packages served by AnkiWeb, one row per addon branch; `file_name` is the file under
 `packages/{addon_id}/` (see [files](files.md)). Parquet only.
-- Languages are detected from file content by [Magika](https://github.com/google/magika).
+- Languages are detected from file content by [Magika](https://github.com/google/magika) and named as on GitHub
+  (`Python`, `C++`, `Assembly`), like `github.language_bytes`. Unlike GitHub, they include bundled libraries and
+  data formats such as `JSON`.
 - Counts include bundled libraries.
 - `manifest_json` and `config_json` are `null` when absent or over 64 kB.
 

@@ -8,6 +8,7 @@ from magika import Magika
 from magika.types import MagikaResult
 
 from anki_addons_dataset.collector.package.package_client import PackageError
+from anki_addons_dataset.collector.package.package_language_names import PackageLanguageNames
 from anki_addons_dataset.common.data_types import LanguageName
 
 
@@ -74,7 +75,7 @@ class PackageAnalyzer:
         result: MagikaResult = self.__magika.identify_bytes(content)
         if not result.ok or result.output.group != "code":
             return None
-        return LanguageName(str(result.output.label))
+        return PackageLanguageNames.linguist_name(str(result.output.label))
 
     @staticmethod
     def __is_macos_junk(name: str) -> bool:

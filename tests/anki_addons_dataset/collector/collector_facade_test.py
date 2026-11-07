@@ -66,7 +66,7 @@ def test_report_snapshots_exports_packages(
         script_version: ScriptVersion, report_date: ReportDate):
     addon_infos = AddonInfos([replace(addon_infos[0], package=AddonPackages([AddonPackage(
         "45-2026-01-15-0123456789ab.ankiaddon", AnkiPointVersion(45), date(2026, 1, 15), 10, None, None,
-        1, 6, 1, 1, ["__init__.py"], {LanguageName("python"): 6})]))])
+        1, 6, 1, 1, ["__init__.py"], {LanguageName("Python"): 6})]))])
     JsonHelper.write_addon_infos_dump(addon_infos, script_version, snapshot_dir.get_addon_infos_dump())
 
     collector_facade.report_snapshots(None, report_date)
@@ -74,10 +74,10 @@ def test_report_snapshots_exports_packages(
     packages_df: DataFrame = pandas.read_parquet(snapshot_dir.get_final_dir() / "parquet" / "packages.parquet")
     assert list(packages_df["addon_id"]) == [addon_infos[0].header.id]
     assert list(packages_df["file_name"]) == ["45-2026-01-15-0123456789ab.ankiaddon"]
-    assert list(packages_df["language_bytes"][0]) == [{"name": "python", "bytes": 6}]
+    assert list(packages_df["language_bytes"][0]) == [{"name": "Python", "bytes": 6}]
     data_df: DataFrame = pandas.read_parquet(snapshot_dir.get_final_dir() / "parquet" / "data.parquet")
     assert data_df.iloc[0]["package"]["file_name"] == "45-2026-01-15-0123456789ab.ankiaddon"
-    assert data_df.iloc[0]["package"]["primary_language"] == "python"
+    assert data_df.iloc[0]["package"]["primary_language"] == "Python"
 
 
 def test_report_snapshots_generates_final_from_dump_without_raw(

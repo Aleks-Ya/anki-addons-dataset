@@ -17,13 +17,20 @@ addon or snapshot without packages gets `package=None`.
   half of the packages, and it often has fields `ManifestParser` drops (`version`, `author`).
 - A manifest or config over 64 kB gives `null`. A file over 5 MB is not read: a `.py` file counts as a file with no
   lines, and no file gets a language. Both limits use the size declared in the zip.
-- `language_bytes` sums the uncompressed size of the files of each language. The language is the label
+- `language_bytes` sums the uncompressed size of the files of each language. The language comes from the label
   [Magika](https://github.com/google/magika) gives the file content, ignoring the extension, counted only when its
   group is `code` (so `json`, `html` and `css` count, `markdown`, `txt` and images do not). Magika needs at least 8
   bytes; shorter files get `txt`, so they are not counted.
+- `PackageLanguageNames` renames every Magika `code` label to its
+  [GitHub Linguist](https://github.com/github-linguist/linguist/blob/main/lib/linguist/languages.yml) name (`python`
+  → `Python`, `cpp` → `C++`, `asm` → `Assembly`), so a language has the same name here as in `github.language_bytes`.
+  Labels Linguist files under one language are summed into it: `xml`, `csproj` and `vcxproj` into `XML`, `json` and
+  `jsonl` into `JSON`, `ruby`, `gemfile` and `gemspec` into `Ruby`. `mht` has no Linguist language and becomes
+  `MHTML`. An unknown label stops PARSE; `package_language_names_test.py` checks every label of the installed Magika,
+  so a Magika upgrade that adds one fails the tests first.
 - REPORT's `primary_language` is the first entry of `language_bytes` that is not a data or config format
-  (`JsonAddonInfo.__data_languages`: `json`, `jsonl`, `csv`, `tsv`, `xml`, `yaml`, `ignorefile`, ...). Bundled word
-  lists and dictionaries often outweigh the code, so without this `json` or `csv` would win for about 130 addons.
+  (`JsonAddonInfo.__data_languages`: `JSON`, `CSV`, `TSV`, `XML`, `YAML`, `Ignore List`, ...). Bundled word lists and
+  dictionaries often outweigh the code, so without this `JSON` or `CSV` would win for about 130 addons.
 
 Magika takes a few milliseconds per file, and a snapshot holds about 500k files, so `PackageEnricher` analyzes
 packages on one thread per CPU. One `PackageAnalyzer` serves the whole PARSE run and remembers each package by file

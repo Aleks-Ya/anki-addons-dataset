@@ -46,7 +46,7 @@ def test_enrich_passes_the_detected_languages(snapshot_dir: SnapshotDir, addon_i
 
     packages: Optional[AddonPackages] = __enrich(snapshot_dir, addon_info)
 
-    assert packages.branches[0].language_bytes == {LanguageName("python"): 19}
+    assert packages.branches[0].language_bytes == {LanguageName("Python"): 19}
 
 
 def test_enrich_sorts_branches_by_point_version(snapshot_dir: SnapshotDir, addon_info: AddonInfo):

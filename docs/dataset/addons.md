@@ -52,7 +52,8 @@ inaccurate. `github.fork_count` is unrelated: the GitHub fork count of the repo.
 ## Package
 The `package` field summarizes the addon branch with the highest `min_point_version` in the
 [`packages` table](tables.md#packages) and adds `primary_language` (the language with the most bytes, ignoring
-data formats such as `json` or `yaml`). It is `null` when the snapshot holds no package of the addon.
+data formats such as `JSON` or `YAML`). Languages have the same names as in `github.language_bytes`. It is `null`
+when the snapshot holds no package of the addon.
 `anki_web.package_size_kb` is the size shown by AnkiWeb, rounded to 10 kB (`0` means under 10 kB).
 
 ## Older snapshots

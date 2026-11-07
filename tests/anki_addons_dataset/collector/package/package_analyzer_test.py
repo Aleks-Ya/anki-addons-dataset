@@ -13,6 +13,14 @@ __JAVASCRIPT: bytes = (b'function add(a, b) {\n    return a + b;\n}\n\n'
                        b'document.addEventListener("DOMContentLoaded", () => {\n    console.log(add(1, 2));\n});\n')
 __CSS: bytes = (b'body {\n    margin: 0;\n    font-family: sans-serif;\n}\n\n'
                 b'.card {\n    color: #333;\n    padding: 4px 8px;\n}\n')
+__XML: bytes = (b'<?xml version="1.0" encoding="UTF-8"?>\n<notes>\n  <note id="1">\n    <front>Hello</front>\n'
+                b'    <back>World</back>\n  </note>\n  <note id="2">\n    <front>Cat</front>\n    <back>Dog</back>\n'
+                b'  </note>\n</notes>\n')
+__CSPROJ: bytes = (b'<Project Sdk="Microsoft.NET.Sdk">\n\n  <PropertyGroup>\n    <OutputType>Exe</OutputType>\n'
+                   b'    <TargetFramework>net8.0</TargetFramework>\n    <Nullable>enable</Nullable>\n'
+                   b'  </PropertyGroup>\n\n  <ItemGroup>\n'
+                   b'    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />\n'
+                   b'  </ItemGroup>\n\n</Project>\n')
 __MARKDOWN: bytes = (b'# My addon\n\nThis addon adds a button to the reviewer.\n\n## Usage\n\n'
                      b'Press the button and enjoy your reviews.\n')
 
@@ -41,7 +49,7 @@ def test_analyze_counts_files_and_python_lines(analyzer: PackageAnalyzer, tmp_pa
     analysis: PackageAnalysis = analyzer.analyze(package_file)
 
     assert analysis == PackageAnalysis(None, None, 3, 47, 2, 5, ["__init__.py", "sub/module.py", "web/style.css"],
-                                       {LanguageName("python"): 19})
+                                       {LanguageName("Python"): 19})
 
 
 def test_analyze_reads_manifest_and_config_at_the_root(analyzer: PackageAnalyzer, tmp_path: Path):
@@ -119,8 +127,14 @@ def test_analyze_detects_languages_by_content(analyzer: PackageAnalyzer, tmp_pat
 
     analysis: PackageAnalysis = analyzer.analyze(package_file)
 
-    assert analysis.language_bytes == {LanguageName("css"): 206, LanguageName("python"): 142,
-                                       LanguageName("javascript"): 128}
+    assert analysis.language_bytes == {LanguageName("CSS"): 206, LanguageName("Python"): 142,
+                                       LanguageName("JavaScript"): 128}
+
+
+def test_analyze_sums_the_labels_that_share_a_language_name(analyzer: PackageAnalyzer, tmp_path: Path):
+    package_file: Path = __package(tmp_path, {"notes.xml": __XML, "App.csproj": __CSPROJ})
+
+    assert analyzer.analyze(package_file).language_bytes == {LanguageName("XML"): 493}
 
 
 def test_analyze_does_not_count_files_outside_the_code_group(analyzer: PackageAnalyzer, tmp_path: Path):
@@ -143,7 +157,7 @@ def test_analyze_does_not_detect_languages_of_macos_junk(analyzer: PackageAnalyz
 def test_analyze_does_not_detect_the_language_of_a_file_over_the_limit(analyzer: PackageAnalyzer, tmp_path: Path):
     package_file: Path = __package(tmp_path, {"big.py": __PYTHON * 40_000, "small.py": __PYTHON})
 
-    assert analyzer.analyze(package_file).language_bytes == {LanguageName("python"): 142}
+    assert analyzer.analyze(package_file).language_bytes == {LanguageName("Python"): 142}
 
 
 def test_analyze_reuses_the_analysis_of_a_package_with_the_same_name(analyzer: PackageAnalyzer, tmp_path: Path):
