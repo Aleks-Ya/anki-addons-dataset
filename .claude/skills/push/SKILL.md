@@ -46,7 +46,7 @@ uv run pytest tests_integration
   step 1, don't commit the fixes on the user's behalf unless they ask). Re-run `pytest` until green, then continue.
   Don't start the integration tests until the unit tests pass.
 - If `uv run pytest tests_integration` **fails**, **stop.** Do not push. These tests hit live services (see
-  doc/testing.md), so a failure can come from an upstream change, an outage or a missing credential rather than the
+  docs/testing.md), so a failure can come from an upstream change, an outage or a missing credential rather than the
   code. Report the failing tests and the likely cause, and fix them only if the code is at fault. Push only once
   they pass, or if the user explicitly says to push anyway.
 - If both test runs pass and `uv.lock` changed, commit the change yourself without asking. Commit only `uv.lock`, with

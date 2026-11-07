@@ -199,7 +199,7 @@ bump makes this expected, not a defect — but it must be surfaced, not discover
 
 ## 7. Bump to the next development version
 
-Move `main` off the release version so later builds are not mistaken for it (doc/pypi.md: only
+Move `main` off the release version so later builds are not mistaken for it (docs/pypi.md: only
 non-`.dev` checkouts build release versions). Do this whenever step 4 created the release, even if step 5
 or 6 failed — the tag is already published either way.
 

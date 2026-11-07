@@ -1,15 +1,16 @@
 # Developer Guide
 
 ## Documentation
-- [Running the pipeline](doc/pipeline.md) — `-d`, release vs working source, sample runs
-- [Configuration](doc/configuration.md) — config file, GitHub token, logging, browser timeouts
-- [AI summaries and tags](doc/ai.md) — the `ai` step, its cache and costs
-- [Anki versions](doc/anki-versions.md) — how addon version ranges are parsed, the `anki_versions` table
-- [Addon packages](doc/addon-packages.md) — downloading `.ankiaddon` files, their cache and publishing
-- [Integration tests](doc/testing.md) — live tests and their requirements
-- [HuggingFace](doc/huggingface.md) — CLI login, the visualization Space
-- [Publish to PyPI](doc/pypi.md) — automated and manual publishing
-- [UML diagrams](doc/uml.md) — PlantUML sources in `doc/uml/`
+- [Dataset](docs/dataset/addons.md) — the published fields, tables and files, linked from the HF dataset card
+- [Running the pipeline](docs/pipeline.md) — `-d`, release vs working source, sample runs
+- [Configuration](docs/configuration.md) — config file, GitHub token, logging, browser timeouts
+- [AI summaries and tags](docs/ai.md) — the `ai` step, its cache and costs
+- [Anki versions](docs/anki-versions.md) — how addon version ranges are parsed, the `anki_versions` table
+- [Addon packages](docs/addon-packages.md) — downloading `.ankiaddon` files, their cache and publishing
+- [Integration tests](docs/testing.md) — live tests and their requirements
+- [HuggingFace](docs/huggingface.md) — CLI login, the visualization Space
+- [Publish to PyPI](docs/pypi.md) — automated and manual publishing
+- [UML diagrams](docs/uml.md) — PlantUML sources in `docs/uml/`
 
 ## Install
 The released command comes from PyPI:
@@ -47,7 +48,7 @@ Upgrade all dependencies to their latest allowed versions (refreshes `uv.lock`):
 Run locally: `uv run pytest`  
 Unit-tests are automatically executed in GitHub Actions.  
 All external services are mocked, so the whole suite runs without network access.  
-Integration tests: [doc/testing.md](doc/testing.md).
+Integration tests: [docs/testing.md](docs/testing.md).
 
 ## Running the pipeline
 
@@ -85,7 +86,7 @@ anki-addons-dataset parse report               # run only the given steps
 anki-addons-dataset info                       # just print version and configuration
 ```
 
-Snapshot dates, ways to run a release or the working source, and sample runs: [doc/pipeline.md](doc/pipeline.md)
+Snapshot dates, ways to run a release or the working source, and sample runs: [docs/pipeline.md](docs/pipeline.md)
 
 ## Create a new version of HuggingFace dataset **from sources** by steps
 1. Upgrade Python packages: `./uv_update.sh`
@@ -93,13 +94,13 @@ Snapshot dates, ways to run a release or the working source, and sample runs: [d
 3. Initialize a working directory: `uv run anki-addons-dataset init` (creates `~/anki-addons-dataset`; any
    existing content except `logs/` is moved to `~/anki-addons-dataset/backups/YYYYmmdd-HHMMSS`)
 4. Download new snapshot: `uv run anki-addons-dataset download -d 2026-01-01` (creates `~/anki-addons-dataset/history/2026-01-01/1-raw`)
-5. Buy the AI answers: `uv run anki-addons-dataset ai -d 2026-01-01` (fills `~/anki-addons-dataset/history/2026-01-01/1-raw/4-ai/ai-cache.jsonl`, costs money, see [AI summaries and tags](doc/ai.md))
+5. Buy the AI answers: `uv run anki-addons-dataset ai -d 2026-01-01` (fills `~/anki-addons-dataset/history/2026-01-01/1-raw/4-ai/ai-cache.jsonl`, costs money, see [AI summaries and tags](docs/ai.md))
 6. Parse dataset: `uv run anki-addons-dataset parse` (writes `~/anki-addons-dataset/history/YYYY-MM-DD/addon-infos.json` and `2-stage`)
 7. Generate reports: `uv run anki-addons-dataset report` (creates `~/anki-addons-dataset/history/YYYY-MM-DD/3-final`)
 8. Create a bundle: `uv run anki-addons-dataset bundle` (creates `~/anki-addons-dataset/bundle`)
 9. Upload the bundle: `uv run anki-addons-dataset upload` (syncs `~/anki-addons-dataset/bundle` to HuggingFace)
 10. Restart the visualization space: https://huggingface.co/spaces/Ya-Alex/anki-addons
-    (its startup log warns about `HF_TOKEN`, see [HuggingFace Spaces](doc/huggingface.md#huggingface-spaces))
+    (its startup log warns about `HF_TOKEN`, see [HuggingFace Spaces](docs/huggingface.md#huggingface-spaces))
 11. Post on Anki Forum: https://forums.ankiweb.net/t/anki-addons-dataset-a-detailed-list-of-addons/63090
 
 ## Release a new version of this repository
@@ -120,7 +121,7 @@ Snapshot dates, ways to run a release or the working source, and sample runs: [d
     6. Verify the version: `uvx --refresh anki-addons-dataset info`
     7. Bump to the next development version and push: `uv run bump-my-version bump patch && git push`
 
-Publishing to PyPI: [doc/pypi.md](doc/pypi.md).
+Publishing to PyPI: [docs/pypi.md](docs/pypi.md).
 
 ## GitHub
 https://github.com/Aleks-Ya/anki-addons-dataset
