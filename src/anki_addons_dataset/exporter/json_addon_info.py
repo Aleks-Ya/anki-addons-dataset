@@ -92,6 +92,8 @@ class GitHub:
     ai_tooling_markers: list[str]
     repo_source: Optional[str]
     fork_source: Optional[str]
+    shared_with: list[int]
+    repo_sharing: Optional[str]
     release_count: Optional[int]
     latest_release_tag: Optional[str]
     latest_release_at: Optional[str]
@@ -213,8 +215,9 @@ class JsonAddonInfo:
     def addon_infos_to_json(addon_infos: AddonInfos) -> list[Details]:
         json_list: list[Details] = []
         forks: dict[AddonId, list[int]] = JsonAddonInfo.__forks(addon_infos)
+        repo_addons: dict[str, list[AddonInfo]] = JsonAddonInfo.__repo_addons(addon_infos)
         for addon in addon_infos:
-            github: Optional[GitHub] = JsonAddonInfo.__github(addon)
+            github: Optional[GitHub] = JsonAddonInfo.__github(addon, repo_addons)
             forum: Optional[Forum] = JsonAddonInfo.__forum(addon)
             branches: list[Branch] = JsonAddonInfo.__branches(addon)
             anki_web: AnkiWeb = AnkiWeb(addon.header.title, addon.header.addon_page_url,
@@ -245,6 +248,21 @@ class JsonAddonInfo:
         return forks
 
     @staticmethod
+    def __repo_addons(addon_infos: AddonInfos) -> dict[str, list[AddonInfo]]:
+        repo_addons: dict[str, list[AddonInfo]] = {}
+        for addon in sorted(addon_infos, key=lambda addon_info: addon_info.header.id):
+            if addon.github is not None:
+                repo_addons.setdefault(addon.github.github_repo.get_id().lower(), []).append(addon)
+        return repo_addons
+
+    @staticmethod
+    def __repo_sharing(addons: list[AddonInfo]) -> Optional[str]:
+        author_ids: set[Optional[int]] = {addon.author.author_id if addon.author else None for addon in addons}
+        if len(addons) < 2 or None in author_ids:
+            return None
+        return "same_author" if len(author_ids) == 1 else "cross_author"
+
+    @staticmethod
     def __package(addon: AddonInfo) -> Optional[Package]:
         if addon.package is None:
             return None
@@ -265,10 +283,11 @@ class JsonAddonInfo:
         return [AnkiWebLink(link.url, str(link.section), link.count, list(link.texts)) for link in addon.page.links]
 
     @staticmethod
-    def __github(addon: AddonInfo) -> Optional[GitHub]:
+    def __github(addon: AddonInfo, repo_addons: dict[str, list[AddonInfo]]) -> Optional[GitHub]:
         if not addon.github:
             return None
         github: GithubInfo = addon.github
+        sharing_addons: list[AddonInfo] = repo_addons[github.github_repo.get_id().lower()]
         user: str = github.github_repo.user
         repo_str: str = github.github_repo.repo_name
         links: list[Link] = [Link(link.url, link.user.user_name, link.repo.repo_name if link.repo else None)
@@ -289,6 +308,8 @@ class JsonAddonInfo:
                       list(github.dependencies), github.readme, list(github.ai_tooling_markers),
                       str(github.repo_source) if github.repo_source else None,
                       github.fork_source.get_id() if github.fork_source else None,
+                      [other.header.id for other in sharing_addons if other.header.id != addon.header.id],
+                      JsonAddonInfo.__repo_sharing(sharing_addons),
                       JsonAddonInfo.__optional_len(releases),
                       latest_release.tag_name if latest_release else None,
                       JsonAddonInfo.__published_at(latest_release),

@@ -5,7 +5,8 @@ from typing import Any, Optional
 
 from anki_addons_dataset.common.data_types import GithubIssueHistory, AddonInfos, AddonInfo, AnkiForumInfo, \
     PostsCount, AddonManifest, SpdxLicense, Topic, DependencyName, LanguageName, URL, GithubReadme, PageLink, \
-    PageLinkSection, AddonId, ForkRelation, ForkEvidence, AddonPackage, AddonPackages, AnkiPointVersion
+    PageLinkSection, AddonId, ForkRelation, ForkEvidence, AddonPackage, AddonPackages, AnkiPointVersion, AuthorInfo, \
+    AuthorId, GithubRepo, GithubUserName, GithubRepoName
 from anki_addons_dataset.exporter.json_addon_info import JsonAddonInfo
 
 
@@ -66,6 +67,7 @@ def test_addon_infos_to_json(addon_infos: AddonInfos):
                                     'readme': None,
                                     'ai_tooling_markers': ['claude-code', 'cursor'], 'repo_source': None,
                                     'fork_source': None,
+                                    'shared_with': [], 'repo_sharing': None,
                                     'release_count': 2,
                                     'latest_release_tag': 'v1.0',
                                     'latest_release_at': '2023-03-01T08:00:00',
@@ -168,6 +170,7 @@ def test_addon_infos_to_json_empty_forum(addon_info: AddonInfo):
                                     'readme': None,
                                     'ai_tooling_markers': ['claude-code', 'cursor'], 'repo_source': None,
                                     'fork_source': None,
+                                    'shared_with': [], 'repo_sharing': None,
                                     'release_count': 2,
                                     'latest_release_tag': 'v1.0',
                                     'latest_release_at': '2023-03-01T08:00:00',
@@ -265,6 +268,7 @@ def test_addon_infos_to_json_empty_posts_count(addon_info: AddonInfo):
                                     'readme': None,
                                     'ai_tooling_markers': ['claude-code', 'cursor'], 'repo_source': None,
                                     'fork_source': None,
+                                    'shared_with': [], 'repo_sharing': None,
                                     'release_count': 2,
                                     'latest_release_tag': 'v1.0',
                                     'latest_release_at': '2023-03-01T08:00:00',
@@ -419,6 +423,34 @@ def test_addon_infos_to_json_one_parent_with_several_forks(addon_info: AddonInfo
         (10, None, [20, 30]),
         (20, {"id": 10, "evidence": "github_fork"}, []),
         (30, {"id": 10, "evidence": "ai"}, [])]
+
+
+def test_addon_infos_to_json_shared_repo(addon_info: AddonInfo):
+    def addon(addon_id: int, user: str, repo: str, author_id: Optional[int]) -> AddonInfo:
+        assert addon_info.github is not None
+        author: Optional[AuthorInfo] = AuthorInfo(AuthorId(author_id), []) if author_id is not None else None
+        return replace(addon_info, header=replace(addon_info.header, id=AddonId(addon_id)), author=author,
+                       github=replace(addon_info.github,
+                                      github_repo=GithubRepo(GithubUserName(user), GithubRepoName(repo))))
+
+    act_json: list[dict[str, Any]] = to_dicts(AddonInfos([
+        addon(30, "user1", "misc", 1),
+        addon(10, "User1", "Misc", 1),
+        addon(20, "user1", "misc", 1),
+        addon(40, "user1", "other", 1),
+        addon(50, "user2", "fork", 2),
+        addon(60, "user2", "fork", 3),
+        addon(70, "user3", "old", None),
+        addon(80, "user3", "old", None)]))
+    assert [(item["id"], item["github"]["shared_with"], item["github"]["repo_sharing"]) for item in act_json] == [
+        (30, [10, 20], "same_author"),
+        (10, [20, 30], "same_author"),
+        (20, [10, 30], "same_author"),
+        (40, [], None),
+        (50, [60], "cross_author"),
+        (60, [50], "cross_author"),
+        (70, [80], None),
+        (80, [70], None)]
 
 
 def test_addon_infos_to_json_package_summarizes_the_newest_branch(addon_info: AddonInfo):
