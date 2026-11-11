@@ -19,6 +19,10 @@ excluded_github_repos:
   - https://github.com/yourusername/hinabi-aniki
   - https://github.com/yourusername/hanziviet-addon
   - https://github.com/yourusername/word_ai_validator
+  # AnKing paid addon placeholders: one repo without code, under each name of the renamed organization
+  - https://github.com/AnKingMed/ankiweb-placeholder
+  - https://github.com/AnKing-Memberships/ankiweb-placeholder
+  - https://github.com/AnKing-VIP/ankiweb-placeholder
   # Fonts and icons
   - https://github.com/be5invis/Iosevka
   - https://github.com/microsoft/cascadia-code
