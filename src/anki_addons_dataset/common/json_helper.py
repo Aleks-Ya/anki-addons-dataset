@@ -13,7 +13,7 @@ from anki_addons_dataset.common.data_types import AddonInfo, AddonInfos, AddonHe
     DependencyName, GithubReadme, AiInfo, AiSummary, AiModel, AiTag, AnkiPointVersion, AnkiVersionKind, \
     PageLink, PageLinkSection, GithubRepoSource, AnkiForumTopicSource, AuthorInfo, AuthorId, ForkEvidence, \
     ForkRelation, AddonPackage, AddonPackages, AddonReview, ReviewVote, GithubRelease, GithubReleaseAsset, \
-    GithubContributor, GithubIssueHistory, GithubManifestFile
+    GithubContributor, GithubIssueHistory, GithubManifestFile, DuplicateRelation, DuplicateEvidence
 
 
 class JsonHelper:
@@ -53,6 +53,9 @@ class JsonHelper:
             author=JsonHelper.__author_info_from_dict(data.get("author")),
             forked_from=JsonHelper.__fork_relation_from_dict(data["forked_from"]) if data.get("forked_from") else None,
             package=JsonHelper.__packages_from_dict(data.get("package")),
+            duplicate_of=DuplicateRelation(AddonId(data["duplicate_of"]["addon_id"]),
+                                           DuplicateEvidence(data["duplicate_of"]["evidence"]))
+            if data.get("duplicate_of") else None,
         )
 
     @staticmethod

@@ -12,7 +12,7 @@ from anki_addons_dataset.common.data_types import AddonInfo, AddonInfos, AddonHe
     GithubUserName, GithubRepoName, LanguageName, LanguageCode, ScriptVersion, AddonRating, UpdateDate, AddonTitle, \
     AddonManifest, SpdxLicense, Topic, DependencyName, GithubReadme, AiTag, AnkiVersionKind, \
     PageLink, PageLinkSection, ForkEvidence, ForkRelation, AddonReview, ReviewVote, AddonPackage, AddonPackages, \
-    AnkiPointVersion, GithubManifestFile
+    AnkiPointVersion, GithubManifestFile, DuplicateRelation, DuplicateEvidence
 from anki_addons_dataset.common.json_helper import JsonHelper
 
 
@@ -134,7 +134,8 @@ def test_addon_infos_dump_round_trip_with_fork_fields(addon_info: AddonInfo, scr
                                                                ["manifest.json", "a.py"]),
                                             GithubManifestFile("b/manifest.json", None, ["manifest.json"])]),
                          ai=replace(addon_info.ai, fork_of=AddonId(2)),
-                         forked_from=ForkRelation(AddonId(2), ForkEvidence.GITHUB_FORK))
+                         forked_from=ForkRelation(AddonId(2), ForkEvidence.GITHUB_FORK),
+                         duplicate_of=DuplicateRelation(AddonId(3), DuplicateEvidence.SAME_PACKAGE))
     addon_infos: AddonInfos = AddonInfos([addon_info])
     dump_file: Path = working_dir_path / "addon-infos.json"
 
@@ -196,6 +197,7 @@ def test_addon_infos_dump_reads_legacy_dump_without_new_github_fields(addon_info
     envelope["addon_infos"][0]["github"].pop("canonical_repo")
     envelope["addon_infos"][0]["github"].pop("manifest_path")
     envelope["addon_infos"][0]["github"].pop("manifest_files")
+    envelope["addon_infos"][0].pop("duplicate_of")
     dump_file.write_text(json.dumps(envelope))
 
     _, read_addon_infos = JsonHelper.read_addon_infos_dump(dump_file)
@@ -204,6 +206,7 @@ def test_addon_infos_dump_reads_legacy_dump_without_new_github_fields(addon_info
     assert read_addon_infos[0].github.canonical_repo is None
     assert read_addon_infos[0].github.manifest_path is None
     assert read_addon_infos[0].github.manifest_files == []
+    assert read_addon_infos[0].duplicate_of is None
 
 
 def test_addon_infos_dump_round_trip_preserves_description_html(addon_infos: AddonInfos,

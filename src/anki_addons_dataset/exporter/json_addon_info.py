@@ -148,6 +148,12 @@ class ForkedFrom:
 
 
 @dataclass
+class DuplicateOf:
+    id: int
+    evidence: str
+
+
+@dataclass
 class Branch:
     min_version: Optional[str]
     max_version: Optional[str]
@@ -204,6 +210,8 @@ class Details:
     author: Optional[Author]
     forked_from: Optional[ForkedFrom]
     forks: list[int]
+    duplicate_of: Optional[DuplicateOf]
+    duplicates: list[int]
     package: Optional[Package]
 
 
@@ -216,6 +224,7 @@ class JsonAddonInfo:
     def addon_infos_to_json(addon_infos: AddonInfos) -> list[Details]:
         json_list: list[Details] = []
         forks: dict[AddonId, list[int]] = JsonAddonInfo.__forks(addon_infos)
+        duplicates: dict[AddonId, list[int]] = JsonAddonInfo.__duplicates(addon_infos)
         repo_addons: dict[str, list[AddonInfo]] = JsonAddonInfo.__repo_addons(addon_infos)
         for addon in addon_infos:
             github: Optional[GitHub] = JsonAddonInfo.__github(addon, repo_addons)
@@ -234,8 +243,12 @@ class JsonAddonInfo:
             forked_from: Optional[ForkedFrom] = \
                 ForkedFrom(addon.forked_from.addon_id, str(addon.forked_from.evidence)) \
                 if addon.forked_from is not None else None
+            duplicate_of: Optional[DuplicateOf] = \
+                DuplicateOf(addon.duplicate_of.addon_id, str(addon.duplicate_of.evidence)) \
+                if addon.duplicate_of is not None else None
             json_obj: Details = Details(addon.header.id, anki_web, github, forum, JsonAddonInfo.__ai(addon),
                                         JsonAddonInfo.__author(addon), forked_from, forks.get(addon.header.id, []),
+                                        duplicate_of, duplicates.get(addon.header.id, []),
                                         JsonAddonInfo.__package(addon))
             json_list.append(json_obj)
         return json_list
@@ -247,6 +260,14 @@ class JsonAddonInfo:
             if addon.forked_from is not None:
                 forks.setdefault(addon.forked_from.addon_id, []).append(addon.header.id)
         return forks
+
+    @staticmethod
+    def __duplicates(addon_infos: AddonInfos) -> dict[AddonId, list[int]]:
+        duplicates: dict[AddonId, list[int]] = {}
+        for addon in sorted(addon_infos, key=lambda addon_info: addon_info.header.id):
+            if addon.duplicate_of is not None:
+                duplicates.setdefault(addon.duplicate_of.addon_id, []).append(addon.header.id)
+        return duplicates
 
     @staticmethod
     def __repo_addons(addon_infos: AddonInfos) -> dict[str, list[AddonInfo]]:

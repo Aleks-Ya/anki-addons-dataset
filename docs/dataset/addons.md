@@ -64,6 +64,13 @@ of the other addon's repo), `ai` (a large language model found it to be a modifi
 `override`. `forks` lists the addons forked from this one. Detection is incomplete and `ai` evidence may be
 inaccurate. `github.fork_count` is unrelated: the GitHub fork count of the repo.
 
+## Duplicates
+`duplicate_of` is the addon this one is a copy of, with its `evidence`: `same_package` (the package of the branch
+with the highest `min_point_version` is byte-identical, whoever uploaded it) or `override`. Of a group of identical
+packages, the best rated addon is the original, then the first uploaded, then the lowest id. `duplicates` lists the
+copies of this addon. Different addons that ship the same placeholder package (paid addons, reserved names) are
+excluded by hand. Snapshots without packages have no duplicates.
+
 ## Package
 The `package` field summarizes the addon branch with the highest `min_point_version` in the
 [`packages` table](tables.md#packages) and adds `primary_language` (the language with the most bytes, ignoring

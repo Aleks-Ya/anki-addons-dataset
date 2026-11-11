@@ -19,11 +19,17 @@ class ForkOverride:
     parent: Optional[AddonId]
 
 
+@dataclass(frozen=True)
+class DuplicateOverride:
+    original: Optional[AddonId]
+
+
 class Overrider:
     __github_url_key: str = "GitHubUrl"
     __anki_forum_url_key: str = "AnkiForumUrl"
     __same_author_key: str = "SameAuthorAs"
     __fork_of_key: str = "ForkOf"
+    __duplicate_of_key: str = "DuplicateOf"
 
     def __init__(self, snapshot_dir: SnapshotDir):
         override_file: Path = Path(__file__).parent / "overrides.yaml"
@@ -63,6 +69,14 @@ class Overrider:
             if self.__fork_of_key in addon_data:
                 fork_of: Any = addon_data[self.__fork_of_key]
                 return ForkOverride(AddonId(int(fork_of)) if fork_of is not None else None)
+        return None
+
+    def override_duplicate_of(self, addon_id: AddonId) -> Optional[DuplicateOverride]:
+        if addon_id in self.addons_data:
+            addon_data: dict[str, Any] = self.addons_data[addon_id]
+            if self.__duplicate_of_key in addon_data:
+                duplicate_of: Any = addon_data[self.__duplicate_of_key]
+                return DuplicateOverride(AddonId(int(duplicate_of)) if duplicate_of is not None else None)
         return None
 
     def is_excluded_github_repo(self, url: URL) -> bool:

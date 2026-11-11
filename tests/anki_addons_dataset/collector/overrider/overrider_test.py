@@ -1,6 +1,6 @@
 from typing import Optional
 
-from anki_addons_dataset.collector.overrider.overrider import Overrider, ForkOverride
+from anki_addons_dataset.collector.overrider.overrider import Overrider, ForkOverride, DuplicateOverride
 from anki_addons_dataset.common.data_types import URL, GithubLink, AddonId, GithubUser, GithubUserName, GithubRepo, \
     GithubRepoName
 from anki_addons_dataset.common.working_dir import SnapshotDir
@@ -33,6 +33,14 @@ def test_override_fork_of(overrider: Overrider, note_size_addon_id: AddonId):
     overrider.addons_data[AddonId(3)] = {"ForkOf": None}
     assert overrider.override_fork_of(AddonId(1)) == ForkOverride(AddonId(2))
     assert overrider.override_fork_of(AddonId(3)) == ForkOverride(None)
+
+
+def test_override_duplicate_of(overrider: Overrider, note_size_addon_id: AddonId):
+    assert overrider.override_duplicate_of(note_size_addon_id) is None
+    overrider.addons_data[AddonId(1)] = {"DuplicateOf": 2}
+    overrider.addons_data[AddonId(3)] = {"DuplicateOf": None}
+    assert overrider.override_duplicate_of(AddonId(1)) == DuplicateOverride(AddonId(2))
+    assert overrider.override_duplicate_of(AddonId(3)) == DuplicateOverride(None)
 
 
 def test_is_excluded_github_repo(overrider: Overrider):

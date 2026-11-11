@@ -60,3 +60,8 @@ def test_snapshot_without_packages_is_empty(working_dir: WorkingDir):
 def test_file_name_starts_with_prefix():
     assert __KEY.file_name("0123456789ab") == __FILE_NAME
     assert __FILE_NAME.startswith(__KEY.file_prefix())
+
+
+def test_content_hash():
+    assert PackageKey.content_hash(__FILE_NAME) == "0123456789ab"
+    assert PackageKey.content_hash("note.ankiaddon") is None

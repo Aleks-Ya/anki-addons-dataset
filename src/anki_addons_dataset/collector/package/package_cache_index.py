@@ -10,7 +10,8 @@ from anki_addons_dataset.common.working_dir import SnapshotDir
 
 @dataclass(frozen=True)
 class PackageKey:
-    __file_name_pattern: ClassVar[re.Pattern[str]] = re.compile(r"^(\d+)-(\d{4}-\d{2}-\d{2})-[0-9a-f]{12}\.ankiaddon$")
+    __file_name_pattern: ClassVar[re.Pattern[str]] = re.compile(
+        r"^(\d+)-(\d{4}-\d{2}-\d{2})-([0-9a-f]{12})\.ankiaddon$")
 
     addon_id: AddonId
     min_point_version: AnkiPointVersion
@@ -23,6 +24,11 @@ class PackageKey:
             return None
         return PackageKey(AddonId(int(file.parent.name)), AnkiPointVersion(int(match.group(1))),
                           date.fromisoformat(match.group(2)))
+
+    @staticmethod
+    def content_hash(file_name: str) -> Optional[str]:
+        match: Optional[re.Match[str]] = PackageKey.__file_name_pattern.match(file_name)
+        return match.group(3) if match else None
 
     def file_prefix(self) -> str:
         return f"{self.min_point_version}-{self.updated.isoformat()}-"

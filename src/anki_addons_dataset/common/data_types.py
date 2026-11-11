@@ -72,6 +72,11 @@ class ForkEvidence(StrEnum):
     OVERRIDE = "override"
 
 
+class DuplicateEvidence(StrEnum):
+    SAME_PACKAGE = "same_package"
+    OVERRIDE = "override"
+
+
 class ReviewVote(StrEnum):
     LIKE = "like"
     DISLIKE = "dislike"
@@ -364,6 +369,12 @@ class ForkRelation:
 
 
 @dataclass(frozen=True)
+class DuplicateRelation:
+    addon_id: AddonId
+    evidence: DuplicateEvidence
+
+
+@dataclass(frozen=True)
 class AddonInfo:
     header: AddonHeader
     page: AddonPage
@@ -373,6 +384,7 @@ class AddonInfo:
     author: Optional[AuthorInfo] = None
     forked_from: Optional[ForkRelation] = None
     package: Optional[AddonPackages] = None
+    duplicate_of: Optional[DuplicateRelation] = None
 
 
 AddonInfos = NewType("AddonInfos", list[AddonInfo])

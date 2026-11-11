@@ -7,6 +7,59 @@ addons:
     GitHubUrl: https://github.com/FooSoft/anki-connect/
   175794613: #Anki Leaderboard
     GitHubUrl: https://github.com/shigeyukey/Anki_Leaderboard
+  # Placeholder stubs: different addons that ship the same stub package
+  325110901: #(Not Free) New Cards Farm
+    DuplicateOf: null
+  512541621: #(Not Free) Virtual AnkiPad
+    DuplicateOf: null
+  619841418: #(Not Free) Live Wallpaper for Anki
+    DuplicateOf: null
+  650922427: #(Not Free) DinoTimer
+    DuplicateOf: null
+  696802757: #(Not Free) Top toolbar icons
+    DuplicateOf: null
+  1184707668: #(Not Free) New Card Heatmap
+    DuplicateOf: null
+  1453460899: #(Not Free) Answer text feedback
+    DuplicateOf: null
+  1594977234: #(Not Free) Chunk ProgressBar
+    DuplicateOf: null
+  1629659310: #(Not Free) PomoTimer
+    DuplicateOf: null
+  1749233110: #(Not Free) Yearly Heatmap Generator
+    DuplicateOf: null
+  390813456: #Placeholder- SCwCD
+    DuplicateOf: null
+  1143247763: #Placeholder - MPUD
+    DuplicateOf: null
+  607963104: #Placeholder - UWqidAS
+    DuplicateOf: null
+  907028815: #Placeholder- KoST
+    DuplicateOf: null
+  635082046: #Placeholder - NCC
+    DuplicateOf: null
+  2014569756: #Placeholder - CNCTD
+    DuplicateOf: null
+  429267424: #-placeholder- change_font_size_and_family
+    DuplicateOf: null
+  2145498282: #-placeholder- creating a filtered deck
+    DuplicateOf: null
+  672939445: #- placeholder - date_above_the_rating_buttons
+    DuplicateOf: null
+  847766233: #-placeholder- Anki Comfort ToolKit
+    DuplicateOf: null
+  736811519: #ignore this - placeholder for future addon
+    DuplicateOf: null
+  1975884471: #ignore this - placeholder for future addon
+    DuplicateOf: null
+  2016236420: #ignore this - placeholder for future addon
+    DuplicateOf: null
+  2139449304: #ignore this - placeholder for future addon
+    DuplicateOf: null
+  1885548963: #Zzz (no code & on hiatus) Convert AudioBooks
+    DuplicateOf: null
+  1937423705: #Zzz (no code & on hiatus) Create subs2srs
+    DuplicateOf: null
 
 excluded_github_repos:
   # Anki itself

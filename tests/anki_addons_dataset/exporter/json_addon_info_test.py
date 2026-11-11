@@ -6,7 +6,7 @@ from typing import Any, Optional
 from anki_addons_dataset.common.data_types import GithubIssueHistory, AddonInfos, AddonInfo, AnkiForumInfo, \
     PostsCount, AddonManifest, SpdxLicense, Topic, DependencyName, LanguageName, URL, GithubReadme, PageLink, \
     PageLinkSection, AddonId, ForkRelation, ForkEvidence, AddonPackage, AddonPackages, AnkiPointVersion, AuthorInfo, \
-    AuthorId, GithubRepo, GithubUserName, GithubRepoName
+    AuthorId, GithubRepo, GithubUserName, GithubRepoName, DuplicateRelation, DuplicateEvidence
 from anki_addons_dataset.exporter.json_addon_info import JsonAddonInfo
 
 
@@ -109,6 +109,8 @@ def test_addon_infos_to_json(addon_infos: AddonInfos):
                          'author': {'id': 1188705668, 'addon_count': 3},
                          'forked_from': None,
                          'forks': [],
+                         'duplicate_of': None,
+                         'duplicates': [],
                          'package': None
                          }]
 
@@ -208,6 +210,8 @@ def test_addon_infos_to_json_empty_forum(addon_info: AddonInfo):
                          'author': {'id': 1188705668, 'addon_count': 3},
                          'forked_from': None,
                          'forks': [],
+                         'duplicate_of': None,
+                         'duplicates': [],
                          'package': None}]
 
 
@@ -310,6 +314,8 @@ def test_addon_infos_to_json_empty_posts_count(addon_info: AddonInfo):
                          'author': {'id': 1188705668, 'addon_count': 3},
                          'forked_from': None,
                          'forks': [],
+                         'duplicate_of': None,
+                         'duplicates': [],
                          'package': None}]
 
 
@@ -423,6 +429,20 @@ def test_addon_infos_to_json_one_parent_with_several_forks(addon_info: AddonInfo
         (10, None, [20, 30]),
         (20, {"id": 10, "evidence": "github_fork"}, []),
         (30, {"id": 10, "evidence": "ai"}, [])]
+
+
+def test_addon_infos_to_json_duplicates(addon_info: AddonInfo):
+    def addon(addon_id: int, duplicate_of: Optional[DuplicateRelation]) -> AddonInfo:
+        return replace(addon_info, header=replace(addon_info.header, id=AddonId(addon_id)), duplicate_of=duplicate_of)
+
+    act_json: list[dict[str, Any]] = to_dicts(AddonInfos([
+        addon(10, None),
+        addon(20, DuplicateRelation(AddonId(10), DuplicateEvidence.SAME_PACKAGE)),
+        addon(30, DuplicateRelation(AddonId(10), DuplicateEvidence.OVERRIDE))]))
+    assert [(item["id"], item["duplicate_of"], item["duplicates"]) for item in act_json] == [
+        (10, None, [20, 30]),
+        (20, {"id": 10, "evidence": "same_package"}, []),
+        (30, {"id": 10, "evidence": "override"}, [])]
 
 
 def test_addon_infos_to_json_shared_repo(addon_info: AddonInfo):
