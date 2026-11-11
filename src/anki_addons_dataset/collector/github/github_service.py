@@ -1,3 +1,4 @@
+import hashlib
 import time
 from datetime import datetime
 from pathlib import Path
@@ -28,7 +29,7 @@ from anki_addons_dataset.collector.github.handler.tag_names_repo_handler import 
 from anki_addons_dataset.collector.github.handler.tests_repo_handler import TestsRepoHandler
 from anki_addons_dataset.collector.github.handler.tree_entries_repo_handler import TreeEntriesRepoHandler
 from anki_addons_dataset.common.data_types import AddonManifest, DependencyName, GithubReadme, GithubRepo, \
-    GithubRepoId, LanguageName, GithubRelease, GithubContributor, GithubIssueHistory
+    GithubRepoId, LanguageName, GithubRelease, GithubContributor, GithubIssueHistory, GithubManifestFile
 from anki_addons_dataset.common.working_dir import SnapshotDir
 
 log: Logger = logging.getLogger(__name__)
@@ -36,6 +37,7 @@ log: Logger = logging.getLogger(__name__)
 
 class GithubService:
     __computing_retry_delays: tuple[int, ...] = (2, 5, 10)
+    __max_manifest_files: int = 50
 
     def __init__(self, snapshot_dir: SnapshotDir, github_rest_client: GithubRestClient,
                  prev_snapshot_dir: Optional[SnapshotDir] = None, offline: bool = False):
@@ -115,11 +117,16 @@ class GithubService:
             handler.write_stage(issue_history)
             return issue_history
 
-    def get_manifest(self, repo: GithubRepo) -> Optional[AddonManifest]:
-        path: Optional[str] = self.__find_file(repo, "manifest.json")
-        if path is None:
-            return None
-        return ManifestParser.parse(self.__get_contents(repo, path, "manifest"))
+    def get_manifest_files(self, repo: GithubRepo) -> list[GithubManifestFile]:
+        file_paths: list[str] = self.__get_file_paths(repo)
+        paths: list[str] = self.__find_files(file_paths, "manifest.json")[:self.__max_manifest_files]
+        manifest_files: list[GithubManifestFile] = []
+        for index, path in enumerate(paths):
+            raw_name: str = "manifest" if index == 0 else \
+                f"manifest-{hashlib.sha1(path.encode()).hexdigest()[:12]}"
+            manifest: Optional[AddonManifest] = ManifestParser.parse(self.__get_contents(repo, path, raw_name))
+            manifest_files.append(GithubManifestFile(path, manifest, self.__dir_files(file_paths, path, paths)))
+        return manifest_files
 
     def get_dependencies(self, repo: GithubRepo) -> list[DependencyName]:
         dependencies: list[DependencyName] = []
@@ -142,12 +149,24 @@ class GithubService:
         return self.__get_value(handler) or []
 
     def __find_file(self, repo: GithubRepo, basename: str) -> Optional[str]:
-        # Locates the shallowest file with the given basename in the cached repo tree (root-most wins).
-        paths: list[str] = self.__get_file_paths(repo)
-        candidates: list[str] = [path for path in paths if path.rsplit("/", 1)[-1] == basename]
-        if not candidates:
-            return None
-        return min(candidates, key=lambda path: (path.count("/"), path))
+        paths: list[str] = self.__find_files(self.__get_file_paths(repo), basename)
+        return paths[0] if paths else None
+
+    @staticmethod
+    def __find_files(file_paths: list[str], basename: str) -> list[str]:
+        return sorted((path for path in file_paths if path.rsplit("/", 1)[-1] == basename),
+                      key=lambda path: (path.count("/"), path))
+
+    @staticmethod
+    def __dir_files(file_paths: list[str], manifest_path: str, manifest_paths: list[str]) -> list[str]:
+        def directory(path: str) -> str:
+            return path.rsplit("/", 1)[0] + "/" if "/" in path else ""
+
+        prefix: str = directory(manifest_path)
+        deeper: list[str] = [directory(path) for path in manifest_paths
+                             if directory(path) != prefix and directory(path).startswith(prefix)]
+        return [path[len(prefix):] for path in file_paths
+                if path.startswith(prefix) and not any(path.startswith(other) for other in deeper)]
 
     def __get_contents(self, repo: GithubRepo, path: str, raw_name: str) -> Optional[str]:
         handler: RepoHandler = ContentsRepoHandler(

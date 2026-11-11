@@ -13,7 +13,7 @@ from anki_addons_dataset.common.data_types import AddonInfo, AddonInfos, AddonHe
     DependencyName, GithubReadme, AiInfo, AiSummary, AiModel, AiTag, AnkiPointVersion, AnkiVersionKind, \
     PageLink, PageLinkSection, GithubRepoSource, AnkiForumTopicSource, AuthorInfo, AuthorId, ForkEvidence, \
     ForkRelation, AddonPackage, AddonPackages, AddonReview, ReviewVote, GithubRelease, GithubReleaseAsset, \
-    GithubContributor, GithubIssueHistory
+    GithubContributor, GithubIssueHistory, GithubManifestFile
 
 
 class JsonHelper:
@@ -205,6 +205,11 @@ class JsonHelper:
             primary_language=LanguageName(primary_language) if primary_language is not None else None,
             language_bytes={LanguageName(name): count for name, count in data.get("language_bytes", {}).items()},
             manifest=JsonHelper.__manifest_from_dict(data.get("manifest")),
+            manifest_path=data.get("manifest_path"),
+            manifest_files=[GithubManifestFile(manifest_file["path"],
+                                               JsonHelper.__manifest_from_dict(manifest_file["manifest"]),
+                                               list(manifest_file["files"]))
+                            for manifest_file in data.get("manifest_files", [])],
             dependencies=[DependencyName(dependency) for dependency in data.get("dependencies", [])],
             readme=GithubReadme(readme) if readme is not None else None,
             ai_tooling_markers=list(data.get("ai_tooling_markers", [])),

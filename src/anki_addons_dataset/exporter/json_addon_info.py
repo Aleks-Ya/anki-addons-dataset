@@ -87,6 +87,7 @@ class GitHub:
     primary_language: Optional[str]
     language_bytes: list[LanguageBytes]
     manifest: Optional[Manifest]
+    manifest_path: Optional[str]
     dependencies: list[str]
     readme: Optional[str]
     ai_tooling_markers: list[str]
@@ -304,7 +305,7 @@ class JsonAddonInfo:
                       github.action_count,
                       github.tests_count, github.license, github.fork_count, github.open_issues, github.size_kb,
                       list(github.topics), github.repo_description, github.homepage, github.archived, pushed_at_str,
-                      created_at_str, github.primary_language, language_bytes, manifest,
+                      created_at_str, github.primary_language, language_bytes, manifest, github.manifest_path,
                       list(github.dependencies), github.readme, list(github.ai_tooling_markers),
                       str(github.repo_source) if github.repo_source else None,
                       github.fork_source.get_id() if github.fork_source else None,

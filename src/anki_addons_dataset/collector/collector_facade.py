@@ -33,6 +33,7 @@ from anki_addons_dataset.collector.ankiweb.page_downloader import PageDownloader
 from anki_addons_dataset.collector.author_resolver import AuthorResolver
 from anki_addons_dataset.collector.dataset_metadata import DatasetMetadata
 from anki_addons_dataset.collector.fork_resolver import ForkResolver
+from anki_addons_dataset.collector.github.github_manifest_selector import GithubManifestSelector
 from anki_addons_dataset.collector.github.github_enricher import GithubEnricher
 from anki_addons_dataset.collector.github.github_repo_selector import GithubRepoSelector
 from anki_addons_dataset.collector.github.github_rest_client import GithubRestClient
@@ -130,6 +131,7 @@ class CollectorFacade:
         addon_infos = self.__ai_enrich(addon_infos, ai_provider, fork_verifier)
         addon_infos = ForkResolver(Overrider(snapshot_dir)).resolve(addon_infos)
         addon_infos = PackageEnricher(snapshot_dir, package_analyzer).enrich(addon_infos)
+        addon_infos = GithubManifestSelector.select(addon_infos)
         cache_miss_count: int = self.__cache_stats(ai_provider, fork_verifier).miss_count
         if cache_miss_count:
             log.warning(f"{cache_miss_count} AI answers (repo choices, forum topic checks, summaries, tags or "

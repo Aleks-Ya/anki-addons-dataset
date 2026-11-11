@@ -15,7 +15,7 @@ from anki_addons_dataset.collector.github.github_service import GithubService
 from anki_addons_dataset.collector.github.handler.repo_info_repo_handler import GithubRepoMeta
 from anki_addons_dataset.common.data_types import AddonManifest, DependencyName, GithubRepo, LanguageName, \
     SnapshotDate, SpdxLicense, Topic, GithubRepoName, GithubUserName, GithubRelease, GithubReleaseAsset, \
-    GithubContributor, GithubIssueHistory
+    GithubContributor, GithubIssueHistory, GithubManifestFile
 from anki_addons_dataset.common.working_dir import SnapshotDir, WorkingDir
 
 
@@ -386,7 +386,8 @@ def test_get_readme_404(github_service: GithubService, github_rest_client: Githu
     assert github_service.get_readme(github_repo) is None
 
 
-def test_get_manifest(github_service: GithubService, github_rest_client: GithubRestClient, github_repo: GithubRepo):
+def test_get_manifest_files(github_service: GithubService, github_rest_client: GithubRestClient,
+                            github_repo: GithubRepo):
     manifest_json: str = """{"package":"note_size","name":"Note Size","conflicts":["123"],
         "min_point_version":45,"homepage":"https://example.com","mod":1678900000}"""
     encoded: str = base64.b64encode(manifest_json.encode()).decode("ascii")
@@ -396,15 +397,73 @@ def test_get_manifest(github_service: GithubService, github_rest_client: GithubR
         "https://api.github.com/repos/John/app/contents/src/note_size/manifest.json":
             f'{{"encoding":"base64","content":"{encoded}"}}',
     })
-    assert github_service.get_manifest(github_repo) == AddonManifest(
-        package="note_size", name="Note Size", conflicts=["123"], min_point_version=45, max_point_version=None,
-        homepage="https://example.com", mod=1678900000)
+    assert github_service.get_manifest_files(github_repo) == [GithubManifestFile(
+        "src/note_size/manifest.json",
+        AddonManifest(package="note_size", name="Note Size", conflicts=["123"], min_point_version=45,
+                      max_point_version=None, homepage="https://example.com", mod=1678900000),
+        ["manifest.json"])]
 
 
-def test_get_manifest_absent(github_service: GithubService, github_rest_client: GithubRestClient,
-                             github_repo: GithubRepo):
+def test_get_manifest_files_absent(github_service: GithubService, github_rest_client: GithubRestClient,
+                                   github_repo: GithubRepo):
     github_rest_client.get_from_url = __mock_content("""{"tree":[{"path":"README.md"}],"truncated":false}""")
-    assert github_service.get_manifest(github_repo) is None
+    assert github_service.get_manifest_files(github_repo) == []
+
+
+def test_get_manifest_files_of_a_monorepo(github_service: GithubService, github_rest_client: GithubRestClient,
+                                          github_repo: GithubRepo, snapshot_dir: SnapshotDir):
+    def contents(package: str) -> str:
+        encoded: str = base64.b64encode(f'{{"package":"{package}"}}'.encode()).decode("ascii")
+        return f'{{"encoding":"base64","content":"{encoded}"}}'
+
+    tree: str = """{"tree":[{"path":"README.md"},{"path":"b/manifest.json"},{"path":"b/main.py"},
+        {"path":"a/manifest.json"},{"path":"a/main.py"},{"path":"a/inner/manifest.json"},{"path":"a/inner/x.py"},
+        {"path":"manifest.json"}],"truncated":false}"""
+    github_rest_client.get_from_url = __mock_by_url({
+        "https://api.github.com/repos/John/app/git/trees/HEAD?recursive=1": tree,
+        "https://api.github.com/repos/John/app/contents/manifest.json": contents("root"),
+        "https://api.github.com/repos/John/app/contents/a/manifest.json": contents("a"),
+        "https://api.github.com/repos/John/app/contents/b/manifest.json": contents("b"),
+        "https://api.github.com/repos/John/app/contents/a/inner/manifest.json": contents("inner"),
+    })
+
+    assert github_service.get_manifest_files(github_repo) == [
+        GithubManifestFile("manifest.json", AddonManifest(package="root"), ["README.md", "manifest.json"]),
+        GithubManifestFile("a/manifest.json", AddonManifest(package="a"), ["manifest.json", "main.py"]),
+        GithubManifestFile("b/manifest.json", AddonManifest(package="b"), ["manifest.json", "main.py"]),
+        GithubManifestFile("a/inner/manifest.json", AddonManifest(package="inner"), ["manifest.json", "x.py"])]
+    repo_raw_dir: Path = snapshot_dir.get_raw_dir() / "2-github" / "John" / "app"
+    assert (repo_raw_dir / "manifest.json").exists()
+    assert len(list(repo_raw_dir.glob("manifest-*.json"))) == 3
+
+
+def test_get_manifest_files_is_capped(github_service: GithubService, github_rest_client: GithubRestClient,
+                                      github_repo: GithubRepo):
+    paths: str = ",".join(f'{{"path":"addon{index:02}/manifest.json"}}' for index in range(60))
+    github_rest_client.get_from_url = __mock_by_url({
+        "https://api.github.com/repos/John/app/git/trees/HEAD?recursive=1": f'{{"tree":[{paths}],"truncated":false}}'})
+
+    manifest_files: list[GithubManifestFile] = github_service.get_manifest_files(github_repo)
+
+    assert [manifest_file.path for manifest_file in manifest_files] == \
+           [f"addon{index:02}/manifest.json" for index in range(50)]
+
+
+def test_get_manifest_files_offline_without_downloaded_contents(snapshot_dir: SnapshotDir,
+                                                                github_rest_client: GithubRestClient,
+                                                                github_repo: GithubRepo):
+    github_rest_client.get_from_url = __mock_by_url({
+        "https://api.github.com/repos/John/app/git/trees/HEAD?recursive=1":
+            """{"tree":[{"path":"a/manifest.json"},{"path":"b/manifest.json"}],"truncated":false}"""})
+    online_service: GithubService = GithubService(snapshot_dir, github_rest_client)
+    online_service.get_tests_count(github_repo)
+    github_rest_client.get_from_url = Mock()
+    offline_service: GithubService = GithubService(snapshot_dir, github_rest_client, offline=True)
+
+    assert offline_service.get_manifest_files(github_repo) == [
+        GithubManifestFile("a/manifest.json", None, ["manifest.json"]),
+        GithubManifestFile("b/manifest.json", None, ["manifest.json"])]
+    github_rest_client.get_from_url.assert_not_called()
 
 
 def test_get_dependencies(github_service: GithubService, github_rest_client: GithubRestClient, github_repo: GithubRepo):
@@ -431,7 +490,7 @@ def test_offline_returns_empties_without_downloading(snapshot_dir: SnapshotDir,
     assert offline_service.get_tests_count(github_repo) is None
     assert offline_service.get_repo_info(github_repo) == GithubRepoMeta()
     assert offline_service.get_readme(github_repo) is None
-    assert offline_service.get_manifest(github_repo) is None
+    assert offline_service.get_manifest_files(github_repo) == []
     assert offline_service.get_dependencies(github_repo) == []
     assert offline_service.get_releases(github_repo) is None
     assert offline_service.get_contributors(github_repo) is None

@@ -38,6 +38,13 @@ the repo is not shared), and `github.repo_sharing` is `same_author` or `cross_au
 renamed or transferred repo under different names share it. All repo-level fields (stars, issues, commits, releases,
 ...) repeat across `shared_with`: count each repo once before summing them.
 
+## Manifest
+`github.manifest` is the addon's `manifest.json` in its repo, at `github.manifest_path`. In a repo with several
+`manifest.json` files it is the one whose `homepage` names the addon, else the one matching the `package` or `name` of
+the package's own manifest, else the one in the directory whose file names match the package best. It is `null` when
+none of these decides: never another addon's manifest. Up to the 2026-11-01 snapshot only the shallowest `manifest.json`
+was downloaded, so a deeper one has a `manifest_path` but a `null` `manifest`.
+
 ## GitHub activity
 - `github.release_downloads` sums the asset downloads of the newest 100 releases: real install numbers, but only
   for addons distributed through GitHub releases.

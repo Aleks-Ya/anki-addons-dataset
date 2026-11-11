@@ -129,6 +129,13 @@ class AddonManifest:
 
 
 @dataclass(frozen=True)
+class GithubManifestFile:
+    path: str
+    manifest: Optional[AddonManifest]
+    files: list[str] = field(default_factory=list)
+
+
+@dataclass(frozen=True)
 class GithubReleaseAsset:
     name: str
     size: int
@@ -186,6 +193,8 @@ class GithubInfo:
     primary_language: Optional[LanguageName] = None
     language_bytes: dict[LanguageName, int] = field(default_factory=dict)
     manifest: Optional[AddonManifest] = None
+    manifest_path: Optional[str] = None
+    manifest_files: list[GithubManifestFile] = field(default_factory=list)
     dependencies: list[DependencyName] = field(default_factory=list)
     readme: Optional[GithubReadme] = None
     ai_tooling_markers: list[str] = field(default_factory=list)

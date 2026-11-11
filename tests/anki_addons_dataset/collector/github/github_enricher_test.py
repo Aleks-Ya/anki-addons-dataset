@@ -14,7 +14,8 @@ from anki_addons_dataset.common.data_types import AddonInfo, AddonHeader, AddonI
     LanguageName, GithubInfo, AddonInfos, AnkiForumInfo, TopicSlug, TopicId, LastPostedAt, PostsCount, AnkiVersion, \
     HtmlStr, URL, AddonRating, UpdateDate, AddonTitle, AddonManifest, SpdxLicense, Topic, DependencyName, \
     GithubReadme, GithubUserName, GithubRepoName, GithubLink, GithubRepoSource, GithubRelease, GithubReleaseAsset, \
-    GithubContributor, GithubIssueHistory, PageLink, PageLinkSection, AnkiForumTopicSource
+    GithubContributor, GithubIssueHistory, PageLink, PageLinkSection, AnkiForumTopicSource, \
+    GithubManifestFile
 from anki_addons_dataset.common.working_dir import SnapshotDir
 
 log: Logger = logging.getLogger(__name__)
@@ -67,7 +68,8 @@ def test_enrich(github_enricher: GithubEnricher, github_service: GithubService, 
         license=SpdxLicense("MIT"), fork_count=4, open_issues=2, size_kb=128, topics=[Topic("anki")],
         repo_description="A NoteSize addon", homepage=URL("https://example.com"), archived=False,
         pushed_at=pushed_at, created_at=created_at))
-    github_service.get_manifest = Mock(return_value=manifest)
+    github_service.get_manifest_files = Mock(
+        return_value=[GithubManifestFile("manifest.json", manifest, ["manifest.json"])])
     github_service.get_dependencies = Mock(return_value=[DependencyName("requests"), DependencyName("beautifulsoup4")])
     github_service.get_readme = Mock(return_value=GithubReadme("# NoteSize\nExample readme"))
     github_service.get_ai_tooling_markers = Mock(return_value=["claude-code"])
@@ -120,6 +122,7 @@ def test_enrich(github_enricher: GithubEnricher, github_service: GithubService, 
             primary_language=LanguageName("Python"),
             language_bytes={LanguageName("Python"): 5, LanguageName("Rust"): 2},
             manifest=manifest,
+            manifest_path="manifest.json",
             dependencies=[DependencyName("requests"), DependencyName("beautifulsoup4")],
             readme=GithubReadme("# NoteSize\nExample readme"),
             ai_tooling_markers=["claude-code"],
@@ -158,7 +161,7 @@ def test_enrich_fetches_every_candidate_and_keeps_the_selected(snapshot_dir: Sna
     github_service.get_action_count = Mock(return_value=None)
     github_service.get_tests_count = Mock(return_value=None)
     github_service.get_repo_info = Mock(return_value=GithubRepoMeta())
-    github_service.get_manifest = Mock(return_value=None)
+    github_service.get_manifest_files = Mock(return_value=[])
     github_service.get_dependencies = Mock(return_value=[])
     github_service.get_readme = Mock(side_effect=lambda repo: GithubReadme(f"README of {repo.get_id()}"))
     github_service.get_ai_tooling_markers = Mock(return_value=[])
@@ -202,7 +205,7 @@ def test_enrich_drops_candidates_without_data(snapshot_dir: SnapshotDir, github_
     github_service.get_action_count = Mock(return_value=None)
     github_service.get_tests_count = Mock(return_value=None)
     github_service.get_repo_info = Mock(return_value=GithubRepoMeta())
-    github_service.get_manifest = Mock(return_value=None)
+    github_service.get_manifest_files = Mock(return_value=[])
     github_service.get_dependencies = Mock(return_value=[])
     github_service.get_readme = Mock(return_value=None)
     github_service.get_ai_tooling_markers = Mock(return_value=[])
@@ -221,6 +224,45 @@ def test_enrich_drops_candidates_without_data(snapshot_dir: SnapshotDir, github_
 
     assert act_github.github_repo == own_repo
     assert act_github.repo_source == GithubRepoSource.MOST_LINKED
+
+
+def test_enrich_keeps_the_manifest_files_of_a_monorepo(snapshot_dir: SnapshotDir, github_service: GithubService):
+    own_repo: GithubRepo = GithubRepo(GithubUserName("author"), GithubRepoName("monorepo"))
+    addon_info: AddonInfo = AddonInfo(
+        AddonHeader(AddonId(1), AddonTitle("My Addon"), URL("https://ankiweb.net/shared/info/1"), AddonRating(0),
+                    UpdateDate(date(2026, 1, 1)), AnkiVersion("25.09")),
+        AddonPage(HtmlStr(""), 0, 0, [], [],
+                  github_links=UrlParser.find_github_links([URL("https://github.com/author/monorepo")])), None, None)
+    manifest_files: list[GithubManifestFile] = [
+        GithubManifestFile("a/manifest.json", AddonManifest(package="a"), ["manifest.json"]),
+        GithubManifestFile("b/manifest.json", AddonManifest(package="b"), ["manifest.json"])]
+    github_service.get_languages = Mock(return_value={})
+    github_service.get_stars_count = Mock(return_value=0)
+    github_service.get_last_commit = Mock(return_value=None)
+    github_service.get_action_count = Mock(return_value=None)
+    github_service.get_tests_count = Mock(return_value=None)
+    github_service.get_repo_info = Mock(return_value=GithubRepoMeta())
+    github_service.get_manifest_files = Mock(return_value=manifest_files)
+    github_service.get_dependencies = Mock(return_value=[])
+    github_service.get_readme = Mock(return_value=None)
+    github_service.get_ai_tooling_markers = Mock(return_value=[])
+    github_service.get_releases = Mock(return_value=[])
+    github_service.get_contributors = Mock(return_value=[])
+    github_service.get_weekly_commits = Mock(return_value=None)
+    github_service.get_issue_history = Mock(return_value=None)
+    github_service.has_repo_data = Mock(return_value=True)
+    github_enricher: GithubEnricher = GithubEnricher(
+        snapshot_dir, github_service, GithubRepoSelector(Overrider(snapshot_dir), None), offline=True)
+
+    github_enricher.start()
+    github_enricher.download_in_background(addon_info)
+    github_enricher.wait_download_finish()
+    act_github: GithubInfo = github_enricher.enrich(AddonInfos([addon_info]))[0].github
+
+    assert act_github.github_repo == own_repo
+    assert act_github.manifest == AddonManifest(package="a")
+    assert act_github.manifest_path == "a/manifest.json"
+    assert act_github.manifest_files == manifest_files
 
 
 def test_enrich_without_a_usable_repo_leaves_no_github(snapshot_dir: SnapshotDir, github_service: GithubService):

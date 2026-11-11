@@ -12,7 +12,7 @@ from anki_addons_dataset.common.data_types import AddonInfo, AddonInfos, AddonHe
     GithubUserName, GithubRepoName, LanguageName, LanguageCode, ScriptVersion, AddonRating, UpdateDate, AddonTitle, \
     AddonManifest, SpdxLicense, Topic, DependencyName, GithubReadme, AiTag, AnkiVersionKind, \
     PageLink, PageLinkSection, ForkEvidence, ForkRelation, AddonReview, ReviewVote, AddonPackage, AddonPackages, \
-    AnkiPointVersion
+    AnkiPointVersion, GithubManifestFile
 from anki_addons_dataset.common.json_helper import JsonHelper
 
 
@@ -127,7 +127,12 @@ def test_addon_infos_dump_round_trip_with_fork_fields(addon_info: AddonInfo, scr
     addon_info = replace(addon_info,
                          github=replace(addon_info.github,
                                         fork_source=GithubRepo(GithubUserName("origin"), GithubRepoName("pokemanki")),
-                                        canonical_repo=GithubRepo(GithubUserName("neworg"), GithubRepoName("a"))),
+                                        canonical_repo=GithubRepo(GithubUserName("neworg"), GithubRepoName("a")),
+                                        manifest_path="a/manifest.json",
+                                        manifest_files=[
+                                            GithubManifestFile("a/manifest.json", AddonManifest(package="a"),
+                                                               ["manifest.json", "a.py"]),
+                                            GithubManifestFile("b/manifest.json", None, ["manifest.json"])]),
                          ai=replace(addon_info.ai, fork_of=AddonId(2)),
                          forked_from=ForkRelation(AddonId(2), ForkEvidence.GITHUB_FORK))
     addon_infos: AddonInfos = AddonInfos([addon_info])
@@ -182,19 +187,23 @@ def test_addon_infos_dump_reads_legacy_dump_without_description_language(
     assert read_addon_infos[0].page.description_language_confidence is None
 
 
-def test_addon_infos_dump_reads_legacy_dump_without_canonical_repo(addon_infos: AddonInfos,
+def test_addon_infos_dump_reads_legacy_dump_without_new_github_fields(addon_infos: AddonInfos,
                                                                    script_version: ScriptVersion,
                                                                    working_dir_path: Path):
     dump_file: Path = working_dir_path / "addon-infos.json"
     JsonHelper.write_addon_infos_dump(addon_infos, script_version, dump_file)
     envelope: dict = json.loads(dump_file.read_text())
     envelope["addon_infos"][0]["github"].pop("canonical_repo")
+    envelope["addon_infos"][0]["github"].pop("manifest_path")
+    envelope["addon_infos"][0]["github"].pop("manifest_files")
     dump_file.write_text(json.dumps(envelope))
 
     _, read_addon_infos = JsonHelper.read_addon_infos_dump(dump_file)
 
     assert read_addon_infos[0].github is not None
     assert read_addon_infos[0].github.canonical_repo is None
+    assert read_addon_infos[0].github.manifest_path is None
+    assert read_addon_infos[0].github.manifest_files == []
 
 
 def test_addon_infos_dump_round_trip_preserves_description_html(addon_infos: AddonInfos,
