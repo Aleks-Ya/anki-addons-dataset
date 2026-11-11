@@ -14,9 +14,10 @@ def __repo(repo_id: str) -> GithubRepo:
 
 
 def __addon(addon_info: AddonInfo, addon_id: int, repo: Optional[str] = None, fork_source: Optional[str] = None,
-            ai_fork_of: Optional[int] = None) -> AddonInfo:
+            ai_fork_of: Optional[int] = None, canonical_repo: Optional[str] = None) -> AddonInfo:
     github = replace(addon_info.github, github_repo=__repo(repo),
-                     fork_source=__repo(fork_source) if fork_source else None) if repo else None
+                     fork_source=__repo(fork_source) if fork_source else None,
+                     canonical_repo=__repo(canonical_repo) if canonical_repo else None) if repo else None
     ai: AiInfo = AiInfo(fork_of=AddonId(ai_fork_of) if ai_fork_of is not None else None)
     return replace(addon_info, header=replace(addon_info.header, id=AddonId(addon_id)), github=github, ai=ai)
 
@@ -35,6 +36,14 @@ def test_fork_of_a_repo_owned_by_one_addon(addon_info: AddonInfo):
     forked_from: dict[int, Optional[ForkRelation]] = __resolve([
         __addon(addon_info, 10, "origin/pokemanki"),
         __addon(addon_info, 20, "fixer/pokemanki", fork_source="Origin/Pokemanki")])
+
+    assert forked_from == {10: None, 20: ForkRelation(AddonId(10), ForkEvidence.GITHUB_FORK)}
+
+
+def test_fork_of_a_repo_linked_under_its_old_name(addon_info: AddonInfo):
+    forked_from: dict[int, Optional[ForkRelation]] = __resolve([
+        __addon(addon_info, 10, "oldorg/pokemanki", canonical_repo="NewOrg/pokemanki"),
+        __addon(addon_info, 20, "fixer/pokemanki", fork_source="neworg/Pokemanki")])
 
     assert forked_from == {10: None, 20: ForkRelation(AddonId(10), ForkEvidence.GITHUB_FORK)}
 

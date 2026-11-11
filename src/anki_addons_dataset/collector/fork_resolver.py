@@ -72,4 +72,4 @@ class ForkResolver:
     def __own_repo_id(addon_info: AddonInfo) -> Optional[GithubRepoId]:
         if addon_info.github is None:
             return None
-        return GithubRepoId(addon_info.github.github_repo.get_id().lower())
+        return addon_info.github.get_canonical_id()

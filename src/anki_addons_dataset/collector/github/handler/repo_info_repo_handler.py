@@ -20,6 +20,7 @@ class GithubRepoMeta:
     pushed_at: Optional[datetime] = None
     created_at: Optional[datetime] = None
     fork_source: Optional[GithubRepo] = None
+    canonical_repo: Optional[GithubRepo] = None
 
 
 class RepoInfoRepoHandler(RepoHandler):
@@ -49,6 +50,7 @@ class RepoInfoRepoHandler(RepoHandler):
             pushed_at=self.__parse_date(content_obj.get("pushed_at")),
             created_at=self.__parse_date(content_obj.get("created_at")),
             fork_source=self.__parse_fork_source(content_obj),
+            canonical_repo=self.__parse_repo(content_obj),
         )
 
     def _prepare_stage_dict(self, return_value: GithubRepoMeta) -> dict[str, Any]:
@@ -64,6 +66,7 @@ class RepoInfoRepoHandler(RepoHandler):
             "pushed_at": return_value.pushed_at,
             "created_at": return_value.created_at,
             "fork_source": return_value.fork_source.get_id() if return_value.fork_source else None,
+            "canonical_repo": return_value.canonical_repo.get_id() if return_value.canonical_repo else None,
         }
 
     def get_not_found_return_value(self) -> GithubRepoMeta:
@@ -74,10 +77,14 @@ class RepoInfoRepoHandler(RepoHandler):
         source: Optional[dict[str, Any]] = content_obj.get("source")
         if not content_obj.get("fork") or not source:
             return None
-        owner: dict[str, Any] = source.get("owner") or {}
-        if not owner.get("login") or not source.get("name"):
+        return RepoInfoRepoHandler.__parse_repo(source)
+
+    @staticmethod
+    def __parse_repo(repo_obj: dict[str, Any]) -> Optional[GithubRepo]:
+        owner: dict[str, Any] = repo_obj.get("owner") or {}
+        if not owner.get("login") or not repo_obj.get("name"):
             return None
-        return GithubRepo(GithubUserName(owner["login"]), GithubRepoName(source["name"]))
+        return GithubRepo(GithubUserName(owner["login"]), GithubRepoName(repo_obj["name"]))
 
     @staticmethod
     def __parse_date(value: Optional[str]) -> Optional[datetime]:

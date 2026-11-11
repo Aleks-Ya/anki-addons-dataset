@@ -252,7 +252,7 @@ class JsonAddonInfo:
         repo_addons: dict[str, list[AddonInfo]] = {}
         for addon in sorted(addon_infos, key=lambda addon_info: addon_info.header.id):
             if addon.github is not None:
-                repo_addons.setdefault(addon.github.github_repo.get_id().lower(), []).append(addon)
+                repo_addons.setdefault(addon.github.get_canonical_id(), []).append(addon)
         return repo_addons
 
     @staticmethod
@@ -287,7 +287,7 @@ class JsonAddonInfo:
         if not addon.github:
             return None
         github: GithubInfo = addon.github
-        sharing_addons: list[AddonInfo] = repo_addons[github.github_repo.get_id().lower()]
+        sharing_addons: list[AddonInfo] = repo_addons[github.get_canonical_id()]
         user: str = github.github_repo.user
         repo_str: str = github.github_repo.repo_name
         links: list[Link] = [Link(link.url, link.user.user_name, link.repo.repo_name if link.repo else None)

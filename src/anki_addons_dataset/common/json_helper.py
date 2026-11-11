@@ -210,6 +210,7 @@ class JsonHelper:
             ai_tooling_markers=list(data.get("ai_tooling_markers", [])),
             repo_source=GithubRepoSource(repo_source) if repo_source is not None else None,
             fork_source=JsonHelper.__github_repo_from_dict(data.get("fork_source")),
+            canonical_repo=JsonHelper.__github_repo_from_dict(data.get("canonical_repo")),
             releases=[JsonHelper.__github_release_from_dict(release) for release in data["releases"]]
             if data.get("releases") is not None else None,
             contributors=[GithubContributor(GithubUserName(contributor["login"]), contributor["contributions"])

@@ -426,11 +426,14 @@ def test_addon_infos_to_json_one_parent_with_several_forks(addon_info: AddonInfo
 
 
 def test_addon_infos_to_json_shared_repo(addon_info: AddonInfo):
-    def addon(addon_id: int, user: str, repo: str, author_id: Optional[int]) -> AddonInfo:
+    def addon(addon_id: int, user: str, repo: str, author_id: Optional[int],
+              canonical: Optional[tuple[str, str]] = None) -> AddonInfo:
         assert addon_info.github is not None
         author: Optional[AuthorInfo] = AuthorInfo(AuthorId(author_id), []) if author_id is not None else None
+        canonical_repo: Optional[GithubRepo] = GithubRepo(GithubUserName(canonical[0]), GithubRepoName(
+            canonical[1])) if canonical is not None else None
         return replace(addon_info, header=replace(addon_info.header, id=AddonId(addon_id)), author=author,
-                       github=replace(addon_info.github,
+                       github=replace(addon_info.github, canonical_repo=canonical_repo,
                                       github_repo=GithubRepo(GithubUserName(user), GithubRepoName(repo))))
 
     act_json: list[dict[str, Any]] = to_dicts(AddonInfos([
@@ -441,7 +444,10 @@ def test_addon_infos_to_json_shared_repo(addon_info: AddonInfo):
         addon(50, "user2", "fork", 2),
         addon(60, "user2", "fork", 3),
         addon(70, "user3", "old", None),
-        addon(80, "user3", "old", None)]))
+        addon(80, "user3", "old", None),
+        addon(90, "oldorg", "renamed", 4, ("NewOrg", "Current")),
+        addon(100, "neworg", "current", 4, ("NewOrg", "Current")),
+        addon(110, "neworg", "renamed", 4)]))
     assert [(item["id"], item["github"]["shared_with"], item["github"]["repo_sharing"]) for item in act_json] == [
         (30, [10, 20], "same_author"),
         (10, [20, 30], "same_author"),
@@ -450,7 +456,10 @@ def test_addon_infos_to_json_shared_repo(addon_info: AddonInfo):
         (50, [60], "cross_author"),
         (60, [50], "cross_author"),
         (70, [80], None),
-        (80, [70], None)]
+        (80, [70], None),
+        (90, [100], "same_author"),
+        (100, [90], "same_author"),
+        (110, [], None)]
 
 
 def test_addon_infos_to_json_package_summarizes_the_newest_branch(addon_info: AddonInfo):

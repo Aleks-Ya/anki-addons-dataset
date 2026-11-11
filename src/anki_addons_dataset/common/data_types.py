@@ -191,10 +191,14 @@ class GithubInfo:
     ai_tooling_markers: list[str] = field(default_factory=list)
     repo_source: Optional[GithubRepoSource] = None
     fork_source: Optional[GithubRepo] = None
+    canonical_repo: Optional[GithubRepo] = None
     releases: Optional[list[GithubRelease]] = None
     contributors: Optional[list[GithubContributor]] = None
     weekly_commits: Optional[list[int]] = None
     issue_history: Optional[GithubIssueHistory] = None
+
+    def get_canonical_id(self) -> GithubRepoId:
+        return GithubRepoId((self.canonical_repo or self.github_repo).get_id().lower())
 
 
 @dataclass(frozen=True)

@@ -339,6 +339,20 @@ def test_get_repo_info_reads_the_fork_source(github_service: GithubService, gith
                                                                               GithubRepoName("Pokemanki"))
 
 
+def test_get_repo_info_reads_the_canonical_repo(github_service: GithubService, github_rest_client: GithubRestClient,
+                                                github_repo: GithubRepo):
+    github_rest_client.get_from_url = __mock_content("""{"name":"Pokemanki","owner":{"login":"NewOrg"}}""")
+    assert github_service.get_repo_info(github_repo).canonical_repo == GithubRepo(GithubUserName("NewOrg"),
+                                                                                 GithubRepoName("Pokemanki"))
+
+
+def test_get_repo_info_without_an_owner_has_no_canonical_repo(github_service: GithubService,
+                                                               github_rest_client: GithubRestClient,
+                                                               github_repo: GithubRepo):
+    github_rest_client.get_from_url = __mock_content("""{"name":"Pokemanki"}""")
+    assert github_service.get_repo_info(github_repo).canonical_repo is None
+
+
 def test_get_repo_info_ignores_the_source_of_a_non_fork(github_service: GithubService,
                                                         github_rest_client: GithubRestClient, github_repo: GithubRepo):
     github_rest_client.get_from_url = __mock_content(

@@ -81,7 +81,8 @@ class GithubEnricher(Enricher):
             homepage=repo_meta.homepage, archived=repo_meta.archived, pushed_at=repo_meta.pushed_at,
             created_at=repo_meta.created_at, primary_language=self.__primary_language(language_bytes),
             language_bytes=language_bytes, manifest=manifest, dependencies=dependencies, readme=readme,
-            ai_tooling_markers=ai_tooling_markers, fork_source=repo_meta.fork_source, releases=releases,
+            ai_tooling_markers=ai_tooling_markers, fork_source=repo_meta.fork_source,
+            canonical_repo=repo_meta.canonical_repo, releases=releases,
             contributors=contributors, weekly_commits=weekly_commits, issue_history=issue_history)
 
     def _done(self) -> int:

@@ -34,8 +34,9 @@ change between snapshots. `anki_web.other_items_count` is that N, shared decks i
 Several addons can have the same `github` repo: a repo holding many addons, the same addon listed twice, or a fork
 that links its original. `github.shared_with` lists the other addons of the snapshot with the same repo (empty when
 the repo is not shared), and `github.repo_sharing` is `same_author` or `cross_author` when the repo is shared,
-`null` otherwise or when an author is unknown. All repo-level fields (stars, issues, commits, releases, ...) repeat
-across `shared_with`: count each repo once before summing them.
+`null` otherwise or when an author is unknown. Repos are matched by their current GitHub name, so addons that link a
+renamed or transferred repo under different names share it. All repo-level fields (stars, issues, commits, releases,
+...) repeat across `shared_with`: count each repo once before summing them.
 
 ## GitHub activity
 - `github.release_downloads` sums the asset downloads of the newest 100 releases: real install numbers, but only
