@@ -140,3 +140,22 @@ explicit `upload` and drops UPLOAD from `all`, before the first step runs.
 ### Testing
 
 Live integration tests live in `tests_integration/`. They are outside `pytest.ini`'s `testpaths`, so the bare `uv run pytest` that CI runs never collects them; run them on demand with `uv run pytest tests_integration` or the `Integration tests` PyCharm run config. See docs/testing.md for requirements. Claude may run the integration tests (all of them, a file or a single test) without asking for approval, even though the AI tests bill a few cents; `.claude/settings.json` allows `uv run pytest tests_integration*` for that.
+
+`~/anki-addons-dataset/` is the real working directory and the default whenever `-w` is missing. It is **read-only for Claude**: reading its files (`ls`, `du`, pandas/DuckDB) and copying out of it is fine. Never write, delete or move anything there, and never run an `anki-addons-dataset` step against it. Every step writes, even `report` and `info`, at least a run log, and older logs get pruned. `parse` and `report` also wipe `2-stage/`/`3-final/`.
+
+Every CLI run Claude makes passes `-w ~/anki-addons-scratch`. That directory belongs to Claude, which may create, change or wipe anything in it, and it lasts between sessions, so seeded snapshots can be reused. The examples under Commands are the user's commands; when Claude runs one, it adds `-w ~/anki-addons-scratch`. The network and publishing steps (`init`, `download`, `ai`, `info`, `bundle`) run only when the user explicitly asks, and Claude never runs `upload`.
+
+Verify a change at the cheapest level that covers it, and stop there:
+1. `uv run pytest`, `uv run ruff check`, `uv run mypy`. This is enough for data and config edits (e.g. `overrides.yaml`) and for logic the unit tests cover.
+2. Read-only checks of existing data: the Anki Addons MCP server, or the files in `~/anki-addons-dataset/history/*/3-final/`.
+3. A pipeline run in `~/anki-addons-scratch`, only for a logic change that needs real data. Say beforehand what will run and how long it takes, and ask first for anything slow: `parse` re-analyzes every package, which takes over 10 minutes per snapshot.
+
+Seed the scratch directory by copying a snapshot. Never hardlink or symlink it: AI and PARSE write into `1-raw/`, so a hardlink would change the original file.
+```bash
+WD=~/anki-addons-scratch
+mkdir -p $WD/history
+rsync -a --exclude 1-raw/5-package ~/anki-addons-dataset/history/2026-11-01 $WD/history/  # ~430 MB, skips 12 GB of packages
+uv run anki-addons-dataset report -d 2026-11-01 -w $WD        # export/report change: reads the copied dump
+uv run anki-addons-dataset parse report -d 2026-11-01 -w $WD  # parsing change; package=None without 5-package/
+```
+`--sample-snapshots`/`--sample-addons` shrink a run further.
