@@ -36,13 +36,26 @@ Information about the 3,000+ addons of the [Anki flashcard program](https://apps
 ```python
 from datasets import load_dataset
 
-addons = load_dataset("Ya-Alex/anki-addons", split="train")
-reviews = load_dataset("Ya-Alex/anki-addons", "reviews", split="train")
+addons = load_dataset("Ya-Alex/anki-addons", revision="v1", split="train")
+reviews = load_dataset("Ya-Alex/anki-addons", "reviews", revision="v1", split="train")
 
 import pandas as pd
 
-addons = pd.read_parquet("hf://datasets/Ya-Alex/anki-addons/latest/parquet/data.parquet")
+addons = pd.read_parquet("hf://datasets/Ya-Alex/anki-addons@v1/latest/parquet/data.parquet")
 ```
+
+## Versions
+The dataset version is `MAJOR.MINOR`: MAJOR goes up on a breaking change (a column removed or renamed), MINOR on
+an additive one. Pick the revision that fits:
+
+| Revision                   | Gets                                                      |
+|----------------------------|-----------------------------------------------------------|
+| `v1` (branch)              | every new snapshot, never a breaking change (recommended) |
+| `main`                     | every new snapshot and every change, including breaking   |
+| `v1.0-2026-11-01` (tag)    | never changes, for reproducible results                   |
+
+See [versioning](https://github.com/Aleks-Ya/anki-addons-dataset/blob/main/docs/dataset/versioning.md) and the
+[changelog](https://github.com/Aleks-Ya/anki-addons-dataset/blob/main/docs/dataset/changelog.md).
 
 ## Tables
 
@@ -66,6 +79,7 @@ addons = pd.read_parquet("hf://datasets/Ya-Alex/anki-addons/latest/parquet/data.
 - [Addon fields](https://github.com/Aleks-Ya/anki-addons-dataset/blob/main/docs/dataset/addons.md)
 - [Other tables](https://github.com/Aleks-Ya/anki-addons-dataset/blob/main/docs/dataset/tables.md)
 - [Files](https://github.com/Aleks-Ya/anki-addons-dataset/blob/main/docs/dataset/files.md)
+- [Versioning](https://github.com/Aleks-Ya/anki-addons-dataset/blob/main/docs/dataset/versioning.md)
 
 ## License
 The dataset is `cc0-1.0`. The addon packages under `packages/` stay under their authors' own licenses.

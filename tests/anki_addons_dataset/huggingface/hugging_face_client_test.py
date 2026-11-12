@@ -1,10 +1,12 @@
+from datetime import date
 from pathlib import Path
 from unittest.mock import Mock
 
 import pytest
-from huggingface_hub import HfApi, RepoFile, RepoFolder
+from huggingface_hub import HfApi, RepoFile, RepoFolder, GitRefs, GitRefInfo
 from huggingface_hub.errors import HfHubHTTPError, RepositoryNotFoundError
 
+from anki_addons_dataset.common.data_types import DatasetVersion, SnapshotDate
 from anki_addons_dataset.config.app_config import AppConfig, HuggingFaceConfig
 from anki_addons_dataset.huggingface.hugging_face_client import HuggingFaceClient
 
@@ -78,26 +80,47 @@ def test_prune_orphans_never_touches_packages(tmp_path: Path):
     api.delete_files.assert_not_called()
 
 
-def test_tag_backup_tags_remote_head_as_dataset():
+def __refs(branches: list[str], tags: list[str]) -> GitRefs:
+    return GitRefs(branches=[GitRefInfo(name, f"refs/heads/{name}", f"{name}-sha") for name in branches],
+                   converts=[], tags=[GitRefInfo(name, f"refs/tags/{name}", "old-sha") for name in tags])
+
+
+def test_publish_release_tags_main_head_and_creates_major_branch():
     api: HfApi = Mock(spec=HfApi)
+    api.list_repo_refs.return_value = __refs(["main"], ["backup-2026-10-01-120000"])
     client: HuggingFaceClient = HuggingFaceClient(api, __config())
 
-    client.tag_backup()
+    client.publish_release(DatasetVersion("1.3"), SnapshotDate(date(2026, 11, 1)))
 
-    api.create_tag.assert_called_once()
-    kwargs = api.create_tag.call_args.kwargs
-    assert kwargs["repo_type"] == "dataset"
-    assert kwargs["tag"].startswith("backup-")
+    api.create_tag.assert_called_once_with(
+        "Ya-Alex/anki-addons", repo_type="dataset", tag="v1.3-2026-11-01", revision="main-sha",
+        tag_message="Dataset 1.3, snapshot 2026-11-01")
+    api.delete_branch.assert_not_called()
+    api.create_branch.assert_called_once_with(
+        "Ya-Alex/anki-addons", repo_type="dataset", branch="v1", revision="main-sha")
 
 
-def test_tag_backup_swallows_errors_so_upload_can_proceed():
+def test_publish_release_moves_existing_major_branch():
     api: HfApi = Mock(spec=HfApi)
-    api.create_tag.side_effect = HfHubHTTPError("boom", response=Mock())
+    api.list_repo_refs.return_value = __refs(["main", "v1", "v2"], [])
     client: HuggingFaceClient = HuggingFaceClient(api, __config())
 
-    client.tag_backup()  # does not raise
+    client.publish_release(DatasetVersion("2.0"), SnapshotDate(date(2026, 11, 1)))
 
-    api.create_tag.assert_called_once()
+    api.delete_branch.assert_called_once_with("Ya-Alex/anki-addons", repo_type="dataset", branch="v2")
+    api.create_branch.assert_called_once_with(
+        "Ya-Alex/anki-addons", repo_type="dataset", branch="v2", revision="main-sha")
+    assert [c[0] for c in api.method_calls] == ["list_repo_refs", "create_tag", "delete_branch", "create_branch"]
+
+
+def test_publish_release_adds_a_suffix_when_the_tag_exists():
+    api: HfApi = Mock(spec=HfApi)
+    api.list_repo_refs.return_value = __refs(["main", "v1"], ["v1.3-2026-11-01", "v1.3-2026-11-01-2"])
+    client: HuggingFaceClient = HuggingFaceClient(api, __config())
+
+    client.publish_release(DatasetVersion("1.3"), SnapshotDate(date(2026, 11, 1)))
+
+    assert api.create_tag.call_args.kwargs["tag"] == "v1.3-2026-11-01-3"
 
 
 def test_prune_orphans_deletes_only_files_absent_locally(tmp_path: Path):

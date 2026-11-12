@@ -1,14 +1,13 @@
-from datetime import datetime, timezone
 from pathlib import Path
 import logging
 from logging import Logger
 from shutil import rmtree
 from typing import Iterable
 
-from huggingface_hub import HfApi, RepoFolder, RepoFile
+from huggingface_hub import HfApi, RepoFolder, RepoFile, GitRefs
 from huggingface_hub.errors import EntryNotFoundError, RepositoryNotFoundError, HfHubHTTPError
 
-from anki_addons_dataset.common.data_types import HuggingFaceFolder
+from anki_addons_dataset.common.data_types import HuggingFaceFolder, DatasetVersion, SnapshotDate
 from anki_addons_dataset.config.app_config import HuggingFaceConfig
 
 log: Logger = logging.getLogger(__name__)
@@ -23,22 +22,6 @@ class HuggingFaceClient:
 
     def get_repo_id(self) -> str:
         return self.__repo_id
-
-    def tag_backup(self) -> None:
-        """Tag the current remote head as a recovery point before an upload.
-
-        The tag pins the pre-upload commit so it stays reachable and immune to LFS
-        garbage collection, giving a named point to reset back to if the upload
-        corrupts the dataset. Tagging failures are non-fatal: the upload still
-        proceeds, since Git history alone remains recoverable."""
-        tag: str = f"backup-{datetime.now(timezone.utc).strftime('%Y-%m-%d-%H%M%S')}"
-        try:
-            self.__api.create_tag(
-                repo_id=self.__repo_id, repo_type="dataset", tag=tag,
-                tag_message="Automatic pre-upload backup")
-            log.info(f"Created pre-upload backup tag: {tag}")
-        except (RepositoryNotFoundError, HfHubHTTPError) as e:
-            log.warning(f"Could not create pre-upload backup tag {tag}: {e}")
 
     def upload_dataset(self, bundle_dir: Path) -> None:
         self.verify_write_access()
@@ -63,6 +46,19 @@ class HuggingFaceClient:
             repo_id=self.__repo_id, repo_type="dataset", delete_patterns=orphans,
             commit_message="Prune files removed from the local bundle")
         log.info(f"Pruned {len(orphans)} orphan files from dataset: {self.__repo_id}")
+
+    def publish_release(self, dataset_version: DatasetVersion, snapshot_date: SnapshotDate) -> None:
+        refs: GitRefs = self.__api.list_repo_refs(self.__repo_id, repo_type="dataset")
+        head: str = next(branch.target_commit for branch in refs.branches if branch.name == "main")
+        tag: str = self.__release_tag(dataset_version, snapshot_date, {t.name for t in refs.tags})
+        self.__api.create_tag(self.__repo_id, repo_type="dataset", tag=tag, revision=head,
+                              tag_message=f"Dataset {dataset_version}, snapshot {snapshot_date.isoformat()}")
+        log.info(f"Created release tag: {tag}")
+        major_branch: str = f"v{dataset_version.split('.')[0]}"
+        if any(branch.name == major_branch for branch in refs.branches):
+            self.__api.delete_branch(self.__repo_id, repo_type="dataset", branch=major_branch)
+        self.__api.create_branch(self.__repo_id, repo_type="dataset", branch=major_branch, revision=head)
+        log.info(f"Pointed branch {major_branch} at {head}")
 
     def list_snapshot_folders(self) -> list[HuggingFaceFolder]:
         files: list[RepoFile | RepoFolder] = list(self.__api.list_repo_tree(
@@ -89,6 +85,16 @@ class HuggingFaceClient:
             if status_code in (401, 403):
                 raise PermissionError(f"HuggingFace unauthorized: {self.__repo_id}") from e
             raise
+
+    @staticmethod
+    def __release_tag(dataset_version: DatasetVersion, snapshot_date: SnapshotDate, existing_tags: set[str]) -> str:
+        base: str = f"v{dataset_version}-{snapshot_date.isoformat()}"
+        tag: str = base
+        suffix: int = 2
+        while tag in existing_tags:
+            tag = f"{base}-{suffix}"
+            suffix += 1
+        return tag
 
     def __local_repo_files(self, bundle_dir: Path) -> set[str]:
         local_files: set[str] = set()

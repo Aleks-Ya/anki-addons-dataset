@@ -6,8 +6,9 @@ from typing import Optional
 from anki_addons_dataset.argument.script_arguments import Operation
 from anki_addons_dataset.bundle.dataset_bundle import DatasetBundle
 from anki_addons_dataset.collector.collector_facade import CollectorFacade
-from anki_addons_dataset.common.data_types import SnapshotDate, ReportDate, PageLoadTimeout, ElementWaitTimeout
-from anki_addons_dataset.common.working_dir import WorkingDir
+from anki_addons_dataset.common.data_types import SnapshotDate, ReportDate, PageLoadTimeout, ElementWaitTimeout, \
+    DATASET_VERSION
+from anki_addons_dataset.common.working_dir import WorkingDir, SnapshotDir
 from anki_addons_dataset.config.app_config import AppConfig
 from anki_addons_dataset.huggingface.hugging_face_client import HuggingFaceClient
 from anki_addons_dataset.info.app_info import AppInfo
@@ -52,8 +53,12 @@ class Facade:
             dataset_bundle.create_bundle()
         elif operation == Operation.UPLOAD:
             bundle_dir: Path = self.__working_dir.get_bundle_dir()
-            self.__hugging_face_client.tag_backup()
+            latest_snapshot_dir: Optional[SnapshotDir] = self.__working_dir.get_latest_snapshot_dir()
+            if not latest_snapshot_dir:
+                raise ValueError("No snapshots found")
             self.__hugging_face_client.upload_dataset(bundle_dir)
             self.__hugging_face_client.prune_orphans(bundle_dir)
+            self.__hugging_face_client.publish_release(
+                DATASET_VERSION, latest_snapshot_dir.snapshot_dir_to_snapshot_date())
         else:
             raise ValueError(f"Unsupported operation: {operation}")

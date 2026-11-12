@@ -6,6 +6,8 @@ from enum import StrEnum
 SnapshotDate = NewType("SnapshotDate", date)
 ReportDate = NewType("ReportDate", datetime)
 ScriptVersion = NewType("ScriptVersion", str)
+DatasetVersion = NewType("DatasetVersion", str)
+DATASET_VERSION: DatasetVersion = DatasetVersion("1.0")
 AddonId = NewType("AddonId", int)
 AddonTitle = NewType("AddonTitle", str)
 AddonRating = NewType("AddonRating", int)
@@ -402,9 +404,11 @@ class DatasetSnapshotMetadata:
     data_collection_date: SnapshotDate
     report_generation_date: ReportDate
     script_version: ScriptVersion
+    dataset_version: DatasetVersion
 
     def __str__(self) -> str:
         return (f"DatasetSnapshotMetadata("
                 f"data_collection_date={self.data_collection_date.isoformat()}, "
                 f"report_generation_date={self.report_generation_date.isoformat(sep=' ')}, "
-                f"script_version={self.script_version})")
+                f"script_version={self.script_version}, "
+                f"dataset_version={self.dataset_version})")

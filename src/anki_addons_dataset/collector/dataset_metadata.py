@@ -4,7 +4,8 @@ from typing import Any
 import logging
 from logging import Logger
 
-from anki_addons_dataset.common.data_types import DatasetSnapshotMetadata, ReportDate, ScriptVersion
+from anki_addons_dataset.common.data_types import DatasetSnapshotMetadata, ReportDate, ScriptVersion, \
+    DATASET_VERSION
 from anki_addons_dataset.common.json_helper import JsonHelper
 from anki_addons_dataset.common.working_dir import SnapshotDir
 
@@ -19,7 +20,8 @@ class DatasetMetadata:
         dataset_snapshot_metadata: DatasetSnapshotMetadata = DatasetSnapshotMetadata(
             data_collection_date=snapshot_dir.snapshot_dir_to_snapshot_date(),
             report_generation_date=report_date,
-            script_version=script_version
+            script_version=script_version,
+            dataset_version=DATASET_VERSION
         )
         log.info(f"Created dataset snapshot metadata: {dataset_snapshot_metadata}")
         return dataset_snapshot_metadata

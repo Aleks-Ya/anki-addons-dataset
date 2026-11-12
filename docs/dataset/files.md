@@ -16,6 +16,10 @@ packages/{addon-id}/        the .ankiaddon files, each version once (package-lis
 Parquet is best for code; Excel for manual analysis in Excel or LibreOffice Calc. The `reviews` and `packages`
 tables are Parquet only. See [addon fields](addons.md) and [other tables](tables.md).
 
+## Versions
+`metadata.json` records the `dataset_version`. Read a `v{MAJOR}` branch to get new snapshots without breaking
+changes: [versioning.md](versioning.md), [changelog.md](changelog.md).
+
 ## License
 The dataset is `cc0-1.0`. The addon packages under `packages/` are the work of their authors and stay under their
 own licenses.

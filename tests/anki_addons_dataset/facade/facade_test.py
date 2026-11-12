@@ -2,9 +2,11 @@ from datetime import date
 from typing import Optional
 from unittest.mock import Mock, call, patch
 
+import pytest
+
 from anki_addons_dataset.argument.script_arguments import Operation
 from anki_addons_dataset.collector.collector_facade import CollectorFacade
-from anki_addons_dataset.common.data_types import ReportDate, SnapshotDate
+from anki_addons_dataset.common.data_types import ReportDate, SnapshotDate, DATASET_VERSION
 from anki_addons_dataset.common.working_dir import WorkingDir
 from anki_addons_dataset.facade.facade import Facade
 
@@ -100,10 +102,22 @@ def test_bundle_operation_creates_the_bundle(facade: Facade, working_dir: Workin
     dataset_bundle.return_value.create_bundle.assert_called_once_with()
 
 
-def test_upload_operation_tags_a_backup_then_uploads_then_prunes(
+def test_upload_operation_uploads_then_prunes_then_publishes_the_release(
         facade: Facade, working_dir: WorkingDir, hugging_face_client: Mock, report_date: ReportDate):
+    working_dir.get_snapshot_dir(SnapshotDate(date(2026, 10, 1))).create()
+    working_dir.get_snapshot_dir(SnapshotDate(date(2026, 11, 1))).create()
+
     facade.process(Operation.UPLOAD, None, report_date)
 
     bundle_dir = working_dir.get_bundle_dir()
     assert hugging_face_client.method_calls == [
-        call.tag_backup(), call.upload_dataset(bundle_dir), call.prune_orphans(bundle_dir)]
+        call.upload_dataset(bundle_dir), call.prune_orphans(bundle_dir),
+        call.publish_release(DATASET_VERSION, SnapshotDate(date(2026, 11, 1)))]
+
+
+def test_upload_operation_fails_without_snapshots(facade: Facade, hugging_face_client: Mock,
+                                                  report_date: ReportDate):
+    with pytest.raises(ValueError, match="No snapshots found"):
+        facade.process(Operation.UPLOAD, None, report_date)
+
+    assert hugging_face_client.method_calls == []
