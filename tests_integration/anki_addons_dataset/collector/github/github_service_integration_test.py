@@ -1,5 +1,6 @@
 from datetime import datetime
 from pathlib import Path
+from typing import Optional
 
 import pytest
 
@@ -7,7 +8,7 @@ from anki_addons_dataset.collector.github.github_rest_client import GithubRestCl
 from anki_addons_dataset.collector.github.github_service import GithubService
 from anki_addons_dataset.collector.github.handler.repo_info_repo_handler import GithubRepoMeta
 from anki_addons_dataset.common.data_types import AddonManifest, DependencyName, GithubIssueHistory, GithubRepo, \
-    LanguageName
+    GithubManifestFile, LanguageName
 from anki_addons_dataset.common.working_dir import SnapshotDir
 
 
@@ -61,7 +62,9 @@ def test_known_repo(github_service: GithubService, snapshot_dir: SnapshotDir,
 
 
 def test_repo_contents(github_service: GithubService, contents_github_repo: GithubRepo) -> None:
-    manifest: AddonManifest = github_service.get_manifest(contents_github_repo)
+    manifest_files: list[GithubManifestFile] = github_service.get_manifest_files(contents_github_repo)
+    assert manifest_files
+    manifest: Optional[AddonManifest] = manifest_files[0].manifest
     assert manifest is not None
     assert manifest.name or manifest.package
 
