@@ -126,6 +126,21 @@ def test_export_addon_infos(snapshot_dir: SnapshotDir, addon_infos: AddonInfos,
     pdt.assert_frame_equal(act_df, exp_df)
 
 
+def test_export_addon_infos_keeps_declared_types_of_null_fields(
+        snapshot_dir: SnapshotDir, addon_infos: AddonInfos, dataset_snapshot_metadata: DatasetSnapshotMetadata,
+        raw_metadata: RawMetadata):
+    final_dir: Path = snapshot_dir.get_final_dir()
+    ParquetExporter(final_dir).export_addon_infos(addon_infos, dataset_snapshot_metadata, raw_metadata)
+
+    schema: pyarrow.Schema = pyarrow.parquet.read_schema(final_dir / "parquet" / "data.parquet")
+    github: pyarrow.StructType = schema.field("github").type
+    assert github.field("license").type == pyarrow.string()
+    assert pyarrow.types.is_struct(github.field("manifest").type)
+    assert github.field("manifest").type.field("min_point_version").type == pyarrow.int64()
+    assert schema.field("duplicate_of").type.field("id").type == pyarrow.int64()
+    assert schema.field("duplicates").type.value_type == pyarrow.int64()
+
+
 def test_export_tags(snapshot_dir: SnapshotDir, dataset_snapshot_metadata: DatasetSnapshotMetadata,
                      raw_metadata: RawMetadata):
     tags: list[AiTagDefinition] = [AiTagDefinition(AiTag("statistics"), AiTagGroup("function"), "Graphs"),
@@ -209,6 +224,9 @@ def test_export_reviews_empty(snapshot_dir: SnapshotDir):
     act_df: DataFrame = pandas.read_parquet(final_dir / "parquet" / "reviews.parquet")
     assert list(act_df.columns) == ['addon_id', 'date', 'vote', 'text', 'author_reply']
     assert act_df.empty
+    schema: pyarrow.Schema = pyarrow.parquet.read_schema(final_dir / "parquet" / "reviews.parquet")
+    assert schema.field("author_reply").type == pyarrow.string()
+    assert schema.field("date").type == pyarrow.date32()
 
 
 def test_export_packages(snapshot_dir: SnapshotDir):

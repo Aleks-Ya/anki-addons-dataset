@@ -1,43 +1,16 @@
-import dataclasses
 import json
-import types
-from datetime import date
-from enum import StrEnum
 from pathlib import Path
-from typing import Any, Union, get_args, get_origin, get_type_hints
+from typing import Any
 
 import pyarrow
 import pyarrow.parquet
 
 from anki_addons_dataset.common.data_types import DATASET_VERSION, DatasetSnapshotMetadata, RawMetadata, \
-    AiTagDefinition, AiTag, AiTagGroup, ReviewRow, AddonId, AddonReview, ReviewVote
+    AiTagDefinition, AiTag, AiTagGroup, AddonInfos
 from anki_addons_dataset.common.working_dir import SnapshotDir
-from anki_addons_dataset.exporter.json_addon_info import Details
 from anki_addons_dataset.exporter.parquet.parquet_exporter import ParquetExporter
 
 SCHEMA_FILE: Path = Path(__file__).parents[3] / "docs" / "dataset" / "schema.json"
-SCALAR_TYPES: dict[type, str] = {str: "string", int: "int64", float: "double", bool: "bool", date: "date32[day]"}
-
-
-def __dataclass_columns(cls: type, prefix: str = "") -> dict[str, str]:
-    columns: dict[str, str] = {}
-    for name, hint in get_type_hints(cls).items():
-        columns.update(__hint_columns(hint, f"{prefix}{name}"))
-    return columns
-
-
-def __hint_columns(hint: Any, path: str) -> dict[str, str]:
-    if get_origin(hint) in (Union, types.UnionType):
-        hint = next(arg for arg in get_args(hint) if arg is not type(None))
-    while hasattr(hint, "__supertype__"):
-        hint = hint.__supertype__
-    if get_origin(hint) is list:
-        return __hint_columns(get_args(hint)[0], f"{path}[]")
-    if dataclasses.is_dataclass(hint):
-        return __dataclass_columns(hint, f"{path}.")
-    if isinstance(hint, type) and issubclass(hint, StrEnum):
-        return {path: "string"}
-    return {path: SCALAR_TYPES[hint]}
 
 
 def __arrow_columns(arrow_type: pyarrow.DataType, path: str) -> dict[str, str]:
@@ -62,14 +35,15 @@ def __published_tables(snapshot_dir: SnapshotDir, dataset_snapshot_metadata: Dat
                        raw_metadata: RawMetadata) -> dict[str, dict[str, str]]:
     final_dir: Path = snapshot_dir.get_final_dir()
     exporter: ParquetExporter = ParquetExporter(final_dir)
+    exporter.export_addon_infos(AddonInfos([]), dataset_snapshot_metadata, raw_metadata)
     exporter.export_tags([AiTagDefinition(AiTag("statistics"), AiTagGroup("function"), "Graphs")],
                          dataset_snapshot_metadata, raw_metadata)
     exporter.export_anki_versions([], dataset_snapshot_metadata, raw_metadata)
-    exporter.export_reviews([ReviewRow(AddonId(1), AddonReview(ReviewVote.LIKE, date(2026, 1, 1), "Good", "Thanks"))])
+    exporter.export_reviews([])
     exporter.export_packages([])
     parquet_dir: Path = final_dir / "parquet"
     return {
-        "data": __dataclass_columns(Details),
+        "data": __parquet_columns(parquet_dir / "data.parquet"),
         "tags": __parquet_columns(parquet_dir / "tags.parquet"),
         "anki_versions": __parquet_columns(parquet_dir / "anki_versions.parquet"),
         "reviews": __parquet_columns(parquet_dir / "reviews.parquet"),

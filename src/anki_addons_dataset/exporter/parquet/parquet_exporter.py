@@ -5,12 +5,14 @@ import logging
 from logging import Logger
 
 import pyarrow
+import pyarrow.parquet
 from pandas import DataFrame
 
 from anki_addons_dataset.common.data_types import AddonInfos, DatasetSnapshotMetadata, RawMetadata, \
     AiTagDefinition, AnkiRelease, PackageRow, ReviewRow
 from anki_addons_dataset.exporter.exporter import Exporter
 from anki_addons_dataset.exporter.json_addon_info import JsonAddonInfo, Details
+from anki_addons_dataset.exporter.parquet.arrow_schema import ArrowSchema
 
 log: Logger = logging.getLogger(__name__)
 
@@ -23,7 +25,9 @@ class ParquetExporter(Exporter):
                            raw_metadata: RawMetadata) -> None:
         json_list: list[Details] = JsonAddonInfo.addon_infos_to_json(addon_infos)
         output_file: Path = self._final_dir / "data.parquet"
-        DataFrame(json_list).to_parquet(output_file, compression="zstd")
+        table: pyarrow.Table = pyarrow.Table.from_pylist([dataclasses.asdict(details) for details in json_list],
+                                                         schema=ArrowSchema.of(Details))
+        pyarrow.parquet.write_table(table, output_file, compression="zstd")
         log.info(f"Write Parquet to file: {output_file}")
 
     def export_tags(self, tags: list[AiTagDefinition], dataset_snapshot_metadata: DatasetSnapshotMetadata,
@@ -43,9 +47,12 @@ class ParquetExporter(Exporter):
 
     def export_reviews(self, reviews: list[ReviewRow]) -> None:
         output_file: Path = self._final_dir / "reviews.parquet"
+        schema: pyarrow.Schema = pyarrow.schema([
+            ("addon_id", pyarrow.int64()), ("date", pyarrow.date32()), ("vote", pyarrow.string()),
+            ("text", pyarrow.string()), ("author_reply", pyarrow.string())])
         DataFrame([{"addon_id": review.addon_id, **dataclasses.asdict(review.review)} for review in reviews],
-                  columns=["addon_id", "date", "vote", "text", "author_reply"]) \
-            .to_parquet(output_file, compression="zstd")
+                  columns=schema.names) \
+            .to_parquet(output_file, compression="zstd", schema=schema)
         log.info(f"Write Parquet to file: {output_file}")
 
     def export_packages(self, packages: list[PackageRow]) -> None:
