@@ -33,7 +33,9 @@ class ParquetExporter(Exporter):
     def export_tags(self, tags: list[AiTagDefinition], dataset_snapshot_metadata: DatasetSnapshotMetadata,
                     raw_metadata: RawMetadata) -> None:
         output_file: Path = self._final_dir / "tags.parquet"
-        DataFrame([dataclasses.asdict(tag) for tag in tags]).to_parquet(output_file, compression="zstd")
+        table: pyarrow.Table = pyarrow.Table.from_pylist([dataclasses.asdict(tag) for tag in tags],
+                                                         schema=ArrowSchema.of(AiTagDefinition))
+        pyarrow.parquet.write_table(table, output_file, compression="zstd")
         log.info(f"Write Parquet to file: {output_file}")
 
     def export_anki_versions(self, anki_versions: list[AnkiRelease], dataset_snapshot_metadata: DatasetSnapshotMetadata,

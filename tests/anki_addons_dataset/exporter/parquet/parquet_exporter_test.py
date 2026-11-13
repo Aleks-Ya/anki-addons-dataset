@@ -156,6 +156,8 @@ def test_export_tags(snapshot_dir: SnapshotDir, dataset_snapshot_metadata: Datas
          {'name': 'paid', 'group': 'status', 'description': 'Patreon-only'}]
     )
     pdt.assert_frame_equal(act_df, exp_df)
+    assert pyarrow.parquet.read_schema(act_file).remove_metadata() == pyarrow.schema(
+        [("name", pyarrow.string()), ("group", pyarrow.string()), ("description", pyarrow.string())])
 
 
 def test_export_anki_versions(snapshot_dir: SnapshotDir, dataset_snapshot_metadata: DatasetSnapshotMetadata,

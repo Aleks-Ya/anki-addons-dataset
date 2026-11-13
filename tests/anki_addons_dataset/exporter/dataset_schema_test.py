@@ -14,14 +14,14 @@ SCHEMA_FILE: Path = Path(__file__).parents[3] / "docs" / "dataset" / "schema.jso
 
 
 def __arrow_columns(arrow_type: pyarrow.DataType, path: str) -> dict[str, str]:
-    if pyarrow.types.is_list(arrow_type) or pyarrow.types.is_large_list(arrow_type):
+    if pyarrow.types.is_list(arrow_type):
         return __arrow_columns(arrow_type.value_type, f"{path}[]")
     if pyarrow.types.is_struct(arrow_type):
         columns: dict[str, str] = {}
         for field in arrow_type:
             columns.update(__arrow_columns(field.type, f"{path}.{field.name}"))
         return columns
-    return {path: "string" if pyarrow.types.is_large_string(arrow_type) else str(arrow_type)}
+    return {path: str(arrow_type)}
 
 
 def __parquet_columns(file: Path) -> dict[str, str]:

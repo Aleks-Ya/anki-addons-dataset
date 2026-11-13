@@ -31,8 +31,10 @@ What changed in each version: [changelog.md](changelog.md).
 ## For maintainers
 `DATASET_VERSION` in `src/anki_addons_dataset/common/data_types.py` is the version, and
 [schema.json](schema.json) records the published Parquet columns. The `data` columns and their types come from
-the `Details` dataclasses in `json_addon_info.py` (`ArrowSchema`), so an empty column keeps its type. `dataset_schema_test.py` fails when the
-columns change, names the version to bump to and prints the new `schema.json`. A change of meaning shows no
-schema change, so bump MAJOR for it by hand and update the version in `schema.json`.
+the `Details` dataclasses in `json_addon_info.py` (`ArrowSchema`), so an empty column keeps its type. The other
+tables are written with an explicit schema too, never with types inferred from the values.
+`dataset_schema_test.py` fails when the columns or their exact types change, names the version to bump to and
+prints the new `schema.json`. A change of meaning shows no schema change, so bump MAJOR for it by hand and update
+the version in `schema.json`.
 
 UPLOAD pushes to `main`, then tags the new head and points the `v{MAJOR}` branch at it.
