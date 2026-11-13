@@ -1,6 +1,7 @@
 import logging
 import platform
 import sys
+from datetime import datetime, timedelta
 from logging import Logger
 from pathlib import Path
 from typing import Optional
@@ -9,6 +10,7 @@ from anki_addons_dataset import __version__
 from anki_addons_dataset.collector.ai.provider.ai_provider import AiProvider
 from anki_addons_dataset.collector.ai.provider.ai_provider_factory import AiProviderFactory
 from anki_addons_dataset.collector.github.github_rest_client import GithubRestClient
+from anki_addons_dataset.collector.scan.clamav_scanner import ClamavError, ClamavScanner, ClamavVersion
 from anki_addons_dataset.common.data_types import SnapshotDate, ReportDate, PageLoadTimeout, ElementWaitTimeout
 from anki_addons_dataset.common.log import Log
 from anki_addons_dataset.common.working_dir import WorkingDir
@@ -20,6 +22,7 @@ log: Logger = logging.getLogger(__name__)
 
 class AppInfo:
     """Logs the app version and runtime configuration. Run first by the `all` operation."""
+    __max_clamav_database_age: timedelta = timedelta(days=7)
 
     def __init__(self, working_dir: WorkingDir, hugging_face_client: HuggingFaceClient, config: AppConfig,
                  page_load_timeout: PageLoadTimeout, element_wait_timeout: ElementWaitTimeout):
@@ -55,6 +58,7 @@ class AppInfo:
         self.__verify_ai_key_file()
         self.__verify_ai_provider()
         self.__verify_fork_verify_model()
+        self.__verify_clamav()
         self.__verify_hugging_face_access()
 
     def __verify_github_token(self) -> None:
@@ -83,6 +87,15 @@ class AppInfo:
             return
         AiProviderFactory.create(self.__config.ai, offline=False, model_name=model_name).verify_access()
         log.info(f"AI fork verify model: OK ({model_name})")
+
+    @staticmethod
+    def __verify_clamav() -> None:
+        version: ClamavVersion = ClamavScanner().verify_access()
+        if datetime.now() - version.database_date > AppInfo.__max_clamav_database_age:
+            raise ClamavError(f"The ClamAV signature database {version.database_version} is from "
+                              f"{version.database_date}: run freshclam (or its service) to update it")
+        log.info(f"ClamAV: OK (engine {version.engine}, signature database {version.database_version} "
+                 f"from {version.database_date})")
 
     def __verify_hugging_face_access(self) -> None:
         self.__hugging_face_client.verify_write_access()

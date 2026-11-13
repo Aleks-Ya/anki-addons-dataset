@@ -1,4 +1,4 @@
-from datetime import date
+from datetime import date, datetime
 from pathlib import Path
 import textwrap
 from zipfile import ZipFile
@@ -7,7 +7,8 @@ from seedir import seedir
 
 from anki_addons_dataset.bundle.dataset_bundle import DatasetBundle
 from anki_addons_dataset.collector.package.package_list import PackageList
-from anki_addons_dataset.common.data_types import SnapshotDate, ScriptVersion
+from anki_addons_dataset.collector.scan.scan_cache_index import ScanCacheIndex
+from anki_addons_dataset.common.data_types import SnapshotDate, ScriptVersion, PackageScan
 from anki_addons_dataset.common.working_dir import WorkingDir, SnapshotDir
 from anki_addons_dataset.collector.raw_metadata_collector import RawMetadataCollector
 
@@ -65,6 +66,18 @@ def test_raw_zip_holds_package_list_but_no_packages(working_dir: WorkingDir):
         names: list[str] = archive.namelist()
     assert "package-list.json" in names
     assert not any("5-package" in name or name.endswith(".ankiaddon") for name in names)
+
+
+def test_raw_zip_holds_the_scan_cache(working_dir: WorkingDir):
+    package_name: str = "45-2024-12-01-0123456789ab.ankiaddon"
+    snapshot_dir: SnapshotDir = __snapshot_with_package(working_dir, "2025-01-01", package_name)
+    ScanCacheIndex.append(snapshot_dir.get_scan_cache_file(), {package_name: PackageScan("1.5.4", 28181, [])},
+                          datetime(2025, 1, 2))
+
+    DatasetBundle(working_dir).create_bundle()
+
+    with ZipFile(working_dir.get_bundle_dir() / "history" / "2025-01-01" / "raw.zip") as archive:
+        assert "6-scan/scan-cache.jsonl" in archive.namelist()
 
 
 def test_raw_zip_keeps_other_raw_files(working_dir: WorkingDir):

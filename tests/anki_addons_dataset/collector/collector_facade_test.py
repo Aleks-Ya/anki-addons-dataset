@@ -16,10 +16,12 @@ from anki_addons_dataset.collector.ai.provider.ai_provider import AiInstructions
     AiResponseText
 from anki_addons_dataset.collector.collector_facade import CollectorFacade
 from anki_addons_dataset.collector.raw_metadata_collector import RawMetadataCollector
+from anki_addons_dataset.collector.scan.clamav_scanner import ClamavVersion
+from anki_addons_dataset.collector.scan.scan_cache_index import ScanCacheIndex
 from anki_addons_dataset.collector.sample_collector import SampleCollector
 from anki_addons_dataset.common.data_types import AddonInfos, ElementWaitTimeout, PageLoadTimeout, ReportDate, \
     ScriptVersion, SnapshotDate, AiModel, AddonPackage, AddonPackages, AddonReview, AnkiPointVersion, LanguageName, \
-    ReviewVote
+    ReviewVote, PackageScan
 from anki_addons_dataset.common.json_helper import JsonHelper
 from anki_addons_dataset.common.working_dir import SnapshotDir, WorkingDir
 from anki_addons_dataset.config.app_config import AppConfig
@@ -36,6 +38,7 @@ __REPORT_SNAPSHOT: str = \
 __PAGE_DOWNLOADER: str = "anki_addons_dataset.collector.collector_facade.PageDownloader"
 __ADDON_INFOS_COLLECTOR: str = "anki_addons_dataset.collector.collector_facade.AddonInfosCollector"
 __AI_PROVIDER_FACTORY: str = "anki_addons_dataset.collector.collector_facade.AiProviderFactory"
+__CLAMAV_SCANNER: str = "anki_addons_dataset.collector.collector_facade.ClamavScanner"
 
 
 class AnsweringAiProvider(AiProvider):
@@ -220,6 +223,31 @@ def test_summarize_snapshots_with_an_unknown_date_raises(collector_facade: Colle
 
     with pytest.raises(FileNotFoundError, match="No snapshot for 1999-01-01"):
         collector_facade.summarize_snapshots(unknown_date)
+
+
+def test_scan_snapshots_with_a_date_scans_only_that_snapshot_and_reuses_the_others(
+        working_dir: WorkingDir, collector_facade: CollectorFacade):
+    old_dir, new_dir = [working_dir.get_snapshot_dir(SnapshotDate(date.fromisoformat(snapshot_date))).create()
+                        for snapshot_date in ["2025-01-01", "2025-02-01"]]
+    for snapshot_dir in [old_dir, new_dir]:
+        package_file: Path = snapshot_dir.get_package_dir() / "100" / "45-2025-01-01-aaaaaaaaaaaa.ankiaddon"
+        package_file.parent.mkdir(parents=True)
+        package_file.write_bytes(b"zip")
+    scan: PackageScan = PackageScan("1.5.4", 28181, [])
+    ScanCacheIndex.append(old_dir.get_scan_cache_file(), {"45-2025-01-01-aaaaaaaaaaaa.ankiaddon": scan},
+                          datetime(2025, 2, 1))
+
+    with patch(__CLAMAV_SCANNER) as clamav_scanner_class:
+        clamav_scanner_class.return_value.version.return_value = ClamavVersion("1.5.4", 28181, datetime(2025, 2, 1))
+        collector_facade.scan_snapshots(SnapshotDate(date.fromisoformat("2025-02-01")))
+
+    clamav_scanner_class.return_value.scan.assert_not_called()
+    assert ScanCacheIndex.read(new_dir.get_scan_cache_file()) == {"45-2025-01-01-aaaaaaaaaaaa.ankiaddon": scan}
+
+
+def test_scan_snapshots_with_an_unknown_date_raises(collector_facade: CollectorFacade):
+    with pytest.raises(FileNotFoundError, match="No snapshot for 1999-01-01"):
+        collector_facade.scan_snapshots(SnapshotDate(date.fromisoformat("1999-01-01")))
 
 
 def test_parse_snapshots_with_a_date_parses_only_that_snapshot(

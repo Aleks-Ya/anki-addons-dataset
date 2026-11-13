@@ -31,5 +31,9 @@ The `.ankiaddon` packages served by AnkiWeb, one row per addon branch; `file_nam
   data formats such as `JSON`.
 - Counts include bundled libraries.
 - `manifest_json` and `config_json` are `null` when absent or over 64 kB.
+- `clamav_signatures` lists the [ClamAV](https://www.clamav.net/) signatures the package matched, with signature
+  database `clamav_database_version`: `[]` when clean, `null` when not scanned. A match is not proof of malware
+  (it can be a heuristic or "potentially unwanted" detection of a bundled tool), and ClamAV rarely detects
+  malicious Python, so `[]` does not mean the code is safe.
 
 How packages are downloaded and analyzed: [addon-packages.md](../addon-packages.md).

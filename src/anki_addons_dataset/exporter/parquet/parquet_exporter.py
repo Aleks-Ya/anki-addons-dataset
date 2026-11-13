@@ -1,6 +1,6 @@
 import dataclasses
 from pathlib import Path
-from typing import Any
+from typing import Any, Optional
 import logging
 from logging import Logger
 
@@ -9,7 +9,7 @@ import pyarrow.parquet
 from pandas import DataFrame
 
 from anki_addons_dataset.common.data_types import AddonInfos, DatasetSnapshotMetadata, RawMetadata, \
-    AiTagDefinition, AnkiRelease, PackageRow, ReviewRow
+    AiTagDefinition, AnkiRelease, PackageRow, PackageScan, ReviewRow
 from anki_addons_dataset.exporter.exporter import Exporter
 from anki_addons_dataset.exporter.json_addon_info import JsonAddonInfo, Details
 from anki_addons_dataset.exporter.parquet.arrow_schema import ArrowSchema
@@ -66,7 +66,8 @@ class ParquetExporter(Exporter):
             ("uncompressed_bytes", pyarrow.int64()), ("python_file_count", pyarrow.int64()),
             ("python_lines", pyarrow.int64()), ("files", pyarrow.list_(pyarrow.string())),
             ("language_bytes",
-             pyarrow.list_(pyarrow.struct([("name", pyarrow.string()), ("bytes", pyarrow.int64())])))])
+             pyarrow.list_(pyarrow.struct([("name", pyarrow.string()), ("bytes", pyarrow.int64())]))),
+            ("clamav_signatures", pyarrow.list_(pyarrow.string())), ("clamav_database_version", pyarrow.int64())])
         DataFrame([self.__package_record(package) for package in packages], columns=schema.names) \
             .to_parquet(output_file, compression="zstd", schema=schema)
         log.info(f"Write Parquet to file: {output_file}")
@@ -76,4 +77,7 @@ class ParquetExporter(Exporter):
         record: dict[str, Any] = {"addon_id": package.addon_id, **dataclasses.asdict(package.package)}
         record["language_bytes"] = [{"name": name, "bytes": count}
                                     for name, count in package.package.language_bytes.items()]
+        scan: Optional[PackageScan] = package.package.scan
+        record["clamav_signatures"] = scan.signatures if scan is not None else None
+        record["clamav_database_version"] = scan.database_version if scan is not None else None
         return record

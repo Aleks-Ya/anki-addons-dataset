@@ -2,6 +2,10 @@
 
 The versions of the dataset, see [versioning.md](versioning.md).
 
+## 1.1
+ClamAV scan results of the addon packages: `clamav_signatures` and `clamav_database_version` in the `packages`
+table, and `package.clamav_signatures` (of the newest branch) in `data`. `null` in snapshots that were not scanned.
+
 ## 1.0
 The first versioned release: the schema in [schema.json](schema.json).
 

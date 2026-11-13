@@ -22,6 +22,6 @@ def test_create_dataset_snapshot_metadata(working_dir: WorkingDir, report_date: 
           "data_collection_date": "2025-01-25",
           "report_generation_date": "2026-04-25T14:25:45",
           "script_version": "0.12.0",
-          "dataset_version": "1.0"
+          "dataset_version": "1.1"
         }"""
     )

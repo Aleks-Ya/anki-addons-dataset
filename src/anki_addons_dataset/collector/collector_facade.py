@@ -46,6 +46,9 @@ from anki_addons_dataset.collector.package.package_client import PackageClient
 from anki_addons_dataset.collector.package.package_collector import PackageCollector
 from anki_addons_dataset.collector.package.package_enricher import PackageEnricher
 from anki_addons_dataset.collector.raw_metadata_collector import RawMetadataCollector
+from anki_addons_dataset.collector.scan.clamav_scanner import ClamavScanner
+from anki_addons_dataset.collector.scan.package_scanner import PackageScanner
+from anki_addons_dataset.collector.scan.scan_cache_index import ScanCacheIndex
 from anki_addons_dataset.collector.sample_collector import SampleCollector
 from anki_addons_dataset.common.data_types import AddonInfos, DatasetSnapshotMetadata, RawMetadata, \
     AnkiRelease, SnapshotDate, ReportDate, ScriptVersion, PageLoadTimeout, ElementWaitTimeout, PackageRow, ReviewRow
@@ -85,6 +88,12 @@ class CollectorFacade:
         if not raw_metadata_collector.read_metadata().finish_timestamp:
             raw_metadata_collector.set_finish_datetime(datetime.now().replace(microsecond=0))
         log.info(f"===== Downloaded snapshot for {snapshot_date} =====\n")
+
+    def scan_snapshots(self, snapshot_date: Optional[SnapshotDate]) -> None:
+        shared_index: ScanCacheIndex = ScanCacheIndex.load(
+            [snapshot_dir.get_scan_cache_file() for snapshot_dir in self.__working_dir.list_snapshot_dirs()])
+        log.info(f"Scan cache holds {shared_index.size()} packages across all snapshots")
+        PackageScanner(ClamavScanner(), shared_index).scan(self.__selected_snapshot_dirs(snapshot_date))
 
     def summarize_snapshots(self, snapshot_date: Optional[SnapshotDate]) -> None:
         shared_index: AiCacheIndex = AiCacheIndex.load(

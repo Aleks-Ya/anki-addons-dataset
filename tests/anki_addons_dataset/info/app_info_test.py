@@ -14,6 +14,7 @@ from pytest_mock import MockerFixture
 from requests import Response
 
 from anki_addons_dataset import __version__
+from anki_addons_dataset.collector.scan.clamav_scanner import ClamavError, ClamavVersion
 from anki_addons_dataset.common.data_types import SnapshotDate, ReportDate, PageLoadTimeout, ElementWaitTimeout
 from anki_addons_dataset.common.log import Log
 from anki_addons_dataset.common.working_dir import WorkingDir
@@ -23,6 +24,14 @@ from anki_addons_dataset.huggingface.hugging_face_client import HuggingFaceClien
 from anki_addons_dataset.info.app_info import AppInfo
 
 OFF_PEAK: str = "2026-09-28 12:00:00"
+
+
+@pytest.fixture(autouse=True)
+def clamav_scanner() -> Any:
+    with patch("anki_addons_dataset.info.app_info.ClamavScanner") as scanner_class:
+        scanner_class.return_value.verify_access.return_value = ClamavVersion(
+            "1.5.4", 28181, datetime.now().replace(microsecond=0))
+        yield scanner_class.return_value
 
 
 def __token_file(tmp_path: Path) -> Path:
@@ -151,7 +160,32 @@ def test_print_info(working_dir: WorkingDir, tmp_path: Path, caplog: pytest.LogC
     assert "AI provider: OK (https://ai.example.com, model deepseek-flash)" in messages
     assert "AI fork verify model: deepseek-v4-pro" in messages
     assert "AI fork verify model: OK (deepseek-v4-pro)" in messages
+    assert "ClamAV: OK (engine 1.5.4, signature database 28181 from " in messages
     assert "HuggingFace write access: OK (Ya-Alex/anki-addons)" in messages
+
+
+@freeze_time("2026-11-20 12:00:00")
+def test_print_info_fails_on_an_outdated_clamav_database(working_dir: WorkingDir, tmp_path: Path,
+                                                         clamav_scanner: Mock):
+    app_info: AppInfo = __make_app_info(working_dir, tmp_path)
+    __write_token(tmp_path)
+    __write_ai_api_key(tmp_path)
+    clamav_scanner.verify_access.return_value = ClamavVersion("1.5.4", 28181, datetime(2026, 11, 12, 13, 27, 14))
+
+    with __patch_github_api(), __patch_ai_api():
+        with pytest.raises(ClamavError, match="database 28181 is from 2026-11-12 13:27:14: run freshclam"):
+            app_info.print_info(None, ReportDate(datetime(2026, 11, 20)))
+
+
+def test_print_info_fails_without_clamav(working_dir: WorkingDir, tmp_path: Path, clamav_scanner: Mock):
+    app_info: AppInfo = __make_app_info(working_dir, tmp_path)
+    __write_token(tmp_path)
+    __write_ai_api_key(tmp_path)
+    clamav_scanner.verify_access.side_effect = ClamavError("'clamdscan' not found")
+
+    with __patch_github_api(), __patch_ai_api():
+        with pytest.raises(ClamavError, match="'clamdscan' not found"):
+            app_info.print_info(None, ReportDate(datetime(2026, 11, 20)))
 
 
 def test_print_info_reports_the_running_log_file(working_dir: WorkingDir, tmp_path: Path,

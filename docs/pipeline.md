@@ -2,10 +2,11 @@
 
 ## Snapshot date (`-d`)
 
-`ai`, `parse` and `report` process every snapshot in `history/` by default. With `-d` they process
+`scan`, `ai`, `parse` and `report` process every snapshot in `history/` by default. With `-d` they process
 that one snapshot only:
 
 ```bash
+anki-addons-dataset scan -d 2026-01-01
 anki-addons-dataset ai -d 2026-01-01
 anki-addons-dataset parse -d 2026-01-01
 anki-addons-dataset report -d 2026-01-01
@@ -15,7 +16,7 @@ anki-addons-dataset parse report -d 2026-01-01   # re-parse and re-report one sn
 The date must name a snapshot that was already downloaded, otherwise the step fails. It also wins over
 `--sample-snapshots`. `bundle` ignores `-d` and always bundles the whole history.
 
-Inside `all`, `-d` is the date `download` scrapes. The `ai`, `parse` and `report` steps of `all` still
+Inside `all`, `-d` is the date `download` scrapes. The `scan`, `ai`, `parse` and `report` steps of `all` still
 process every snapshot. They take the date only when they are named explicitly, as in
 `download parse report -d 2026-01-01`.
 

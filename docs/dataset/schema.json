@@ -1,5 +1,5 @@
 {
-  "dataset_version": "1.0",
+  "dataset_version": "1.1",
   "tables": {
     "data": {
       "id": "int64",
@@ -126,7 +126,8 @@
       "package.python_lines": "int64",
       "package.primary_language": "string",
       "package.language_bytes[].name": "string",
-      "package.language_bytes[].bytes": "int64"
+      "package.language_bytes[].bytes": "int64",
+      "package.clamav_signatures[]": "string"
     },
     "tags": {
       "name": "string",
@@ -159,7 +160,9 @@
       "python_lines": "int64",
       "files[]": "string",
       "language_bytes[].name": "string",
-      "language_bytes[].bytes": "int64"
+      "language_bytes[].bytes": "int64",
+      "clamav_signatures[]": "string",
+      "clamav_database_version": "int64"
     }
   }
 }

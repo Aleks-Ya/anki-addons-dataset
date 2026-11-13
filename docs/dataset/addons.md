@@ -75,7 +75,8 @@ excluded by hand. Snapshots without packages have no duplicates.
 The `package` field summarizes the addon branch with the highest `min_point_version` in the
 [`packages` table](tables.md#packages) and adds `primary_language` (the language with the most bytes, ignoring
 data formats such as `JSON` or `YAML`). Languages have the same names as in `github.language_bytes`. It is `null`
-when the snapshot holds no package of the addon.
+when the snapshot holds no package of the addon. `clamav_signatures` is the ClamAV result of that branch, explained
+in the [`packages` table](tables.md#packages).
 `anki_web.package_size_kb` is the size shown by AnkiWeb, rounded to 10 kB (`0` means under 10 kB).
 
 ## Older snapshots

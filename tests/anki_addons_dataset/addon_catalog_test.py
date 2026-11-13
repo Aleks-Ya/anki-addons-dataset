@@ -148,7 +148,7 @@ def test_run_all_runs_every_step_and_hides_the_date_from_the_offline_steps(
 
     assert __steps(process) == [
         (Operation.INFO, snapshot_date), (Operation.INIT, snapshot_date), (Operation.DOWNLOAD, snapshot_date),
-        (Operation.AI, None), (Operation.PARSE, None), (Operation.REPORT, None),
+        (Operation.SCAN, None), (Operation.AI, None), (Operation.PARSE, None), (Operation.REPORT, None),
         (Operation.BUNDLE, snapshot_date), (Operation.UPLOAD, snapshot_date)]
     report_dates: set[Any] = {process_call.args[2] for process_call in process.call_args_list}
     assert len(report_dates) == 1
@@ -167,8 +167,8 @@ def test_run_all_of_a_sampled_run_skips_upload(monkeypatch: MonkeyPatch, tmp_pat
     process: Mock = __run(monkeypatch, tmp_path, "all", "-d", "2025-01-01", "--sample-addons", "5")
 
     assert [operation for operation, _ in __steps(process)] == [
-        Operation.INFO, Operation.INIT, Operation.DOWNLOAD, Operation.AI, Operation.PARSE, Operation.REPORT,
-        Operation.BUNDLE]
+        Operation.INFO, Operation.INIT, Operation.DOWNLOAD, Operation.SCAN, Operation.AI, Operation.PARSE,
+        Operation.REPORT, Operation.BUNDLE]
 
 
 def test_run_rejects_an_upload_of_a_sampled_run_before_any_step(monkeypatch: MonkeyPatch, tmp_path: Path):

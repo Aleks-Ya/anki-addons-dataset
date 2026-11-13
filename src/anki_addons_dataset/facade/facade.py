@@ -42,6 +42,8 @@ class Facade:
             working_dir_initializer.initialize_working_dir()
         elif operation == Operation.DOWNLOAD:
             self.__collector_facade.download_snapshot(snapshot_date)
+        elif operation == Operation.SCAN:
+            self.__collector_facade.scan_snapshots(snapshot_date)
         elif operation == Operation.AI:
             self.__collector_facade.summarize_snapshots(snapshot_date)
         elif operation == Operation.PARSE:

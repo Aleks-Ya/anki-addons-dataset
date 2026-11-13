@@ -49,6 +49,9 @@ class SnapshotDir:
     def get_package_dir(self) -> Path:
         return self.get_raw_dir() / "5-package"
 
+    def get_scan_cache_file(self) -> Path:
+        return self.get_raw_dir() / "6-scan" / "scan-cache.jsonl"
+
     def get_package_list_file(self) -> Path:
         return self.get_raw_dir() / "package-list.json"
 

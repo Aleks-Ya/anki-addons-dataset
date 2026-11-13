@@ -15,6 +15,15 @@ def test_process(facade: Facade):
     assert facade is not None
 
 
+def test_scan_operation_scans_snapshots(facade: Facade, report_date: ReportDate):
+    snapshot_date: SnapshotDate = SnapshotDate(date.fromisoformat("2025-01-01"))
+
+    with patch.object(CollectorFacade, "scan_snapshots") as scan_snapshots:
+        facade.process(Operation.SCAN, snapshot_date, report_date)
+
+    scan_snapshots.assert_called_once_with(snapshot_date)
+
+
 def test_ai_operation_summarizes_snapshots(facade: Facade, report_date: ReportDate):
     snapshot_date: Optional[SnapshotDate] = None
 

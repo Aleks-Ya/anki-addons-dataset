@@ -198,6 +198,7 @@ class Package:
     python_lines: int
     primary_language: Optional[str]
     language_bytes: list[LanguageBytes]
+    clamav_signatures: Optional[list[str]]
 
 
 @dataclass
@@ -293,7 +294,8 @@ class JsonAddonInfo:
                                                for name, count in newest.language_bytes.items()]
         return Package(newest.file_name, newest.updated.isoformat(), newest.size_bytes, newest.file_count,
                        newest.uncompressed_bytes, newest.python_file_count, newest.python_lines,
-                       JsonAddonInfo.__primary_language(language_bytes), language_bytes)
+                       JsonAddonInfo.__primary_language(language_bytes), language_bytes,
+                       newest.scan.signatures if newest.scan is not None else None)
 
     @staticmethod
     def __primary_language(language_bytes: list[LanguageBytes]) -> Optional[str]:

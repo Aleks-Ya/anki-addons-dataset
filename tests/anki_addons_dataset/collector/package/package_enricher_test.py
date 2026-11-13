@@ -1,5 +1,5 @@
 import dataclasses
-from datetime import date
+from datetime import date, datetime
 from pathlib import Path
 from typing import Optional
 from unittest.mock import Mock
@@ -9,8 +9,9 @@ import pytest
 
 from anki_addons_dataset.collector.package.package_analyzer import PackageAnalyzer
 from anki_addons_dataset.collector.package.package_enricher import PackageEnricher
+from anki_addons_dataset.collector.scan.scan_cache_index import ScanCacheIndex
 from anki_addons_dataset.common.data_types import AddonId, AddonInfo, AddonInfos, AddonPackage, AddonPackages, \
-    AnkiPointVersion, LanguageName
+    AnkiPointVersion, LanguageName, PackageScan
 from anki_addons_dataset.common.working_dir import SnapshotDir
 
 __ADDON_ID: AddonId = AddonId(100)
@@ -39,6 +40,29 @@ def test_enrich_builds_a_package_from_the_file(snapshot_dir: SnapshotDir, addon_
     assert packages == AddonPackages([AddonPackage(
         "45-2026-01-15-0123456789ab.ankiaddon", AnkiPointVersion(45), date(2026, 1, 15), package_file.stat().st_size,
         None, None, 1, 6, 1, 1, ["__init__.py"], {})])
+
+
+def test_enrich_attaches_the_scan_from_the_snapshot_cache(snapshot_dir: SnapshotDir, addon_info: AddonInfo,
+                                                         caplog: pytest.LogCaptureFixture):
+    __add_package(snapshot_dir, "45-2026-01-15-0123456789ab.ankiaddon")
+    scan: PackageScan = PackageScan("1.5.4", 28181, ["Eicar-Test-Signature"])
+    ScanCacheIndex.append(snapshot_dir.get_scan_cache_file(), {"45-2026-01-15-0123456789ab.ankiaddon": scan},
+                          datetime(2026, 11, 12))
+
+    packages: Optional[AddonPackages] = __enrich(snapshot_dir, addon_info)
+
+    assert packages.branches[0].scan == scan
+    assert "have no ClamAV scan" not in caplog.text
+
+
+def test_enrich_counts_packages_without_scan(snapshot_dir: SnapshotDir, addon_info: AddonInfo,
+                                             caplog: pytest.LogCaptureFixture):
+    __add_package(snapshot_dir, "45-2026-01-15-0123456789ab.ankiaddon")
+
+    packages: Optional[AddonPackages] = __enrich(snapshot_dir, addon_info)
+
+    assert packages.branches[0].scan is None
+    assert "1 packages have no ClamAV scan" in caplog.text
 
 
 def test_enrich_passes_the_detected_languages(snapshot_dir: SnapshotDir, addon_info: AddonInfo):

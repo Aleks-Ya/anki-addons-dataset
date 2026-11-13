@@ -15,6 +15,7 @@ Requirements:
 - a GitHub personal access token in `~/.github/token.txt` (see `github.token_file` in the config)
 - an AI API key in the file `ai.api_key_file` points at (the AI tests bill your account)
 - a write-capable HuggingFace token via `HF_TOKEN` or `hf auth login`
+- ClamAV with a running `clamd` daemon and a signature database at most 7 days old, for the scan tests
 
 Missing credentials make the tests **fail**, not skip — the point is to tell you the local setup is
 broken. All tests are read-only (nothing is uploaded, tagged or deleted on HuggingFace) and write

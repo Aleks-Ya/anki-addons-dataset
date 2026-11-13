@@ -12,7 +12,7 @@ from anki_addons_dataset.common.data_types import AddonInfo, AddonInfos, AddonHe
     GithubUserName, GithubRepoName, LanguageName, LanguageCode, ScriptVersion, AddonRating, UpdateDate, AddonTitle, \
     AddonManifest, SpdxLicense, Topic, DependencyName, GithubReadme, AiTag, AnkiVersionKind, \
     PageLink, PageLinkSection, ForkEvidence, ForkRelation, AddonReview, ReviewVote, AddonPackage, AddonPackages, \
-    AnkiPointVersion, GithubManifestFile, DuplicateRelation, DuplicateEvidence
+    AnkiPointVersion, GithubManifestFile, DuplicateRelation, DuplicateEvidence, PackageScan
 from anki_addons_dataset.common.json_helper import JsonHelper
 
 
@@ -404,6 +404,36 @@ def test_addon_infos_dump_round_trip_with_package(addon_info: AddonInfo, script_
     _, read_addon_infos = JsonHelper.read_addon_infos_dump(dump_file)
 
     assert read_addon_infos == addon_infos
+
+
+def test_addon_infos_dump_round_trip_with_package_scan(addon_info: AddonInfo, script_version: ScriptVersion,
+                                                       working_dir_path: Path):
+    addon_info = replace(addon_info, package=AddonPackages([AddonPackage(
+        "45-2026-01-15-0123456789ab.ankiaddon", AnkiPointVersion(45), date(2026, 1, 15), 100, None, None,
+        1, 300, 1, 10, ["__init__.py"], {}, PackageScan("1.5.4", 28181, ["Eicar-Signature"]))]))
+    addon_infos: AddonInfos = AddonInfos([addon_info])
+    dump_file: Path = working_dir_path / "addon-infos.json"
+
+    JsonHelper.write_addon_infos_dump(addon_infos, script_version, dump_file)
+    _, read_addon_infos = JsonHelper.read_addon_infos_dump(dump_file)
+
+    assert read_addon_infos == addon_infos
+
+
+def test_addon_infos_dump_reads_a_package_without_scan(addon_info: AddonInfo, script_version: ScriptVersion,
+                                                       working_dir_path: Path):
+    addon_info = replace(addon_info, package=AddonPackages([AddonPackage(
+        "45-2026-01-15-0123456789ab.ankiaddon", AnkiPointVersion(45), date(2026, 1, 15), 100, None, None,
+        1, 300, 1, 10, ["__init__.py"], {})]))
+    dump_file: Path = working_dir_path / "addon-infos.json"
+    JsonHelper.write_addon_infos_dump(AddonInfos([addon_info]), script_version, dump_file)
+    envelope: dict = json.loads(dump_file.read_text())
+    envelope["addon_infos"][0]["package"]["branches"][0].pop("scan")
+    dump_file.write_text(json.dumps(envelope))
+
+    _, read_addon_infos = JsonHelper.read_addon_infos_dump(dump_file)
+
+    assert read_addon_infos[0].package.branches[0].scan is None
 
 
 def test_addon_infos_dump_reads_legacy_dump_without_package(addon_infos: AddonInfos, script_version: ScriptVersion,

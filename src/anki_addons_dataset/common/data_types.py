@@ -7,7 +7,7 @@ SnapshotDate = NewType("SnapshotDate", date)
 ReportDate = NewType("ReportDate", datetime)
 ScriptVersion = NewType("ScriptVersion", str)
 DatasetVersion = NewType("DatasetVersion", str)
-DATASET_VERSION: DatasetVersion = DatasetVersion("1.0")
+DATASET_VERSION: DatasetVersion = DatasetVersion("1.1")
 AddonId = NewType("AddonId", int)
 AddonTitle = NewType("AddonTitle", str)
 AddonRating = NewType("AddonRating", int)
@@ -332,6 +332,13 @@ class ReviewRow:
 
 
 @dataclass(frozen=True)
+class PackageScan:
+    engine: str
+    database_version: int
+    signatures: list[str]
+
+
+@dataclass(frozen=True)
 class AddonPackage:
     file_name: str
     min_point_version: AnkiPointVersion
@@ -345,6 +352,7 @@ class AddonPackage:
     python_lines: int
     files: list[str]
     language_bytes: dict[LanguageName, int]
+    scan: Optional[PackageScan] = None
 
 
 @dataclass(frozen=True)

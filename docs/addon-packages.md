@@ -81,6 +81,28 @@ then with `p=0` (some of these addons return 404 for one of the two), and builds
 
 The cache trusts the page date: a package replaced without its branch's `updated` date changing would be missed.
 
+## Malware scan
+The SCAN step, between DOWNLOAD and AI, scans every package with [ClamAV](https://www.clamav.net/). About 150
+packages ship `.exe` files and about 100 ship native libraries (`.so`, `.pyd`, `.dll`, `.dylib`), which Anki users
+install without reading. ClamAV opens the zip itself and matches known signatures, so it finds known malware in
+bundled binaries. It finds almost nothing in Python written for one addon: a clean result does not mean the code is
+safe, and a match can be a heuristic or "potentially unwanted" detection of a legitimate bundled tool.
+
+- `ClamavScanner` runs `clamdscan --fdpass` against the local `clamd` daemon. The daemon loads the signature
+  database once, and `--fdpass` lets it read files it has no permission for. A missing daemon, exit code 2 or a
+  file without a result stops the step.
+- Results go to `1-raw/6-scan/scan-cache.jsonl`, one line per package file name (which holds its hash): `engine`,
+  `database_version`, `signatures` (`[]` when clean) and `scanned_at`. A later line with a higher database version
+  wins. The file is small and goes into `raw.zip`, so INIT restores it.
+- `ScanCacheIndex` merges the caches of all snapshots. A package scanned with the current database in any snapshot is
+  copied, not scanned again. One with an older result is scanned again, so a signature added later still flags an
+  old package. The database gets a new version every day, so every monthly run rescans every package.
+- Packages go to the daemon in batches of 10, on one thread per CPU, and each batch is appended as it finishes, so an
+  interrupted run resumes where it stopped.
+- PARSE reads only the snapshot's own cache into `AddonPackage.scan` and never calls ClamAV, so its result does not
+  depend on the day it runs. A package without a cached result gets `scan=None`, and PARSE logs their count.
+- `info` scans a tiny probe file and fails if the daemon does not answer or its database is older than 7 days.
+
 ## Publishing
 Packages are already zips, and most stay unchanged between snapshots, so they are left out of `raw.zip`.
 

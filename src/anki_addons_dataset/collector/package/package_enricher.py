@@ -9,8 +9,9 @@ from typing import Optional
 from anki_addons_dataset.collector.package.package_analyzer import PackageAnalysis, PackageAnalyzer
 from anki_addons_dataset.collector.package.package_cache_index import PackageKey
 from anki_addons_dataset.collector.package.package_client import PackageError
+from anki_addons_dataset.collector.scan.scan_cache_index import ScanCacheIndex
 from anki_addons_dataset.common.data_types import AddonId, AddonInfo, AddonInfos, AddonPackage, AddonPackages, \
-    AnkiPointVersion
+    AnkiPointVersion, PackageScan
 from anki_addons_dataset.common.working_dir import SnapshotDir
 
 log: Logger = logging.getLogger(__name__)
@@ -22,6 +23,7 @@ class PackageEnricher:
     def __init__(self, snapshot_dir: SnapshotDir, package_analyzer: PackageAnalyzer) -> None:
         self.__package_dir: Path = snapshot_dir.get_package_dir()
         self.__package_analyzer: PackageAnalyzer = package_analyzer
+        self.__scans: dict[str, PackageScan] = ScanCacheIndex.read(snapshot_dir.get_scan_cache_file())
 
     def enrich(self, addon_infos: AddonInfos) -> AddonInfos:
         with ThreadPoolExecutor(max_workers=self.__pool_size, thread_name_prefix="package") as executor:
@@ -34,6 +36,10 @@ class PackageEnricher:
         log.info(f"Addons with a package: {sum(1 for addon_info in enriched if addon_info.package is not None)}")
         if failed_count:
             log.warning(f"{failed_count} packages cannot be read")
+        unscanned_count: int = sum(1 for addon_info in enriched if addon_info.package is not None
+                                   for branch in addon_info.package.branches if branch.scan is None)
+        if unscanned_count:
+            log.warning(f"{unscanned_count} packages have no ClamAV scan. Run the 'scan' operation to scan them.")
         return AddonInfos(enriched)
 
     def __analyze_addon(self, addon_info: AddonInfo) -> list[Optional[AddonPackage]]:
@@ -59,4 +65,4 @@ class PackageEnricher:
         return AddonPackage(file.name, key.min_point_version, key.updated, file.stat().st_size, analysis.manifest_json,
                             analysis.config_json, analysis.file_count, analysis.uncompressed_bytes,
                             analysis.python_file_count, analysis.python_lines, analysis.files,
-                            analysis.language_bytes)
+                            analysis.language_bytes, self.__scans.get(file.name))
