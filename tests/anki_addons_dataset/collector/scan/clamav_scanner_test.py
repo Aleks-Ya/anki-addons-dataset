@@ -75,9 +75,11 @@ def test_scan_fails_on_exit_code_2(tmp_path: Path):
 
 
 def test_scan_explains_a_missing_clamdscan(tmp_path: Path):
+    package_file: Path = __package(tmp_path, "a.ankiaddon")
+
     with patch(__RUN, side_effect=FileNotFoundError("clamdscan")):
         with pytest.raises(ClamavError, match="install ClamAV"):
-            ClamavScanner().scan([__package(tmp_path, "a.ankiaddon")])
+            ClamavScanner().scan([package_file])
 
 
 def test_verify_access_scans_a_clean_probe():
