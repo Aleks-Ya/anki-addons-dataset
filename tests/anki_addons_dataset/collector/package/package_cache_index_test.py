@@ -8,7 +8,8 @@ from anki_addons_dataset.common.working_dir import SnapshotDir, WorkingDir
 
 __ADDON_ID: AddonId = AddonId(100)
 __KEY: PackageKey = PackageKey(__ADDON_ID, AnkiPointVersion(45), date(2026, 1, 15))
-__FILE_NAME: str = "45-2026-01-15-0123456789ab.ankiaddon"
+__CONTENT_HASH: str = "0123456789abcdef" * 4
+__FILE_NAME: str = f"45-2026-01-15-{__CONTENT_HASH}.ankiaddon"
 
 
 def __snapshot(working_dir: WorkingDir, day: str) -> SnapshotDir:
@@ -49,6 +50,14 @@ def test_ignores_unexpected_file_names(working_dir: WorkingDir):
     assert index.size() == 0
 
 
+def test_ignores_file_names_with_a_truncated_hash(working_dir: WorkingDir):
+    __add_file(__snapshot(working_dir, "2026-02-01"), "45-2026-01-15-0123456789ab.ankiaddon")
+
+    index: PackageCacheIndex = PackageCacheIndex.load(working_dir.list_snapshot_dirs())
+
+    assert index.size() == 0
+
+
 def test_snapshot_without_packages_is_empty(working_dir: WorkingDir):
     __snapshot(working_dir, "2026-02-01")
 
@@ -58,10 +67,10 @@ def test_snapshot_without_packages_is_empty(working_dir: WorkingDir):
 
 
 def test_file_name_starts_with_prefix():
-    assert __KEY.file_name("0123456789ab") == __FILE_NAME
+    assert __KEY.file_name(__CONTENT_HASH) == __FILE_NAME
     assert __FILE_NAME.startswith(__KEY.file_prefix())
 
 
 def test_content_hash():
-    assert PackageKey.content_hash(__FILE_NAME) == "0123456789ab"
+    assert PackageKey.content_hash(__FILE_NAME) == __CONTENT_HASH
     assert PackageKey.content_hash("note.ankiaddon") is None

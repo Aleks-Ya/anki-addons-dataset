@@ -11,7 +11,7 @@ from anki_addons_dataset.common.working_dir import SnapshotDir
 @dataclass(frozen=True)
 class PackageKey:
     __file_name_pattern: ClassVar[re.Pattern[str]] = re.compile(
-        r"^(\d+)-(\d{4}-\d{2}-\d{2})-([0-9a-f]{12})\.ankiaddon$")
+        r"^(\d+)-(\d{4}-\d{2}-\d{2})-([0-9a-f]{64})\.ankiaddon$")
 
     addon_id: AddonId
     min_point_version: AnkiPointVersion

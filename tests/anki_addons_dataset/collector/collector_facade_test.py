@@ -39,6 +39,8 @@ __PAGE_DOWNLOADER: str = "anki_addons_dataset.collector.collector_facade.PageDow
 __ADDON_INFOS_COLLECTOR: str = "anki_addons_dataset.collector.collector_facade.AddonInfosCollector"
 __AI_PROVIDER_FACTORY: str = "anki_addons_dataset.collector.collector_facade.AiProviderFactory"
 __CLAMAV_SCANNER: str = "anki_addons_dataset.collector.collector_facade.ClamavScanner"
+__PACKAGE_NAME: str = f"45-2026-01-15-{'0123456789abcdef' * 4}.ankiaddon"
+__SCANNED_PACKAGE_NAME: str = f"45-2025-01-01-{'a' * 64}.ankiaddon"
 
 
 class AnsweringAiProvider(AiProvider):
@@ -68,7 +70,7 @@ def test_report_snapshots_exports_packages(
         collector_facade: CollectorFacade, snapshot_dir: SnapshotDir, addon_infos: AddonInfos,
         script_version: ScriptVersion, report_date: ReportDate):
     addon_infos = AddonInfos([replace(addon_infos[0], package=AddonPackages([AddonPackage(
-        "45-2026-01-15-0123456789ab.ankiaddon", AnkiPointVersion(45), date(2026, 1, 15), 10, None, None,
+        __PACKAGE_NAME, AnkiPointVersion(45), date(2026, 1, 15), 10, None, None,
         1, 6, 1, 1, ["__init__.py"], {LanguageName("Python"): 6})]))])
     JsonHelper.write_addon_infos_dump(addon_infos, script_version, snapshot_dir.get_addon_infos_dump())
 
@@ -76,10 +78,10 @@ def test_report_snapshots_exports_packages(
 
     packages_df: DataFrame = pandas.read_parquet(snapshot_dir.get_final_dir() / "parquet" / "packages.parquet")
     assert list(packages_df["addon_id"]) == [addon_infos[0].header.id]
-    assert list(packages_df["file_name"]) == ["45-2026-01-15-0123456789ab.ankiaddon"]
+    assert list(packages_df["file_name"]) == [__PACKAGE_NAME]
     assert list(packages_df["language_bytes"][0]) == [{"name": "Python", "bytes": 6}]
     data_df: DataFrame = pandas.read_parquet(snapshot_dir.get_final_dir() / "parquet" / "data.parquet")
-    assert data_df.iloc[0]["package"]["file_name"] == "45-2026-01-15-0123456789ab.ankiaddon"
+    assert data_df.iloc[0]["package"]["file_name"] == __PACKAGE_NAME
     assert data_df.iloc[0]["package"]["primary_language"] == "Python"
 
 
@@ -230,11 +232,11 @@ def test_scan_snapshots_with_a_date_scans_only_that_snapshot_and_reuses_the_othe
     old_dir, new_dir = [working_dir.get_snapshot_dir(SnapshotDate(date.fromisoformat(snapshot_date))).create()
                         for snapshot_date in ["2025-01-01", "2025-02-01"]]
     for snapshot_dir in [old_dir, new_dir]:
-        package_file: Path = snapshot_dir.get_package_dir() / "100" / "45-2025-01-01-aaaaaaaaaaaa.ankiaddon"
+        package_file: Path = snapshot_dir.get_package_dir() / "100" / __SCANNED_PACKAGE_NAME
         package_file.parent.mkdir(parents=True)
         package_file.write_bytes(b"zip")
     scan: PackageScan = PackageScan("1.5.4", 28181, [])
-    ScanCacheIndex.append(old_dir.get_scan_cache_file(), {"45-2025-01-01-aaaaaaaaaaaa.ankiaddon": scan},
+    ScanCacheIndex.append(old_dir.get_scan_cache_file(), {__SCANNED_PACKAGE_NAME: scan},
                           datetime(2025, 2, 1))
 
     with patch(__CLAMAV_SCANNER) as clamav_scanner_class:
@@ -242,7 +244,7 @@ def test_scan_snapshots_with_a_date_scans_only_that_snapshot_and_reuses_the_othe
         collector_facade.scan_snapshots(SnapshotDate(date.fromisoformat("2025-02-01")))
 
     clamav_scanner_class.return_value.scan.assert_not_called()
-    assert ScanCacheIndex.read(new_dir.get_scan_cache_file()) == {"45-2025-01-01-aaaaaaaaaaaa.ankiaddon": scan}
+    assert ScanCacheIndex.read(new_dir.get_scan_cache_file()) == {__SCANNED_PACKAGE_NAME: scan}
 
 
 def test_scan_snapshots_with_an_unknown_date_raises(collector_facade: CollectorFacade):

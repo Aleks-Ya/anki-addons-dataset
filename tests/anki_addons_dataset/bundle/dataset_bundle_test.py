@@ -13,6 +13,10 @@ from anki_addons_dataset.common.working_dir import WorkingDir, SnapshotDir
 from anki_addons_dataset.collector.raw_metadata_collector import RawMetadataCollector
 
 
+__PACKAGE_NAME: str = f"45-2024-12-01-{'0123456789abcdef' * 4}.ankiaddon"
+__NEW_PACKAGE_NAME: str = f"45-2025-01-15-{'fedcba9876543210' * 4}.ankiaddon"
+
+
 def test_parse_snapshot_date(working_dir: WorkingDir, script_version: ScriptVersion):
     snapshot_date_1: SnapshotDate = SnapshotDate(date.fromisoformat("2025-01-01"))
     snapshot_dir_1: SnapshotDir = working_dir.get_snapshot_dir(snapshot_date_1).create()
@@ -57,7 +61,7 @@ def __snapshot_with_package(working_dir: WorkingDir, day: str, package_name: str
 
 
 def test_raw_zip_holds_package_list_but_no_packages(working_dir: WorkingDir):
-    __snapshot_with_package(working_dir, "2025-01-01", "45-2024-12-01-0123456789ab.ankiaddon")
+    __snapshot_with_package(working_dir, "2025-01-01", __PACKAGE_NAME)
 
     DatasetBundle(working_dir).create_bundle()
 
@@ -69,7 +73,7 @@ def test_raw_zip_holds_package_list_but_no_packages(working_dir: WorkingDir):
 
 
 def test_raw_zip_holds_the_scan_cache(working_dir: WorkingDir):
-    package_name: str = "45-2024-12-01-0123456789ab.ankiaddon"
+    package_name: str = __PACKAGE_NAME
     snapshot_dir: SnapshotDir = __snapshot_with_package(working_dir, "2025-01-01", package_name)
     ScanCacheIndex.append(snapshot_dir.get_scan_cache_file(), {package_name: PackageScan("1.5.4", 28181, [])},
                           datetime(2025, 1, 2))
@@ -94,8 +98,8 @@ def test_raw_zip_keeps_other_raw_files(working_dir: WorkingDir):
 
 
 def test_bundle_holds_each_package_version_once(working_dir: WorkingDir):
-    shared_name: str = "45-2024-12-01-0123456789ab.ankiaddon"
-    new_name: str = "45-2025-01-15-ba9876543210.ankiaddon"
+    shared_name: str = __PACKAGE_NAME
+    new_name: str = __NEW_PACKAGE_NAME
     __snapshot_with_package(working_dir, "2025-01-01", shared_name)
     second: SnapshotDir = __snapshot_with_package(working_dir, "2025-02-01", shared_name)
     (second.get_package_dir() / "100" / new_name).write_text("package")

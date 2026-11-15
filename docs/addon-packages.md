@@ -68,9 +68,12 @@ GET /shared/download/<addon id>?v=2.1&p=<point version>
 ## Layout
 ```
 history/YYYY-MM-DD/1-raw/
-    5-package/{addon-id}/{min point version}-{branch updated}-{sha256, first 12}.ankiaddon
+    5-package/{addon-id}/{min point version}-{branch updated}-{sha256}.ankiaddon
     package-list.json
 ```
+The name holds the full SHA-256 of the file. The scan cache, the analyzer cache and `DuplicateResolver` take two
+files with one name for the same bytes, also across addons, so a shortened hash would let an author collide a
+malicious package with a harmless one on purpose and inherit its scan result.
 
 ## Cache
 `PackageCacheIndex` indexes the packages of all snapshots by addon id, minimum point version and the branch's

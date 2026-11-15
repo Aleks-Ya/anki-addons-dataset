@@ -12,6 +12,8 @@ from anki_addons_dataset.common.working_dir import SnapshotDir, WorkingDir
 
 __VERSION: ClamavVersion = ClamavVersion("1.5.4", 28181, datetime(2026, 11, 12, 13, 27, 14))
 __SCANNED_AT: datetime = datetime(2026, 11, 12, 14, 0, 0)
+__NAME_A: str = f"45-2026-01-15-{'a' * 64}.ankiaddon"
+__NAME_B: str = f"45-2026-01-15-{'b' * 64}.ankiaddon"
 
 
 def __snapshot_dir(working_dir: WorkingDir, snapshot_date: str) -> SnapshotDir:
@@ -39,20 +41,20 @@ def __scanned_names(clamav_scanner: Mock) -> list[str]:
 
 def test_scan_writes_every_package_to_the_snapshot_cache(working_dir: WorkingDir):
     snapshot_dir: SnapshotDir = __snapshot_dir(working_dir, "2026-11-01")
-    __add_package(snapshot_dir, 100, "45-2026-01-15-aaaaaaaaaaaa.ankiaddon")
-    __add_package(snapshot_dir, 200, "45-2026-01-15-bbbbbbbbbbbb.ankiaddon")
-    clamav_scanner: Mock = __clamav_scanner(frozenset({"45-2026-01-15-bbbbbbbbbbbb.ankiaddon"}))
+    __add_package(snapshot_dir, 100, __NAME_A)
+    __add_package(snapshot_dir, 200, __NAME_B)
+    clamav_scanner: Mock = __clamav_scanner(frozenset({__NAME_B}))
 
     PackageScanner(clamav_scanner, ScanCacheIndex()).scan([snapshot_dir])
 
     assert ScanCacheIndex.read(snapshot_dir.get_scan_cache_file()) == {
-        "45-2026-01-15-aaaaaaaaaaaa.ankiaddon": PackageScan("1.5.4", 28181, []),
-        "45-2026-01-15-bbbbbbbbbbbb.ankiaddon": PackageScan("1.5.4", 28181, ["Eicar-Test-Signature"])}
+        __NAME_A: PackageScan("1.5.4", 28181, []),
+        __NAME_B: PackageScan("1.5.4", 28181, ["Eicar-Test-Signature"])}
 
 
 def test_scan_logs_a_signature_match(working_dir: WorkingDir, caplog: pytest.LogCaptureFixture):
     snapshot_dir: SnapshotDir = __snapshot_dir(working_dir, "2026-11-01")
-    package_file: Path = __add_package(snapshot_dir, 100, "45-2026-01-15-aaaaaaaaaaaa.ankiaddon")
+    package_file: Path = __add_package(snapshot_dir, 100, __NAME_A)
 
     PackageScanner(__clamav_scanner(frozenset({package_file.name})), ScanCacheIndex()).scan([snapshot_dir])
 
@@ -62,36 +64,36 @@ def test_scan_logs_a_signature_match(working_dir: WorkingDir, caplog: pytest.Log
 
 def test_scan_skips_packages_scanned_with_the_current_database(working_dir: WorkingDir):
     snapshot_dir: SnapshotDir = __snapshot_dir(working_dir, "2026-11-01")
-    __add_package(snapshot_dir, 100, "45-2026-01-15-aaaaaaaaaaaa.ankiaddon")
-    __add_package(snapshot_dir, 200, "45-2026-01-15-bbbbbbbbbbbb.ankiaddon")
+    __add_package(snapshot_dir, 100, __NAME_A)
+    __add_package(snapshot_dir, 200, __NAME_B)
     ScanCacheIndex.append(snapshot_dir.get_scan_cache_file(),
-                          {"45-2026-01-15-aaaaaaaaaaaa.ankiaddon": PackageScan("1.5.4", 28181, [])}, __SCANNED_AT)
+                          {__NAME_A: PackageScan("1.5.4", 28181, [])}, __SCANNED_AT)
     clamav_scanner: Mock = __clamav_scanner()
 
     PackageScanner(clamav_scanner, ScanCacheIndex()).scan([snapshot_dir])
 
-    assert __scanned_names(clamav_scanner) == ["45-2026-01-15-bbbbbbbbbbbb.ankiaddon"]
+    assert __scanned_names(clamav_scanner) == [__NAME_B]
 
 
 def test_scan_rescans_packages_scanned_with_an_older_database(working_dir: WorkingDir):
     snapshot_dir: SnapshotDir = __snapshot_dir(working_dir, "2026-11-01")
-    __add_package(snapshot_dir, 100, "45-2026-01-15-aaaaaaaaaaaa.ankiaddon")
+    __add_package(snapshot_dir, 100, __NAME_A)
     ScanCacheIndex.append(snapshot_dir.get_scan_cache_file(),
-                          {"45-2026-01-15-aaaaaaaaaaaa.ankiaddon": PackageScan("1.5.4", 28180, [])}, __SCANNED_AT)
-    clamav_scanner: Mock = __clamav_scanner(frozenset({"45-2026-01-15-aaaaaaaaaaaa.ankiaddon"}))
+                          {__NAME_A: PackageScan("1.5.4", 28180, [])}, __SCANNED_AT)
+    clamav_scanner: Mock = __clamav_scanner(frozenset({__NAME_A}))
 
     PackageScanner(clamav_scanner, ScanCacheIndex()).scan([snapshot_dir])
 
     assert ScanCacheIndex.read(snapshot_dir.get_scan_cache_file()) == {
-        "45-2026-01-15-aaaaaaaaaaaa.ankiaddon": PackageScan("1.5.4", 28181, ["Eicar-Test-Signature"])}
+        __NAME_A: PackageScan("1.5.4", 28181, ["Eicar-Test-Signature"])}
 
 
 def test_scan_copies_a_result_from_another_snapshot(working_dir: WorkingDir):
     old_snapshot_dir: SnapshotDir = __snapshot_dir(working_dir, "2026-10-01")
     new_snapshot_dir: SnapshotDir = __snapshot_dir(working_dir, "2026-11-01")
-    __add_package(new_snapshot_dir, 100, "45-2026-01-15-aaaaaaaaaaaa.ankiaddon")
+    __add_package(new_snapshot_dir, 100, __NAME_A)
     ScanCacheIndex.append(old_snapshot_dir.get_scan_cache_file(),
-                          {"45-2026-01-15-aaaaaaaaaaaa.ankiaddon": PackageScan("1.5.4", 28181, [])}, __SCANNED_AT)
+                          {__NAME_A: PackageScan("1.5.4", 28181, [])}, __SCANNED_AT)
     shared_index: ScanCacheIndex = ScanCacheIndex.load([old_snapshot_dir.get_scan_cache_file()])
     clamav_scanner: Mock = __clamav_scanner()
 
@@ -99,22 +101,22 @@ def test_scan_copies_a_result_from_another_snapshot(working_dir: WorkingDir):
 
     clamav_scanner.scan.assert_not_called()
     assert ScanCacheIndex.read(new_snapshot_dir.get_scan_cache_file()) == {
-        "45-2026-01-15-aaaaaaaaaaaa.ankiaddon": PackageScan("1.5.4", 28181, [])}
+        __NAME_A: PackageScan("1.5.4", 28181, [])}
 
 
 def test_scan_scans_a_package_shared_by_snapshots_once(working_dir: WorkingDir):
     old_snapshot_dir: SnapshotDir = __snapshot_dir(working_dir, "2026-10-01")
     new_snapshot_dir: SnapshotDir = __snapshot_dir(working_dir, "2026-11-01")
-    __add_package(old_snapshot_dir, 100, "45-2026-01-15-aaaaaaaaaaaa.ankiaddon")
-    __add_package(new_snapshot_dir, 100, "45-2026-01-15-aaaaaaaaaaaa.ankiaddon")
-    __add_package(new_snapshot_dir, 200, "45-2026-01-15-aaaaaaaaaaaa.ankiaddon")
+    __add_package(old_snapshot_dir, 100, __NAME_A)
+    __add_package(new_snapshot_dir, 100, __NAME_A)
+    __add_package(new_snapshot_dir, 200, __NAME_A)
     clamav_scanner: Mock = __clamav_scanner()
 
     PackageScanner(clamav_scanner, ScanCacheIndex()).scan([old_snapshot_dir, new_snapshot_dir])
 
-    assert __scanned_names(clamav_scanner) == ["45-2026-01-15-aaaaaaaaaaaa.ankiaddon"]
+    assert __scanned_names(clamav_scanner) == [__NAME_A]
     assert ScanCacheIndex.read(new_snapshot_dir.get_scan_cache_file()) == {
-        "45-2026-01-15-aaaaaaaaaaaa.ankiaddon": PackageScan("1.5.4", 28181, [])}
+        __NAME_A: PackageScan("1.5.4", 28181, [])}
 
 
 def test_scan_of_a_snapshot_without_packages(working_dir: WorkingDir):

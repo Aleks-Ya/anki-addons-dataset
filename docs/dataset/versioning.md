@@ -22,8 +22,8 @@ Every upload regenerates `history/` too, so all snapshots in one revision share 
 from datasets import load_dataset
 import pandas as pd
 
-addons = load_dataset("Ya-Alex/anki-addons", revision="v1", split="train")
-addons = pd.read_parquet("hf://datasets/Ya-Alex/anki-addons@v1/latest/parquet/data.parquet")
+addons = load_dataset("Ya-Alex/anki-addons", revision="v2", split="train")
+addons = pd.read_parquet("hf://datasets/Ya-Alex/anki-addons@v2/latest/parquet/data.parquet")
 ```
 
 What changed in each version: [changelog.md](changelog.md).

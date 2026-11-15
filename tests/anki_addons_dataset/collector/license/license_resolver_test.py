@@ -15,7 +15,7 @@ __PLAIN_DESCRIPTION: AddonDescription = AddonDescription("Shows the note size.")
 
 def __package(min_point_version: int, spdx_id: Optional[str] = None,
               source: Optional[PackageLicenseSource] = None) -> AddonPackage:
-    return AddonPackage(f"{min_point_version}-2026-01-15-0123456789ab.ankiaddon", AnkiPointVersion(min_point_version),
+    return AddonPackage(f"{min_point_version}-2026-01-15-{'0' * 64}.ankiaddon", AnkiPointVersion(min_point_version),
                         date(2026, 1, 15), 10, None, None, 1, 6, 1, 1, ["__init__.py"], {}, None,
                         SpdxLicense(spdx_id) if spdx_id else None, source)
 

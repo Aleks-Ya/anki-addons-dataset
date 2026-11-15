@@ -17,6 +17,9 @@ from anki_addons_dataset.common.data_types import AddonInfo, AddonInfos, AddonHe
 from anki_addons_dataset.common.json_helper import JsonHelper
 
 
+__PACKAGE_NAME: str = f"45-2026-01-15-{'0123456789abcdef' * 4}.ankiaddon"
+
+
 def test_addon_infos_dump_round_trip(addon_infos: AddonInfos, script_version: ScriptVersion, working_dir_path: Path):
     dump_file: Path = working_dir_path / "addon-infos.json"
 
@@ -396,7 +399,7 @@ def test_addon_infos_dump_reads_legacy_dump_without_author_fields(addon_infos: A
 def test_addon_infos_dump_round_trip_with_package(addon_info: AddonInfo, script_version: ScriptVersion,
                                                   working_dir_path: Path):
     addon_info = replace(addon_info, package=AddonPackages([AddonPackage(
-        "45-2026-01-15-0123456789ab.ankiaddon", AnkiPointVersion(45), date(2026, 1, 15), 100, '{"name": "A"}', None,
+        __PACKAGE_NAME, AnkiPointVersion(45), date(2026, 1, 15), 100, '{"name": "A"}', None,
         2, 300, 1, 10, ["__init__.py", "manifest.json"], {LanguageName("Python"): 280, LanguageName("JSON"): 20})]))
     addon_infos: AddonInfos = AddonInfos([addon_info])
     dump_file: Path = working_dir_path / "addon-infos.json"
@@ -410,7 +413,7 @@ def test_addon_infos_dump_round_trip_with_package(addon_info: AddonInfo, script_
 def test_addon_infos_dump_round_trip_with_package_scan(addon_info: AddonInfo, script_version: ScriptVersion,
                                                        working_dir_path: Path):
     addon_info = replace(addon_info, package=AddonPackages([AddonPackage(
-        "45-2026-01-15-0123456789ab.ankiaddon", AnkiPointVersion(45), date(2026, 1, 15), 100, None, None,
+        __PACKAGE_NAME, AnkiPointVersion(45), date(2026, 1, 15), 100, None, None,
         1, 300, 1, 10, ["__init__.py"], {}, PackageScan("1.5.4", 28181, ["Eicar-Signature"]))]))
     addon_infos: AddonInfos = AddonInfos([addon_info])
     dump_file: Path = working_dir_path / "addon-infos.json"
@@ -424,7 +427,7 @@ def test_addon_infos_dump_round_trip_with_package_scan(addon_info: AddonInfo, sc
 def test_addon_infos_dump_reads_a_package_without_scan(addon_info: AddonInfo, script_version: ScriptVersion,
                                                        working_dir_path: Path):
     addon_info = replace(addon_info, package=AddonPackages([AddonPackage(
-        "45-2026-01-15-0123456789ab.ankiaddon", AnkiPointVersion(45), date(2026, 1, 15), 100, None, None,
+        __PACKAGE_NAME, AnkiPointVersion(45), date(2026, 1, 15), 100, None, None,
         1, 300, 1, 10, ["__init__.py"], {})]))
     dump_file: Path = working_dir_path / "addon-infos.json"
     JsonHelper.write_addon_infos_dump(AddonInfos([addon_info]), script_version, dump_file)
@@ -440,7 +443,7 @@ def test_addon_infos_dump_reads_a_package_without_scan(addon_info: AddonInfo, sc
 def test_addon_infos_dump_round_trip_with_package_license(addon_info: AddonInfo, script_version: ScriptVersion,
                                                           working_dir_path: Path):
     addon_info = replace(addon_info, package=AddonPackages([AddonPackage(
-        "45-2026-01-15-0123456789ab.ankiaddon", AnkiPointVersion(45), date(2026, 1, 15), 100, None, None,
+        __PACKAGE_NAME, AnkiPointVersion(45), date(2026, 1, 15), 100, None, None,
         1, 300, 1, 10, ["LICENSE"], {}, None, SpdxLicense("MIT"), PackageLicenseSource.FILE, "LICENSE")]))
     addon_infos: AddonInfos = AddonInfos([addon_info])
     dump_file: Path = working_dir_path / "addon-infos.json"
@@ -454,7 +457,7 @@ def test_addon_infos_dump_round_trip_with_package_license(addon_info: AddonInfo,
 def test_addon_infos_dump_reads_a_package_without_license(addon_info: AddonInfo, script_version: ScriptVersion,
                                                           working_dir_path: Path):
     addon_info = replace(addon_info, package=AddonPackages([AddonPackage(
-        "45-2026-01-15-0123456789ab.ankiaddon", AnkiPointVersion(45), date(2026, 1, 15), 100, None, None,
+        __PACKAGE_NAME, AnkiPointVersion(45), date(2026, 1, 15), 100, None, None,
         1, 300, 1, 10, ["__init__.py"], {})]))
     dump_file: Path = working_dir_path / "addon-infos.json"
     JsonHelper.write_addon_infos_dump(AddonInfos([addon_info]), script_version, dump_file)

@@ -17,6 +17,10 @@ from anki_addons_dataset.common.working_dir import SnapshotDir
 __ADDON_ID: AddonId = AddonId(100)
 
 
+def __file_name(prefix: str, hash_char: str = "0") -> str:
+    return f"{prefix}-{hash_char * 64}.ankiaddon"
+
+
 def __add_package(snapshot_dir: SnapshotDir, file_name: str, content: bytes = b"a = 1\n",
                   addon_id: AddonId = __ADDON_ID) -> Path:
     package_file: Path = snapshot_dir.get_package_dir() / str(addon_id) / file_name
@@ -33,20 +37,20 @@ def __enrich(snapshot_dir: SnapshotDir, addon_info: AddonInfo) -> Optional[Addon
 
 
 def test_enrich_builds_a_package_from_the_file(snapshot_dir: SnapshotDir, addon_info: AddonInfo):
-    package_file: Path = __add_package(snapshot_dir, "45-2026-01-15-0123456789ab.ankiaddon")
+    package_file: Path = __add_package(snapshot_dir, __file_name("45-2026-01-15"))
 
     packages: Optional[AddonPackages] = __enrich(snapshot_dir, addon_info)
 
     assert packages == AddonPackages([AddonPackage(
-        "45-2026-01-15-0123456789ab.ankiaddon", AnkiPointVersion(45), date(2026, 1, 15), package_file.stat().st_size,
+        __file_name("45-2026-01-15"), AnkiPointVersion(45), date(2026, 1, 15), package_file.stat().st_size,
         None, None, 1, 6, 1, 1, ["__init__.py"], {})])
 
 
 def test_enrich_attaches_the_scan_from_the_snapshot_cache(snapshot_dir: SnapshotDir, addon_info: AddonInfo,
                                                          caplog: pytest.LogCaptureFixture):
-    __add_package(snapshot_dir, "45-2026-01-15-0123456789ab.ankiaddon")
+    __add_package(snapshot_dir, __file_name("45-2026-01-15"))
     scan: PackageScan = PackageScan("1.5.4", 28181, ["Eicar-Test-Signature"])
-    ScanCacheIndex.append(snapshot_dir.get_scan_cache_file(), {"45-2026-01-15-0123456789ab.ankiaddon": scan},
+    ScanCacheIndex.append(snapshot_dir.get_scan_cache_file(), {__file_name("45-2026-01-15"): scan},
                           datetime(2026, 11, 12))
 
     packages: Optional[AddonPackages] = __enrich(snapshot_dir, addon_info)
@@ -57,7 +61,7 @@ def test_enrich_attaches_the_scan_from_the_snapshot_cache(snapshot_dir: Snapshot
 
 def test_enrich_counts_packages_without_scan(snapshot_dir: SnapshotDir, addon_info: AddonInfo,
                                              caplog: pytest.LogCaptureFixture):
-    __add_package(snapshot_dir, "45-2026-01-15-0123456789ab.ankiaddon")
+    __add_package(snapshot_dir, __file_name("45-2026-01-15"))
 
     packages: Optional[AddonPackages] = __enrich(snapshot_dir, addon_info)
 
@@ -66,7 +70,7 @@ def test_enrich_counts_packages_without_scan(snapshot_dir: SnapshotDir, addon_in
 
 
 def test_enrich_passes_the_detected_languages(snapshot_dir: SnapshotDir, addon_info: AddonInfo):
-    __add_package(snapshot_dir, "45-2026-01-15-0123456789ab.ankiaddon", b"import aqt\nprint(1)")
+    __add_package(snapshot_dir, __file_name("45-2026-01-15"), b"import aqt\nprint(1)")
 
     packages: Optional[AddonPackages] = __enrich(snapshot_dir, addon_info)
 
@@ -74,7 +78,7 @@ def test_enrich_passes_the_detected_languages(snapshot_dir: SnapshotDir, addon_i
 
 
 def test_enrich_passes_the_detected_license(snapshot_dir: SnapshotDir, addon_info: AddonInfo):
-    __add_package(snapshot_dir, "45-2026-01-15-0123456789ab.ankiaddon", b"# SPDX-License-Identifier: MIT\n")
+    __add_package(snapshot_dir, __file_name("45-2026-01-15"), b"# SPDX-License-Identifier: MIT\n")
 
     packages: Optional[AddonPackages] = __enrich(snapshot_dir, addon_info)
 
@@ -83,8 +87,8 @@ def test_enrich_passes_the_detected_license(snapshot_dir: SnapshotDir, addon_inf
 
 
 def test_enrich_sorts_branches_by_point_version(snapshot_dir: SnapshotDir, addon_info: AddonInfo):
-    __add_package(snapshot_dir, "231000-2026-01-15-0123456789ab.ankiaddon")
-    __add_package(snapshot_dir, "45-2025-01-15-0123456789ab.ankiaddon")
+    __add_package(snapshot_dir, __file_name("231000-2026-01-15"))
+    __add_package(snapshot_dir, __file_name("45-2025-01-15"))
 
     packages: Optional[AddonPackages] = __enrich(snapshot_dir, addon_info)
 
@@ -92,13 +96,13 @@ def test_enrich_sorts_branches_by_point_version(snapshot_dir: SnapshotDir, addon
 
 
 def test_enrich_keeps_the_newest_file_of_a_branch(snapshot_dir: SnapshotDir, addon_info: AddonInfo):
-    __add_package(snapshot_dir, "45-2026-01-15-aaaaaaaaaaaa.ankiaddon")
-    __add_package(snapshot_dir, "45-2026-02-15-bbbbbbbbbbbb.ankiaddon")
-    __add_package(snapshot_dir, "45-2025-12-15-cccccccccccc.ankiaddon")
+    __add_package(snapshot_dir, __file_name("45-2026-01-15", "a"))
+    __add_package(snapshot_dir, __file_name("45-2026-02-15", "b"))
+    __add_package(snapshot_dir, __file_name("45-2025-12-15", "c"))
 
     packages: Optional[AddonPackages] = __enrich(snapshot_dir, addon_info)
 
-    assert [branch.file_name for branch in packages.branches] == ["45-2026-02-15-bbbbbbbbbbbb.ankiaddon"]
+    assert [branch.file_name for branch in packages.branches] == [__file_name("45-2026-02-15", "b")]
 
 
 def test_enrich_leaves_an_addon_without_packages_empty(snapshot_dir: SnapshotDir, addon_info: AddonInfo):
@@ -106,7 +110,7 @@ def test_enrich_leaves_an_addon_without_packages_empty(snapshot_dir: SnapshotDir
 
 
 def test_enrich_does_not_read_packages_of_other_addons(snapshot_dir: SnapshotDir, addon_info: AddonInfo):
-    __add_package(snapshot_dir, "45-2026-01-15-0123456789ab.ankiaddon", addon_id=AddonId(200))
+    __add_package(snapshot_dir, __file_name("45-2026-01-15"), addon_id=AddonId(200))
 
     assert __enrich(snapshot_dir, addon_info) is None
 
@@ -119,8 +123,8 @@ def test_enrich_ignores_unexpected_file_names(snapshot_dir: SnapshotDir, addon_i
 
 def test_enrich_skips_a_corrupt_package_with_a_warning(snapshot_dir: SnapshotDir, addon_info: AddonInfo,
                                                        caplog: pytest.LogCaptureFixture):
-    __add_package(snapshot_dir, "45-2026-01-15-0123456789ab.ankiaddon")
-    corrupt: Path = __add_package(snapshot_dir, "231000-2026-01-15-0123456789ab.ankiaddon")
+    __add_package(snapshot_dir, __file_name("45-2026-01-15"))
+    corrupt: Path = __add_package(snapshot_dir, __file_name("231000-2026-01-15"))
     corrupt.write_bytes(b"not a zip")
 
     packages: Optional[AddonPackages] = __enrich(snapshot_dir, addon_info)
@@ -130,7 +134,7 @@ def test_enrich_skips_a_corrupt_package_with_a_warning(snapshot_dir: SnapshotDir
 
 
 def test_enrich_keeps_other_fields(snapshot_dir: SnapshotDir, addon_info: AddonInfo):
-    __add_package(snapshot_dir, "45-2026-01-15-0123456789ab.ankiaddon", addon_id=addon_info.header.id)
+    __add_package(snapshot_dir, __file_name("45-2026-01-15"), addon_id=addon_info.header.id)
 
     enriched: AddonInfo = PackageEnricher(snapshot_dir, PackageAnalyzer()).enrich(AddonInfos([addon_info]))[0]
 
@@ -138,7 +142,7 @@ def test_enrich_keeps_other_fields(snapshot_dir: SnapshotDir, addon_info: AddonI
 
 
 def test_enrich_does_not_hide_a_programming_error(snapshot_dir: SnapshotDir, addon_info: AddonInfo):
-    __add_package(snapshot_dir, "45-2026-01-15-0123456789ab.ankiaddon")
+    __add_package(snapshot_dir, __file_name("45-2026-01-15"))
     package_analyzer: Mock = Mock(spec=PackageAnalyzer)
     package_analyzer.analyze.side_effect = TypeError("bug")
     addon_infos: AddonInfos = AddonInfos([dataclasses.replace(

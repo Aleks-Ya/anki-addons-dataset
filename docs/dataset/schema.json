@@ -1,5 +1,5 @@
 {
-  "dataset_version": "1.1",
+  "dataset_version": "2.0",
   "tables": {
     "data": {
       "id": "int64",

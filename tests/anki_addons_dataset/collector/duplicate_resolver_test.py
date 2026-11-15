@@ -9,8 +9,8 @@ from anki_addons_dataset.common.data_types import AddonId, AddonInfo, AddonInfos
     AddonRating, AnkiPointVersion, DuplicateEvidence, DuplicateRelation
 
 
-def __package(content_hash: str, min_point_version: int = 45, updated: date = date(2026, 1, 1)) -> AddonPackage:
-    return AddonPackage(f"{min_point_version}-{updated.isoformat()}-{content_hash}.ankiaddon",
+def __package(hash_char: str, min_point_version: int = 45, updated: date = date(2026, 1, 1)) -> AddonPackage:
+    return AddonPackage(f"{min_point_version}-{updated.isoformat()}-{hash_char * 64}.ankiaddon",
                         AnkiPointVersion(min_point_version), updated, 100, None, None, 1, 100, 1, 10, [], {})
 
 
@@ -37,38 +37,38 @@ def __same_package(addon_id: int) -> DuplicateRelation:
 
 def test_the_best_rated_addon_is_the_original(addon_info: AddonInfo):
     assert __resolve([
-        __addon(addon_info, 10, [__package("aaaaaaaaaaaa")], rating=3),
-        __addon(addon_info, 20, [__package("aaaaaaaaaaaa")], rating=7),
-        __addon(addon_info, 30, [__package("aaaaaaaaaaaa")], rating=1),
-        __addon(addon_info, 40, [__package("bbbbbbbbbbbb")], rating=9)]) == {
+        __addon(addon_info, 10, [__package("a")], rating=3),
+        __addon(addon_info, 20, [__package("a")], rating=7),
+        __addon(addon_info, 30, [__package("a")], rating=1),
+        __addon(addon_info, 40, [__package("b")], rating=9)]) == {
         10: __same_package(20), 20: None, 30: __same_package(20), 40: None}
 
 
 def test_a_tied_rating_goes_to_the_first_upload_then_the_lowest_id(addon_info: AddonInfo):
     assert __resolve([
-        __addon(addon_info, 10, [__package("aaaaaaaaaaaa", updated=date(2026, 3, 1))]),
-        __addon(addon_info, 20, [__package("aaaaaaaaaaaa", updated=date(2026, 2, 1))]),
-        __addon(addon_info, 30, [__package("aaaaaaaaaaaa", updated=date(2026, 2, 1))])]) == {
+        __addon(addon_info, 10, [__package("a", updated=date(2026, 3, 1))]),
+        __addon(addon_info, 20, [__package("a", updated=date(2026, 2, 1))]),
+        __addon(addon_info, 30, [__package("a", updated=date(2026, 2, 1))])]) == {
         10: __same_package(20), 20: None, 30: __same_package(20)}
 
 
 def test_only_the_highest_min_point_version_branch_counts(addon_info: AddonInfo):
     assert __resolve([
-        __addon(addon_info, 10, [__package("aaaaaaaaaaaa", 1), __package("bbbbbbbbbbbb", 45)]),
-        __addon(addon_info, 20, [__package("aaaaaaaaaaaa", 1), __package("cccccccccccc", 45)])]) == {
+        __addon(addon_info, 10, [__package("a", 1), __package("b", 45)]),
+        __addon(addon_info, 20, [__package("a", 1), __package("c", 45)])]) == {
         10: None, 20: None}
 
 
 def test_an_addon_without_a_package_is_ignored(addon_info: AddonInfo):
     assert __resolve([
-        __addon(addon_info, 10, [__package("aaaaaaaaaaaa")]),
+        __addon(addon_info, 10, [__package("a")]),
         __addon(addon_info, 20, None)]) == {10: None, 20: None}
 
 
 def test_overrides_set_and_suppress_the_original(addon_info: AddonInfo):
     assert __resolve([
-        __addon(addon_info, 10, [__package("aaaaaaaaaaaa")], rating=5),
-        __addon(addon_info, 20, [__package("aaaaaaaaaaaa")]),
+        __addon(addon_info, 10, [__package("a")], rating=5),
+        __addon(addon_info, 20, [__package("a")]),
         __addon(addon_info, 30, None),
         __addon(addon_info, 40, None)], duplicate_of={20: None, 30: 10, 40: 99}) == {
         10: None, 20: None, 30: DuplicateRelation(AddonId(10), DuplicateEvidence.OVERRIDE), 40: None}

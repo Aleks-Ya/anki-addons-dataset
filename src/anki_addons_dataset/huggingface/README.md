@@ -36,12 +36,12 @@ Information about the 3,000+ addons of the [Anki flashcard program](https://apps
 ```python
 from datasets import load_dataset
 
-addons = load_dataset("Ya-Alex/anki-addons", revision="v1", split="train")
-reviews = load_dataset("Ya-Alex/anki-addons", "reviews", revision="v1", split="train")
+addons = load_dataset("Ya-Alex/anki-addons", revision="v2", split="train")
+reviews = load_dataset("Ya-Alex/anki-addons", "reviews", revision="v2", split="train")
 
 import pandas as pd
 
-addons = pd.read_parquet("hf://datasets/Ya-Alex/anki-addons@v1/latest/parquet/data.parquet")
+addons = pd.read_parquet("hf://datasets/Ya-Alex/anki-addons@v2/latest/parquet/data.parquet")
 ```
 
 ## Versions
@@ -50,9 +50,9 @@ an additive one. Pick the revision that fits:
 
 | Revision                   | Gets                                                      |
 |----------------------------|-----------------------------------------------------------|
-| `v1` (branch)              | every new snapshot, never a breaking change (recommended) |
+| `v2` (branch)              | every new snapshot, never a breaking change (recommended) |
 | `main`                     | every new snapshot and every change, including breaking   |
-| `v1.0-2026-11-01` (tag)    | never changes, for reproducible results                   |
+| `v2.0-2026-11-01` (tag)    | never changes, for reproducible results                   |
 
 See [versioning](https://github.com/Aleks-Ya/anki-addons-dataset/blob/main/docs/dataset/versioning.md) and the
 [changelog](https://github.com/Aleks-Ya/anki-addons-dataset/blob/main/docs/dataset/changelog.md).

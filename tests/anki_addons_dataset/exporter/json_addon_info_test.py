@@ -11,6 +11,10 @@ from anki_addons_dataset.common.data_types import GithubIssueHistory, AddonInfos
 from anki_addons_dataset.exporter.json_addon_info import JsonAddonInfo
 
 
+__BRANCH_45_NAME: str = f"45-2024-01-15-{'a' * 64}.ankiaddon"
+__BRANCH_231000_NAME: str = f"231000-2023-05-15-{'b' * 64}.ankiaddon"
+
+
 def to_dicts(addon_infos: AddonInfos) -> list[dict[str, Any]]:
     return [dataclasses.asdict(details) for details in JsonAddonInfo.addon_infos_to_json(addon_infos)]
 
@@ -486,15 +490,15 @@ def test_addon_infos_to_json_shared_repo(addon_info: AddonInfo):
 
 def test_addon_infos_to_json_package_summarizes_the_newest_branch(addon_info: AddonInfo):
     addon_info = replace(addon_info, package=AddonPackages([
-        AddonPackage("45-2024-01-15-aaaaaaaaaaaa.ankiaddon", AnkiPointVersion(45), date(2024, 1, 15), 10,
+        AddonPackage(__BRANCH_45_NAME, AnkiPointVersion(45), date(2024, 1, 15), 10,
                      None, None, 1, 20, 1, 3, ["__init__.py"], {LanguageName("Python"): 20}),
-        AddonPackage("231000-2023-05-15-bbbbbbbbbbbb.ankiaddon", AnkiPointVersion(231000), date(2023, 5, 15), 100,
+        AddonPackage(__BRANCH_231000_NAME, AnkiPointVersion(231000), date(2023, 5, 15), 100,
                      '{"name": "A"}', "{}", 3, 200, 2, 30, ["__init__.py", "config.json", "manifest.json"],
                      {LanguageName("Python"): 180, LanguageName("JSON"): 20})]))
 
     act_json: list[dict[str, Any]] = to_dicts(AddonInfos([addon_info]))
 
-    assert act_json[0]["package"] == {"file_name": "231000-2023-05-15-bbbbbbbbbbbb.ankiaddon", "updated": "2023-05-15",
+    assert act_json[0]["package"] == {"file_name": __BRANCH_231000_NAME, "updated": "2023-05-15",
                                       "size_bytes": 100, "file_count": 3, "uncompressed_bytes": 200,
                                       "python_file_count": 2, "python_lines": 30, "primary_language": "Python",
                                       "language_bytes": [{"name": "Python", "bytes": 180},
@@ -504,9 +508,9 @@ def test_addon_infos_to_json_package_summarizes_the_newest_branch(addon_info: Ad
 
 def test_addon_infos_to_json_package_takes_the_scan_of_the_newest_branch(addon_info: AddonInfo):
     addon_info = replace(addon_info, package=AddonPackages([
-        AddonPackage("45-2024-01-15-aaaaaaaaaaaa.ankiaddon", AnkiPointVersion(45), date(2024, 1, 15), 10,
+        AddonPackage(__BRANCH_45_NAME, AnkiPointVersion(45), date(2024, 1, 15), 10,
                      None, None, 1, 20, 1, 3, ["__init__.py"], {}, PackageScan("1.5.4", 28181, ["Eicar-Signature"])),
-        AddonPackage("231000-2023-05-15-bbbbbbbbbbbb.ankiaddon", AnkiPointVersion(231000), date(2023, 5, 15), 100,
+        AddonPackage(__BRANCH_231000_NAME, AnkiPointVersion(231000), date(2023, 5, 15), 100,
                      None, None, 1, 20, 1, 3, ["__init__.py"], {}, PackageScan("1.5.4", 28181, []))]))
 
     act_json: list[dict[str, Any]] = to_dicts(AddonInfos([addon_info]))
@@ -516,10 +520,10 @@ def test_addon_infos_to_json_package_takes_the_scan_of_the_newest_branch(addon_i
 
 def test_addon_infos_to_json_package_takes_the_license_of_the_newest_branch(addon_info: AddonInfo):
     addon_info = replace(addon_info, package=AddonPackages([
-        AddonPackage("45-2024-01-15-aaaaaaaaaaaa.ankiaddon", AnkiPointVersion(45), date(2024, 1, 15), 10,
+        AddonPackage(__BRANCH_45_NAME, AnkiPointVersion(45), date(2024, 1, 15), 10,
                      None, None, 1, 20, 1, 3, ["__init__.py"], {}, None, SpdxLicense("MIT"),
                      PackageLicenseSource.FILE, "LICENSE"),
-        AddonPackage("231000-2023-05-15-bbbbbbbbbbbb.ankiaddon", AnkiPointVersion(231000), date(2023, 5, 15), 100,
+        AddonPackage(__BRANCH_231000_NAME, AnkiPointVersion(231000), date(2023, 5, 15), 100,
                      None, None, 1, 20, 1, 3, ["__init__.py"], {}, None, SpdxLicense("AGPL-3.0"),
                      PackageLicenseSource.HEADER)]))
 
@@ -538,7 +542,7 @@ def test_addon_infos_to_json_license(addon_info: AddonInfo):
 
 def test_addon_infos_to_json_package_without_languages(addon_info: AddonInfo):
     addon_info = replace(addon_info, package=AddonPackages([
-        AddonPackage("45-2024-01-15-aaaaaaaaaaaa.ankiaddon", AnkiPointVersion(45), date(2024, 1, 15), 10,
+        AddonPackage(__BRANCH_45_NAME, AnkiPointVersion(45), date(2024, 1, 15), 10,
                      None, None, 1, 20, 0, 0, ["image.png"], {})]))
 
     act_json: list[dict[str, Any]] = to_dicts(AddonInfos([addon_info]))
@@ -549,7 +553,7 @@ def test_addon_infos_to_json_package_without_languages(addon_info: AddonInfo):
 
 def test_addon_infos_to_json_package_primary_language_skips_data_formats(addon_info: AddonInfo):
     addon_info = replace(addon_info, package=AddonPackages([
-        AddonPackage("45-2024-01-15-aaaaaaaaaaaa.ankiaddon", AnkiPointVersion(45), date(2024, 1, 15), 10,
+        AddonPackage(__BRANCH_45_NAME, AnkiPointVersion(45), date(2024, 1, 15), 10,
                      None, None, 4, 1000, 1, 3, ["__init__.py", "data.json", "words.csv", "web.js"],
                      {LanguageName("JSON"): 500, LanguageName("CSV"): 300, LanguageName("JavaScript"): 150,
                       LanguageName("Python"): 50})]))
@@ -561,7 +565,7 @@ def test_addon_infos_to_json_package_primary_language_skips_data_formats(addon_i
 
 def test_addon_infos_to_json_package_with_only_data_formats_has_no_primary_language(addon_info: AddonInfo):
     addon_info = replace(addon_info, package=AddonPackages([
-        AddonPackage("45-2024-01-15-aaaaaaaaaaaa.ankiaddon", AnkiPointVersion(45), date(2024, 1, 15), 10,
+        AddonPackage(__BRANCH_45_NAME, AnkiPointVersion(45), date(2024, 1, 15), 10,
                      None, None, 1, 500, 0, 0, ["data.json"], {LanguageName("JSON"): 500})]))
 
     act_json: list[dict[str, Any]] = to_dicts(AddonInfos([addon_info]))

@@ -9,7 +9,7 @@ from anki_addons_dataset.common.data_types import AddonId, AddonInfo, AddonInfos
 
 def __package(files: list[str], manifest_json: Optional[str] = None,
               updated: date = date(2026, 1, 1)) -> AddonPackage:
-    return AddonPackage("45-2026-01-01-aaaaaaaaaaaa.ankiaddon", AnkiPointVersion(45), updated, 100, manifest_json,
+    return AddonPackage(f"45-2026-01-01-{'a' * 64}.ankiaddon", AnkiPointVersion(45), updated, 100, manifest_json,
                         None, len(files), 100, 0, 0, files, {})
 
 

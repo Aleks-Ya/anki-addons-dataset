@@ -15,6 +15,10 @@ from anki_addons_dataset.common.working_dir import SnapshotDir
 from anki_addons_dataset.exporter.parquet.parquet_exporter import ParquetExporter
 
 
+__PACKAGE_NAME: str = f"45-2026-01-15-{'0123456789abcdef' * 4}.ankiaddon"
+__OTHER_PACKAGE_NAME: str = f"45-2026-01-15-{'fedcba9876543210' * 4}.ankiaddon"
+
+
 def test_export_addon_infos(snapshot_dir: SnapshotDir, addon_infos: AddonInfos,
                             dataset_snapshot_metadata: DatasetSnapshotMetadata, raw_metadata: RawMetadata):
     final_dir: Path = snapshot_dir.get_final_dir()
@@ -235,13 +239,13 @@ def test_export_reviews_empty(snapshot_dir: SnapshotDir):
 def test_export_packages(snapshot_dir: SnapshotDir):
     packages: list[PackageRow] = [
         PackageRow(AddonId(100), AddonPackage(
-            "45-2026-01-15-0123456789ab.ankiaddon", AnkiPointVersion(45), date(2026, 1, 15), 10, '{"name": "A"}', None,
+            __PACKAGE_NAME, AnkiPointVersion(45), date(2026, 1, 15), 10, '{"name": "A"}', None,
             2, 30, 1, 4, ["__init__.py", "manifest.json"], {LanguageName("Python"): 25, LanguageName("JSON"): 5}))]
     final_dir: Path = snapshot_dir.get_final_dir()
     ParquetExporter(final_dir).export_packages(packages)
 
     act_rows: list[dict] = pyarrow.parquet.read_table(final_dir / "parquet" / "packages.parquet").to_pylist()
-    assert act_rows == [{'addon_id': 100, 'file_name': '45-2026-01-15-0123456789ab.ankiaddon',
+    assert act_rows == [{'addon_id': 100, 'file_name': __PACKAGE_NAME,
                          'min_point_version': 45, 'updated': date(2026, 1, 15), 'size_bytes': 10,
                          'manifest_json': '{"name": "A"}', 'config_json': None, 'file_count': 2,
                          'uncompressed_bytes': 30, 'python_file_count': 1, 'python_lines': 4,
@@ -254,10 +258,10 @@ def test_export_packages(snapshot_dir: SnapshotDir):
 def test_export_packages_with_a_scan(snapshot_dir: SnapshotDir):
     packages: list[PackageRow] = [
         PackageRow(AddonId(100), AddonPackage(
-            "45-2026-01-15-0123456789ab.ankiaddon", AnkiPointVersion(45), date(2026, 1, 15), 10, None, None,
+            __PACKAGE_NAME, AnkiPointVersion(45), date(2026, 1, 15), 10, None, None,
             1, 30, 1, 4, ["__init__.py"], {}, PackageScan("1.5.4", 28181, ["Win.Trojan.Agent-1"]))),
         PackageRow(AddonId(200), AddonPackage(
-            "45-2026-01-15-ba9876543210.ankiaddon", AnkiPointVersion(45), date(2026, 1, 15), 10, None, None,
+            __OTHER_PACKAGE_NAME, AnkiPointVersion(45), date(2026, 1, 15), 10, None, None,
             1, 30, 1, 4, ["__init__.py"], {}, PackageScan("1.5.4", 28181, [])))]
     final_dir: Path = snapshot_dir.get_final_dir()
     ParquetExporter(final_dir).export_packages(packages)
@@ -272,7 +276,7 @@ def test_export_packages_with_a_scan(snapshot_dir: SnapshotDir):
 def test_export_packages_with_a_license(snapshot_dir: SnapshotDir):
     packages: list[PackageRow] = [
         PackageRow(AddonId(100), AddonPackage(
-            "45-2026-01-15-0123456789ab.ankiaddon", AnkiPointVersion(45), date(2026, 1, 15), 10, None, None,
+            __PACKAGE_NAME, AnkiPointVersion(45), date(2026, 1, 15), 10, None, None,
             1, 30, 1, 4, ["LICENSE"], {}, None, SpdxLicense("MIT"), PackageLicenseSource.FILE, "LICENSE"))]
     final_dir: Path = snapshot_dir.get_final_dir()
     ParquetExporter(final_dir).export_packages(packages)

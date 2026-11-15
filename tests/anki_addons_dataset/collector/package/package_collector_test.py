@@ -69,7 +69,7 @@ def __files(snapshot_dir: SnapshotDir) -> list[Path]:
 
 
 def __exp_name(content: bytes, min_point: int = 45, updated: date = __UPDATED) -> str:
-    return f"{min_point}-{updated.isoformat()}-{hashlib.sha256(content).hexdigest()[:12]}.ankiaddon"
+    return f"{min_point}-{updated.isoformat()}-{hashlib.sha256(content).hexdigest()}.ankiaddon"
 
 
 def test_downloads_missing_package(working_dir: WorkingDir, addon_info: AddonInfo):

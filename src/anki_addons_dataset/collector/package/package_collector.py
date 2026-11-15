@@ -21,7 +21,6 @@ log: Logger = logging.getLogger(__name__)
 
 class PackageCollector:
     __pool_size: int = 2
-    __hash_length: int = 12
 
     def __init__(self, snapshot_dir: SnapshotDir, package_client: PackageClient,
                  cache_index: PackageCacheIndex) -> None:
@@ -126,7 +125,7 @@ class PackageCollector:
     @staticmethod
     def __content_hash(file: Path) -> str:
         with file.open("rb") as content:
-            return hashlib.file_digest(content, "sha256").hexdigest()[:PackageCollector.__hash_length]
+            return hashlib.file_digest(content, "sha256").hexdigest()
 
     def __count_failed(self) -> None:
         with self.__counts_lock:

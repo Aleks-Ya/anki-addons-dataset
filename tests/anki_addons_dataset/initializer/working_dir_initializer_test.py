@@ -15,6 +15,9 @@ from anki_addons_dataset.huggingface.hugging_face_client import HuggingFaceClien
 from anki_addons_dataset.initializer.working_dir_initializer import WorkingDirInitializer
 
 
+__PACKAGE_ENTRY: str = f"100/45-2026-01-15-{'0123456789abcdef' * 4}.ankiaddon"
+
+
 def test_initialize_working_dir(working_dir: WorkingDir, working_dir_initializer: WorkingDirInitializer,
                                 hugging_face_client: HuggingFaceClient):
     working_dir.get_path().rmdir()
@@ -53,7 +56,7 @@ def __raw_zip(package_list: list[str]) -> Path:
 def test_initialize_working_dir_restores_listed_packages(working_dir: WorkingDir,
                                                          working_dir_initializer: WorkingDirInitializer,
                                                          hugging_face_client: HuggingFaceClient, tmp_path: Path):
-    entry: str = "100/45-2026-01-15-0123456789ab.ankiaddon"
+    entry: str = __PACKAGE_ENTRY
     hf_package: Path = tmp_path / "packages" / entry
     hf_package.parent.mkdir(parents=True)
     hf_package.write_text("package")
@@ -88,7 +91,7 @@ def test_initialize_working_dir_warns_about_package_missing_from_hf(working_dir:
                                                                     hugging_face_client: HuggingFaceClient,
                                                                     tmp_path: Path,
                                                                     caplog: pytest.LogCaptureFixture):
-    entry: str = "100/45-2026-01-15-0123456789ab.ankiaddon"
+    entry: str = __PACKAGE_ENTRY
     hugging_face_client.list_snapshot_folders = Mock(return_value=["history/2026-02-01"])
     hugging_face_client.download_file = Mock(return_value=__raw_zip([entry]))
     hugging_face_client.download_packages = Mock(return_value=tmp_path)

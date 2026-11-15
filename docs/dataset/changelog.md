@@ -2,6 +2,13 @@
 
 The versions of the dataset, see [versioning.md](versioning.md).
 
+## 2.0
+Package file names hold the full SHA-256 of the file instead of its first 12 characters:
+`packages/{addon_id}/{min point version}-{updated}-{sha256}.ankiaddon`, and so does `file_name` in the `packages`
+table and `package.file_name` in `data`. A 12-character prefix is easy to collide on purpose, and the scan result,
+the package analysis and `duplicate_of` are looked up by this name. The packages published under the old names
+stay in the repository for the `v1` tags.
+
 ## 1.1
 ClamAV scan results of the addon packages: `clamav_signatures` and `clamav_database_version` in the `packages`
 table, and `package.clamav_signatures` (of the newest branch) in `data`. `null` in snapshots that were not scanned.
