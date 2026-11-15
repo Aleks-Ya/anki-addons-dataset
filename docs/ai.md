@@ -63,7 +63,7 @@ anki-addons-dataset ai -d 2026-01-01    # one snapshot only
 ```
 
 The date must name an existing snapshot, otherwise `ai` fails. Inside `all`, `-d` belongs to
-`download` alone: the `ai` step of `all` keeps summarizing every snapshot. `parse` and `report` take
+`download` alone: the `ai` step of `all` keeps summarizing every snapshot. `scan`, `parse` and `report` take
 `-d` the same way, see [Running the pipeline](pipeline.md).
 
 Against the default DeepSeek endpoint, `ai` refuses to run during DeepSeek's peak hours

@@ -6,7 +6,7 @@
 - [Configuration](docs/configuration.md) — config file, GitHub token, logging, browser timeouts
 - [AI summaries and tags](docs/ai.md) — the `ai` step, its cache and costs
 - [Anki versions](docs/anki-versions.md) — how addon version ranges are parsed, the `anki_versions` table
-- [Addon packages](docs/addon-packages.md) — downloading `.ankiaddon` files, their cache and publishing
+- [Addon packages](docs/addon-packages.md) — downloading `.ankiaddon` files, the ClamAV scan, their cache and publishing
 - [Integration tests](docs/testing.md) — live tests and their requirements
 - [HuggingFace](docs/huggingface.md) — CLI login, the visualization Space
 - [Publish to PyPI](docs/pypi.md) — automated and manual publishing
@@ -52,7 +52,7 @@ Integration tests: [docs/testing.md](docs/testing.md).
 
 ## Running the pipeline
 
-The pipeline has seven steps run in order: `init download ai parse report bundle upload`.
+The pipeline has eight steps run in order: `init download scan ai parse report bundle upload`.
 There is also an `info` step that logs the app version and runtime configuration (Python/platform, working dir, log
 file, HuggingFace dataset, GitHub token file, AI endpoint, models and key file, snapshot/report dates, browser
 timeouts, sample limits) without side effects. It fails fast on bad credentials: a GitHub token that is absent, empty or
@@ -60,7 +60,9 @@ rejected by the API, an AI API key file that is absent, empty or rejected by the
 HuggingFace write access. All three checks need network access: the AI one asks the configured endpoint
 for the shortest possible answer, so it costs a handful of tokens per `info` run, and it reports the
 remaining balance where the provider exposes it (DeepSeek does). Against DeepSeek the check also
-inherits the peak-hour refusal, so run `info` outside the peak hours.
+inherits the peak-hour refusal, so run `info` outside the peak hours. Last, it scans a tiny probe file
+through the local `clamd` daemon and fails if the daemon does not answer or its signature database is
+older than 7 days.
 
 Each step can be run on its own:
 
@@ -68,6 +70,7 @@ Each step can be run on its own:
 anki-addons-dataset info
 anki-addons-dataset init
 anki-addons-dataset download -d 2026-01-01
+anki-addons-dataset scan
 anki-addons-dataset ai
 anki-addons-dataset parse
 anki-addons-dataset report
@@ -76,12 +79,12 @@ anki-addons-dataset upload
 ```
 
 A single invocation also accepts any subset of steps (space-separated), running them in the given
-order, or the shorthand `all`, which expands to `info` followed by the full seven-step sequence in
+order, or the shorthand `all`, which expands to `info` followed by the full eight-step sequence in
 pipeline order:
 
 ```bash
-anki-addons-dataset init download -d 2026-01-01 ai parse
-anki-addons-dataset all -d 2026-01-01          # equivalent to: info init download ai parse report bundle upload
+anki-addons-dataset init download -d 2026-01-01 scan ai parse
+anki-addons-dataset all -d 2026-01-01          # equivalent to: info init download scan ai parse report bundle upload
 anki-addons-dataset parse report               # run only the given steps
 anki-addons-dataset info                       # just print version and configuration
 ```
@@ -94,14 +97,15 @@ Snapshot dates, ways to run a release or the working source, and sample runs: [d
 3. Initialize a working directory: `uv run anki-addons-dataset init` (creates `~/anki-addons-dataset`; any
    existing content except `logs/` is moved to `~/anki-addons-dataset/backups/YYYYmmdd-HHMMSS`)
 4. Download new snapshot: `uv run anki-addons-dataset download -d 2026-01-01` (creates `~/anki-addons-dataset/history/2026-01-01/1-raw`)
-5. Buy the AI answers: `uv run anki-addons-dataset ai -d 2026-01-01` (fills `~/anki-addons-dataset/history/2026-01-01/1-raw/4-ai/ai-cache.jsonl`, costs money, see [AI summaries and tags](docs/ai.md))
-6. Parse dataset: `uv run anki-addons-dataset parse` (writes `~/anki-addons-dataset/history/YYYY-MM-DD/addon-infos.json` and `2-stage`)
-7. Generate reports: `uv run anki-addons-dataset report` (creates `~/anki-addons-dataset/history/YYYY-MM-DD/3-final`)
-8. Create a bundle: `uv run anki-addons-dataset bundle` (creates `~/anki-addons-dataset/bundle`)
-9. Upload the bundle: `uv run anki-addons-dataset upload` (syncs `~/anki-addons-dataset/bundle` to HuggingFace)
-10. Restart the visualization space: https://huggingface.co/spaces/Ya-Alex/anki-addons
+5. Scan the packages: `uv run anki-addons-dataset scan` (fills `~/anki-addons-dataset/history/YYYY-MM-DD/1-raw/6-scan/scan-cache.jsonl`, needs a running `clamd`, takes about 45 minutes, see [Malware scan](docs/addon-packages.md#malware-scan))
+6. Buy the AI answers: `uv run anki-addons-dataset ai -d 2026-01-01` (fills `~/anki-addons-dataset/history/2026-01-01/1-raw/4-ai/ai-cache.jsonl`, costs money, see [AI summaries and tags](docs/ai.md))
+7. Parse dataset: `uv run anki-addons-dataset parse` (writes `~/anki-addons-dataset/history/YYYY-MM-DD/addon-infos.json` and `2-stage`)
+8. Generate reports: `uv run anki-addons-dataset report` (creates `~/anki-addons-dataset/history/YYYY-MM-DD/3-final`)
+9. Create a bundle: `uv run anki-addons-dataset bundle` (creates `~/anki-addons-dataset/bundle`)
+10. Upload the bundle: `uv run anki-addons-dataset upload` (syncs `~/anki-addons-dataset/bundle` to HuggingFace)
+11. Restart the visualization space: https://huggingface.co/spaces/Ya-Alex/anki-addons
     (its startup log warns about `HF_TOKEN`, see [HuggingFace Spaces](docs/huggingface.md#huggingface-spaces))
-11. Post on Anki Forum: https://forums.ankiweb.net/t/anki-addons-dataset-a-detailed-list-of-addons/63090
+12. Post on Anki Forum: https://forums.ankiweb.net/t/anki-addons-dataset-a-detailed-list-of-addons/63090
 
 ## Release a new version of this repository
 1. Checkout branch `main`

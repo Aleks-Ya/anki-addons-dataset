@@ -1,5 +1,5 @@
 # Addon packages
-DOWNLOAD saves the `.ankiaddon` package of every addon branch. PARSE derives metadata and code size from them
+DOWNLOAD saves the `.ankiaddon` package of every addon branch and SCAN checks them with ClamAV. PARSE derives metadata and code size from them
 (`AddonInfo.package`), and REPORT exports these as the `packages` table and the `package` field of the main table.
 
 ## What PARSE derives
@@ -99,6 +99,8 @@ install without reading. ClamAV opens the zip itself and matches known signature
 bundled binaries. It finds almost nothing in Python written for one addon: a clean result does not mean the code is
 safe, and a match can be a heuristic or "potentially unwanted" detection of a legitimate bundled tool.
 
+- The step needs ClamAV installed, its `clamd` daemon running and `freshclam` keeping the signature database
+  current.
 - `ClamavScanner` runs `clamdscan --fdpass` against the local `clamd` daemon. The daemon loads the signature
   database once, and `--fdpass` lets it read files it has no permission for. A missing daemon, exit code 2 or a
   file without a result stops the step.

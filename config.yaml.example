@@ -44,7 +44,7 @@ sample:
   # directory (-w). Both are unset by default, meaning the whole dataset.
   # Overridden by --sample-addons / --sample-snapshots. A sampled run refuses to upload.
   addons: null      # download/parse only the first N addons, ordered by addon id
-  snapshots: null   # ai/parse/report/bundle process only the newest N snapshots
+  snapshots: null   # scan/ai/parse/report/bundle process only the newest N snapshots
 
 logging:
   # Console level. One of: CRITICAL, ERROR, WARNING, INFO, DEBUG. Overridden by -l/--log-level.

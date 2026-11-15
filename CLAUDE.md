@@ -104,8 +104,8 @@ of the dataset for testing. Two seams carry them:
   `AnkiWebService.get_headers()`, keeping the first N by addon id (the parser already returns them
   sorted, so the slice is stable across DOWNLOAD/AI/PARSE). It must happen *before* any addon is
   enqueued: `GithubEnricher.enrich` expects an entry for every addon it was handed.
-- **Snapshots** — `WorkingDir.list_sampled_snapshot_dirs()` returns the newest N and is what AI,
-  PARSE, REPORT and BUNDLE iterate. `list_snapshot_dirs()` stays unfiltered on purpose, because
+- **Snapshots** — `WorkingDir.list_sampled_snapshot_dirs()` returns the newest N and is what SCAN,
+  AI, PARSE, REPORT and BUNDLE iterate. `list_snapshot_dirs()` stays unfiltered on purpose, because
   `get_previous_snapshot_dir` (DOWNLOAD's GitHub 304 reuse) and the shared AI cache index must keep
   seeing the full history.
 

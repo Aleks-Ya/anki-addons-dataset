@@ -65,7 +65,7 @@ freely; point `-w` at a scratch directory so the real one is never touched:
 | Option | Meaning |
 | --- | --- |
 | `--sample-addons` | download and parse only the first N addons, ordered by addon id |
-| `--sample-snapshots` | let `ai`/`parse`/`report` (without `-d`) and `bundle` process only the newest N snapshots |
+| `--sample-snapshots` | let `scan`/`ai`/`parse`/`report` (without `-d`) and `bundle` process only the newest N snapshots |
 
 ```bash
 WD=/tmp/anki-addons-sample
