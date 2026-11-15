@@ -65,6 +65,14 @@ class PackageLicenseSource(StrEnum):
     HEADER = "header"
 
 
+class LicenseSource(StrEnum):
+    PACKAGE_FILE = "package_file"
+    GITHUB = "github"
+    PACKAGE_HEADER = "package_header"
+    README = "readme"
+    DESCRIPTION = "description"
+
+
 class AnkiForumTopicSource(StrEnum):
     OVERRIDE = "override"
     CONTACT_AUTHOR = "contact_author"
@@ -364,6 +372,12 @@ class AddonPackage:
 
 
 @dataclass(frozen=True)
+class AddonLicense:
+    spdx_id: SpdxLicense
+    source: LicenseSource
+
+
+@dataclass(frozen=True)
 class AddonPackages:
     branches: list[AddonPackage]
 
@@ -403,6 +417,7 @@ class AddonInfo:
     forked_from: Optional[ForkRelation] = None
     package: Optional[AddonPackages] = None
     duplicate_of: Optional[DuplicateRelation] = None
+    license: Optional[AddonLicense] = None
 
 
 AddonInfos = NewType("AddonInfos", list[AddonInfo])

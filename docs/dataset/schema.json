@@ -129,7 +129,9 @@
       "package.language_bytes[].bytes": "int64",
       "package.clamav_signatures[]": "string",
       "package.license": "string",
-      "package.license_source": "string"
+      "package.license_source": "string",
+      "license.spdx_id": "string",
+      "license.source": "string"
     },
     "tags": {
       "name": "string",

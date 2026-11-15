@@ -369,10 +369,10 @@ def test_get_repo_info_reuses_stars_info_cache(github_service: GithubService, gi
     github_rest_client.get_from_url.assert_called_once()  # no extra API call for repo info
 
 
-def test_get_repo_info_ignores_noassertion_license(github_service: GithubService,
-                                                    github_rest_client: GithubRestClient, github_repo: GithubRepo):
+def test_get_repo_info_keeps_noassertion_license(github_service: GithubService,
+                                                  github_rest_client: GithubRestClient, github_repo: GithubRepo):
     github_rest_client.get_from_url = __mock_content("""{"license":{"spdx_id":"NOASSERTION"}}""")
-    assert github_service.get_repo_info(github_repo).license is None
+    assert github_service.get_repo_info(github_repo).license == "NOASSERTION"
 
 
 def test_get_readme_200(github_service: GithubService, github_rest_client: GithubRestClient, github_repo: GithubRepo):

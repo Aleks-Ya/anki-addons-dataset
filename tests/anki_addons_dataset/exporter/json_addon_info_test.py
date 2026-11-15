@@ -7,7 +7,7 @@ from anki_addons_dataset.common.data_types import GithubIssueHistory, AddonInfos
     PostsCount, AddonManifest, SpdxLicense, Topic, DependencyName, LanguageName, URL, GithubReadme, PageLink, \
     PageLinkSection, AddonId, ForkRelation, ForkEvidence, AddonPackage, AddonPackages, AnkiPointVersion, AuthorInfo, \
     AuthorId, GithubRepo, GithubUserName, GithubRepoName, DuplicateRelation, DuplicateEvidence, PackageScan, \
-    PackageLicenseSource
+    PackageLicenseSource, AddonLicense, LicenseSource
 from anki_addons_dataset.exporter.json_addon_info import JsonAddonInfo
 
 
@@ -112,7 +112,8 @@ def test_addon_infos_to_json(addon_infos: AddonInfos):
                          'forks': [],
                          'duplicate_of': None,
                          'duplicates': [],
-                         'package': None
+                         'package': None,
+                         'license': None
                          }]
 
 
@@ -213,7 +214,7 @@ def test_addon_infos_to_json_empty_forum(addon_info: AddonInfo):
                          'forks': [],
                          'duplicate_of': None,
                          'duplicates': [],
-                         'package': None}]
+                         'package': None, 'license': None}]
 
 
 def test_addon_infos_to_json_empty_posts_count(addon_info: AddonInfo):
@@ -317,7 +318,7 @@ def test_addon_infos_to_json_empty_posts_count(addon_info: AddonInfo):
                          'forks': [],
                          'duplicate_of': None,
                          'duplicates': [],
-                         'package': None}]
+                         'package': None, 'license': None}]
 
 
 def test_addon_infos_to_json_empty_last_posted_at(addon_info: AddonInfo):
@@ -525,6 +526,14 @@ def test_addon_infos_to_json_package_takes_the_license_of_the_newest_branch(addo
     act_json: list[dict[str, Any]] = to_dicts(AddonInfos([addon_info]))
 
     assert (act_json[0]["package"]["license"], act_json[0]["package"]["license_source"]) == ("AGPL-3.0", "header")
+
+
+def test_addon_infos_to_json_license(addon_info: AddonInfo):
+    addon_info = replace(addon_info, license=AddonLicense(SpdxLicense("GPL-3.0"), LicenseSource.PACKAGE_HEADER))
+
+    act_json: list[dict[str, Any]] = to_dicts(AddonInfos([addon_info]))
+
+    assert act_json[0]["license"] == {"spdx_id": "GPL-3.0", "source": "package_header"}
 
 
 def test_addon_infos_to_json_package_without_languages(addon_info: AddonInfo):

@@ -11,7 +11,7 @@ from magika.types import MagikaResult
 
 from anki_addons_dataset.collector.package.package_client import PackageError
 from anki_addons_dataset.collector.package.package_language_names import PackageLanguageNames
-from anki_addons_dataset.collector.package.package_license_classifier import PackageLicenseClassifier
+from anki_addons_dataset.collector.license.license_classifier import LicenseClassifier
 from anki_addons_dataset.common.data_types import LanguageName, PackageLicenseSource, SpdxLicense
 
 
@@ -71,9 +71,9 @@ class PackageAnalyzer:
                     python_file_count += 1
                     python_lines += len(content.splitlines()) if content is not None else 0
                 if content is not None and name == license_file:
-                    file_license = PackageLicenseClassifier.from_text(content.decode("utf-8", errors="replace"))
+                    file_license = LicenseClassifier.from_text(content.decode("utf-8", errors="replace"))
                 if content is not None and name.endswith(".py") and "/" not in name:
-                    header_license: Optional[SpdxLicense] = PackageLicenseClassifier.from_header(
+                    header_license: Optional[SpdxLicense] = LicenseClassifier.from_header(
                         content.decode("utf-8", errors="replace"))
                     if header_license is not None:
                         header_licenses.append(header_license)

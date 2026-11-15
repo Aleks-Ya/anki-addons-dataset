@@ -36,6 +36,7 @@ class AddonInfoSheet:
     __ai_tools_col: int = 22
     __ai_summary_col: int = 23
     __ai_tags_col: int = 24
+    __license_col: int = 25
 
     def __init__(self, workbook: Workbook):
         self.__workbook: Workbook = workbook
@@ -98,6 +99,7 @@ class AddonInfoSheet:
         worksheet.set_column(self.__forked_from_col, self.__forked_from_col, 12)
         worksheet.set_column(self.__ai_summary_col, self.__ai_summary_col, 80)
         worksheet.set_column(self.__ai_tags_col, self.__ai_tags_col, 40)
+        worksheet.set_column(self.__license_col, self.__license_col, 14)
 
     def __add_header(self, workbook: Workbook, worksheet: Worksheet) -> None:
         header_format: Format = workbook.add_format({"bold": True, 'align': 'center'})
@@ -177,9 +179,17 @@ class AddonInfoSheet:
                                 "Tags chosen by an AI model from a fixed vocabulary, based on the "
                                 "AnkiWeb description and the GitHub README. Blank = not generated yet.")
 
+        worksheet.write_string(row1, self.__license_col, "Derived", header_format)
+        worksheet.write_string(row2, self.__license_col, "License", header_format)
+        worksheet.write_comment(row2, self.__license_col,
+                                "SPDX id of the add-on license, from the first source that names one: the "
+                                "package license file, the GitHub repo, the package source headers, the "
+                                "README License section, the AnkiWeb description. "
+                                "Blank = no license found, not proof the add-on has none.")
+
         worksheet.freeze_panes(row2 + 1, self.__id_col)
         worksheet.autofilter(first_row=row2, last_row=row2,
-                             first_col=self.__id_col, last_col=self.__ai_tags_col)
+                             first_col=self.__id_col, last_col=self.__license_col)
 
     def __add_rows(self, addon_infos: AddonInfos, worksheet: Worksheet) -> None:
         for i, addon in enumerate(addon_infos):
@@ -205,6 +215,7 @@ class AddonInfoSheet:
             worksheet.write_number(row, self.__forked_from_col, addon.forked_from.addon_id)
         worksheet.write_string(row, self.__ai_summary_col, addon.ai.summary if addon.ai and addon.ai.summary else "")
         worksheet.write_string(row, self.__ai_tags_col, ", ".join(addon.ai.tags) if addon.ai and addon.ai.tags else "")
+        worksheet.write_string(row, self.__license_col, addon.license.spdx_id if addon.license else "")
         self.__fill_anki_forum_row_columns(addon, row, worksheet)
         self.__fill_github_row_columns(addon, row, worksheet)
 

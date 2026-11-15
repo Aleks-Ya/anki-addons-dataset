@@ -30,7 +30,7 @@ addon or snapshot without packages gets `package=None`.
   so a Magika upgrade that adds one fails the tests first.
 - The license comes from the root license file (`LICENSE`, `LICENCE`, `COPYING` or `UNLICENSE`, also with `.txt`,
   `.md` or `.rst`; the first by name), else from the license most root `.py` files declare in their first 30 lines
-  (`null` on a tie). `PackageLicenseClassifier` matches phrases of about 15 common licenses and names them as GitHub
+  (`null` on a tie). `LicenseClassifier` matches phrases of about 15 common licenses and names them as GitHub
   does, so they compare with `github.license`. When several licenses match, the one named first in the text wins,
   because the AGPL text quotes the GPL and the reverse. License files in subdirectories are ignored: almost all
   belong to bundled libraries (`vendor/`, `lib/`). On 2026-11-01 the file decides 907 of 3,738 addons and agrees

@@ -14,7 +14,7 @@ from anki_addons_dataset.common.data_types import AddonInfo, AddonInfos, AddonHe
     PageLink, PageLinkSection, GithubRepoSource, AnkiForumTopicSource, AuthorInfo, AuthorId, ForkEvidence, \
     ForkRelation, AddonPackage, AddonPackages, AddonReview, ReviewVote, GithubRelease, GithubReleaseAsset, \
     GithubContributor, GithubIssueHistory, GithubManifestFile, DuplicateRelation, DuplicateEvidence, PackageScan, \
-    PackageLicenseSource
+    PackageLicenseSource, AddonLicense, LicenseSource
 
 
 class JsonHelper:
@@ -57,6 +57,8 @@ class JsonHelper:
             duplicate_of=DuplicateRelation(AddonId(data["duplicate_of"]["addon_id"]),
                                            DuplicateEvidence(data["duplicate_of"]["evidence"]))
             if data.get("duplicate_of") else None,
+            license=AddonLicense(SpdxLicense(data["license"]["spdx_id"]), LicenseSource(data["license"]["source"]))
+            if data.get("license") else None,
         )
 
     @staticmethod

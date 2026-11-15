@@ -2,7 +2,7 @@ from typing import Optional
 
 import pytest
 
-from anki_addons_dataset.collector.package.package_license_classifier import PackageLicenseClassifier
+from anki_addons_dataset.collector.license.license_classifier import LicenseClassifier
 from anki_addons_dataset.common.data_types import SpdxLicense
 
 
@@ -42,7 +42,7 @@ from anki_addons_dataset.common.data_types import SpdxLicense
     ("Licensed under the GNU GPL.", None),
 ])
 def test_from_text(text: str, expected: Optional[str]):
-    assert PackageLicenseClassifier.from_text(text) == expected
+    assert LicenseClassifier.from_text(text) == expected
 
 
 @pytest.mark.parametrize("source, expected", [
@@ -64,14 +64,27 @@ def test_from_text(text: str, expected: Optional[str]):
     ("import aqt\n", None),
 ])
 def test_from_header(source: str, expected: Optional[str]):
-    assert PackageLicenseClassifier.from_header(source) == expected
+    assert LicenseClassifier.from_header(source) == expected
 
 
 def test_from_header_reads_only_the_first_lines():
     source: str = "import aqt\n" * 30 + "# License: MIT\n"
 
-    assert PackageLicenseClassifier.from_header(source) is None
+    assert LicenseClassifier.from_header(source) is None
 
 
 def test_from_text_returns_spdx_license():
-    assert PackageLicenseClassifier.from_text("MIT License") == SpdxLicense("MIT")
+    assert LicenseClassifier.from_text("MIT License") == SpdxLicense("MIT")
+
+
+@pytest.mark.parametrize("readme, expected", [
+    ("# Addon\n\nMIT License is not this.\n\n## Usage\n\nPress F5.\n\n## License\n\nGNU AGPL v3 or later.\n",
+     "AGPL-3.0"),
+    ("# Addon\n\n### LICENCE\nThis project is licensed under the MIT License - see LICENSE.\n# Credits\nGPL v2 lib\n",
+     "MIT"),
+    ("# Addon\n\n## License\n\nSee the LICENSE file.\n\n## Credits\n\nUses jQuery (MIT License).\n", None),
+    ("# Addon\n\nReleased under the MIT License.\n", None),
+    ("", None),
+])
+def test_from_readme(readme: str, expected: Optional[str]):
+    assert LicenseClassifier.from_readme(readme) == expected

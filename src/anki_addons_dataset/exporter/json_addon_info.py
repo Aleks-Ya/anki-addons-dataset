@@ -154,6 +154,12 @@ class DuplicateOf:
 
 
 @dataclass
+class License:
+    spdx_id: str
+    source: str
+
+
+@dataclass
 class Branch:
     min_version: Optional[str]
     max_version: Optional[str]
@@ -216,6 +222,7 @@ class Details:
     duplicate_of: Optional[DuplicateOf]
     duplicates: list[int]
     package: Optional[Package]
+    license: Optional[License]
 
 
 class JsonAddonInfo:
@@ -252,7 +259,9 @@ class JsonAddonInfo:
             json_obj: Details = Details(addon.header.id, anki_web, github, forum, JsonAddonInfo.__ai(addon),
                                         JsonAddonInfo.__author(addon), forked_from, forks.get(addon.header.id, []),
                                         duplicate_of, duplicates.get(addon.header.id, []),
-                                        JsonAddonInfo.__package(addon))
+                                        JsonAddonInfo.__package(addon),
+                                        License(addon.license.spdx_id, str(addon.license.source))
+                                        if addon.license is not None else None)
             json_list.append(json_obj)
         return json_list
 

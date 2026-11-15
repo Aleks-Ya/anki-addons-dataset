@@ -120,7 +120,8 @@ def test_export_addon_infos(snapshot_dir: SnapshotDir, addon_infos: AddonInfos,
                          'forks': [],
                          'duplicate_of': None,
                          'duplicates': [],
-                         'package': None
+                         'package': None,
+                         'license': None
         }]
     )
     pdt.assert_frame_equal(act_df, exp_df)

@@ -39,7 +39,7 @@ class RepoInfoRepoHandler(RepoHandler):
         license_obj: Optional[dict[str, Any]] = content_obj.get("license")
         spdx: Optional[str] = license_obj.get("spdx_id") if license_obj else None
         return GithubRepoMeta(
-            license=SpdxLicense(spdx) if spdx and spdx != "NOASSERTION" else None,
+            license=SpdxLicense(spdx) if spdx else None,
             fork_count=content_obj.get("forks_count"),
             open_issues=content_obj.get("open_issues_count"),
             size_kb=content_obj.get("size"),

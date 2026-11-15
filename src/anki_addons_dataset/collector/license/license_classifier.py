@@ -7,12 +7,14 @@ from anki_addons_dataset.common.data_types import SpdxLicense
 type LicenseResolver = Callable[[str, re.Match[str]], Optional[SpdxLicense]]
 
 
-class PackageLicenseClassifier:
+class LicenseClassifier:
     __header_line_count: int = 30
     __version_window: int = 200
     __separators: re.Pattern[str] = re.compile(r"[\s#*]+")
     __spdx_identifier: re.Pattern[str] = re.compile(r"SPDX-License-Identifier:\s*([\w.+-]+)")
     __spdx_suffix: re.Pattern[str] = re.compile(r"(-or-later|-only|\+)$")
+    __readme_section: re.Pattern[str] = re.compile(r"^#{1,6}\s*licen[cs]e.*?(?=^#{1,6}\s|\Z)",
+                                                   re.IGNORECASE | re.MULTILINE | re.DOTALL)
     __version: re.Pattern[str] = re.compile(r"^\W*v?(\d(?:\.\d)?)|\bversion\W+(\d(?:\.\d)?)")
     __gpl_versions: dict[str, str] = {"2": "GPL-2.0", "2.0": "GPL-2.0", "3": "GPL-3.0", "3.0": "GPL-3.0"}
     __lgpl_versions: dict[str, str] = {"2": "LGPL-2.0", "2.0": "LGPL-2.0", "2.1": "LGPL-2.1", "3": "LGPL-3.0",
@@ -20,9 +22,9 @@ class PackageLicenseClassifier:
 
     @staticmethod
     def from_text(text: str) -> Optional[SpdxLicense]:
-        normalized: str = PackageLicenseClassifier.__separators.sub(" ", text).lower()
+        normalized: str = LicenseClassifier.__separators.sub(" ", text).lower()
         matches: list[tuple[re.Match[str], LicenseResolver]] = [
-            (match, resolver) for pattern, resolver in PackageLicenseClassifier.__rules
+            (match, resolver) for pattern, resolver in LicenseClassifier.__rules
             for match in [pattern.search(normalized)] if match is not None]
         for match, resolver in sorted(matches, key=lambda item: item[0].start()):
             spdx_license: Optional[SpdxLicense] = resolver(normalized, match)
@@ -32,11 +34,16 @@ class PackageLicenseClassifier:
 
     @staticmethod
     def from_header(source: str) -> Optional[SpdxLicense]:
-        header: str = "\n".join(source.splitlines()[:PackageLicenseClassifier.__header_line_count])
-        identifier: Optional[re.Match[str]] = PackageLicenseClassifier.__spdx_identifier.search(header)
+        header: str = "\n".join(source.splitlines()[:LicenseClassifier.__header_line_count])
+        identifier: Optional[re.Match[str]] = LicenseClassifier.__spdx_identifier.search(header)
         if identifier is not None:
-            return SpdxLicense(PackageLicenseClassifier.__spdx_suffix.sub("", identifier.group(1)))
-        return PackageLicenseClassifier.from_text(header)
+            return SpdxLicense(LicenseClassifier.__spdx_suffix.sub("", identifier.group(1)))
+        return LicenseClassifier.from_text(header)
+
+    @staticmethod
+    def from_readme(readme: str) -> Optional[SpdxLicense]:
+        section: Optional[re.Match[str]] = LicenseClassifier.__readme_section.search(readme)
+        return LicenseClassifier.from_text(section.group(0)) if section is not None else None
 
     @staticmethod
     def __fixed(spdx_license: str) -> LicenseResolver:
@@ -45,8 +52,8 @@ class PackageLicenseClassifier:
     @staticmethod
     def __versioned(versions: dict[str, str]) -> LicenseResolver:
         def resolve(text: str, match: re.Match[str]) -> Optional[SpdxLicense]:
-            window: str = text[match.end():match.end() + PackageLicenseClassifier.__version_window]
-            version: Optional[re.Match[str]] = PackageLicenseClassifier.__version.search(window)
+            window: str = text[match.end():match.end() + LicenseClassifier.__version_window]
+            version: Optional[re.Match[str]] = LicenseClassifier.__version.search(window)
             if version is None:
                 return None
             spdx_license: Optional[str] = versions.get(version.group(1) or version.group(2))

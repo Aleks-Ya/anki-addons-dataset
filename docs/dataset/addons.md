@@ -46,9 +46,25 @@ none of these decides: never another addon's manifest. Up to the 2026-11-01 snap
 was downloaded, so a deeper one has a `manifest_path` but a `null` `manifest`.
 
 ## License
-`github.license` is the SPDX id GitHub detects in the repo (`MIT`, `GPL-3.0`, `AGPL-3.0`...), `null` without a repo
-or when GitHub finds no license or cannot identify it. `package.license` is the license found in the package
-itself (see [Package](#package)): it covers addons without a repo, and can differ from the repo's.
+AnkiWeb has no license field. `license` is the addon's license as an SPDX id named as GitHub names it (`MIT`,
+`GPL-3.0`, `AGPL-3.0`...), taken from the first `source` that names one:
+
+1. `package_file`: the license file at the root of the package (`package.license` with `license_source` `file`), the
+   license users actually install.
+2. `github`: `github.license`.
+3. `package_header`: the license most root `.py` files of the package declare. Weaker: many addons copy Anki's AGPL
+   header, and a library bundled at the root declares its own.
+4. `readme`: the License section of the GitHub README.
+5. `description`: a license the AnkiWeb description names. Weakest: a description can name the license of a library
+   it uses.
+
+`license` is `null` when no source names a license: about half the addons declare none anywhere, and their code is then
+all rights reserved by default. A `null` is not proof, as only these sources are read.
+
+`github.license` is the SPDX id GitHub detects in the repo, `NOASSERTION` when the repo has a license file GitHub cannot
+identify (`null` before dataset version 1.1), `null` without a repo or license file. `package.license` is the license
+found in the package itself (see [Package](#package)). Both can differ from each other: the repo and the uploaded
+package are separate.
 
 ## GitHub activity
 - `github.release_downloads` sums the asset downloads of the newest 100 releases: real install numbers, but only

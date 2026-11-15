@@ -9,6 +9,10 @@ table, and `package.clamav_signatures` (of the newest branch) in `data`. `null` 
 The license found in the addon packages: `license`, `license_source` and `license_file` in the `packages` table, and
 `package.license` and `package.license_source` (of the newest branch) in `data`.
 
+One license per addon: `license.spdx_id` and `license.source` in `data`, from the package, the GitHub repo, the README
+or the AnkiWeb description. `github.license` is now `NOASSERTION` instead of `null` when GitHub cannot identify the
+repo's license file.
+
 ## 1.0
 The first versioned release: the schema in [schema.json](schema.json).
 
