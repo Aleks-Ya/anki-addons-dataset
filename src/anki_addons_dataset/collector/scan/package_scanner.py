@@ -56,6 +56,8 @@ class PackageScanner:
                                      for start in range(0, len(files), PackageScanner.__batch_size)]
         scanned_count: int = 0
         hit_count: int = 0
+        if files:
+            log.info(f"Scanned 0 of {len(files)} packages")
         with ThreadPoolExecutor(max_workers=PackageScanner.__pool_size, thread_name_prefix="scan") as executor:
             for scans in executor.map(lambda batch: self.__scan_batch(batch, version, cache_file), batches):
                 previous_count: int = scanned_count
