@@ -15,7 +15,8 @@ class LicenseClassifier:
     __spdx_suffix: re.Pattern[str] = re.compile(r"(-or-later|-only|\+)$")
     __license_heading: re.Pattern[str] = re.compile(r"^#{1,6}\s*licen[cs]e", re.IGNORECASE | re.MULTILINE)
     __heading: re.Pattern[str] = re.compile(r"^#{1,6}\s", re.MULTILINE)
-    __version: re.Pattern[str] = re.compile(r"(?:^\W*v?(\d(?:\.\d)?))|(?:\bversion\W+(\d(?:\.\d)?))")
+    __leading_version: re.Pattern[str] = re.compile(r"\W*v?(\d(?:\.\d)?)")
+    __worded_version: re.Pattern[str] = re.compile(r"\bversion\W+(\d(?:\.\d)?)")
     __gpl_versions: dict[str, str] = {"2": "GPL-2.0", "2.0": "GPL-2.0", "3": "GPL-3.0", "3.0": "GPL-3.0"}
     __lgpl_versions: dict[str, str] = {"2": "LGPL-2.0", "2.0": "LGPL-2.0", "2.1": "LGPL-2.1", "3": "LGPL-3.0",
                                        "3.0": "LGPL-3.0"}
@@ -57,10 +58,11 @@ class LicenseClassifier:
     def __versioned(versions: dict[str, str]) -> LicenseResolver:
         def resolve(text: str, match: re.Match[str]) -> Optional[SpdxLicense]:
             window: str = text[match.end():match.end() + LicenseClassifier.__version_window]
-            version: Optional[re.Match[str]] = LicenseClassifier.__version.search(window)
+            version: Optional[re.Match[str]] = LicenseClassifier.__leading_version.match(window) \
+                or LicenseClassifier.__worded_version.search(window)
             if version is None:
                 return None
-            spdx_license: Optional[str] = versions.get(version.group(1) or version.group(2))
+            spdx_license: Optional[str] = versions.get(version.group(1))
             return SpdxLicense(spdx_license) if spdx_license is not None else None
         return resolve
 
