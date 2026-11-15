@@ -13,9 +13,9 @@ class LicenseClassifier:
     __separators: re.Pattern[str] = re.compile(r"[\s#*]+")
     __spdx_identifier: re.Pattern[str] = re.compile(r"SPDX-License-Identifier:\s*([\w.+-]+)")
     __spdx_suffix: re.Pattern[str] = re.compile(r"(-or-later|-only|\+)$")
-    __readme_section: re.Pattern[str] = re.compile(r"^#{1,6}\s*licen[cs]e.*?(?=^#{1,6}\s|\Z)",
-                                                   re.IGNORECASE | re.MULTILINE | re.DOTALL)
-    __version: re.Pattern[str] = re.compile(r"^\W*v?(\d(?:\.\d)?)|\bversion\W+(\d(?:\.\d)?)")
+    __license_heading: re.Pattern[str] = re.compile(r"^#{1,6}\s*licen[cs]e", re.IGNORECASE | re.MULTILINE)
+    __heading: re.Pattern[str] = re.compile(r"^#{1,6}\s", re.MULTILINE)
+    __version: re.Pattern[str] = re.compile(r"(?:^\W*v?(\d(?:\.\d)?))|(?:\bversion\W+(\d(?:\.\d)?))")
     __gpl_versions: dict[str, str] = {"2": "GPL-2.0", "2.0": "GPL-2.0", "3": "GPL-3.0", "3.0": "GPL-3.0"}
     __lgpl_versions: dict[str, str] = {"2": "LGPL-2.0", "2.0": "LGPL-2.0", "2.1": "LGPL-2.1", "3": "LGPL-3.0",
                                        "3.0": "LGPL-3.0"}
@@ -42,8 +42,12 @@ class LicenseClassifier:
 
     @staticmethod
     def from_readme(readme: str) -> Optional[SpdxLicense]:
-        section: Optional[re.Match[str]] = LicenseClassifier.__readme_section.search(readme)
-        return LicenseClassifier.from_text(section.group(0)) if section is not None else None
+        license_heading: Optional[re.Match[str]] = LicenseClassifier.__license_heading.search(readme)
+        if license_heading is None:
+            return None
+        next_heading: Optional[re.Match[str]] = LicenseClassifier.__heading.search(readme, license_heading.end())
+        section_end: int = next_heading.start() if next_heading is not None else len(readme)
+        return LicenseClassifier.from_text(readme[license_heading.start():section_end])
 
     @staticmethod
     def __fixed(spdx_license: str) -> LicenseResolver:

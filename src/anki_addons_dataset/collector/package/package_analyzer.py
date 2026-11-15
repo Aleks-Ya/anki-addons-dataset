@@ -53,10 +53,7 @@ class PackageAnalyzer:
 
     def __analyze(self, package_file: Path) -> PackageAnalysis:
         with ZipFile(package_file) as archive:
-            entries: dict[str, ZipInfo] = {entry.filename: entry for entry in archive.infolist()
-                                           if not entry.is_dir() and not self.__is_macos_junk(entry.filename)}
-            if any(entry.flag_bits & PackageAnalyzer.__encrypted_flag for entry in entries.values()):
-                raise PackageError("The package holds encrypted files")
+            entries: dict[str, ZipInfo] = self.__entries(archive)
             python_file_count: int = 0
             python_lines: int = 0
             language_bytes: dict[LanguageName, int] = {}
@@ -65,19 +62,16 @@ class PackageAnalyzer:
             file_license: Optional[SpdxLicense] = None
             header_licenses: list[SpdxLicense] = []
             for name, entry in entries.items():
-                content: Optional[bytes] = archive.read(entry) \
-                    if 0 < entry.file_size <= PackageAnalyzer.__max_read_bytes else None
+                content: bytes = self.__read_content(archive, entry)
                 if name.endswith(".py"):
                     python_file_count += 1
-                    python_lines += len(content.splitlines()) if content is not None else 0
-                if content is not None and name == license_file:
+                    python_lines += len(content.splitlines())
+                if not content:
+                    continue
+                if name == license_file:
                     file_license = LicenseClassifier.from_text(content.decode("utf-8", errors="replace"))
-                if content is not None and name.endswith(".py") and "/" not in name:
-                    header_license: Optional[SpdxLicense] = LicenseClassifier.from_header(
-                        content.decode("utf-8", errors="replace"))
-                    if header_license is not None:
-                        header_licenses.append(header_license)
-                language: Optional[LanguageName] = self.__detect_language(content) if content is not None else None
+                header_licenses.extend(self.__header_licenses(name, content))
+                language: Optional[LanguageName] = self.__detect_language(content)
                 if language is not None:
                     language_bytes[language] = language_bytes.get(language, 0) + entry.file_size
             return PackageAnalysis(
@@ -90,6 +84,26 @@ class PackageAnalyzer:
                 sorted(entries),
                 dict(sorted(language_bytes.items(), key=lambda item: (-item[1], item[0]))),
                 *PackageAnalyzer.__license(file_license, header_licenses), license_file)
+
+    @staticmethod
+    def __entries(archive: ZipFile) -> dict[str, ZipInfo]:
+        entries: dict[str, ZipInfo] = {entry.filename: entry for entry in archive.infolist()
+                                       if not entry.is_dir() and not PackageAnalyzer.__is_macos_junk(entry.filename)}
+        if any(entry.flag_bits & PackageAnalyzer.__encrypted_flag for entry in entries.values()):
+            raise PackageError("The package holds encrypted files")
+        return entries
+
+    @staticmethod
+    def __read_content(archive: ZipFile, entry: ZipInfo) -> bytes:
+        return archive.read(entry) if 0 < entry.file_size <= PackageAnalyzer.__max_read_bytes else b""
+
+    @staticmethod
+    def __header_licenses(name: str, content: bytes) -> list[SpdxLicense]:
+        if not name.endswith(".py") or "/" in name:
+            return []
+        header_license: Optional[SpdxLicense] = LicenseClassifier.from_header(
+            content.decode("utf-8", errors="replace"))
+        return [header_license] if header_license is not None else []
 
     def __detect_language(self, content: bytes) -> Optional[LanguageName]:
         result: MagikaResult = self.__magika.identify_bytes(content)
