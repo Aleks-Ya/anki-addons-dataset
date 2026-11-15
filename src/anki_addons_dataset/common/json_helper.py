@@ -13,7 +13,8 @@ from anki_addons_dataset.common.data_types import AddonInfo, AddonInfos, AddonHe
     DependencyName, GithubReadme, AiInfo, AiSummary, AiModel, AiTag, AnkiPointVersion, AnkiVersionKind, \
     PageLink, PageLinkSection, GithubRepoSource, AnkiForumTopicSource, AuthorInfo, AuthorId, ForkEvidence, \
     ForkRelation, AddonPackage, AddonPackages, AddonReview, ReviewVote, GithubRelease, GithubReleaseAsset, \
-    GithubContributor, GithubIssueHistory, GithubManifestFile, DuplicateRelation, DuplicateEvidence, PackageScan
+    GithubContributor, GithubIssueHistory, GithubManifestFile, DuplicateRelation, DuplicateEvidence, PackageScan, \
+    PackageLicenseSource
 
 
 class JsonHelper:
@@ -81,6 +82,9 @@ class JsonHelper:
             language_bytes=data.get("language_bytes", {}),
             scan=PackageScan(data["scan"]["engine"], data["scan"]["database_version"], data["scan"]["signatures"])
             if data.get("scan") else None,
+            license=SpdxLicense(data["license"]) if data.get("license") else None,
+            license_source=PackageLicenseSource(data["license_source"]) if data.get("license_source") else None,
+            license_file=data.get("license_file"),
         )
 
     @staticmethod

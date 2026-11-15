@@ -1,4 +1,6 @@
+import re
 import zlib
+from collections import Counter
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Optional
@@ -9,7 +11,8 @@ from magika.types import MagikaResult
 
 from anki_addons_dataset.collector.package.package_client import PackageError
 from anki_addons_dataset.collector.package.package_language_names import PackageLanguageNames
-from anki_addons_dataset.common.data_types import LanguageName
+from anki_addons_dataset.collector.package.package_license_classifier import PackageLicenseClassifier
+from anki_addons_dataset.common.data_types import LanguageName, PackageLicenseSource, SpdxLicense
 
 
 @dataclass(frozen=True)
@@ -22,12 +25,17 @@ class PackageAnalysis:
     python_lines: int
     files: list[str]
     language_bytes: dict[LanguageName, int]
+    license: Optional[SpdxLicense]
+    license_source: Optional[PackageLicenseSource]
+    license_file: Optional[str]
 
 
 class PackageAnalyzer:
     __encrypted_flag: int = 0x1
     __max_read_bytes: int = 5_000_000
     __max_metadata_bytes: int = 64_000
+    __license_file_name: re.Pattern[str] = re.compile(r"^(licen[cs]e|copying|unlicense)(\.(txt|md|rst))?$",
+                                                      re.IGNORECASE)
 
     def __init__(self) -> None:
         self.__magika: Magika = Magika()
@@ -52,12 +60,23 @@ class PackageAnalyzer:
             python_file_count: int = 0
             python_lines: int = 0
             language_bytes: dict[LanguageName, int] = {}
+            license_file: Optional[str] = next(
+                (name for name in sorted(entries) if PackageAnalyzer.__license_file_name.match(name)), None)
+            file_license: Optional[SpdxLicense] = None
+            header_licenses: list[SpdxLicense] = []
             for name, entry in entries.items():
                 content: Optional[bytes] = archive.read(entry) \
                     if 0 < entry.file_size <= PackageAnalyzer.__max_read_bytes else None
                 if name.endswith(".py"):
                     python_file_count += 1
                     python_lines += len(content.splitlines()) if content is not None else 0
+                if content is not None and name == license_file:
+                    file_license = PackageLicenseClassifier.from_text(content.decode("utf-8", errors="replace"))
+                if content is not None and name.endswith(".py") and "/" not in name:
+                    header_license: Optional[SpdxLicense] = PackageLicenseClassifier.from_header(
+                        content.decode("utf-8", errors="replace"))
+                    if header_license is not None:
+                        header_licenses.append(header_license)
                 language: Optional[LanguageName] = self.__detect_language(content) if content is not None else None
                 if language is not None:
                     language_bytes[language] = language_bytes.get(language, 0) + entry.file_size
@@ -69,13 +88,24 @@ class PackageAnalyzer:
                 python_file_count,
                 python_lines,
                 sorted(entries),
-                dict(sorted(language_bytes.items(), key=lambda item: (-item[1], item[0]))))
+                dict(sorted(language_bytes.items(), key=lambda item: (-item[1], item[0]))),
+                *PackageAnalyzer.__license(file_license, header_licenses), license_file)
 
     def __detect_language(self, content: bytes) -> Optional[LanguageName]:
         result: MagikaResult = self.__magika.identify_bytes(content)
         if not result.ok or result.output.group != "code":
             return None
         return PackageLanguageNames.linguist_name(str(result.output.label))
+
+    @staticmethod
+    def __license(file_license: Optional[SpdxLicense], header_licenses: list[SpdxLicense]
+                  ) -> tuple[Optional[SpdxLicense], Optional[PackageLicenseSource]]:
+        if file_license is not None:
+            return file_license, PackageLicenseSource.FILE
+        ranked: list[tuple[SpdxLicense, int]] = Counter(header_licenses).most_common(2)
+        if not ranked or len(ranked) == 2 and ranked[0][1] == ranked[1][1]:
+            return None, None
+        return ranked[0][0], PackageLicenseSource.HEADER
 
     @staticmethod
     def __is_macos_junk(name: str) -> bool:

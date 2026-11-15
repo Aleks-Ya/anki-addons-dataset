@@ -199,6 +199,8 @@ class Package:
     primary_language: Optional[str]
     language_bytes: list[LanguageBytes]
     clamav_signatures: Optional[list[str]]
+    license: Optional[str]
+    license_source: Optional[str]
 
 
 @dataclass
@@ -295,7 +297,8 @@ class JsonAddonInfo:
         return Package(newest.file_name, newest.updated.isoformat(), newest.size_bytes, newest.file_count,
                        newest.uncompressed_bytes, newest.python_file_count, newest.python_lines,
                        JsonAddonInfo.__primary_language(language_bytes), language_bytes,
-                       newest.scan.signatures if newest.scan is not None else None)
+                       newest.scan.signatures if newest.scan is not None else None, newest.license,
+                       str(newest.license_source) if newest.license_source is not None else None)
 
     @staticmethod
     def __primary_language(language_bytes: list[LanguageBytes]) -> Optional[str]:

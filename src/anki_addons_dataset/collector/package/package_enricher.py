@@ -65,4 +65,5 @@ class PackageEnricher:
         return AddonPackage(file.name, key.min_point_version, key.updated, file.stat().st_size, analysis.manifest_json,
                             analysis.config_json, analysis.file_count, analysis.uncompressed_bytes,
                             analysis.python_file_count, analysis.python_lines, analysis.files,
-                            analysis.language_bytes, self.__scans.get(file.name))
+                            analysis.language_bytes, self.__scans.get(file.name), analysis.license,
+                            analysis.license_source, analysis.license_file)

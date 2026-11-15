@@ -67,7 +67,8 @@ class ParquetExporter(Exporter):
             ("python_lines", pyarrow.int64()), ("files", pyarrow.list_(pyarrow.string())),
             ("language_bytes",
              pyarrow.list_(pyarrow.struct([("name", pyarrow.string()), ("bytes", pyarrow.int64())]))),
-            ("clamav_signatures", pyarrow.list_(pyarrow.string())), ("clamav_database_version", pyarrow.int64())])
+            ("clamav_signatures", pyarrow.list_(pyarrow.string())), ("clamav_database_version", pyarrow.int64()),
+            ("license", pyarrow.string()), ("license_source", pyarrow.string()), ("license_file", pyarrow.string())])
         DataFrame([self.__package_record(package) for package in packages], columns=schema.names) \
             .to_parquet(output_file, compression="zstd", schema=schema)
         log.info(f"Write Parquet to file: {output_file}")
@@ -80,4 +81,5 @@ class ParquetExporter(Exporter):
         scan: Optional[PackageScan] = package.package.scan
         record["clamav_signatures"] = scan.signatures if scan is not None else None
         record["clamav_database_version"] = scan.database_version if scan is not None else None
+        record["license_source"] = str(package.package.license_source) if package.package.license_source else None
         return record

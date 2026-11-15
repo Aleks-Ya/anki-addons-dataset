@@ -127,7 +127,9 @@
       "package.primary_language": "string",
       "package.language_bytes[].name": "string",
       "package.language_bytes[].bytes": "int64",
-      "package.clamav_signatures[]": "string"
+      "package.clamav_signatures[]": "string",
+      "package.license": "string",
+      "package.license_source": "string"
     },
     "tags": {
       "name": "string",
@@ -162,7 +164,10 @@
       "language_bytes[].name": "string",
       "language_bytes[].bytes": "int64",
       "clamav_signatures[]": "string",
-      "clamav_database_version": "int64"
+      "clamav_database_version": "int64",
+      "license": "string",
+      "license_source": "string",
+      "license_file": "string"
     }
   }
 }

@@ -45,6 +45,11 @@ the package's own manifest, else the one in the directory whose file names match
 none of these decides: never another addon's manifest. Up to the 2026-11-01 snapshot only the shallowest `manifest.json`
 was downloaded, so a deeper one has a `manifest_path` but a `null` `manifest`.
 
+## License
+`github.license` is the SPDX id GitHub detects in the repo (`MIT`, `GPL-3.0`, `AGPL-3.0`...), `null` without a repo
+or when GitHub finds no license or cannot identify it. `package.license` is the license found in the package
+itself (see [Package](#package)): it covers addons without a repo, and can differ from the repo's.
+
 ## GitHub activity
 - `github.release_downloads` sums the asset downloads of the newest 100 releases: real install numbers, but only
   for addons distributed through GitHub releases.
@@ -75,8 +80,8 @@ excluded by hand. Snapshots without packages have no duplicates.
 The `package` field summarizes the addon branch with the highest `min_point_version` in the
 [`packages` table](tables.md#packages) and adds `primary_language` (the language with the most bytes, ignoring
 data formats such as `JSON` or `YAML`). Languages have the same names as in `github.language_bytes`. It is `null`
-when the snapshot holds no package of the addon. `clamav_signatures` is the ClamAV result of that branch, explained
-in the [`packages` table](tables.md#packages).
+when the snapshot holds no package of the addon. `clamav_signatures` is the ClamAV result of that branch, and
+`license` and `license_source` its license, both explained in the [`packages` table](tables.md#packages).
 `anki_web.package_size_kb` is the size shown by AnkiWeb, rounded to 10 kB (`0` means under 10 kB).
 
 ## Older snapshots

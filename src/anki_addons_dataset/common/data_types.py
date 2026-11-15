@@ -60,6 +60,11 @@ class GithubRepoSource(StrEnum):
     MOST_LINKED = "most_linked"
 
 
+class PackageLicenseSource(StrEnum):
+    FILE = "file"
+    HEADER = "header"
+
+
 class AnkiForumTopicSource(StrEnum):
     OVERRIDE = "override"
     CONTACT_AUTHOR = "contact_author"
@@ -353,6 +358,9 @@ class AddonPackage:
     files: list[str]
     language_bytes: dict[LanguageName, int]
     scan: Optional[PackageScan] = None
+    license: Optional[SpdxLicense] = None
+    license_source: Optional[PackageLicenseSource] = None
+    license_file: Optional[str] = None
 
 
 @dataclass(frozen=True)

@@ -6,7 +6,8 @@ from typing import Any, Optional
 from anki_addons_dataset.common.data_types import GithubIssueHistory, AddonInfos, AddonInfo, AnkiForumInfo, \
     PostsCount, AddonManifest, SpdxLicense, Topic, DependencyName, LanguageName, URL, GithubReadme, PageLink, \
     PageLinkSection, AddonId, ForkRelation, ForkEvidence, AddonPackage, AddonPackages, AnkiPointVersion, AuthorInfo, \
-    AuthorId, GithubRepo, GithubUserName, GithubRepoName, DuplicateRelation, DuplicateEvidence, PackageScan
+    AuthorId, GithubRepo, GithubUserName, GithubRepoName, DuplicateRelation, DuplicateEvidence, PackageScan, \
+    PackageLicenseSource
 from anki_addons_dataset.exporter.json_addon_info import JsonAddonInfo
 
 
@@ -497,7 +498,7 @@ def test_addon_infos_to_json_package_summarizes_the_newest_branch(addon_info: Ad
                                       "python_file_count": 2, "python_lines": 30, "primary_language": "Python",
                                       "language_bytes": [{"name": "Python", "bytes": 180},
                                                          {"name": "JSON", "bytes": 20}],
-                                      "clamav_signatures": None}
+                                      "clamav_signatures": None, "license": None, "license_source": None}
 
 
 def test_addon_infos_to_json_package_takes_the_scan_of_the_newest_branch(addon_info: AddonInfo):
@@ -510,6 +511,20 @@ def test_addon_infos_to_json_package_takes_the_scan_of_the_newest_branch(addon_i
     act_json: list[dict[str, Any]] = to_dicts(AddonInfos([addon_info]))
 
     assert act_json[0]["package"]["clamav_signatures"] == []
+
+
+def test_addon_infos_to_json_package_takes_the_license_of_the_newest_branch(addon_info: AddonInfo):
+    addon_info = replace(addon_info, package=AddonPackages([
+        AddonPackage("45-2024-01-15-aaaaaaaaaaaa.ankiaddon", AnkiPointVersion(45), date(2024, 1, 15), 10,
+                     None, None, 1, 20, 1, 3, ["__init__.py"], {}, None, SpdxLicense("MIT"),
+                     PackageLicenseSource.FILE, "LICENSE"),
+        AddonPackage("231000-2023-05-15-bbbbbbbbbbbb.ankiaddon", AnkiPointVersion(231000), date(2023, 5, 15), 100,
+                     None, None, 1, 20, 1, 3, ["__init__.py"], {}, None, SpdxLicense("AGPL-3.0"),
+                     PackageLicenseSource.HEADER)]))
+
+    act_json: list[dict[str, Any]] = to_dicts(AddonInfos([addon_info]))
+
+    assert (act_json[0]["package"]["license"], act_json[0]["package"]["license_source"]) == ("AGPL-3.0", "header")
 
 
 def test_addon_infos_to_json_package_without_languages(addon_info: AddonInfo):

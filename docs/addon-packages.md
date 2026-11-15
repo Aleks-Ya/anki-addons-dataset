@@ -28,6 +28,14 @@ addon or snapshot without packages gets `package=None`.
   `jsonl` into `JSON`, `ruby`, `gemfile` and `gemspec` into `Ruby`. `mht` has no Linguist language and becomes
   `MHTML`. An unknown label stops PARSE; `package_language_names_test.py` checks every label of the installed Magika,
   so a Magika upgrade that adds one fails the tests first.
+- The license comes from the root license file (`LICENSE`, `LICENCE`, `COPYING` or `UNLICENSE`, also with `.txt`,
+  `.md` or `.rst`; the first by name), else from the license most root `.py` files declare in their first 30 lines
+  (`null` on a tie). `PackageLicenseClassifier` matches phrases of about 15 common licenses and names them as GitHub
+  does, so they compare with `github.license`. When several licenses match, the one named first in the text wins,
+  because the AGPL text quotes the GPL and the reverse. License files in subdirectories are ignored: almost all
+  belong to bundled libraries (`vendor/`, `lib/`). On 2026-11-01 the file decides 907 of 3,738 addons and agrees
+  with `github.license` on 461 of 465, and the headers decide 426 more and agree on 98 of 121 (most of the rest
+  declare AGPL in Anki's copied header but GPL in the repo).
 - REPORT's `primary_language` is the first entry of `language_bytes` that is not a data or config format
   (`JsonAddonInfo.__data_languages`: `JSON`, `CSV`, `TSV`, `XML`, `YAML`, `Ignore List`, ...). Bundled word lists and
   dictionaries often outweigh the code, so without this `JSON` or `CSV` would win for about 130 addons.

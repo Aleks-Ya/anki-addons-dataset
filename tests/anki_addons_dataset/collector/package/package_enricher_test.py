@@ -11,7 +11,7 @@ from anki_addons_dataset.collector.package.package_analyzer import PackageAnalyz
 from anki_addons_dataset.collector.package.package_enricher import PackageEnricher
 from anki_addons_dataset.collector.scan.scan_cache_index import ScanCacheIndex
 from anki_addons_dataset.common.data_types import AddonId, AddonInfo, AddonInfos, AddonPackage, AddonPackages, \
-    AnkiPointVersion, LanguageName, PackageScan
+    AnkiPointVersion, LanguageName, PackageLicenseSource, PackageScan, SpdxLicense
 from anki_addons_dataset.common.working_dir import SnapshotDir
 
 __ADDON_ID: AddonId = AddonId(100)
@@ -71,6 +71,15 @@ def test_enrich_passes_the_detected_languages(snapshot_dir: SnapshotDir, addon_i
     packages: Optional[AddonPackages] = __enrich(snapshot_dir, addon_info)
 
     assert packages.branches[0].language_bytes == {LanguageName("Python"): 19}
+
+
+def test_enrich_passes_the_detected_license(snapshot_dir: SnapshotDir, addon_info: AddonInfo):
+    __add_package(snapshot_dir, "45-2026-01-15-0123456789ab.ankiaddon", b"# SPDX-License-Identifier: MIT\n")
+
+    packages: Optional[AddonPackages] = __enrich(snapshot_dir, addon_info)
+
+    assert (packages.branches[0].license, packages.branches[0].license_source) == \
+           (SpdxLicense("MIT"), PackageLicenseSource.HEADER)
 
 
 def test_enrich_sorts_branches_by_point_version(snapshot_dir: SnapshotDir, addon_info: AddonInfo):

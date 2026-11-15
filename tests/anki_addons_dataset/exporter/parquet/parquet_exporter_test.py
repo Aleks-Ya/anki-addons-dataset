@@ -10,7 +10,7 @@ import pyarrow.parquet
 
 from anki_addons_dataset.common.data_types import AddonInfos, DatasetSnapshotMetadata, RawMetadata, \
     AiTagDefinition, AiTag, AiTagGroup, AnkiRelease, AnkiVersion, AnkiPointVersion, ReviewRow, ReviewVote, AddonId, \
-    LanguageName, PackageRow, AddonReview, AddonPackage, PackageScan
+    LanguageName, PackageRow, AddonReview, AddonPackage, PackageScan, SpdxLicense, PackageLicenseSource
 from anki_addons_dataset.common.working_dir import SnapshotDir
 from anki_addons_dataset.exporter.parquet.parquet_exporter import ParquetExporter
 
@@ -246,7 +246,8 @@ def test_export_packages(snapshot_dir: SnapshotDir):
                          'uncompressed_bytes': 30, 'python_file_count': 1, 'python_lines': 4,
                          'files': ['__init__.py', 'manifest.json'],
                          'language_bytes': [{'name': 'Python', 'bytes': 25}, {'name': 'JSON', 'bytes': 5}],
-                         'clamav_signatures': None, 'clamav_database_version': None}]
+                         'clamav_signatures': None, 'clamav_database_version': None, 'license': None,
+                         'license_source': None, 'license_file': None}]
 
 
 def test_export_packages_with_a_scan(snapshot_dir: SnapshotDir):
@@ -267,6 +268,20 @@ def test_export_packages_with_a_scan(snapshot_dir: SnapshotDir):
                         {'clamav_signatures': [], 'clamav_database_version': 28181}]
 
 
+def test_export_packages_with_a_license(snapshot_dir: SnapshotDir):
+    packages: list[PackageRow] = [
+        PackageRow(AddonId(100), AddonPackage(
+            "45-2026-01-15-0123456789ab.ankiaddon", AnkiPointVersion(45), date(2026, 1, 15), 10, None, None,
+            1, 30, 1, 4, ["LICENSE"], {}, None, SpdxLicense("MIT"), PackageLicenseSource.FILE, "LICENSE"))]
+    final_dir: Path = snapshot_dir.get_final_dir()
+    ParquetExporter(final_dir).export_packages(packages)
+
+    act_rows: list[dict] = pyarrow.parquet.read_table(final_dir / "parquet" / "packages.parquet",
+                                                      columns=["license", "license_source", "license_file"]) \
+        .to_pylist()
+    assert act_rows == [{'license': 'MIT', 'license_source': 'file', 'license_file': 'LICENSE'}]
+
+
 def test_export_packages_empty_keeps_types(snapshot_dir: SnapshotDir):
     final_dir: Path = snapshot_dir.get_final_dir()
     ParquetExporter(final_dir).export_packages([])
@@ -274,7 +289,8 @@ def test_export_packages_empty_keeps_types(snapshot_dir: SnapshotDir):
     schema: pyarrow.Schema = pyarrow.parquet.read_schema(final_dir / "parquet" / "packages.parquet")
     assert schema.names == ['addon_id', 'file_name', 'min_point_version', 'updated', 'size_bytes', 'manifest_json',
                             'config_json', 'file_count', 'uncompressed_bytes', 'python_file_count', 'python_lines',
-                            'files', 'language_bytes', 'clamav_signatures', 'clamav_database_version']
+                            'files', 'language_bytes', 'clamav_signatures', 'clamav_database_version', 'license',
+                            'license_source', 'license_file']
     assert schema.field("updated").type == pyarrow.date32()
     assert schema.field("files").type == pyarrow.list_(pyarrow.string())
     assert pyarrow.parquet.read_table(final_dir / "parquet" / "packages.parquet").num_rows == 0

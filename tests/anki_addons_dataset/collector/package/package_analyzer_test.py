@@ -5,7 +5,7 @@ import pytest
 
 from anki_addons_dataset.collector.package.package_analyzer import PackageAnalysis, PackageAnalyzer
 from anki_addons_dataset.collector.package.package_client import PackageError
-from anki_addons_dataset.common.data_types import LanguageName
+from anki_addons_dataset.common.data_types import LanguageName, PackageLicenseSource, SpdxLicense
 
 __PYTHON: bytes = (b'import os\nimport sys\n\n\ndef main():\n    for path in sys.argv[1:]:\n'
                    b'        print(os.path.getsize(path))\n\n\nif __name__ == "__main__":\n    main()\n')
@@ -21,6 +21,10 @@ __CSPROJ: bytes = (b'<Project Sdk="Microsoft.NET.Sdk">\n\n  <PropertyGroup>\n   
                    b'  </PropertyGroup>\n\n  <ItemGroup>\n'
                    b'    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />\n'
                    b'  </ItemGroup>\n\n</Project>\n')
+__MIT: bytes = (b'MIT License\n\nCopyright (c) 2026 Author\n\n'
+               b'Permission is hereby granted, free of charge, to any person obtaining a copy\n')
+__AGPL_HEADER: bytes = b'# License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html\nimport aqt\n'
+__GPL_HEADER: bytes = b'# SPDX-License-Identifier: GPL-3.0-or-later\nimport aqt\n'
 __MARKDOWN: bytes = (b'# My addon\n\nThis addon adds a button to the reviewer.\n\n## Usage\n\n'
                      b'Press the button and enjoy your reviews.\n')
 
@@ -49,7 +53,7 @@ def test_analyze_counts_files_and_python_lines(analyzer: PackageAnalyzer, tmp_pa
     analysis: PackageAnalysis = analyzer.analyze(package_file)
 
     assert analysis == PackageAnalysis(None, None, 3, 47, 2, 5, ["__init__.py", "sub/module.py", "web/style.css"],
-                                       {LanguageName("Python"): 19})
+                                       {LanguageName("Python"): 19}, None, None, None)
 
 
 def test_analyze_reads_manifest_and_config_at_the_root(analyzer: PackageAnalyzer, tmp_path: Path):
@@ -81,7 +85,7 @@ def test_analyze_excludes_macos_junk(analyzer: PackageAnalyzer, tmp_path: Path):
 
     analysis: PackageAnalysis = analyzer.analyze(package_file)
 
-    assert analysis == PackageAnalysis(None, None, 1, 6, 1, 1, ["__init__.py"], {})
+    assert analysis == PackageAnalysis(None, None, 1, 6, 1, 1, ["__init__.py"], {}, None, None, None)
 
 
 def test_analyze_skips_directory_entries(analyzer: PackageAnalyzer, tmp_path: Path):
@@ -179,3 +183,52 @@ def test_analyze_raises_on_an_encrypted_package(analyzer: PackageAnalyzer, tmp_p
 
     with pytest.raises(PackageError, match="encrypted"):
         analyzer.analyze(package_file)
+
+
+def test_analyze_reads_the_license_file_at_the_root(analyzer: PackageAnalyzer, tmp_path: Path):
+    package_file: Path = __package(tmp_path, {"LICENSE.txt": __MIT, "__init__.py": __AGPL_HEADER})
+
+    analysis: PackageAnalysis = analyzer.analyze(package_file)
+
+    assert (analysis.license, analysis.license_source, analysis.license_file) == \
+           (SpdxLicense("MIT"), PackageLicenseSource.FILE, "LICENSE.txt")
+
+
+def test_analyze_ignores_license_files_outside_the_root_and_of_third_parties(analyzer: PackageAnalyzer,
+                                                                             tmp_path: Path):
+    package_file: Path = __package(tmp_path, {"LICENSE-THIRD-PARTY.md": __MIT, "vendor/lib/LICENSE": __MIT})
+
+    analysis: PackageAnalysis = analyzer.analyze(package_file)
+
+    assert (analysis.license, analysis.license_source, analysis.license_file) == (None, None, None)
+
+
+def test_analyze_takes_the_license_of_most_root_python_headers(analyzer: PackageAnalyzer, tmp_path: Path):
+    package_file: Path = __package(tmp_path, {
+        "__init__.py": __AGPL_HEADER,
+        "config.py": __AGPL_HEADER,
+        "six.py": __GPL_HEADER,
+        "vendor/one.py": __GPL_HEADER,
+        "vendor/two.py": __GPL_HEADER,
+    })
+
+    analysis: PackageAnalysis = analyzer.analyze(package_file)
+
+    assert (analysis.license, analysis.license_source, analysis.license_file) == \
+           (SpdxLicense("AGPL-3.0"), PackageLicenseSource.HEADER, None)
+
+
+def test_analyze_gives_no_license_when_the_headers_tie(analyzer: PackageAnalyzer, tmp_path: Path):
+    package_file: Path = __package(tmp_path, {"__init__.py": __AGPL_HEADER, "six.py": __GPL_HEADER})
+
+    assert analyzer.analyze(package_file).license is None
+
+
+def test_analyze_keeps_an_unrecognized_license_file_and_falls_back_to_the_headers(analyzer: PackageAnalyzer,
+                                                                                tmp_path: Path):
+    package_file: Path = __package(tmp_path, {"LICENSE": b"All rights reserved.\n", "__init__.py": __GPL_HEADER})
+
+    analysis: PackageAnalysis = analyzer.analyze(package_file)
+
+    assert (analysis.license, analysis.license_source, analysis.license_file) == \
+           (SpdxLicense("GPL-3.0"), PackageLicenseSource.HEADER, "LICENSE")

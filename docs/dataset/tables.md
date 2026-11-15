@@ -35,5 +35,14 @@ The `.ankiaddon` packages served by AnkiWeb, one row per addon branch; `file_nam
   database `clamav_database_version`: `[]` when clean, `null` when not scanned. A match is not proof of malware
   (it can be a heuristic or "potentially unwanted" detection of a bundled tool), and ClamAV rarely detects
   malicious Python, so `[]` does not mean the code is safe.
+- `license` is the package's own license as an SPDX id, named as GitHub names it (`AGPL-3.0`, `GPL-3.0`, `MIT`),
+  like `github.license`. `license_source` says where it comes from: `file` (the license file at the package root,
+  `LICENSE`, `COPYING` or `UNLICENSE`, also with `.txt`, `.md` or `.rst`) or `header` (the license that most root
+  `.py` files declare in their first 30 lines, by an `SPDX-License-Identifier`, a `License:` line or the GNU notice;
+  `null` on a tie). A `header` license is weaker evidence: many addons copy Anki's AGPL header, and a library bundled
+  at the root declares its own. `license_file` is the root license file even when its text is not recognized (a
+  proprietary license, an uncommon one). License files of bundled libraries, in subdirectories or named like
+  `LICENSE-THIRD-PARTY.md`, are ignored. The package license can differ from `github.license`: the repo and the
+  uploaded package are separate.
 
 How packages are downloaded and analyzed: [addon-packages.md](../addon-packages.md).
